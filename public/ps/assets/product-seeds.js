@@ -46,19 +46,6 @@ PS.studioSeeds['PRD-015'] = {
       wordingDocs:[{ name:'Commercial PA Schedule', version:'v2026.08', code:'DOC-PA-CT-001' }]
     },
     {
-      id:'COV-CT-004', name:'Goods in Transit', code:'COV-GIT-001',
-      availability:'default', complete:true, type:'First Party — Cargo',
-      description:'Covers loss or damage to lawful cargo carried on the insured truck, including loading and unloading at declared locations.',
-      basisOfCoverage:'Declared Value', sumInsured:'250,000', maxSingleLimit:'250,000', subLimit:'50,000',
-      deductibleType:'percentage', deductibleAmount:'', deductiblePct:'1', minDeductible:'500', maxDeductible:'5,000',
-      copay:'0', waitingPeriod:'None', annualAggregate:true, defaultSelected:true, mutualExclusions:[],
-      conditionalOn:'Own Damage — Truck & Chassis',
-      dependencies:[{ type:'Requires', dependsOn:'Own Damage — Truck & Chassis', condition:'Always' }],
-      constraints:[{ field:'Goods Class', operator:'not in', value:'Class 1 explosives, radioactive' },{ field:'Radius of Operation', operator:'≤', value:'1,500 km' }],
-      lossBasis:'Per Transit', reinstatement:'Automatic', benefitBasis:'Indemnity', claimsNotifPeriod:'24', claimsNotifUnit:'hours',
-      wordingDocs:[{ name:'Goods in Transit Clause', version:'v2026.08', code:'DOC-GIT-001' }]
-    },
-    {
       id:'COV-CT-005', name:'Trailer & Semi-Trailer', code:'COV-TRL-001',
       availability:'optional', complete:true, type:'First Party — Property Damage',
       description:'Extends own-damage and theft cover to declared trailers and semi-trailers attached to the insured tractor unit.',

@@ -304,10 +304,12 @@
     .uw-auth-card p { margin:0; font-size:12px; color:var(--color-muted); line-height:1.45; }
     .uw-auth-card .toggle-switch { position:absolute; top:14px; right:14px; }
     .uw-auth-card .uw-auth-remove { position:absolute; bottom:10px; right:10px; }
+    .uw-auth-card-fields { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+    .uw-auth-card-fields .form-label { font-size:11px; margin-bottom:4px; }
     .uw-auth-fields { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px; }
     .uw-auth-foot { margin:14px 0 0; font-size:12px; color:var(--color-muted); }
     @media (max-width: 860px) {
-      .uw-auth-grid, .uw-auth-fields { grid-template-columns:1fr; }
+      .uw-auth-grid, .uw-auth-fields, .uw-auth-card-fields { grid-template-columns:1fr; }
     }
 
     .cs-pill { display:inline-flex; align-items:center; height:22px; padding:0 10px; border-radius:100px; font-size:11px; font-weight:600; }
@@ -1817,10 +1819,16 @@ const TRUCKING_INSURED_ITEM_TYPES_BY_COVERAGE = {
     'Garagekeepers Legal Liability'
   ],
   'Motor Truck Cargo': [
-    'Owned Cargo',
-    'Refrigeration Breakdown',
-    'Debris Removal',
-    'Earned Freight'
+    'Cargo Physical Damage',
+    'Cargo Theft',
+    'Cargo Fire',
+    'Cargo Collision / Overturn',
+    'Loading & Unloading',
+    'Refrigerated Cargo / Reefer Breakdown',
+    'Water Damage',
+    'Debris Removal / Cleanup',
+    'Earned Freight / Freight Charges',
+    'Salvage / Disposal'
   ]
 };
 
@@ -1967,6 +1975,9 @@ function defaultInsuredItem(c, index) {
     defaultBasis: primary,
     quoteChoice: 'Customer / agent may choose',
     uwOverrideValuation: c.uwOverrideValuation !== false,
+    uwMaxVariation: c.uwMaxVariation == null || c.uwMaxVariation === '' ? '20' : c.uwMaxVariation,
+    uwReferral: c.uwReferral || 'Referral required',
+    uwReason: c.uwReason || 'Reason required',
     limitBasisMode: 'fixed',
     limitBasis: isServiceCover(c) ? 'Not Applicable' : 'Fixed Amount',
     uwLimitOverride: true,
@@ -2050,6 +2061,9 @@ function ensureInsuredItems(c) {
     }
     if (!it.quoteChoice) it.quoteChoice = 'Customer / agent may choose';
     if (it.uwOverrideValuation == null) it.uwOverrideValuation = c.uwOverrideValuation !== false;
+    if (it.uwMaxVariation == null || it.uwMaxVariation === '') it.uwMaxVariation = c.uwMaxVariation == null || c.uwMaxVariation === '' ? '20' : c.uwMaxVariation;
+    if (!it.uwReferral) it.uwReferral = c.uwReferral || 'Referral required';
+    if (!it.uwReason) it.uwReason = c.uwReason || 'Reason required';
     if (!it.limitBasis || it.limitBasis === 'Sum Insured' || it.limitBasis === 'Not Applicable') it.limitBasis = 'Fixed Amount';
     if (it.uwLimitOverride == null) it.uwLimitOverride = true;
     if (it.limitAmount == null) it.limitAmount = c.sumInsured || '';
@@ -2080,6 +2094,9 @@ function syncCoverFromInsuredItems(c) {
   if (first.itemAnnualAggregate != null) c.annualAggregate = Boolean(first.itemAnnualAggregate);
   c.aggregateLimit = first.itemAggregateLimit || '';
   c.uwOverrideValuation = first.uwOverrideValuation !== false;
+  c.uwMaxVariation = first.uwMaxVariation == null || first.uwMaxVariation === '' ? '20' : first.uwMaxVariation;
+  c.uwReferral = first.uwReferral || 'Referral required';
+  c.uwReason = first.uwReason || 'Reason required';
 }
 
 function persistInsuredItems(skipRender) {
@@ -2525,23 +2542,12 @@ function ciStateMeta(code) {
 }
 
 function ciPlacesFor(code, extra, scope) {
-  const sc = ciNormScope(scope);
-
-  // Read the product's Jurisdiction Studio configuration
-  const jurisdictionRows = productJurisdictionSourceRows(sc);
-  const jurisdictionRow = jurisdictionRows.find(r => r?.state === code);
-
-  // State is not configured in Jurisdiction Studio
-  if (!jurisdictionRow) return [];
-
-  // If specific cities/counties were configured in Jurisdiction Studio,
-  // ONLY those cities/counties can be selected in Coverage Studio.
-  if (Array.isArray(jurisdictionRow.cities) && jurisdictionRow.cities.length) {
-    return jurisdictionRow.cities.slice();
-  }
-
-  // Empty cities in Jurisdiction means the entire state is allowed.
-  return PS.places?.citiesFor?.(code) || [];
+  const all = (PS.places?.citiesFor?.(code) || []).slice();
+  (extra || []).forEach(n => {
+    const s = String(n || '').trim();
+    if (s && !all.some(x => x.toLowerCase() === s.toLowerCase())) all.push(s);
+  });
+  return all;
 }
 
 function productTargets() {
@@ -2623,9 +2629,10 @@ function productStateCodes(scope) {
 function alignCoverRowsToProductStates(cover, scope) {
   if (!cover) return [];
   const key = ciCoverKey(scope);
-  if (Array.isArray(cover[key])) return cover[key];
   const states = productStateCodes(scope);
-  cover[key] = states.map(state => emptyStateRow(state));
+  const byState = {};
+  if (Array.isArray(cover[key])) cover[key].forEach(r => { if (r?.state) byState[r.state] = r; });
+  cover[key] = states.map(state => byState[state] || emptyStateRow(state));
   return cover[key];
 }
 
@@ -2667,7 +2674,7 @@ function productCoverContext(cover, scope) {
 
 function ciCitySummary(cities) {
   const list = cities || [];
-  if (!list.length) return { count: 0, text: 'Entire state' };
+  if (!list.length) return { count: 0, text: 'All' };
   if (list.length === 1) return { count: 1, text: list[0] };
   return { count: list.length, text: `${list.length} cities / counties` };
 }
@@ -2688,27 +2695,14 @@ function ciPinSvg() {
 function ciJurisdictionPanelHtml(ro, cover, scope) {
   const sc = ciNormScope(scope);
   const ctx = productCoverContext(cover, sc);
-  const allStates = PS.places?.STATES || [];
   const exclusive = sc === 'ex';
   const title = exclusive ? 'Exclusive States / Counties' : 'States / Counties';
   const help = exclusive
     ? 'Exclusive counties for this cover. Empty means the whole state is exclusive.'
-    : 'Pick cities for each selected state. Empty means the whole state.';
-  const emptyStates = exclusive ? 'No exclusive states selected' : 'No states selected';
-  const addLabel = exclusive
-    ? `+ Add exclusive state${ctx.states.length ? ` (${ctx.states.length} selected)` : ''}`
-    : `+ Add state${ctx.states.length ? ` (${ctx.states.length} selected)` : ''}`;
-  const summaryWord = exclusive ? 'exclusive state' : 'state';
-  const ddId = sc === 'ex' ? 'ci-ex-state-dd' : 'ci-state-dd';
-  const labelId = sc === 'ex' ? 'ci-ex-state-label' : 'ci-state-label';
-  const chipsId = sc === 'ex' ? 'ci-ex-state-chips' : 'ci-state-chips';
+    : 'Pick cities or counties for each auto-selected state. Empty means the whole state is allowed.';
+  const word = exclusive ? 'exclusive state' : 'state';
   const rowsId = sc === 'ex' ? 'ci-ex-city-rows' : 'ci-city-rows';
   const summaryId = sc === 'ex' ? 'ci-ex-state-summary' : 'ci-state-summary';
-  const checkClass = sc === 'ex' ? 'ci-ex-state-check' : 'ci-state-check';
-  const chipBtns = (items, empty, onRemove) => {
-    if (!items || !items.length) return `<span class="ci-empty">${empty}</span>`;
-    return `<div class="ci-chips">${items.map(x => `<span class="ci-chip">${htmlEsc(x)}${ro ? '' : `<button type="button" onclick="${onRemove}('${ciJsStr(x)}','${sc}')" aria-label="Remove ${htmlEsc(x)}">×</button>`}</span>`).join('')}</div>`;
-  };
   if (ro) {
     return `
       <div class="ci-jurisdiction">
@@ -2728,19 +2722,9 @@ function ciJurisdictionPanelHtml(ro, cover, scope) {
           ${ciPinSvg()}
           <div><strong>${title}</strong><span class="ci-jurisdiction-help">${help}</span></div>
         </div>
-        <div class="ci-add-state">
-          <div id="${chipsId}" class="ci-selected-state-control">${chipBtns(ctx.states.map(s => ciStateMeta(s).abbr), emptyStates, 'removeCoverState')}</div>
-          <div class="ci-dd" id="${ddId}">
-           
-            <div class="ci-dd-menu">
-              <div class="ci-dd-search"><input type="search" class="form-control" placeholder="Filter states…" oninput="filterCiStateOpts(this.value,'${sc}')" autocomplete="off"></div>
-              ${allStates.map(s => `<label class="ci-dd-opt" data-state="${htmlEsc(s.abbr)}" data-name="${htmlEsc(s.name)}"><input type="checkbox" class="${checkClass}" value="${htmlEsc(s.abbr)}" ${ctx.states.includes(s.abbr) ? 'checked' : ''} onchange="syncCoverStates('${sc}')">${htmlEsc(s.abbr)} ${htmlEsc(s.name)}</label>`).join('')}
-            </div>
-          </div>
-        </div>
       </div>
       <div id="${rowsId}">${coverCityRowsHtml(ctx, false, sc)}</div>
-      <div class="ci-summary"><span aria-hidden="true">ⓘ</span><span id="${summaryId}"><strong>${ctx.states.length} ${summaryWord}${ctx.states.length === 1 ? '' : 's'} selected</strong> ·</span></div>
+      ${ctx.states.length ? `<div class="ci-summary"><span aria-hidden="true">ⓘ</span><span id="${summaryId}"><strong>${ctx.states.length} ${word}${ctx.states.length === 1 ? '' : 's'} auto-selected</strong></span></div>` : ''}
     </div>`;
 }
 
@@ -2751,7 +2735,7 @@ function identityProductContextHtml(ro, cover) {
 function coverCityRowsHtml(ctx, ro, scope) {
   const sc = ciNormScope(scope || ctx.scope);
   const states = ctx.states || [];
-  if (!states.length) return `<p class="ci-empty" style="margin:8px 0 0">Select states to choose cities.</p>`;
+  if (!states.length) return `<p class="ci-empty" style="margin:8px 0 0">States for this cover are auto-selected from the product jurisdiction. None are configured yet.</p>`;
   return `<div class="ci-city-rows">${states.map(code => {
     const meta = ciStateMeta(code);
     const cities = ctx.citiesByState[code] || [];
@@ -2765,7 +2749,7 @@ function coverCityRowsHtml(ctx, ro, scope) {
       <div class="ci-city-row" data-state="${htmlEsc(code)}">
         <div class="ci-city-state">
           <span class="ci-abbr">${htmlEsc(meta.abbr)}</span>
-          <div><strong>${htmlEsc(meta.name)}</strong><span class="ci-state-scope">${summary.count ? htmlEsc(summary.text) : 'Entire state'}</span></div>
+          <div><strong>${htmlEsc(meta.name)}</strong><span class="ci-state-scope">${summary.count ? htmlEsc(summary.text) : 'All'}</span></div>
         </div>
         <div>
           ${ro ? `<div class="ci-city-label ${summary.count ? 'has-cities' : ''}">${htmlEsc(summary.text)}</div>` : `
@@ -2778,7 +2762,6 @@ function coverCityRowsHtml(ctx, ro, scope) {
           </div>`}
           <div class="ci-city-chips" id="${ciChipsId(sc, code)}">${chips}</div>
         </div>
-        ${ro ? '' : `<button type="button" class="ci-remove-state" onclick="removeCoverState('${ciJsStr(code)}','${sc}')" aria-label="Remove ${htmlEsc(meta.name)}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13M10 11v5m4-5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Remove</button>`}
       </div>`;
   }).join('')}</div>`;
 }
@@ -2823,67 +2806,22 @@ function saveCoverJurisdictions(rows, scope) {
   try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
 }
 
-function syncCoverStates(scope) {
-  if (productStatus === 'published') return;
-  const sc = ciNormScope(scope);
-  const checkClass = sc === 'ex' ? '.ci-ex-state-check:checked' : '.ci-state-check:checked';
-  const selected = Array.from(document.querySelectorAll(checkClass)).map(el => el.value);
-  const existing = currentJurisdictionRows(sc);
-  const byState = {};
-  existing.forEach(r => { if (r?.state) byState[r.state] = r; });
-  const next = selected.map(state => byState[state] || emptyStateRow(state));
-  saveCoverJurisdictions(next, sc);
-  const chipsId = sc === 'ex' ? 'ci-ex-state-chips' : 'ci-state-chips';
-  const labelId = sc === 'ex' ? 'ci-ex-state-label' : 'ci-state-label';
-  const summaryId = sc === 'ex' ? 'ci-ex-state-summary' : 'ci-state-summary';
-  const rowsId = sc === 'ex' ? 'ci-ex-city-rows' : 'ci-city-rows';
-  const chips = document.getElementById(chipsId);
-  if (chips) {
-    chips.innerHTML = selected.length
-      ? selected.map(s => `<span class="ci-chip">${htmlEsc(s)}<button type="button" onclick="removeCoverState('${ciJsStr(s)}','${sc}')" aria-label="Remove ${htmlEsc(s)}">×</button></span>`).join('')
-      : `<span class="ci-empty">${sc === 'ex' ? 'No exclusive states selected' : 'No states selected'}</span>`;
-  }
-  const label = document.getElementById(labelId);
-  if (label) {
-    label.textContent = sc === 'ex'
-      ? `+ Add exclusive state${selected.length ? ` (${selected.length} selected)` : ''}`
-      : `+ Add state${selected.length ? ` (${selected.length} selected)` : ''}`;
-  }
-  const summary = document.getElementById(summaryId);
-  if (summary) {
-    const remaining = Math.max(0, (PS.places?.STATES || []).length - selected.length);
-    const word = sc === 'ex' ? 'exclusive state' : 'state';
-    summary.innerHTML = `<strong>${selected.length} ${word}${selected.length === 1 ? '' : 's'} selected</strong> · ${remaining} state${remaining === 1 ? '' : 's'} remaining`;
-  }
-  const wrap = document.getElementById(rowsId);
-  if (wrap) wrap.innerHTML = coverCityRowsHtml(productCoverContext(null, sc), false, sc);
-}
-
-function removeCoverState(code, scope) {
-  const sc = ciNormScope(scope);
-  const checkClass = sc === 'ex' ? '.ci-ex-state-check' : '.ci-state-check';
-  document.querySelectorAll(checkClass).forEach(el => { if (el.value === code) el.checked = false; });
-  syncCoverStates(sc);
-}
-
-function filterCiStateOpts(q, scope) {
-  const needle = String(q || '').trim().toLowerCase();
-  const ddId = ciNormScope(scope) === 'ex' ? 'ci-ex-state-dd' : 'ci-state-dd';
-  document.querySelectorAll(`#${ddId} .ci-dd-opt[data-state]`).forEach(el => {
-    const hay = `${el.getAttribute('data-state') || ''} ${el.getAttribute('data-name') || ''}`.toLowerCase();
-    el.hidden = Boolean(needle) && !hay.includes(needle);
-  });
-}
-
 function toggleCiDd(event, id) {
   event.stopPropagation();
   closeCiCityPickers();
+  const dd = document.getElementById(id);
+  const nowOpen = dd ? !dd.classList.contains('open') : false;
   document.querySelectorAll('.ci-dd.open').forEach(el => { if (el.id !== id) el.classList.remove('open'); });
-  document.getElementById(id)?.classList.toggle('open');
+  dd?.classList.toggle('open', nowOpen);
+  if (dd) {
+    const btn = dd.previousElementSibling?.classList?.contains('ci-dd-btn') ? dd.previousElementSibling : dd.querySelector('.ci-dd-btn');
+    if (btn) btn.setAttribute('aria-expanded', String(nowOpen));
+  }
 }
 
 function closeCiDds() {
   document.querySelectorAll('.ci-dd.open').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.ci-dd-btn[aria-expanded="true"]').forEach(el => el.setAttribute('aria-expanded', 'false'));
 }
 
 function citiesForState(code, scope) {
@@ -2964,7 +2902,7 @@ function ciCityMenuHtml(code, scope) {
       <input class="form-control ci-city-q" type="search" placeholder="Search cities or counties…" oninput="filterCiCityOptions()" autocomplete="off">
     </div>
     <div class="ci-city-menu-list" id="ci-city-menu-list">
-      <label class="ci-city-opt ci-city-opt-all"><input type="checkbox" ${entire ? 'checked' : ''} onchange="setCiEntireState('${ciJsStr(code)}', this.checked, '${sc}')"> Entire state</label>
+      <label class="ci-city-opt ci-city-opt-all"><input type="checkbox" ${entire ? 'checked' : ''} onchange="setCiEntireState('${ciJsStr(code)}', this.checked, '${sc}')"> All</label>
       ${options.map(c => `
         <label class="ci-city-opt" data-city="${htmlEsc(c)}">
           <input type="checkbox" ${selected.has(c) ? 'checked' : ''} onchange="toggleCiCity('${ciJsStr(code)}','${ciJsStr(c)}', this.checked, '${sc}')">
@@ -3047,7 +2985,7 @@ function refreshCiCityUI(code, scope) {
   }
   const row = document.querySelector(`#${ciPickerId(sc, code)}`)?.closest('.ci-city-row');
   const scopeEl = row?.querySelector('.ci-state-scope');
-  if (scopeEl) scopeEl.textContent = summary.count ? summary.text : 'Entire state';
+  if (scopeEl) scopeEl.textContent = summary.count ? summary.text : 'All';
 }
 
 document.addEventListener('click', (e) => {
@@ -3331,104 +3269,20 @@ const UW_OVERRIDE_DEFAULTS = [
   { id: 'valuation', title: 'Valuation', description: 'Allows a permitted valuation basis to be changed for this item with audit reason.' }
 ];
 
+const UW_ROW_DEFAULTS = { maxVariation: '20', referral: 'Referral required', reason: 'Reason required' };
+
 function ensureUwOverrides(c) {
   if (c.uwMaxVariation == null || c.uwMaxVariation === '') c.uwMaxVariation = '20';
   if (!c.uwReferral) c.uwReferral = 'Referral required';
   if (!c.uwReason) c.uwReason = 'Reason required';
   if (Array.isArray(c.uwOverrides)) {
-    c.uwOverrides = c.uwOverrides.map(row => Object.assign({ id: '', title: 'Override', description: '', enabled: false }, row));
+    c.uwOverrides = c.uwOverrides.map(row => Object.assign({ id: '', title: 'Override', description: '', enabled: false }, UW_ROW_DEFAULTS, row));
     return c.uwOverrides;
   }
-  c.uwOverrides = UW_OVERRIDE_DEFAULTS.map(d => Object.assign({}, d, {
+  c.uwOverrides = UW_OVERRIDE_DEFAULTS.map(d => Object.assign({}, UW_ROW_DEFAULTS, d, {
     enabled: d.id === 'valuation' ? c.uwOverrideValuation !== false : false
   }));
   return c.uwOverrides;
-}
-
-function uwOverridesOf(c) {
-  return ensureUwOverrides(c);
-}
-
-function patchUwOverride(index, key, value) {
-  const c = currentCover();
-  if (!c || !coversCanEdit()) return;
-  const list = ensureUwOverrides(c);
-  if (!list[index]) return;
-  list[index][key] = value;
-  if (list[index].id === 'valuation' && key === 'enabled') c.uwOverrideValuation = Boolean(value);
-  try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
-  if (key === 'enabled') persistAndRefreshCover();
-}
-
-function addUwOverride() {
-  const c = currentCover();
-  if (!c || !coversCanEdit()) return;
-  ensureUwOverrides(c);
-  c.uwOverrides.push({
-    id: `uw-${Date.now().toString(36)}`,
-    title: 'New override',
-    description: 'Allow the underwriter to change this term with audit reason.',
-    enabled: true,
-    custom: true
-  });
-  persistAndRefreshCover();
-}
-
-function removeUwOverride(index) {
-  const c = currentCover();
-  if (!c || !coversCanEdit()) return;
-  const list = ensureUwOverrides(c);
-  const removed = list[index];
-  c.uwOverrides = list.filter((_, i) => i !== index);
-  if (removed?.id === 'valuation') c.uwOverrideValuation = false;
-  persistAndRefreshCover();
-}
-
-function buildUwOverrideSection(c, ro) {
-  const rows = uwOverridesOf(c);
-  const enabled = rows.filter(r => r.enabled).length;
-  return buildSection('overrides', '5', 'Underwriter Override Authority',
-    `${enabled} override permission${enabled === 1 ? '' : 's'} enabled`,
-    `
-      <div class="callout callout-warning" style="margin-bottom:var(--space-4)">
-        <div class="callout-body" style="font-size:13px">Override permissions are explicit. Every override requires the underwriter identity, old value, new value, reason, and timestamp in the audit trail.</div>
-      </div>
-      <div class="uw-auth-grid">
-        ${rows.map((row, i) => `
-        <div class="uw-auth-card">
-          ${row.custom && !ro
-            ? `<input type="text" class="form-control" style="font-weight:650;margin-bottom:8px" value="${htmlEsc(row.title || '')}" placeholder="Override name" oninput="patchUwOverride(${i},'title',this.value)">
-               <input type="text" class="form-control" value="${htmlEsc(row.description || '')}" placeholder="What the underwriter may change" oninput="patchUwOverride(${i},'description',this.value)">`
-            : `<h4>${htmlEsc(row.title || 'Override')}</h4>
-               <p>${htmlEsc(row.description || '')}</p>`}
-          <label class="toggle-switch">
-            <input type="checkbox" ${row.enabled ? 'checked' : ''} ${ro ? 'disabled' : ''} onchange="patchUwOverride(${i},'enabled',this.checked)" aria-label="${htmlEsc(row.title || 'Override')}">
-            <div class="toggle-slider"></div><div class="toggle-dot"></div>
-          </label>
-          ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm uw-auth-remove" onclick="removeUwOverride(${i})">Remove</button>`}
-        </div>`).join('')}
-      </div>
-      ${ro ? '' : `<button type="button" class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="addUwOverride()">+ Add override permission</button>`}
-      <div class="uw-auth-fields">
-        <div class="form-group">
-          <label class="form-label">Maximum variation (%)</label>
-          <input type="text" class="form-control" value="${htmlEsc(c.uwMaxVariation)}" ${ro ? 'readonly' : ''} oninput="patchCoverField('uwMaxVariation', this.value)">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Referral requirement</label>
-          <select class="form-control" ${ro ? 'disabled' : ''} onchange="patchCoverField('uwReferral', this.value)">
-            ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${c.uwReferral === o ? 'selected' : ''}>${o}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Reason requirement</label>
-          <select class="form-control" ${ro ? 'disabled' : ''} onchange="patchCoverField('uwReason', this.value)">
-            ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${c.uwReason === o ? 'selected' : ''}>${o}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-      <p class="uw-auth-foot">Valuation and item-limit override permissions can also be toggled above. Availability of this cover is set in the cover header.</p>
-    `);
 }
 
 function vbLimitCell(row, field, ro) {
@@ -3517,7 +3371,7 @@ function buildInsuredItemCard(it, index, ro, c) {
   return `
     <div class="ii-item" ${index === 0 ? 'id="ii-item"' : ''}>
       <div class="ii-item-head">
-        <strong>Child  Coverage Class ${index + 1}</strong>
+        <strong>${index === 0 ? 'Insured Item' : `Child Coverage Class ${index}`}</strong>
         ${ro || index === 0 ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="removeInsuredItem('${idAttr}')">Remove</button>`}
       </div>
       <div class="form-grid-2 ii-item-grid">
@@ -3543,12 +3397,7 @@ function buildInsuredItemCard(it, index, ro, c) {
             }).join('')}
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Default Valuation Basis</label>
-          <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','defaultBasis',this.value,false)">
-            ${defaultOpts.map(t => `<option value="${htmlEsc(t.id)}" ${it.defaultBasis===t.id?'selected':''}>${htmlEsc(t.name)}</option>`).join('')}
-          </select>
-        </div>
+      
         <div class="form-group">
           <label class="form-label">Allowed During Quote</label>
           <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','quoteChoice',this.value,true)">
@@ -3567,6 +3416,24 @@ function buildInsuredItemCard(it, index, ro, c) {
                 <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
                 <div class="toggle-slider"></div><div class="toggle-dot"></div>
               </label>
+            </div>
+          </div>
+          <div class="uw-auth-card-fields">
+            <div class="form-group">
+              <label class="form-label">Maximum variation (%)</label>
+              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Referral requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
+                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reason requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
+                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
             </div>
           </div>
         </div>
@@ -3632,15 +3499,7 @@ function buildInsuredItemCard(it, index, ro, c) {
           </div>
           <span class="form-help">No monetary valuation is applied to service covers.</span>
         </div>` : ''}
-        <div class="form-group">
-          <label class="form-label">Annual Aggregate</label>
-          <div class="ii-inline-toggle">
-            <span class="ii-inline-toggle-label">${it.itemAnnualAggregate ? 'Enabled' : 'Disabled'}</span>
-            <label class="toggle-switch">
-              <input type="checkbox" ${it.itemAnnualAggregate?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','itemAnnualAggregate',this.checked,true)">
-              <div class="toggle-slider"></div><div class="toggle-dot"></div>
-            </label>
-          </div>
+      
         </div>
         ${it.itemAnnualAggregate ? `
         <div class="form-group">
@@ -3650,12 +3509,7 @@ function buildInsuredItemCard(it, index, ro, c) {
           </div>
           <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
         </div>` : ''}
-        <div class="form-group">
-          <label class="form-label">Payment Rule</label>
-          <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','paymentRule',this.value,true)">
-            ${PAYMENT_RULES.map(o => `<option ${it.paymentRule===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
-          </select>
-        </div>
+      
       </div>
     </div>`;
 }
@@ -3675,9 +3529,78 @@ function formatDeductibleSummary(c) {
 }
 
 function formatApplicableDeductible(c) {
-  if (c.deductibleType === 'none') return 'None';
-  if (c.deductibleType === 'fixed') return `$${c.deductibleAmount || '0'} (Fixed)`;
-  return `${c.deductiblePct || '0'}% of ${c.deductiblePctOf || 'Claim Amount'}`;
+  const type = String(c?.deductibleType || 'none').toLowerCase();
+
+  if (type === 'none') {
+    return 'None';
+  }
+
+  if (type === 'fixed') {
+    const amount = String(c?.deductibleAmount ?? '').trim();
+
+    return amount
+      ? `$${amount} (Fixed)`
+      : 'Not configured';
+  }
+
+  if (type === 'percentage') {
+    const pct = String(c?.deductiblePct ?? '').trim();
+    const pctOf = String(c?.deductiblePctOf || 'Claim Amount').trim();
+
+    return pct
+      ? `${pct}% of ${pctOf}`
+      : 'Not configured';
+  }
+
+  return 'Not configured';
+}
+
+function uwValuationOverrideToggleHtml(c, ro, showFields = true, label = 'Underwriter can override valuation', desc = 'Allows a permitted valuation basis to be changed for this item with audit reason.') {
+  return `
+    <div class="ii-toggle-row" style="margin-top:16px">
+      <div>
+        <strong>${label}</strong>
+        <p>${desc}</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="ii-en">${c.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${c.uwOverrideValuation ? 'checked' : ''} ${ro ? 'disabled' : ''} onchange="toggleUwValuationOverride(this.checked)" aria-label="${label}">
+          <div class="toggle-slider"></div><div class="toggle-dot"></div>
+        </label>
+      </div>
+    </div>
+    ${showFields ? `
+    <div class="uw-auth-card-fields">
+      <div class="form-group">
+        <label class="form-label">Maximum variation (%)</label>
+        <input type="text" class="form-control" value="${htmlEsc(c.uwMaxVariation == null ? '20' : c.uwMaxVariation)}" ${ro ? 'readonly' : ''} oninput="patchCoverField('uwMaxVariation', this.value)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Referral requirement</label>
+        <select class="form-control" ${ro ? 'disabled' : ''} onchange="patchCoverField('uwReferral', this.value)">
+          ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${c.uwReferral === o ? 'selected' : ''}>${o}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason requirement</label>
+        <select class="form-control" ${ro ? 'disabled' : ''} onchange="patchCoverField('uwReason', this.value)">
+          ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${c.uwReason === o ? 'selected' : ''}>${o}</option>`).join('')}
+        </select>
+      </div>
+    </div>` : ''}`;
+}
+
+function toggleUwValuationOverride(checked) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  c.uwOverrideValuation = !!checked;
+  ensureInsuredItems(c).forEach(it => { it.uwOverrideValuation = !!checked; });
+  const list = ensureUwOverrides(c);
+  const valRow = list.find(r => r.id === 'valuation');
+  if (valRow) valRow.enabled = !!checked;
+  persistAndRefreshCover();
+  renderCoverList();
 }
 
 function buildDeductibleSection(c, ro) {
@@ -3812,50 +3735,25 @@ function buildDeductibleSection(c, ro) {
             )
       }
 
-      <div class="form-grid-2">
+      
 
-        <div class="form-group">
-          <label class="form-label">Waiting Period</label>
-
-          <select
-            class="form-control"
-            ${roDis}
-            onchange="${patch('waitingPeriod')}"
-          >
-            ${WAITING_PERIODS.map(o =>
-              `<option ${c.waitingPeriod === o ? 'selected' : ''}>
-                ${htmlEsc(o)}
-              </option>`
-            ).join('')}
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Co-pay (%)</label>
-
-          <input
-            type="text"
-            class="form-control"
-            data-validation-field="copay"
-
-            value="${htmlEsc(c.copay)}"
-            ${roAttr}
-            oninput="currentCover().copay=this.value.replace(/[^0-9.]/g,'')"
-          >
-        </div>
-
-      </div>
+    ${uwValuationOverrideToggleHtml(c, ro)}
 
     </div>`;
 }
 function buildInsuredItemsSection(c, ro) {
   ensureInsuredItems(c);
-  const items = c.insuredItems;
+  // Keep the default/base insured item visible as the parent.
+  // Additional insured items are rendered as explicit child coverage classes.
+  const parentItem = c.insuredItems[0];
+  const childItems = c.insuredItems.slice(1);
   return `
       <div class="ii-info-callout">
         <div class="ii-info-callout-body">Valuation and limit are separate. Valuation determines how the loss value is calculated. Limit determines the maximum amount payable.</div>
       </div>
-      ${items.map((it, i) => buildInsuredItemCard(it, i, ro, c)).join('')}
+      ${parentItem ? buildInsuredItemCard(parentItem, 0, ro, c) : ''}
+      ${childItems.map((it, i) => buildInsuredItemCard(it, i + 1, ro, c)).join('')}
+      ${!childItems.length ? `<div style="padding:14px 0;font-size:12px;color:var(--color-muted)">No child coverage class added.</div>` : ''}
       ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm ii-add-item" onclick="addInsuredItem()">+ Add child class</button>`}`;
 }
 
@@ -3920,7 +3818,7 @@ function buildSubLimitsSection(c, ro) {
 }
 
 function buildFinancialTerms(c, ro) {
-  return buildInsuredItemsSection(c, ro) + buildDeductibleSection(c, ro) + buildSubLimitsSection(c, ro);
+  return buildInsuredItemsSection(c, ro) + buildDeductibleSection(c, ro);
 }
 
 function normalizeCover(cover, index) {
@@ -3980,7 +3878,9 @@ function normalizeCover(cover, index) {
 }
 
 function applyProductCovers(covers) {
-  const list = (Array.isArray(covers) ? covers : []).map((c, i) => normalizeCover(c, i));
+  const list = (Array.isArray(covers) ? covers : [])
+    .map((c, i) => normalizeCover(c, i))
+    .filter(c => !/goods in transit/i.test(c.name || ''));
   COVERS.splice(0, COVERS.length, ...list);
   if (COVERS.length && !COVERS.some(c => c.id === activeCoverId)) activeCoverId = COVERS[0].id;
   if (!COVERS.length) activeCoverId = '';
@@ -4231,7 +4131,7 @@ function catalogCoversForPicker() {
       });
     });
   });
-  return lib.concat(fromProducts).filter(isCommercialTruckingCover);
+  return lib.concat(fromProducts).filter(c => !/goods in transit/i.test(c.name || '')).filter(isCommercialTruckingCover);
 }
 
 function coverFromCatalogItem(lib) {
@@ -4314,10 +4214,6 @@ function importCoverageLibrarySelection() {
 window.importCoverageLibrarySelection = importCoverageLibrarySelection;
 
 function defaultCoversCatalogForProduct() {
-  const product = PS.prototypeApp?.productById?.(productId);
-  if (PS.isTruckingProduct?.(product) || String(product?.family || product?.productType || '') === 'Commercial Auto') {
-    return TRUCKING_DEFAULT_COVER_CATALOG.map(c => Object.assign({ source: 'library' }, c));
-  }
   return catalogCoversForPicker();
 }
 
@@ -4965,7 +4861,7 @@ function selectedChildCoverages(c) {
   const allowed = TRUCKING_INSURED_ITEM_TYPES_BY_COVERAGE[String(c?.name || '').trim()] || [];
   if (!allowed.length) return [];
 
-  const items = Array.isArray(c?.insuredItems) ? c.insuredItems : [];
+  const items = Array.isArray(c?.insuredItems) ? c.insuredItems.slice(1) : [];
   const selected = [];
 
   items.forEach(item => {
@@ -5028,12 +4924,16 @@ function removeSelectedChildCoverage(event, coverId, childName) {
   }
 }
 
+function coverPickerActive() {
+  return !COVERS.length || (studioMode === 'hub' && productNeedsCoverSelection());
+}
+
 function renderCoverList() {
   const list = document.getElementById('cover-list');
   if (!list) return;
   refreshCoverMeta();
   renderCoverAboutCard();
-  if (!COVERS.length) {
+  if (coverPickerActive()) {
     if (productNeedsCoverSelection()) {
       const catalog = defaultCoversCatalogForProduct();
       ensurePickCoverSelection(catalog);
@@ -5227,8 +5127,6 @@ function coverNameCounts() {
 function confirmRemoveCover(id) {
   const c = COVERS.find(x => x.id === id);
   if (!c || !coversCanEdit()) return;
-  const dupNote = coverNameInUse(c.name, c.id) ? ' This duplicate name will also be cleared.' : '';
-  if (!window.confirm(`Remove "${c.name}" from this product?${dupNote}`)) return;
   removeCoverFromProduct(id);
 }
 
@@ -5275,7 +5173,7 @@ function renderCoverTable() {
   const end = Math.min(coverPage * coverPageSize, total);
   const pageRows = rows.slice((coverPage - 1) * coverPageSize, coverPage * coverPageSize);
 
-  if (!COVERS.length) {
+  if (coverPickerActive()) {
     wrap.innerHTML = renderExistingCoverPicker();
     const hubTitle = document.getElementById('covers-hub-title');
     const hubSub = document.querySelector('#covers-hub .card-subtitle');
@@ -5531,6 +5429,7 @@ function renderDetailPanel(c) {
           ${PS.admin.fieldHtml(f, c[f.id], ro, `patchCoverField('${f.id}', this.value)`)}
         </div>`).join('')}
       </div>
+      ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override cities/counties', 'Allows the underwriter to change the selected cities or counties for this cover at quote time.')}
     `)}
 
   
@@ -5538,11 +5437,7 @@ function renderDetailPanel(c) {
 
     ${buildSection('deductible', '4', 'Deductible & Co-pay', formatDeductibleSummary(c), buildDeductibleSection(c, ro))}
 
-    ${buildSection('sublimits', '5', 'Sub-limits', c.subLimits.length ? `${c.subLimits.length} configured` : 'Optional', buildSubLimitsSection(c, ro))}
-
-    ${buildUwOverrideSection(c, ro)}
-
-    ${buildSection('dependencies', '7', 'Dependencies',
+    ${buildSection('dependencies', '6', 'Dependencies',
       c.dependencies.length ? `${c.dependencies.length} rule${c.dependencies.length>1?'s':''} configured` : 'Optional',
       `
       <div class="dep-hero">
@@ -5654,7 +5549,7 @@ function renderDetailPanel(c) {
       </div>
     `)}
 
-    ${buildSection('claims', '8', 'Claims Behaviour', `${c.lossBasis} · ${c.benefitBasis}`, `
+    ${buildSection('claims', '7', 'Claims Behaviour', `${c.lossBasis} · ${c.benefitBasis}`, `
       <div class="form-grid-2">
         ${F('Loss Basis', c.lossBasis, false, 'select', LOSS_BASIS)}
         ${F('Reinstatement', c.reinstatement, false, 'select', REINSTATEMENT)}
@@ -5674,9 +5569,10 @@ function renderDetailPanel(c) {
           <span class="form-help">Auto-linked from Deductible & Co-pay</span>
         </div>
       </div>
+      ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override claims behavior', 'Allows the underwriter to change the claims behaviour for this cover at quote time.')}
     `)}
 
-    ${buildSection('wording', '9', 'Wording Reference', `${c.wordingDocs.length} document${c.wordingDocs.length!==1?'s':''} linked`, `
+    ${buildSection('wording', '8', 'Wording Reference', `${c.wordingDocs.length} document${c.wordingDocs.length!==1?'s':''} linked`, `
       ${c.wordingDocs.length ? c.wordingDocs.map(d => `
       <div class="doc-row">
         <svg class="doc-row-icon" width="18" height="18" viewBox="0 0 256 256" fill="none"><path d="M213.66 82.34l-56-56A8 8 0 00152 24H56a16 16 0 00-16 16v176a16 16 0 0016 16h144a16 16 0 0016-16V88a8 8 0 00-2.34-5.66zM160 51.31L188.69 80H160zM200 216H56V40h88v48a8 8 0 008 8h48v120z" fill="currentColor"/></svg>

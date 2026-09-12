@@ -2590,13 +2590,23 @@ function coverValidationIssues(cover) {
         COVERS.push(cover);
         activeCoverId = id;
         persistCollection('covers', COVERS);
-        if (typeof openCoverEditor === 'function') openCoverEditor(id);
-        else {
-          if (typeof renderCoverTable === 'function') renderCoverTable();
-          if (typeof renderCoverList === 'function') renderCoverList();
-          if (typeof loadCover === 'function') loadCover(id);
+        const fromPicker = typeof studioMode !== 'undefined' && studioMode === 'hub' &&
+          typeof pickCoverSelectedIds !== 'undefined' &&
+          typeof paintStudio === 'function';
+        if (fromPicker) {
+          pickCoverSelectedIds.add(String(id));
+          paintStudio();
+        } else {
+          if (typeof openCoverEditor === 'function') openCoverEditor(id);
+          else {
+            if (typeof renderCoverTable === 'function') renderCoverTable();
+            if (typeof renderCoverList === 'function') renderCoverList();
+            if (typeof loadCover === 'function') loadCover(id);
+          }
         }
-        showResult('Cover added', `${name} now appears in this product's cover table and is ready to configure.`);
+        showResult('Cover added', fromPicker
+          ? `${name} is selected in the list — tick any other covers, then click "Add selected to product".`
+          : `${name} now appears in this product's cover table and is ready to configure.`);
       } catch (error) {
         try { PS.closeModal(); } catch (_) {}
         showResult('Cover not added', error.message || 'Could not add this cover.', { type:'error' });

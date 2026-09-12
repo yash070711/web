@@ -198,63 +198,6 @@
         "claimsNotifUnit": "days"
       },
       {
-        "id": "COV-CT-004",
-        "name": "Goods in Transit",
-        "code": "COV-GIT-001",
-        "availability": "default",
-        "complete": true,
-        "type": "First Party — Cargo",
-        "description": "Covers loss or damage to lawful cargo carried on the insured truck, including loading and unloading at declared locations.",
-        "basisOfCoverage": "Declared Value",
-        "sumInsured": "250000",
-        "deductibleType": "percentage",
-        "deductiblePct": "1",
-        "coverVersion": "2026.08",
-        "maxSingleLimit": "250000",
-        "defaultSelected": true,
-        "conditionalOn": "Own Damage — Truck & Chassis",
-        "requiresCover": "Own Damage — Truck & Chassis",
-        "dependencies": [
-          {
-            "type": "Requires",
-            "dependsOn": "Own Damage — Truck & Chassis",
-            "condition": "Always"
-          }
-        ],
-        "constraints": [
-          {
-            "field": "Goods Class",
-            "operator": "not in",
-            "value": "Class 1 explosives, radioactive"
-          },
-          {
-            "field": "Radius of Operation",
-            "operator": "≤",
-            "value": "1,500 km"
-          }
-        ],
-        "wordingDocs": [
-          {
-            "name": "Goods in Transit Clause",
-            "version": "v2026.08",
-            "code": "DOC-GIT-001"
-          }
-        ],
-        "mutualExclusions": [],
-        "subLimit": "",
-        "deductibleAmount": "",
-        "minDeductible": "",
-        "maxDeductible": "",
-        "copay": "0",
-        "waitingPeriod": "None",
-        "annualAggregate": false,
-        "lossBasis": "Per Occurrence",
-        "reinstatement": "Automatic (full limit)",
-        "benefitBasis": "Indemnity",
-        "claimsNotifPeriod": "14",
-        "claimsNotifUnit": "days"
-      },
-      {
         "id": "COV-CT-005",
         "name": "Trailer & Semi-Trailer",
         "code": "COV-TRL-001",
@@ -1180,31 +1123,6 @@
         "effectiveTo": "31-Jul-2027"
       },
       {
-        "id": "ELG-CT-005",
-        "name": "Hazardous Goods Refer",
-        "field": "goods_class",
-        "operator": "in",
-        "value": "Class 1 explosives, radioactive",
-        "outcome": "refer",
-        "outcomeType": "refer",
-        "category": "Cover Eligibility",
-        "cover": "Goods in Transit",
-        "priority": 25,
-        "status": "active",
-        "description": "Class 1 explosives and radioactive cargo are referred to specialist underwriting.",
-        "customerMsg": "Hazardous cargo of this class needs a specialist review before we can quote.",
-        "reasonCode": "ELIG-CT-HAZMAT",
-        "conditions": [
-          {
-            "field": "goods_class",
-            "op": "in",
-            "value": "Class 1 explosives, radioactive"
-          }
-        ],
-        "effectiveFrom": "01-Aug-2026",
-        "effectiveTo": "31-Jul-2027"
-      },
-      {
         "id": "ELG-CT-006",
         "name": "Tracking Device for Theft Cover",
         "field": "tracking_fitted",
@@ -1761,43 +1679,6 @@
         "icon": "📄",
         "identity": {
           "type": "Core",
-          "format": "PDF",
-          "lang": "English",
-          "jur": "—",
-          "author": "—"
-        },
-        "trigger": {
-          "when": "Policy Issued",
-          "auto": true,
-          "del": "Email",
-          "copies": "1",
-          "reGen": "No"
-        },
-        "cond": {
-          "always": true,
-          "logic": []
-        },
-        "vars": [],
-        "comp": {
-          "req": false,
-          "rev": "—",
-          "d": "—",
-          "notes": "",
-          "legal": false,
-          "ref": "—"
-        },
-        "covers": []
-      },
-      {
-        "id": "DOC-CT-END-001",
-        "name": "Goods in Transit Endorsement",
-        "type": "Endorsement",
-        "version": "2026.08",
-        "status": "approved",
-        "ver": "v2026.08",
-        "icon": "📄",
-        "identity": {
-          "type": "Endorsement",
           "format": "PDF",
           "lang": "English",
           "jur": "—",
