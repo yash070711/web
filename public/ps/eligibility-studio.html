@@ -1,0 +1,3391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eligibility Studio — Insurance Product Studio</title>
+  <meta name="description" content="Define eligibility conditions for insurance products — determine when a product or cover can be offered to a risk.">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studio-hub.css">
+  <style>
+    /* Editor two-panel layout — used only in the rule editor state */
+    .studio-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--space-4);
+      align-items: start;
+    }
+    .elig-main-page { min-width: 0; }
+    @media (max-width: 1100px) {
+      .studio-layout { grid-template-columns: 1fr; }
+      .studio-layout .rule-sidebar { position: relative; top: auto; }
+    }
+    .elig-avail-wrap { overflow-x: auto; }
+    .elig-linked-card {
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4);
+      overflow: visible;
+    }
+    .elig-linked-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 20px; font-size:13px; }
+    .elig-linked-grid .k { font-size:11px; color:var(--color-muted); text-transform:uppercase; letter-spacing:.4px; }
+    .elig-linked-grid .v { font-weight:600; margin-top:2px; }
+    @media (max-width: 900px) { .elig-linked-grid { grid-template-columns:1fr 1fr; } }
+
+    /* ── Rule list sidebar ─────────────────────── */
+    .rule-sidebar { position: sticky; top: calc(56px + var(--space-6)); }
+    .rule-list { display: flex; flex-direction: column; gap: 4px; padding: var(--space-2); max-height: calc(100vh - 220px); overflow-y: auto; }
+    .rule-section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; color: var(--color-muted);
+      padding: var(--space-3) var(--space-3) var(--space-2);
+    }
+    .rule-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md); cursor: pointer;
+      border: 1px solid transparent;
+      transition: background .12s, border-color .12s;
+    }
+    .rule-item:hover { background: var(--color-surface); border-color: var(--color-border); }
+    .rule-item.active {
+      background: var(--color-brand-light);
+      border-color: rgba(214, 158, 46, .35);
+      box-shadow: inset 3px 0 0 var(--color-brand);
+    }
+    .rule-status-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+    }
+    .rule-status-dot.active { background: var(--color-success); box-shadow: 0 0 0 3px rgba(74,222,128,.18); }
+    .rule-status-dot.warning { background: var(--color-warning); box-shadow: 0 0 0 3px rgba(245,158,11,.18); }
+    .rule-status-dot.inactive { background: var(--color-disabled); }
+    .rule-item-body { flex: 1; min-width: 0; }
+    .rule-item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .rule-item-name { font-size: 13px; font-weight: 500; color: var(--color-ink); line-height: 1.3; }
+    .rule-item.active .rule-item-name { color: var(--color-brand); font-weight: 600; }
+    .rule-priority {
+      flex-shrink: 0; font-size: 9px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+      padding: 2px 6px; border-radius: 4px;
+      background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-muted);
+    }
+    .rule-item.active .rule-priority { background: rgba(214,158,46,.12); border-color: rgba(214,158,46,.25); color: var(--color-brand); }
+    .rule-item-id {
+      font-size: 10px; font-family: 'IBM Plex Mono', monospace;
+      color: var(--color-muted); margin-top: 3px;
+    }
+    .rule-item-cond {
+      font-size: 11px; color: var(--color-muted); margin-top: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .rule-item-meta {
+      font-size: 10px; color: var(--color-muted); margin-top: 5px;
+      display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    }
+    .rule-cover-badge {
+      display: inline-flex; height: 18px; padding: 0 7px;
+      border-radius: 100px; font-size: 9px; font-weight: 600;
+      align-items: center;
+      background: rgba(124,58,237,.14); color: #C4B5FD; border: 1px solid rgba(124,58,237,.25);
+    }
+    .rule-outcome-badge {
+      display: inline-flex; height: 18px; padding: 0 7px;
+      border-radius: 100px; font-size: 9px; font-weight: 600; align-items: center;
+      background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-muted);
+    }
+    .rule-outcome-badge.hard { background: rgba(248,113,113,.12); border-color: rgba(248,113,113,.25); color: #FCA5A5; }
+    .rule-outcome-badge.soft { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.25); color: #FCD34D; }
+    .rule-add-btn {
+      width: calc(100% - var(--space-4)); display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+      padding: 9px var(--space-3); font-size: 12px; font-weight: 500; color: var(--color-muted);
+      border: 1px dashed var(--color-border); border-radius: var(--radius-md);
+      background: none; cursor: pointer; margin: var(--space-2); transition: all .12s;
+    }
+    .rule-add-btn:hover { border-color: var(--color-brand); color: var(--color-brand); background: var(--color-brand-light); }
+    .rule-sidebar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-4) var(--space-4) var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .rule-sidebar-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .55px; color: var(--color-muted);
+    }
+    .rule-sidebar-count { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+
+    /* ── Section card ──────────────────────────── */
+    .section-card { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .section-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); cursor: pointer; user-select: none; transition: background .1s; }
+    .section-header:hover { background: var(--color-surface); }
+    .section-header-left { display: flex; align-items: center; gap: var(--space-3); }
+    .section-number { width: 24px; height: 24px; border-radius: 50%; background: var(--color-brand-light); color: var(--color-brand); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .section-title { font-size: 14px; font-weight: 600; }
+    .section-subtitle { font-size: 12px; color: var(--color-muted); margin-top: 1px; }
+    .section-chevron { color: var(--color-muted); transition: transform .2s; }
+    .section-chevron.open { transform: rotate(90deg); }
+    .section-body { border-top: 1px solid var(--color-border); max-height: 0; overflow: hidden; }
+    .section-body.open { max-height: none; overflow: visible; }
+    .section-inner { padding: var(--space-5) var(--space-6); }
+
+    /* ── Form helpers ──────────────────────────── */
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-6); }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4); }
+    .span-2 { grid-column: 1 / -1; }
+
+    /* ── Toggle ────────────────────────────────── */
+    .toggle-wrap { display: flex; align-items: center; gap: var(--space-3); font-size: 13px; }
+    .toggle-switch { position: relative; width: 40px; height: 22px; display: inline-block; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; border-radius: 11px; cursor: pointer; transition: .2s; }
+    .toggle-on  .toggle-slider { background: var(--color-brand); }
+    .toggle-off .toggle-slider { background: var(--color-disabled); }
+    .toggle-dot { position: absolute; top: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: .2s; }
+    .toggle-on  .toggle-dot { left: calc(100% - 20px); }
+    .toggle-off .toggle-dot { left: 2px; }
+
+    /* ── Condition builder ─────────────────────── */
+
+    /* Condition Builder UI refinement */
+    .condition-builder {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .condition-builder .cb-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: #fbf9f5;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .condition-builder .cb-logic {
+      display: inline-flex;
+      border: 1px solid var(--color-border);
+      border-radius: 5px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .condition-builder .cb-logic-btn {
+      min-width: 42px;
+      height: 26px;
+      padding: 0 10px;
+      border: 0;
+      background: #fff;
+      color: var(--color-ink);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .condition-builder .cb-logic-btn + .cb-logic-btn {
+      border-left: 1px solid var(--color-border);
+    }
+
+    .condition-builder .cb-logic-btn.active {
+      background: #fff1d2;
+      color: #a86600;
+    }
+
+    .condition-builder .cb-when {
+      padding: 12px 16px 6px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 700;
+      color: var(--color-muted);
+    }
+
+    .condition-builder .cb-row {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.6fr) 130px minmax(180px, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid var(--color-border);
+      background: #fff;
+    }
+
+    .condition-builder .cb-row > .form-control,
+    .condition-builder .cb-row .cb-value,
+    .condition-builder .cb-row .cb-value > .form-control {
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .condition-builder .cb-row .cb-remove {
+      white-space: nowrap;
+    }
+
+    .condition-builder .cb-connector {
+      width: max-content;
+      margin: 0 0 0 16px;
+      padding: 5px 9px;
+      border-radius: 6px;
+      background: #fbf6eb;
+      color: var(--color-muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .condition-builder .cb-actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 12px 16px;
+      background: #fbf9f5;
+    }
+
+    .condition-builder .cb-actions .btn {
+      border-color: var(--color-border);
+      background: #fff;
+    }
+
+    .condition-builder .cb-empty {
+      padding: 18px 16px;
+      text-align: center;
+      color: var(--color-muted);
+      font-size: 13px;
+    }
+
+    .condition-builder + .compiled-expression,
+    .compiled-expression {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--color-ink);
+    }
+
+    .compiled-expression .compiled-title {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: var(--color-muted);
+    }
+
+    @media (max-width: 800px) {
+      .condition-builder .cb-row {
+        grid-template-columns: 1fr;
+      }
+
+      .condition-builder .cb-row .cb-remove {
+        justify-self: start;
+      }
+
+      .condition-builder .cb-actions {
+        flex-wrap: wrap;
+      }
+    }
+
+    .condition-builder { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+    .cb-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+    }
+    .cb-direction {
+      display: inline-flex; border-radius: var(--radius-md); overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+    .cb-dir-btn {
+      padding: 4px 12px; border: none; font-size: 11px; font-weight: 600;
+      cursor: pointer; text-transform: uppercase; letter-spacing: .3px;
+      background: var(--color-panel); color: var(--color-muted); transition: all .15s;
+    }
+    .cb-dir-btn.active { background: var(--color-brand); color: #fff; }
+    .cb-logic {
+      display: inline-flex; border-radius: var(--radius-sm); overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+    .cb-logic-btn {
+      padding: 3px 10px; border: none; font-size: 10px; font-weight: 700;
+      cursor: pointer; text-transform: uppercase; letter-spacing: .5px;
+      background: var(--color-panel); color: var(--color-muted); transition: all .15s;
+    }
+    .cb-logic-btn.active { background: var(--color-brand-light); color: var(--color-brand); }
+    .cb-row {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.6fr) 130px minmax(180px, 1fr) auto;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .cb-row .cb-value { min-width: 0; width: 100%; }
+    .cb-row .cb-value input,
+    .cb-row .cb-value select { width: 100%; box-sizing: border-box; }
+    .cb-row .cb-remove { white-space: nowrap; }
+    @media (max-width: 800px) {
+      .cb-row { grid-template-columns: 1fr; }
+      .cb-row .cb-remove { justify-self: start; }
+    }
+    .elig-about {
+      background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-sm);
+    }
+    .elig-about p { margin: 0; font-size: 13px; color: var(--color-muted); line-height: 1.5; }
+    .elig-about strong { color: var(--color-ink); }
+    .elig-flow { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:12px; }
+    .elig-flow-step { background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px; padding:8px 10px; font-size:11px; color:var(--color-ink); max-width:160px; }
+    .elig-flow-step span { display:block; font-size:10px; color:var(--color-muted); margin-top:2px; }
+    .elig-flow-arrow { color:var(--color-muted); font-size:14px; }
+    .elig-avail { background:#fff; border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-4) var(--space-5); margin-bottom:var(--space-5); box-shadow:var(--shadow-sm); }
+    .elig-avail table { width:100%; border-collapse:collapse; font-size:13px; }
+    .elig-avail th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--color-muted); padding:8px 10px; border-bottom:1px solid var(--color-border); }
+    .elig-avail td { padding:8px 10px; border-bottom:1px solid var(--color-border); vertical-align:top; }
+    .elig-avail-layout { display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:start; }
+    @media (max-width: 900px) { .elig-avail-layout { grid-template-columns:1fr; } }
+    .elig-group-nav { border:1px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; background:var(--color-surface); }
+    .elig-group-row { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; cursor:pointer; font-size:12px; border-bottom:1px solid var(--color-border); }
+    .elig-group-row:last-child { border-bottom:none; }
+    .elig-group-row:hover { background:#fff; }
+    .elig-group-row.active { background:var(--color-brand-light); color:var(--color-brand); font-weight:600; }
+    .elig-group-count { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--color-muted); }
+    .elig-attr-id { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--color-muted); margin-top:2px; }
+    .elig-attr-src { font-size:11px; color:var(--color-muted); margin-top:2px; }
+    .elig-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px; }
+    @media (max-width: 900px) { .elig-info-grid { grid-template-columns:1fr; } }
+    .cb-when {
+      padding: 10px var(--space-4) 0; font-size: 11px; font-weight: 700;
+      letter-spacing: .6px; text-transform: uppercase; color: var(--color-muted);
+    }
+    .cb-source {
+      margin: 0 var(--space-4) 12px; padding: 8px 10px;
+      background: var(--color-surface); border: 1px dashed var(--color-border);
+      border-radius: var(--radius-md); font-size: 11px; color: var(--color-muted); line-height: 1.45;
+    }
+    .cb-source strong { color: var(--color-ink); font-weight: 600; }
+    .cb-filter { display: flex; gap: 8px; align-items: center; padding: 8px var(--space-4) 0; }
+    .elig-create-mode-modal .elig-create-choice-list { display:flex; flex-direction:column; gap:10px; }
+    .elig-create-mode-modal .elig-create-choice {
+      width:100%; display:flex; align-items:flex-start; gap:12px; text-align:left;
+      padding:14px 16px; border:1px solid var(--color-border); border-radius:var(--radius-md);
+      background:var(--color-panel); cursor:pointer; transition:border-color .12s, background .12s;
+    }
+    .elig-create-mode-modal .elig-create-choice:hover { border-color:var(--color-brand); background:var(--color-brand-light); }
+    .elig-create-mode-modal .elig-create-choice-radio { font-size:20px; line-height:1; color:var(--color-brand); margin-top:1px; }
+    .elig-create-mode-modal .elig-create-choice strong { display:block; font-size:14px; color:var(--color-ink); }
+    .elig-create-mode-modal .elig-create-choice small { display:block; margin-top:4px; font-size:12px; line-height:1.45; color:var(--color-muted); }
+    .elig-create-note { margin-top:12px; padding:10px 12px; border-radius:8px; background:#FFFBEB; color:#92400E; border:1px solid #F59E0B; font-size:12px; }
+    .manual-eligibility-modal .manual-eligibility-body { max-height:70vh; overflow:auto; }
+    .manual-eligibility-modal .manual-eligibility-intro { margin:0 0 16px; font-size:13px; color:var(--color-muted); line-height:1.5; }
+    .manual-eligibility-modal .manual-elig-row { align-items:center; }
+    @media (max-width: 760px) { .manual-eligibility-modal .form-grid-2 { grid-template-columns:1fr; } .manual-eligibility-modal .outcome-type-selector { flex-direction:column; } }
+    .cb-filter input { height: 32px; font-size: 12px; flex: 1; }
+    .cb-empty-group { padding: 12px 16px; font-size: 12px; color: var(--color-muted); }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+  <main class="main-content" id="main-content">
+    <div class="page-inner">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title" id="studio-title">Eligibility Studio</h1>
+          <p class="page-subtitle" id="studio-subtitle">Loading…</p>
+        </div>
+        <div class="page-header-actions" id="product-studio-actions">
+          <a class="btn btn-ghost" id="customer-view-btn" href="product-view.html">Customer view</a>
+          <a class="btn btn-secondary" id="view-product-btn" href="product-detail.html">View Product</a>
+          <button class="btn btn-ghost" onclick="openConflictsModal()" id="elig-conflicts-btn">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M236.8 188.09L149.35 36.22a24.76 24.76 0 00-42.7 0L19.2 188.09a23.51 23.51 0 000 23.72A24.35 24.35 0 0040.55 224h174.9a24.35 24.35 0 0021.33-12.19 23.51 23.51 0 00.02-23.72zM120 144v-40a8 8 0 0116 0v40a8 8 0 01-16 0zm20 36a12 12 0 11-12-12 12 12 0 0112 12z" fill="currentColor"/></svg>
+            <span id="elig-conflicts-label">⚠ View Conflicts</span>
+          </button>
+          <button class="btn btn-secondary" onclick="openTestModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M221.69 199.77L160 96.92V40h8a8 8 0 000-16H88a8 8 0 000 16h8v56.92L34.31 199.77A16 16 0 0048 224h160a16 16 0 0013.69-24.23z" fill="currentColor"/></svg>
+            Test Eligibility
+          </button>
+          <button class="btn btn-primary" onclick="openAddRuleModal()" id="elig-create-btn">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
+             Create New Rule
+          </button>
+          <button class="btn btn-secondary" type="button" onclick="openEligibilityLibrary()">Use Existing Rule</button>
+          <button class="btn btn-secondary" type="button" onclick="goNextRatingStudio()">Next: Rating &amp; Pricing Studio</button>
+        </div>
+      </div>
+
+      <div id="studio-library-root" class="hidden"></div>
+      <div id="studio-product-workspace">
+      <div class="studio-context-bar">
+        <span id="ctx-count"></span>
+        <div style="margin-left:auto"><a id="ctx-back-link" href="product-detail.html" class="btn btn-ghost btn-sm">← Back to Product</a></div>
+      </div>
+
+      <div class="readonly-band" id="readonly-band" style="display:none">
+        <span>📌 This version is <strong>Published</strong> — all rules are read-only.</span>
+        <button class="btn btn-primary btn-sm" onclick="PS.actionResult('info','Clone','Clone this version from Product Detail to make changes.')">Clone Version to Edit</button>
+      </div>
+
+   
+        <p style="margin-top:12px">A Risk Attribute is an input. An Eligibility Rule is the decision you configure here. Marking an attribute available does not create a rule.</p>
+      </div>
+      <div id="elig-main-page" class="elig-main-page">
+        <div id="elig-available-attrs" class="elig-avail"></div>
+        <div id="studio-hub"></div>
+      </div>
+      <div id="studio-editor" class="studio-hub-editor hidden">
+        <div class="cs-back">
+          <button class="btn btn-ghost btn-sm" type="button" onclick="backToEligHub()">← Back to Eligibility Studio</button>
+        </div>
+        <div class="studio-layout">
+          <div class="rule-sidebar">
+            <div class="card">
+              <div class="card-header rule-sidebar-header">
+                <div>
+                  <div class="rule-sidebar-title">Eligibility Rules</div>
+                  <div class="rule-sidebar-count" id="rule-sidebar-count"></div>
+                </div>
+                <button class="btn btn-ghost btn-sm" type="button" onclick="openAddRuleModal()">+ Add</button>
+              </div>
+              <div class="rule-list" id="rule-list"></div>
+            </div>
+          </div>
+          <div id="detail-panel" style="display:flex;flex-direction:column;gap:var(--space-4)"></div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens.</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/trucking-questionnaire-seed.js"></script>
+<script src="assets/trucking-risk-seed.js"></script>
+<script src="assets/product-seeds.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/studio-hub.js"></script>
+<script>
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+const RULES = [];
+
+const OPERATORS = ['=','≠','<','≤','>','≥','IN','NOT IN','CONTAINS','NOT CONTAINS','IS EMPTY','IS NOT EMPTY'];
+const RISK_GROUP_ORDER = ['Operations','Fleet','Vehicle','Driver','Commodity','Safety','Loss History','Policy Administration','Claims','Renewal'];
+let eligAttrSearch = '';
+let eligAvailName = '';
+let eligAvailGroup = '';
+let eligAvailType = '';
+let eligAvailEligible = 'available';
+let pendingEligibilityRule = null;
+const ELIGIBILITY_RULE_TEMPLATE = {
+  id: 'ELG-TPL',
+  name: 'New Rule',
+  status: 'active',
+  category: 'Product Eligibility',
+  cover: 'All Covers',
+  priority: 10,
+  description: '',
+  direction: 'ineligible',
+  conditions: [{ attributeId: '', sourceQuestionId: '', field: '', op: '<', value: '', connector: 'AND' }],
+  logic: 'and',
+  outcomeType: 'hard',
+  reasonCode: 'ELIG-NEW',
+  customerMsg: 'This risk does not meet eligibility requirements for this product.',
+  internalMsg: 'Eligibility rule triggered.',
+  logAudit: true,
+  scopes: { product: 'This product', version: '—', covers: ['All Covers'], segments: ['All Segments'], channels: ['All Channels'], jurisdictions: ['All configured jurisdictions'] },
+  coverIds: [],
+  overrideEffective: false,
+  effectiveFrom: '—',
+  effectiveTo: '—'
+};
+
+function eligOperators() { return (PS.admin && PS.admin.options('eligibilityOperators')) || OPERATORS; }
+
+function productQuestionGroups() {
+  const app = PS.prototypeApp;
+  const pid = productId || app?.context?.()?.productId;
+  const ver = productVersion || app?.context?.()?.version;
+  if (!pid || !app?.getProductBundle) return [];
+  return app.getProductBundle(pid, ver).questionGroups || [];
+}
+
+function productRiskAttributes() {
+  const app = PS.prototypeApp;
+  const pid = productId || app?.context?.()?.productId;
+  const ver = productVersion || app?.context?.()?.version;
+  if (!pid || !app?.getProductBundle) return [];
+  return app.getProductBundle(pid, ver).risk || [];
+}
+
+function findQuestionById(qid) {
+  if (!qid) return null;
+  const id = String(qid);
+  for (const group of productQuestionGroups()) {
+    const q = (group.questions || []).find(item => item && String(item.id) === id);
+    if (q) return { q, group };
+  }
+  return null;
+}
+
+function questionCategoryOf(q) {
+  return String(q?.questionCategory || q?.category || 'general').toLowerCase().replace(/[^a-z]/g, '');
+}
+
+function riskDataType(attr, question) {
+  const raw = String(attr?.type || attr?.dataType || question?.type || question?.fieldType || 'text').toLowerCase();
+  if (raw.includes('multi')) return 'multi-select';
+  if (raw.includes('select') || raw.includes('dropdown')) return 'select';
+  if (raw.includes('bool') || raw.includes('yes')) return 'boolean';
+  if (raw.includes('curren') || raw.includes('money') || raw.includes('amount')) return 'currency';
+  if (raw.includes('date')) return 'date';
+  if (raw.includes('num') || raw.includes('int') || raw.includes('decim') || raw.includes('year') || raw.includes('age')) return 'number';
+  return 'text';
+}
+
+function slugField(s) {
+  return String(s || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+function compiledAttrToken(attr, question) {
+  const name = question?.label || attr?.name || attr?.label || attr?.id || '';
+  return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '') || slugField(name);
+}
+
+function riskAttributeFieldKey(risk) {
+  if (PS.prototypeApp?.riskAttributeFieldKey) return PS.prototypeApp.riskAttributeFieldKey(risk);
+  if (!risk) return '';
+  return risk.fieldKey || slugField(risk.name || risk.label || risk.id);
+}
+
+function attrMarkedForEligibility(attr) {
+  if (!attr) return false;
+  if (attr.availableForEligibility === true) return true;
+  return Array.isArray(attr.usedBy) && attr.usedBy.includes('eligibility');
+}
+
+function isAttrAvailableForNewRules(attr) {
+  if (!attr) return false;
+  if (!attrMarkedForEligibility(attr)) return false;
+  if (attr.sourceStale) return false;
+  const status = String(attr.status || 'active').toLowerCase();
+  if (status === 'inactive' || status === 'disabled') return false;
+  const found = findQuestionById(attr.questionId || attr.sourceQuestionId);
+  if (found?.q && questionCategoryOf(found.q) !== 'risk') return false;
+  return true;
+}
+
+function allRiskAttrsIndexed() {
+  return productRiskAttributes();
+}
+
+function eligibilityRiskAttributes() {
+  return allRiskAttrsIndexed().filter(isAttrAvailableForNewRules);
+}
+
+function findRiskAttr(idOrKey) {
+  if (!idOrKey) return null;
+  const key = String(idOrKey);
+  const list = allRiskAttrsIndexed();
+  return list.find(a => a.id === key || a.code === key || riskAttributeFieldKey(a) === key || compiledAttrToken(a) === key)
+    || eligibilityRiskAttributes().find(a => a.id === key);
+}
+
+function resolveConditionAttr(c) {
+  if (!c) return null;
+  return findRiskAttr(c.attributeId)
+    || findRiskAttr(c.sourceQuestionId)
+    || findRiskAttr(c.field)
+    || allRiskAttrsIndexed().find(a => (a.questionId || a.sourceQuestionId) === c.sourceQuestionId)
+    || allRiskAttrsIndexed().find(a => slugField(a.name) === slugField(c.field));
+}
+
+function conditionIsUnavailable(c) {
+  const attr = resolveConditionAttr(c);
+  if (!attr) return !!(c.attributeId || c.field);
+  const status = String(attr.status || 'active').toLowerCase();
+  if (status === 'inactive' || status === 'disabled' || attr.sourceStale) return true;
+  const found = findQuestionById(attr.questionId || attr.sourceQuestionId || c.sourceQuestionId);
+  if (found?.q && questionCategoryOf(found.q) !== 'risk') return true;
+  if (c.sourceQuestionId && !found) return true;
+  if (!attrMarkedForEligibility(attr)) return true;
+  return false;
+}
+
+function operatorsForType(type) {
+  if (type === 'number' || type === 'currency') return ['=', '≠', '>', '≥', '<', '≤', 'Between'];
+  if (type === 'date') return ['Before', 'After', 'On', 'Between'];
+  if (type === 'boolean') return ['Is True', 'Is False'];
+  if (type === 'select') return ['=', '≠', 'IN', 'NOT IN'];
+  if (type === 'multi-select') return ['Contains', 'Does Not Contain', 'Contains Any', 'Contains All'];
+  return ['=', '≠', 'Contains', 'Starts with', 'Ends with'];
+}
+
+function opNeedsValue(op) {
+  const o = String(op || '').toLowerCase();
+  return o !== 'is empty' && o !== 'is blank' && o !== 'is not empty' && o !== 'is not blank' && o !== 'is true' && o !== 'is false';
+}
+
+function opNeedsTwoValues(op) {
+  return String(op || '').toLowerCase() === 'between';
+}
+
+function normalizeOp(op) {
+  const o = String(op || '');
+  const map = {
+    '=': '=', 'equals': '=',
+    '!=': '≠', '≠': '≠', 'not equals': '≠',
+    '<': '<', 'less than': '<',
+    '<=': '≤', '≤': '≤', 'less than or equal': '≤',
+    '>': '>', 'greater than': '>',
+    '>=': '≥', '≥': '≥', 'greater than or equal': '≥',
+    'in': 'IN', 'not in': 'NOT IN',
+    'contains any': 'Contains Any', 'contains all': 'Contains All',
+    'contains': 'Contains', 'does not contain': 'Does Not Contain', 'not contains': 'Does Not Contain',
+    'is blank': 'IS EMPTY', 'is empty': 'IS EMPTY', 'is not blank': 'IS NOT EMPTY', 'is not empty': 'IS NOT EMPTY',
+    'is true': 'Is True', 'is false': 'Is False', 'is': 'Is True', 'is not': 'Is False',
+    'starts with': 'Starts with', 'ends with': 'Ends with',
+    'before': 'Before', 'after': 'After', 'on': 'On', 'before or on': 'Before or On', 'after or on': 'After or On',
+    'between': 'Between'
+  };
+  return map[o.toLowerCase()] || o;
+}
+
+function normalizeOptionList(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw.map(o => {
+      if (o && typeof o === 'object') return { value: String(o.value != null ? o.value : o.label || o), label: String(o.label || o.value || o) };
+      return { value: String(o), label: String(o) };
+    }).filter(o => o.value);
+  }
+  return String(raw).split(/[\n,;]/).map(s => s.trim()).filter(Boolean).map(s => ({ value: s, label: s }));
+}
+
+function questionOptions(attr, question) {
+  const q = question || findQuestionById(attr?.questionId || attr?.sourceQuestionId)?.q;
+  const fromAttr = normalizeOptionList(attr?.options || attr?.optionList || attr?.selectOptions || attr?.values);
+  if (fromAttr.length) return fromAttr;
+  const fromQ = normalizeOptionList(q?.options);
+  if (fromQ.length) return fromQ;
+  if (attr?.optionRisk && typeof attr.optionRisk === 'object') {
+    return Object.keys(attr.optionRisk).map(k => ({ value: k, label: k }));
+  }
+  return [];
+}
+
+function emptyCondition() {
+  return { attributeId: '', sourceQuestionId: '', field: '', op: '', value: '', value2: '', connector: 'AND' };
+}
+
+function normalizeCondition(c) {
+  const raw = c && typeof c === 'object' ? c : {};
+  const attr = resolveConditionAttr(raw);
+  const found = findQuestionById(raw.sourceQuestionId || attr?.questionId || attr?.sourceQuestionId);
+  const attributeId = raw.attributeId || attr?.id || '';
+  const sourceQuestionId = raw.sourceQuestionId || attr?.questionId || attr?.sourceQuestionId || '';
+  const field = raw.field || (attr ? riskAttributeFieldKey(attr) : '');
+  return {
+    attributeId,
+    sourceQuestionId,
+    field,
+    op: normalizeOp(raw.op || ''),
+    value: raw.value != null ? String(raw.value) : '',
+    value2: raw.value2 != null ? String(raw.value2) : '',
+    connector: raw.connector || 'AND'
+  };
+}
+
+function attrGroupLabel(a) {
+  const found = findQuestionById(a.questionId || a.sourceQuestionId);
+  return a.questionGroup || a.category || found?.group?.label || found?.group?.name || 'Other';
+}
+
+function eligGroupFilterSelectHtml() {
+  const selected = eligAttrSearch;
+  const groups = [...new Set(eligibilityRiskAttributes().map(attrGroupLabel))].sort((a, b) => {
+    const ia = RISK_GROUP_ORDER.indexOf(a);
+    const ib = RISK_GROUP_ORDER.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+  });
+  return `<select class="form-control" style="max-width:240px;height:32px" onchange="filterEligAttrSearch(this.value)" aria-label="Filter Risk Attribute group">
+    <option value="">All Groups</option>
+    ${groups.map(g => `<option value="${htmlEsc(g)}" ${String(selected).toLowerCase() === g.toLowerCase() ? 'selected' : ''}>${htmlEsc(g)}</option>`).join('')}
+  </select>`;
+}
+function groupedAttrOptionsHtml(selectedId, includeAttr, search) {
+  const available = eligibilityRiskAttributes();
+  const extra = includeAttr && !available.some(a => a.id === includeAttr.id) ? [includeAttr] : [];
+  let list = [...available, ...extra];
+  const q = String(search || eligAttrSearch || '').trim().toLowerCase();
+  if (q) {
+    list = list.filter(a => {
+      const found = findQuestionById(a.questionId || a.sourceQuestionId);
+      const name = String(found?.q?.label || a.name || a.id).toLowerCase();
+      const group = String(attrGroupLabel(a)).toLowerCase();
+      return name.includes(q) || group.includes(q) || String(a.id).toLowerCase().includes(q);
+    });
+  }
+  if (!list.length) {
+    if (q) return `<option value="">No Risk Attributes configured for ${htmlEsc(search || eligAttrSearch)}</option>`;
+    return `<option value="">Select Risk Attribute...</option>`;
+  }
+  const groups = new Map();
+  list.forEach(a => {
+    const label = attrGroupLabel(a);
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(a);
+  });
+  const ordered = [...groups.keys()].sort((a, b) => {
+    const ia = RISK_GROUP_ORDER.indexOf(a);
+    const ib = RISK_GROUP_ORDER.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+  });
+  let html = `<option value="">Select Risk Attribute...</option>`;
+  ordered.forEach(label => {
+    html += `<optgroup label="${htmlEsc(label)}">`;
+    groups.get(label).forEach(a => {
+      const found = findQuestionById(a.questionId || a.sourceQuestionId);
+      const name = found?.q?.label || a.name || a.id;
+      html += `<option value="${htmlEsc(a.id)}" ${a.id === selectedId ? 'selected' : ''}>${htmlEsc(name)}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  return html;
+}
+
+function conditionValueControl(c, i, ro) {
+  const attr = resolveConditionAttr(c);
+  const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+  const type = riskDataType(attr, found?.q);
+  const op = normalizeOp(c.op);
+  const rd = ro ? 'disabled' : '';
+  if (!opNeedsValue(op)) {
+    return `<input type="text" class="form-control cb-value" value="" disabled placeholder="Not required">`;
+  }
+  if (opNeedsTwoValues(op)) {
+    return `<span style="display:flex;gap:8px;flex:1;min-width:180px">
+      <input type="number" class="form-control" data-el-validate="cond-val-${i}" value="${htmlEsc(c.value || '')}" ${ro ? 'readonly' : ''} placeholder="From" oninput="patchRuleCondition(${i}, 'value', this.value); clearEligFieldError(this)">
+      <input type="number" class="form-control" data-el-validate="cond-val2-${i}" value="${htmlEsc(c.value2 || '')}" ${ro ? 'readonly' : ''} placeholder="To" oninput="patchRuleCondition(${i}, 'value2', this.value); clearEligFieldError(this)">
+    </span>`;
+  }
+  if (type === 'boolean') {
+    const v = String(c.value || '');
+    return `<select class="form-control cb-value" data-el-validate="cond-val-${i}" ${rd} onchange="patchRuleCondition(${i}, 'value', this.value); clearEligFieldError(this)">
+      <option value="">Select</option>
+      <option value="Yes" ${v === 'Yes' || v === 'true' || v === '1' ? 'selected' : ''}>Yes</option>
+      <option value="No" ${v === 'No' || v === 'false' || v === '0' ? 'selected' : ''}>No</option>
+    </select>`;
+  }
+  const opts = questionOptions(attr, found?.q);
+  if ((type === 'select' || type === 'multi-select' || op === 'IN' || op === 'NOT IN') && opts.length) {
+    if (op === 'IN' || op === 'NOT IN' || type === 'multi-select') {
+      const selected = String(c.value || '').split(',').map(s => s.trim()).filter(Boolean);
+      return `<select class="form-control cb-value" multiple data-el-validate="cond-val-${i}" ${rd} onchange="patchRuleCondition(${i}, 'value', Array.from(this.selectedOptions).map(o=>o.value).join(', ')); clearEligFieldError(this)">
+        ${opts.map(o => `<option value="${htmlEsc(o.value)}" ${selected.includes(o.value) || selected.includes(o.label) ? 'selected' : ''}>${htmlEsc(o.label)}</option>`).join('')}
+      </select>`;
+    }
+    return `<select class="form-control cb-value" data-el-validate="cond-val-${i}" ${rd} onchange="patchRuleCondition(${i}, 'value', this.value); clearEligFieldError(this)">
+      <option value="">Select</option>
+      ${opts.map(o => `<option value="${htmlEsc(o.value)}" ${String(c.value) === o.value || String(c.value) === o.label ? 'selected' : ''}>${htmlEsc(o.label)}</option>`).join('')}
+    </select>`;
+  }
+  if (type === 'date') {
+    return `<input type="date" class="form-control cb-value" data-el-validate="cond-val-${i}" value="${htmlEsc(c.value || '')}" ${ro ? 'readonly' : ''} oninput="patchRuleCondition(${i}, 'value', this.value); clearEligFieldError(this)">`;
+  }
+  if (type === 'number' || type === 'currency') {
+    return `<input type="number" step="${type === 'currency' ? '0.01' : 'any'}" class="form-control cb-value" data-el-validate="cond-val-${i}" value="${htmlEsc(c.value || '')}" ${ro ? 'readonly' : ''} placeholder="${type === 'currency' ? 'Enter amount' : 'Enter number'}" oninput="patchRuleCondition(${i}, 'value', this.value); clearEligFieldError(this)">`;
+  }
+  return `<input type="text" class="form-control cb-value" data-el-validate="cond-val-${i}" value="${htmlEsc(c.value || '')}" ${ro ? 'readonly' : ''} placeholder="Enter value" oninput="patchRuleCondition(${i}, 'value', this.value); clearEligFieldError(this)">`;
+}
+
+function compileConditionLine(c) {
+  const attr = resolveConditionAttr(c);
+  const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+  const token = found?.q?.label || attr?.name || c.field || '—';
+  const op = normalizeOp(c.op) || '?';
+  if (!opNeedsValue(op)) return `${token} ${op}`;
+  if (opNeedsTwoValues(op)) return `${token} Between ${c.value || '—'} and ${c.value2 || '—'}`;
+  return `${token} ${op} ${c.value || '—'}`;
+}
+
+function conditionSourceHtml(c) {
+  const attr = resolveConditionAttr(c);
+  if (!attr && !c.attributeId) return '';
+  if (conditionIsUnavailable(c) && attr) {
+    const unmarked = !attrMarkedForEligibility(attr);
+    const inactive = String(attr.status || '').toLowerCase() === 'inactive';
+    const title = unmarked ? '⚠ Attribute no longer available' : (inactive ? 'Attribute inactive' : '⚠ Risk Attribute unavailable');
+    const body = unmarked
+      ? `This rule references a Risk Attribute that is no longer available for Eligibility.`
+      : `${htmlEsc(attr.name || c.field || 'This attribute')} needs review. Select a current eligible Risk Attribute.`;
+    return `<div class="attr-warn">${title} — ${body}</div>`;
+  }
+  if (!attr) return '';
+  const found = findQuestionById(c.sourceQuestionId || attr.questionId || attr.sourceQuestionId);
+  const qid = c.sourceQuestionId || attr.questionId || attr.sourceQuestionId || '—';
+  const qlabel = found?.q?.label || attr.questionLabel || attr.name;
+  const group = attrGroupLabel(attr);
+  const type = attr.type || riskDataType(attr, found?.q);
+  return `<div class="cb-source">
+    <strong>Risk Attribute:</strong> ${htmlEsc(attr.name || attr.label || attr.id)}<br>
+    Attribute ID: ${htmlEsc(attr.id)} · Source: Questionnaire<br>
+    Linked Question: ${htmlEsc(qid)} · Question: ${htmlEsc(qlabel)}<br>
+    Data Type: ${htmlEsc(type)} · Group: ${htmlEsc(group)}
+  </div>`;
+}
+
+function riskStudioHref() {
+  return `risk-studio.html?product=${encodeURIComponent(productId || '')}&version=${encodeURIComponent(productVersion || '')}`;
+}
+
+function attrDisplayName(a) {
+  const found = findQuestionById(a.questionId || a.sourceQuestionId);
+  return found?.q?.label || a.questionLabel || a.name || a.label || a.id;
+}
+
+function attrDataTypeLabel(a) {
+  const found = findQuestionById(a.questionId || a.sourceQuestionId);
+  const t = riskDataType(a, found?.q);
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function isRiskCategoryAttr(attr) {
+  if (!attr || attr.sourceStale) return false;
+  const found = findQuestionById(attr.questionId || attr.sourceQuestionId);
+  if (found?.q) return questionCategoryOf(found.q) === 'risk';
+  return false;
+}
+
+function otherRiskAttributes() {
+  return allRiskAttrsIndexed().filter(a => isRiskCategoryAttr(a) && !attrMarkedForEligibility(a));
+}
+
+function eligNavGroups() {
+  const order = RISK_GROUP_ORDER.slice();
+  const extra = new Set();
+  allRiskAttrsIndexed().forEach(a => {
+    const g = attrGroupLabel(a);
+    if (g && !order.includes(g)) extra.add(g);
+  });
+  return order.concat([...extra]);
+}
+
+function countEligInGroup(group) {
+  const g = String(group || '').toLowerCase();
+  return eligibilityRiskAttributes().filter(a => String(attrGroupLabel(a)).toLowerCase() === g).length;
+}
+
+function selectEligAvailGroup(group) {
+  eligAvailGroup = group || '';
+  renderAvailableRiskAttributesPanel();
+}
+
+function configureRuleFromAttribute(attributeId) {
+  const id = String(attributeId || '').trim();
+  if (!id) return;
+  const attr = findRiskAttr(id);
+  if (!attr || !isAttrAvailableForNewRules(attr)) {
+    notifyElig('Not available', 'This Risk Attribute is not available for Eligibility. Enable “Available for Eligibility” in Risk Studio first.', 'error');
+    return;
+  }
+  const existing = RULES.find(r => primaryLinkedAttributeId(normalizeEligibilityRule(r)) === id);
+  if (existing) {
+    if (!rulesCanEdit()) {
+      openRuleEditor(existing.id);
+      return;
+    }
+    openRuleEditor(existing.id);
+    return;
+  }
+  if (!rulesCanEdit()) {
+    notifyElig('Read-only', 'This published version cannot be edited.', 'error');
+    return;
+  }
+  startEligibilityConfig(attr);
+}
+window.configureRuleFromAttribute = configureRuleFromAttribute;
+
+document.addEventListener('click', function (event) {
+  const hit = event.target && event.target.closest ? event.target.closest('[data-elig-configure]') : null;
+  if (!hit) return;
+  event.preventDefault();
+  event.stopPropagation();
+  configureRuleFromAttribute(hit.getAttribute('data-elig-configure'));
+});
+
+function primaryLinkedAttributeId(rule) {
+  if (!rule) return '';
+  if (rule.riskAttributeId) return rule.riskAttributeId;
+  const c = (rule.conditions || [])[0];
+  return c?.attributeId || '';
+}
+
+function currentRule() {
+  if (pendingEligibilityRule && pendingEligibilityRule.id === activeRuleId) return pendingEligibilityRule;
+  return RULES.find(r => r.id === activeRuleId) || pendingEligibilityRule;
+}
+
+function setEligHubVisible(show) {
+  document.getElementById('elig-about')?.classList.toggle('hidden', !show);
+  document.getElementById('elig-main-page')?.classList.toggle('hidden', !show);
+}
+
+function syncEligEditorQuery(ruleId, riskId) {
+  try {
+    const url = new URL(location.href);
+    if (ruleId) url.searchParams.set('rule', ruleId);
+    else url.searchParams.delete('rule');
+    if (riskId) url.searchParams.set('risk', riskId);
+    else url.searchParams.delete('risk');
+    history.replaceState({}, '', url);
+  } catch (e) {}
+}
+
+function sidebarRules() {
+  const list = RULES.slice();
+  if (pendingEligibilityRule && !list.some(r => r.id === pendingEligibilityRule.id)) {
+    list.unshift(pendingEligibilityRule);
+  }
+  return list;
+}
+
+function formatEligDate(val) {
+  const iso = isoDateValue(val);
+  if (!iso) return String(val || '—');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const [y, m, d] = iso.split('-');
+  return `${d}-${months[Number(m) - 1] || m}-${y}`;
+}
+
+function startEligibilityConfig(attr) {
+  const dates = defaultEffectiveDates();
+  const id = nextEligibilityRuleId();
+  const name = `${attrDisplayName(attr)} Eligibility`;
+  pendingEligibilityRule = normalizeEligibilityRule({
+    id,
+    name,
+    category: 'Product Eligibility',
+    cover: 'All Covers',
+    coverIds: [],
+    priority: 10,
+    status: 'active',
+    description: '',
+    riskAttributeId: attr.id,
+    source: 'Product',
+    lastUpdated: new Date().toISOString().slice(0, 10),
+    reasonCode: id.replace(/^ELG-/, 'ELG-'),
+    conditions: [conditionFromAttributeId(attr.id)],
+    outcomeType: 'refer',
+    logic: 'and',
+    logAudit: true,
+    effectiveFrom: dates.from,
+    effectiveTo: dates.to,
+    scopes: {
+      product: productName || PS.studioHub?.productName || 'This product',
+      version: productVersion ? `v${productVersion}` : '—',
+      covers: ['All Covers'],
+      segments: ['All Segments'],
+      channels: ['All Channels']
+    }
+  });
+  pendingEligibilityRule.reasonCode = id;
+  activeRuleId = id;
+  if (PS.studioHub?.setActiveId) PS.studioHub.setActiveId(id);
+  syncEligEditorQuery(id, attr.id);
+  renderRuleList();
+  enterEligibilityEditor(id);
+}
+
+function enterEligibilityEditor(id) {
+  if (id) activeRuleId = id;
+  if (PS.studioHub?.setActiveId) PS.studioHub.setActiveId(activeRuleId);
+  setEligHubVisible(false);
+  document.getElementById('studio-hub')?.classList.add('hidden');
+  document.getElementById('studio-editor')?.classList.remove('hidden');
+  if (PS.studioHub) PS.studioHub.mode = 'edit';
+  renderRuleList();
+  loadRule(activeRuleId);
+  const backBtn = document.querySelector('#studio-editor .cs-back button');
+  if (backBtn) {
+    backBtn.textContent = '← Back to Eligibility Studio';
+    backBtn.setAttribute('onclick', 'backToEligHub()');
+  }
+  document.getElementById('studio-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function backToEligHub() {
+  pendingEligibilityRule = null;
+  syncEligEditorQuery('', '');
+  setEligHubVisible(true);
+  if (PS.studioHub?.showHub) PS.studioHub.showHub();
+  renderAvailableRiskAttributesPanel();
+  PS.studioHub?.paint?.();
+}
+
+function commitPendingEligibilityRule() {
+  if (!pendingEligibilityRule) return true;
+  const attr = findRiskAttr(pendingEligibilityRule.riskAttributeId || primaryLinkedAttributeId(pendingEligibilityRule));
+  if (!attr || !isAttrAvailableForNewRules(attr)) {
+    notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Studio.', 'error');
+    return false;
+  }
+  if (!RULES.some(r => r.id === pendingEligibilityRule.id)) RULES.push(pendingEligibilityRule);
+  pendingEligibilityRule = null;
+  persistRules();
+  return true;
+}
+
+function linkedRiskAttributeCardHtml(rule) {
+  const attr = findRiskAttr(primaryLinkedAttributeId(rule));
+  if (!attr) {
+    return `<div class="attr-warn">This Risk Attribute is not available for Eligibility. Enable “Available for Eligibility” in Risk Studio first.</div>`;
+  }
+  const available = isAttrAvailableForNewRules(attr);
+  return `
+    <div class="elig-linked-card">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--color-muted);margin-bottom:10px">Linked Risk Attribute</div>
+      <p style="font-size:12px;color:var(--color-muted);margin:0 0 12px">Read-only. Name, ID, data type, and source are configured in Risk Studio.</p>
+      <div class="elig-linked-grid">
+        <div><div class="k">Risk Attribute</div><div class="v">${htmlEsc(attrDisplayName(attr)) || '—'}</div></div>
+        <div><div class="k">Attribute ID</div><div class="v" style="font-family:'IBM Plex Mono',monospace">${htmlEsc(attr.id) || '—'}</div></div>
+        <div><div class="k">Question Group</div><div class="v">${htmlEsc(attrGroupLabel(attr)) || '—'}</div></div>
+        <div><div class="k">Data Type</div><div class="v">${htmlEsc(attrDataTypeLabel(attr) || attr.type || attr.dataType || '—')}</div></div>
+        <div><div class="k">Source</div><div class="v">Questionnaire → Risk Studio</div></div>
+        <div><div class="k">Available for Eligibility</div><div class="v">${available ? 'Yes' : 'No'}</div></div>
+      </div>
+      ${available ? '' : `<div class="attr-warn" style="margin:12px 0 0">⚠ Conflict — Linked Risk Attribute is no longer available for Eligibility. <a href="${riskStudioHref()}&risk=${encodeURIComponent(attr.id)}">Resolve in Risk Studio</a></div>`}
+    </div>`;
+}
+
+function conditionFromAttributeId(attributeId) {
+  const c = emptyCondition();
+  const attr = findRiskAttr(attributeId);
+  if (!attr) return c;
+  const found = findQuestionById(attr.questionId || attr.sourceQuestionId);
+  c.attributeId = attr.id;
+  c.sourceQuestionId = attr.questionId || attr.sourceQuestionId || '';
+  c.field = riskAttributeFieldKey(attr);
+  c.op = operatorsForType(riskDataType(attr, found?.q))[0] || '';
+  return c;
+}
+function filteredAvailableRiskAttributes() {
+  const nameQ = String(eligAvailName || '').trim().toLowerCase();
+  const groupQ = String(eligAvailGroup || '').trim().toLowerCase();
+  const typeQ = String(eligAvailType || '').trim().toLowerCase();
+  return eligibilityRiskAttributes().filter(a => {
+    const name = String(attrDisplayName(a)).toLowerCase();
+    const group = String(attrGroupLabel(a)).toLowerCase();
+    const type = String(attrDataTypeLabel(a)).toLowerCase();
+    if (nameQ && !name.includes(nameQ) && !String(a.id).toLowerCase().includes(nameQ)) return false;
+    if (groupQ && group !== groupQ) return false;
+    if (typeQ && type !== typeQ) return false;
+    return true;
+  });
+}
+
+function renderAvailableRiskAttributesPanel() {
+  const host = document.getElementById('elig-available-attrs');
+  if (!host) return;
+  const all = eligibilityRiskAttributes();
+  const rows = filteredAvailableRiskAttributes();
+  const types = [...new Set(all.map(a => attrDataTypeLabel(a)))].sort();
+  const navGroups = eligNavGroups();
+  const selectedGroup = eligAvailGroup;
+  const emptyGroup = selectedGroup && countEligInGroup(selectedGroup) === 0;
+  host.innerHTML = `
+    <div style="margin-bottom:10px">
+      <div style="font-size:14px;font-weight:650">Available Risk Attributes</div>
+      <div style="font-size:12px;color:var(--color-muted);margin-top:4px">Risk Attributes available from Risk Studio for eligibility rule configuration.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <input class="form-control" style="max-width:240px;height:32px" placeholder="Search attribute..." value="${htmlEsc(eligAvailName)}" oninput="eligAvailName=this.value; renderAvailableRiskAttributesPanel()">
+      <select class="form-control" style="max-width:160px;height:32px" onchange="eligAvailType=this.value; renderAvailableRiskAttributesPanel()">
+        <option value="">All data types</option>
+        ${types.map(t => `<option value="${htmlEsc(t)}" ${eligAvailType===t?'selected':''}>${htmlEsc(t)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="elig-avail-layout">
+      <div class="elig-group-nav" aria-label="Filter by group">
+        <div class="elig-group-row ${!selectedGroup ? 'active' : ''}" onclick="selectEligAvailGroup('')">
+          <span>All Groups</span><span class="elig-group-count">${all.length}</span>
+        </div>
+        ${navGroups.map(g => {
+          const n = countEligInGroup(g);
+          return `<div class="elig-group-row ${String(selectedGroup).toLowerCase()===g.toLowerCase() ? 'active' : ''}" data-group="${htmlEsc(g)}" onclick="selectEligAvailGroup(this.dataset.group)">
+            <span>${htmlEsc(g)}</span><span class="elig-group-count">${n}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div>
+        ${!all.length ? `<div class="cb-empty-group" style="padding:16px 0">No Risk Attributes are available for Eligibility.<p style="margin-top:8px">Risk Attributes appear here only when a Risk-category Questionnaire question has been converted into a Risk Attribute and marked Available for Eligibility in Risk Studio.</p><a class="btn btn-primary btn-sm" href="${riskStudioHref()}">Go to Risk Studio</a></div>`
+          : (emptyGroup ? `<div class="cb-empty-group" style="padding:16px 0">
+              <strong>No Risk Attributes available for Eligibility in ${htmlEsc(selectedGroup)}.</strong>
+              <p style="margin-top:8px">Risk Attributes become available here when a Questionnaire question is categorized as Risk and marked Available for Eligibility in Risk Studio.</p>
+            </div>`
+          : `<div class="elig-avail-wrap"><table>
+          <thead><tr><th>Risk Attribute</th><th>Attribute ID</th><th>Question Group</th><th>Data Type</th><th>Source</th><th>Eligibility</th><th>Action</th></tr></thead>
+          <tbody>
+            ${rows.length ? rows.map(a => `<tr class="elig-attr-row" data-elig-configure="${htmlEsc(a.id)}" style="cursor:pointer">
+              <td><button type="button" class="btn btn-ghost btn-sm elig-attr-name" style="padding:0;font-weight:600" data-elig-configure="${htmlEsc(a.id)}">${htmlEsc(attrDisplayName(a))}</button></td>
+              <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${htmlEsc(a.id)}</td>
+              <td>${htmlEsc(attrGroupLabel(a))}</td>
+              <td>${htmlEsc(attrDataTypeLabel(a))}</td>
+              <td>Questionnaire → Risk Studio</td>
+              <td><span class="badge badge-published" style="font-size:10px">Available</span></td>
+              <td><button type="button" class="btn btn-primary btn-sm" data-elig-configure="${htmlEsc(a.id)}">Configure Rule</button></td>
+            </tr>`).join('') : `<tr><td colspan="7" style="color:var(--color-muted)">No attributes match this search.</td></tr>`}
+          </tbody>
+        </table></div>`)}
+      </div>
+    </div>
+  `;
+}
+
+function eligAttributes() {
+  const ids = eligibilityRiskAttributes().map(a => a.id);
+  return ids.length ? ids : [];
+}
+
+function normalizeRuleStatus(status) {
+  const s = String(status || '').toLowerCase();
+  if (s === 'inactive' || s === 'disabled' || s === 'off') return 'inactive';
+  if (s === 'warning' || s === 'conflict') return 'warning';
+  return 'active';
+}
+
+function isPlaceholderDate(val) {
+  const v = String(val || '').trim();
+  return !v || v === '—' || v === '-';
+}
+
+function isoDateValue(val) {
+  const s = String(val || '').trim();
+  if (!s || s === '—' || s === '-') return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const t = Date.parse(s.replace(/-/g, ' '));
+  if (Number.isNaN(t)) return '';
+  const d = new Date(t);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function defaultEffectiveDates() {
+  const hub = PS.studioHub;
+  const ver = hub?.productVersion || productVersion || '2026.04';
+  const y = String(ver).split('.')[0] || '2026';
+  return { from: `${y}-04-01`, to: `${y}-09-30` };
+}
+
+function seedRuleById(id) {
+  return (typeof DEFAULT_ELIGIBILITY_RULES !== 'undefined' ? DEFAULT_ELIGIBILITY_RULES : []).find(r => r.id === id);
+}
+
+function enrichRuleFromSeed(rule) {
+  const seed = seedRuleById(rule?.id);
+  const merged = seed ? Object.assign({}, seed, rule) : (rule || {});
+  const dates = defaultEffectiveDates();
+  if (isPlaceholderDate(merged.effectiveFrom)) merged.effectiveFrom = seed?.effectiveFrom || dates.from;
+  if (isPlaceholderDate(merged.effectiveTo)) merged.effectiveTo = seed?.effectiveTo || dates.to;
+  if (!Array.isArray(merged.conditions) || !merged.conditions.length) {
+    merged.conditions = (seed?.conditions || []).map(normalizeCondition);
+    if (!merged.conditions.length) merged.conditions = [emptyCondition()];
+  } else {
+    merged.conditions = merged.conditions.map(normalizeCondition);
+  }
+  if (!merged.reasonCode || merged.reasonCode === 'ELIG-NEW') merged.reasonCode = seed?.reasonCode || merged.reasonCode;
+  if (!merged.customerMsg) merged.customerMsg = seed?.customerMsg || ELIGIBILITY_RULE_TEMPLATE.customerMsg;
+  return merged;
+}
+
+function normalizeEligibilityRule(rule) {
+  const r = enrichRuleFromSeed(rule);
+  const hub = PS.studioHub;
+  const tpl = ELIGIBILITY_RULE_TEMPLATE;
+  const scopesIn = r.scopes && typeof r.scopes === 'object' ? r.scopes : {};
+  const dates = defaultEffectiveDates();
+  return Object.assign({}, tpl, r, {
+    name: r.name || r.label || tpl.name,
+    category: r.category || tpl.category,
+    status: normalizeRuleStatus(r.status),
+    cover: r.cover || tpl.cover,
+    priority: r.priority != null ? r.priority : tpl.priority,
+    description: r.description || r.desc || tpl.description,
+    direction: r.direction || tpl.direction,
+    logic: r.logic || tpl.logic,
+    conditions: Array.isArray(r.conditions) && r.conditions.length ? r.conditions.map(normalizeCondition) : [emptyCondition()],
+    outcomeType: r.outcomeType || tpl.outcomeType,
+    reasonCode: r.reasonCode || tpl.reasonCode,
+    customerMsg: r.customerMsg || tpl.customerMsg,
+    internalMsg: r.internalMsg || tpl.internalMsg,
+    logAudit: r.logAudit !== false,
+    effectiveFrom: isPlaceholderDate(r.effectiveFrom) ? dates.from : r.effectiveFrom,
+    effectiveTo: isPlaceholderDate(r.effectiveTo) ? dates.to : r.effectiveTo,
+    riskAttributeId: r.riskAttributeId || (Array.isArray(r.conditions) && r.conditions[0]?.attributeId) || '',
+    overrideEffective: !!r.overrideEffective,
+    scopes: {
+      product: scopesIn.product || hub?.productName || tpl.scopes.product,
+      version: scopesIn.version || (hub?.productVersion ? `v${hub.productVersion}` : tpl.scopes.version),
+      covers: Array.isArray(scopesIn.covers) && scopesIn.covers.length ? scopesIn.covers : tpl.scopes.covers.slice(),
+      segments: Array.isArray(scopesIn.segments) && scopesIn.segments.length ? scopesIn.segments : tpl.scopes.segments.slice(),
+      channels: Array.isArray(scopesIn.channels) && scopesIn.channels.length ? scopesIn.channels : tpl.scopes.channels.slice(),
+      jurisdictions: Array.isArray(scopesIn.jurisdictions) && scopesIn.jurisdictions.length ? scopesIn.jurisdictions : (tpl.scopes.jurisdictions || ['All configured jurisdictions']).slice()
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let activeRuleId = '';
+let openSections = new Set(['identity','condition','outcome','scope','effective','preview']);
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  PS.studioHub.mount({
+    navId: 'eligibility',
+    studioLabel: 'Eligibility Studio',
+    collection: 'eligibility',
+    apiField: 'eligibility',
+    persist: 'eligibilityRules',
+    persistTarget: () => RULES,
+    getItems: () => RULES,
+    applyItems: list => {
+      const keepPendingId = pendingEligibilityRule && pendingEligibilityRule.id;
+      const incoming = (Array.isArray(list) ? list : []).filter(r => !isLegacyPrivateCarSeed(r)).map(normalizeEligibilityRule);
+      RULES.splice(0, RULES.length, ...incoming);
+      if (keepPendingId && (activeRuleId === keepPendingId || !RULES.some(r => r.id === activeRuleId))) {
+        activeRuleId = keepPendingId;
+        return;
+      }
+      if (RULES.length && !RULES.some(r => r.id === activeRuleId)) activeRuleId = RULES[0].id;
+      if (!RULES.length && !keepPendingId) activeRuleId = '';
+    },
+    getActiveId: () => activeRuleId,
+    setActiveId: id => { activeRuleId = id; },
+    loadItem: loadRule,
+    renderSidebar: renderRuleList,
+    noun: 'rules',
+    hubTitle: 'Eligibility Rules',
+    hubSubtitle: 'Saved eligibility rules for this product. Open a rule to edit it in the Eligibility Rule Editor.',
+    addOnclick: 'openAddRuleModal()',
+    emptyHtml: eligibilityEmptyStateHtml,
+    skipProductColumn: true,
+    deepParam: 'rule',
+    searchKeys: ['name', 'id', 'category', 'cover', 'description'],
+    itemSearchText: item => {
+      const r = normalizeEligibilityRule(item);
+      const names = (r.conditions || []).map(c => {
+        const a = resolveConditionAttr(c);
+        return `${compileConditionLine(c)} ${a?.name || ''} ${c.attributeId || ''} ${c.field || ''}`;
+      }).join(' ');
+      return `${r.id} ${r.name} ${names} ${outcomeLabel(r.outcomeType)}`;
+    },
+    filters: [
+      { value: 'all', label: 'All Rules' },
+      { value: 'active', label: 'Active' },
+      { value: 'inactive', label: 'Inactive' },
+      { value: 'hard', label: 'Hard Block' },
+      { value: 'soft', label: 'Soft Warning' },
+      { value: 'refer', label: 'Refer to UW' }
+    ],
+    matchFilter: (item, filter) => {
+      const r = normalizeEligibilityRule(item);
+      if (filter === 'active') return r.status === 'active';
+      if (filter === 'inactive') return r.status === 'inactive';
+      if (filter === 'hard') return r.outcomeType === 'hard';
+      if (filter === 'soft') return r.outcomeType === 'soft';
+      if (filter === 'refer') return r.outcomeType === 'refer';
+      return true;
+    },
+    stats: items => {
+      const active = items.filter(r => normalizeEligibilityRule(r).status === 'active').length;
+      const attrs = eligibilityRiskAttributes().length;
+      const conflicts = detectConflicts().length;
+      return [`${items.length} Rules`, `${attrs} Risk Attributes Available`, `${active} Active`, `${conflicts} Conflicts`];
+    },
+    onPaint: () => { renderAvailableRiskAttributesPanel(); refreshEligibilityMeta(); },
+    isCreated: item => normalizeEligibilityRule(item).status === 'active' && !isRuleIncomplete(item),
+    statusLabel: item => {
+      if (isRuleIncomplete(item)) return 'Needs Attention';
+      return normalizeEligibilityRule(item).status === 'active' ? 'Active' : 'Inactive';
+    },
+    columns: [
+      { header: 'Rule Name', value: r => r.name, primary: true },
+      { header: 'Rule ID', value: r => r.id, mono: true },
+      { header: 'Linked Risk Attribute', value: r => {
+        const a = findRiskAttr(primaryLinkedAttributeId(r));
+        return a ? attrDisplayName(a) : '—';
+      } },
+      { header: 'Category', value: r => r.category || '—' },
+      { header: 'Outcome', value: r => outcomeLabel(r.outcomeType) },
+      { header: 'Status', kind: 'rule-status', value: r => r.status },
+      { header: 'Effective Period', value: r => `${r.effectiveFrom || '—'} — ${r.effectiveTo || '—'}` }
+    ],
+    rowMenuHtml: item => `
+      <button type="button" onclick="PS.studioHub.open('${item.id}')">Edit</button>
+      <button type="button" onclick="duplicateEligibilityRule('${item.id}')">Duplicate</button>
+      <button type="button" onclick="toggleEligibilityRuleStatus('${item.id}')">${item.status === 'active' ? 'Deactivate' : 'Activate'}</button>
+      <button type="button" onclick="PS.studioHub.remove('${item.id}')">Delete</button>`
+  });
+  const hub = PS.studioHub;
+  if (hub) {
+    const origEditor = hub.showEditor.bind(hub);
+    const origHub = hub.showHub.bind(hub);
+    hub.showEditor = function () {
+      if (pendingEligibilityRule && !activeRuleId) activeRuleId = pendingEligibilityRule.id;
+      setEligHubVisible(false);
+      origEditor();
+      const id = activeRuleId || pendingEligibilityRule?.id;
+      if (id) loadRule(id);
+      const backBtn = document.querySelector('#studio-editor .cs-back button');
+      if (backBtn) {
+        backBtn.textContent = '← Back to Eligibility Studio';
+        backBtn.setAttribute('onclick', 'backToEligHub()');
+      }
+    };
+    hub.showHub = function () {
+      setEligHubVisible(true);
+      origHub();
+      renderAvailableRiskAttributesPanel();
+    };
+  }
+  setTimeout(openEligibilityEditorOnLoad, 0);
+});
+
+const DEFAULT_ELIGIBILITY_RULES = JSON.parse(JSON.stringify(RULES));
+let productId = 'PRD-015';
+let productVersion = '2026.04';
+let productName = 'Commercial Truck Comprehensive';
+
+function htmlEsc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function syncEligProductContext() {
+  const hub = PS.studioHub;
+  if (hub?.productId) productId = hub.productId;
+  if (hub?.productVersion) productVersion = hub.productVersion;
+  if (hub?.productName) productName = hub.productName;
+}
+
+function isLegacyPrivateCarSeed(r) {
+  const blob = `${r?.scopes?.product || ''} ${r?.scopes?.segments || ''} ${r?.name || ''}`.toLowerCase();
+  return blob.includes('private car') || blob.includes('personal lines');
+}
+
+function ensureDefaultEligibilityRules() {
+  for (let i = RULES.length - 1; i >= 0; i -= 1) {
+    if (isLegacyPrivateCarSeed(RULES[i])) RULES.splice(i, 1);
+  }
+  for (let i = 0; i < RULES.length; i += 1) RULES[i] = normalizeEligibilityRule(RULES[i]);
+  const pendingId = pendingEligibilityRule?.id || '';
+  if (pendingId && activeRuleId === pendingId) return;
+  if (RULES.length && !RULES.some(r => r.id === activeRuleId)) activeRuleId = RULES[0].id;
+  if (!RULES.length && !pendingId) activeRuleId = '';
+}
+
+function rulesCanEdit() {
+  return !!(window.PS?.prototypeApp?.canEditVersion?.());
+}
+
+function persistRules() {
+  if (pendingEligibilityRule && currentRule() === pendingEligibilityRule) return;
+  RULES.forEach(r => { r.lastUpdated = r.lastUpdated || new Date().toISOString().slice(0, 10); });
+  PS.prototypeApp?.persistCollection?.('eligibilityRules', RULES);
+}
+
+function eligibilityEmptyStateHtml() {
+  const attrs = eligibilityRiskAttributes();
+  const href = riskStudioHref();
+  return `
+    <div class="cs-empty" style="text-align:left;max-width:none;padding:28px">
+      <div style="font-size:16px;font-weight:650;margin-bottom:8px;color:var(--color-ink)">No eligibility rules configured for this product.</div>
+      <div style="font-size:13px;color:var(--color-muted);margin-bottom:16px;line-height:1.5">Eligibility rules determine whether a submission can proceed, requires a warning, or must be referred to an underwriter. They are not created automatically when a Risk Attribute becomes available.</div>
+      ${attrs.length
+        ? `<div style="font-size:13px;margin-bottom:14px">${attrs.length} Risk Attributes are currently available. Use Configure Rule on an attribute to create a decision.</div>`
+        : `<div class="attr-warn" style="margin:0 0 16px">No Risk Attributes are available for Eligibility. Risk Attributes appear here only when a Risk-category Questionnaire question has been converted into a Risk Attribute and marked Available for Eligibility in Risk Studio. <a class="btn btn-primary btn-sm" href="${href}">Go to Risk Studio</a></div>`}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" type="button" onclick="openAddRuleModal()">+ Create New Rule</button>
+        <button class="btn btn-secondary" type="button" onclick="openEligibilityLibrary()">Use Existing Rule</button>
+      </div>
+    </div>`;
+}
+
+function openEligibilityLibrary() {
+  if (PS.studioHub?.openCatalogModal) PS.studioHub.openCatalogModal();
+}
+
+function matchLibraryRuleToRiskAttr(lib) {
+  const needle = slugField(lib?.name || '');
+  const attr = eligibilityRiskAttributes().find(a => {
+    const n = slugField(a.name);
+    return n && (needle.includes(n) || n.includes(needle.replace(/^minimum_|^maximum_/, '')));
+  });
+  if (!attr) return null;
+  return {
+    attributeId: attr.id,
+    sourceQuestionId: attr.questionId || attr.sourceQuestionId || '',
+    field: riskAttributeFieldKey(attr),
+    op: operatorsForType(riskDataType(attr))[0] || '',
+    value: '',
+    value2: '',
+    connector: 'AND'
+  };
+}
+function canImportEligibilityLibraryItem(lib) {
+  return !!matchLibraryRuleToRiskAttr(lib);
+}
+window.canImportEligibilityLibraryItem = canImportEligibilityLibraryItem;
+
+function duplicateEligibilityRule(id) {
+  const src = RULES.find(r => r.id === id);
+  if (!src) return;
+  const copy = normalizeEligibilityRule(JSON.parse(JSON.stringify(src)));
+  copy.id = nextEligibilityRuleId();
+  copy.name = `${src.name} (copy)`;
+  copy.lastUpdated = new Date().toISOString().slice(0, 10);
+  RULES.push(copy);
+  persistRules();
+  PS.studioHub?.paint?.();
+  PS.studioHub?.open?.(copy.id);
+}
+
+function toggleEligibilityRuleStatus(id) {
+  const rule = RULES.find(r => r.id === id);
+  if (!rule) return;
+  rule.status = rule.status === 'active' ? 'inactive' : 'active';
+  rule.lastUpdated = new Date().toISOString().slice(0, 10);
+  persistRules();
+  PS.studioHub?.paint?.();
+}
+
+function isRuleIncomplete(r) {
+  const rule = normalizeEligibilityRule(r);
+  if (!String(rule.name || '').trim() || !String(rule.category || '').trim()) return true;
+  if (!Number.isFinite(Number(rule.priority)) || Number(rule.priority) <= 0) return true;
+  if (!rule.outcomeType) return true;
+  if (!String(rule.reasonCode || '').trim()) return true;
+  if (!String(rule.internalMsg || '').trim()) return true;
+  if ((rule.outcomeType === 'hard' || rule.outcomeType === 'soft') && !String(rule.customerMsg || '').trim()) return true;
+  const conditions = rule.conditions || [];
+  if (!conditions.length) return true;
+  return conditions.some(c => {
+    if (!c.attributeId && !c.field) return true;
+    if (conditionIsUnavailable(c)) return true;
+    if (!c.op) return true;
+    if (opNeedsValue(c.op) && String(c.value || '').trim() === '') return true;
+    if (opNeedsTwoValues(c.op) && String(c.value2 || '').trim() === '') return true;
+    return false;
+  });
+}
+
+function conditionSignature(c) {
+  const n = normalizeCondition(c);
+  return [n.attributeId || n.field, normalizeOp(n.op), String(n.value || '').trim()].join('|');
+}
+
+function detectConflicts() {
+  const out = [];
+  RULES.map(normalizeEligibilityRule).forEach(r => {
+    (r.conditions || []).forEach(c => {
+      if (conditionIsUnavailable(c)) {
+        const attr = resolveConditionAttr(c);
+        out.push({
+          label: `Linked Risk Attribute is no longer available for Eligibility${attr ? ': ' + (attr.name || attr.id) : ''}`,
+          rules: [r.id],
+          type: 'Conflict',
+          severity: 'Warning'
+        });
+      }
+    });
+  });
+  const active = RULES.map(normalizeEligibilityRule).filter(r => r.status === 'active');
+  const seenDup = new Set();
+  active.forEach((a, i) => {
+    active.forEach((b, j) => {
+      if (j <= i) return;
+      const sameScope = String(a.cover || '') === String(b.cover || '') && String(a.category || '') === String(b.category || '');
+      if (!sameScope) return;
+      const sigA = (a.conditions || []).map(conditionSignature).sort().join('&&');
+      const sigB = (b.conditions || []).map(conditionSignature).sort().join('&&');
+      if (sigA && sigA === sigB) {
+        const key = [a.id, b.id].sort().join(':');
+        if (!seenDup.has(key)) {
+          seenDup.add(key);
+          const conflictOutcome = a.outcomeType !== b.outcomeType;
+          out.push({
+            label: conflictOutcome
+              ? `Conflict: ${a.name} and ${b.name} use the same conditions with different outcomes (${outcomeLabel(a.outcomeType)} vs ${outcomeLabel(b.outcomeType)})`
+              : `Duplicate conditions: ${a.name} / ${b.name}`,
+            rules: [a.id, b.id],
+            type: conflictOutcome ? 'Conflict' : 'Duplicate',
+            severity: conflictOutcome ? 'Warning' : 'Warning'
+          });
+        }
+      }
+      if (a.outcomeType !== 'hard' || b.outcomeType !== 'hard') return;
+      (a.conditions || []).forEach(ca => {
+        (b.conditions || []).forEach(cb => {
+          const ida = ca.attributeId || ca.field;
+          const idb = cb.attributeId || cb.field;
+          if (!ida || ida !== idb) return;
+          const oa = normalizeOp(ca.op);
+          const ob = normalizeOp(cb.op);
+          const na = Number(ca.value);
+          const nb = Number(cb.value);
+          if (Number.isNaN(na) || Number.isNaN(nb)) return;
+          const pair = ['<', '≤', 'Less Than', 'Less Than or Equal'].includes(oa) && ['<', '≤', 'Less Than', 'Less Than or Equal'].includes(ob) && na !== nb;
+          const pair2 = ['>', '≥', 'Greater Than', 'Greater Than or Equal'].includes(oa) && ['>', '≥', 'Greater Than', 'Greater Than or Equal'].includes(ob) && na !== nb;
+          const opposite = ((['≥', '>', '=', 'Greater Than', 'Greater Than or Equal', 'Equals'].includes(oa) && ['<', '≤', 'Less Than', 'Less Than or Equal'].includes(ob)) || (['≥', '>', '=', 'Greater Than', 'Greater Than or Equal', 'Equals'].includes(ob) && ['<', '≤', 'Less Than', 'Less Than or Equal'].includes(oa)));
+          if (pair || pair2 || opposite) {
+            out.push({
+              label: `${a.name} and ${b.name} both hard-block overlapping thresholds on the same Risk Attribute`,
+              rules: [a.id, b.id],
+              type: 'Overlapping threshold',
+              severity: 'Warning'
+            });
+          }
+        });
+      });
+    });
+  });
+  return out;
+}
+
+function eligibilityStudioCompletion() {
+  if (!RULES.length) return { pct: 0, complete: 0, total: 1 };
+  const active = RULES.filter(r => normalizeRuleStatus(r.status) === 'active');
+  const set = active.length ? active : RULES;
+  const valid = set.filter(r => !isRuleIncomplete(r)).length;
+  const total = set.length;
+  return { pct: Math.round((valid / total) * 100), complete: valid, total };
+}
+window.eligibilityStudioCompletion = eligibilityStudioCompletion;
+
+function refreshEligibilityMeta() {
+  syncEligProductContext();
+  const productLevel = RULES.filter(r => r.category === 'Product Eligibility').length;
+  const conflicts = detectConflicts().length;
+  const titleEl = document.getElementById('studio-title');
+  if (titleEl) titleEl.textContent = `Eligibility Studio — ${productName} v${productVersion}`;
+  const subtitle = document.getElementById('studio-subtitle');
+  if (subtitle) {
+    subtitle.textContent = 'Create and manage eligibility rules using Risk Attributes from Risk Studio.';
+  }
+  const ctx = document.getElementById('ctx-count');
+  if (ctx) {
+    const attrs = eligibilityRiskAttributes().length;
+    ctx.innerHTML = `
+      <span class="studio-context-pill">${htmlEsc(productId)} · v${htmlEsc(productVersion)}</span>
+      <span class="cs-stat">${RULES.length} Rules</span>
+      <span class="cs-stat">${attrs} Risk Attributes Available</span>
+      <span class="cs-stat">${RULES.filter(r => r.status === 'active').length} Active</span>
+      <span class="cs-stat">${conflicts} Conflicts</span>`;
+  }
+  const clabel = document.getElementById('elig-conflicts-label');
+  if (clabel) clabel.textContent = conflicts ? `⚠ View Conflicts (${conflicts})` : '⚠ View Conflicts';
+  PS.prototypeApp?.refreshStudioNav?.();
+  const createBtn = document.getElementById('elig-create-btn');
+  if (createBtn) {
+    createBtn.disabled = !rulesCanEdit();
+    createBtn.title = rulesCanEdit() ? 'Create an eligibility rule in this studio' : 'This published version cannot be edited.';
+  }
+  const editorOpen = document.getElementById('studio-editor') && !document.getElementById('studio-editor').classList.contains('hidden');
+  if (!editorOpen) renderAvailableRiskAttributesPanel();
+}
+
+function productCoverVersionCandidates() {
+  const app = window.PS?.prototypeApp;
+  const ctx = app?.context?.() || {};
+  const product = app?.productById?.(productId || ctx.productId);
+  const strip = v => String(v || '').replace(/^v/i, '').trim();
+  return [...new Set([productVersion, ctx.version, product?.version, strip(productVersion), 'active'].filter(Boolean))];
+}
+
+function productCovers() {
+  syncEligProductContext();
+  const app = window.PS?.prototypeApp;
+  const pid = productId;
+  const byKey = new Map();
+  const addList = (list) => {
+    (Array.isArray(list) ? list : []).forEach(c => {
+      if (!c || typeof c !== 'object') return;
+      const id = String(c.id || '').trim();
+      const key = id || c.code || c.name;
+      if (!key || byKey.has(key)) return;
+      byKey.set(key, c);
+    });
+  };
+  const collections = app?.state?.collections || {};
+  if (pid) {
+    Object.keys(collections).forEach(k => {
+      if (k.startsWith(`${pid}::`) && k.endsWith('::covers')) addList(collections[k]);
+    });
+  }
+  productCoverVersionCandidates().forEach(ver => addList(app?.getProductBundle?.(pid, ver)?.covers));
+  if (!byKey.size) return [];
+  return Array.from(byKey.values());
+}
+
+function coverDdSummary(covers, selected) {
+  const picked = covers.filter(c => selected.includes(c.id) || selected.includes(c.code) || selected.includes(c.name));
+  if (!picked.length) return 'All covers (product-level)';
+  if (picked.length === 1) return picked[0].name || picked[0].code;
+  return `${picked.length} covers selected`;
+}
+
+function coverChecksHtml(selectedIds, opts) {
+  const covers = productCovers();
+  const selected = Array.isArray(selectedIds) ? selectedIds : [];
+  const ro = !!(opts && opts.readonly);
+  const cls = (opts && opts.inputClass) || 'el-cover-cb';
+  const onchange = (opts && opts.onchange) || '';
+  const ddId = (opts && opts.ddId) || 'el-cover-dd';
+  if (!covers.length) {
+    const href = `coverage-studio.html?product=${encodeURIComponent(productId)}&version=${encodeURIComponent(productVersion)}`;
+    return `<p style="font-size:13px;color:var(--color-muted);margin:0">No covers on this product yet. <a href="${href}">Add them in Coverage Studio</a>, then link this rule.</p>`;
+  }
+  return `<div class="cover-dd" id="${ddId}">
+    <button type="button" class="form-control cover-dd-btn" ${ro ? 'disabled' : ''} onclick="toggleCoverDd(event, '${ddId}')" aria-haspopup="listbox">
+      <span class="cover-dd-label" id="${ddId}-label">${htmlEsc(coverDdSummary(covers, selected))}</span>
+      <span class="caret">▾</span>
+    </button>
+    <div class="cover-dd-menu" role="listbox">
+      ${covers.length > 6 ? `<div class="cover-dd-search"><input type="search" class="form-control" placeholder="Search covers…" oninput="filterCoverDdOpts('${ddId}', this.value)"></div>` : ''}
+      ${covers.map(c => {
+        const id = c.id || c.code || '';
+        const label = c.name || c.code || id;
+        const checked = selected.includes(id) || selected.includes(c.code) || selected.includes(c.name);
+        const extra = onchange ? `onchange="${onchange}; syncCoverDdLabel('${ddId}', '${cls}')"` : `onchange="syncCoverDdLabel('${ddId}', '${cls}')"`;
+        return `<label class="cover-dd-opt" data-cover="${htmlEsc(String(label).toLowerCase())}">
+          <input type="checkbox" class="${cls}" value="${htmlEsc(id)}" ${checked ? 'checked' : ''} ${ro ? 'disabled' : ''} ${extra}>
+          <span>${htmlEsc(label)}</span>
+          <span class="code">${htmlEsc(c.code || '')}</span>
+        </label>`;
+      }).join('')}
+    </div>
+    <p style="font-size:12px;color:var(--color-muted);margin:8px 0 0">${selected.length ? `${selected.length} cover${selected.length === 1 ? '' : 's'} linked` : 'Leave unselected for all covers'}</p>
+  </div>`;
+}
+
+function toggleCoverDd(event, id) {
+  event.stopPropagation();
+  const dd = document.getElementById(id);
+  if (!dd || dd.querySelector('.cover-dd-btn')?.disabled) return;
+  document.querySelectorAll('.cover-dd.open').forEach(el => { if (el !== dd) el.classList.remove('open'); });
+  dd.classList.toggle('open');
+}
+
+function filterCoverDdOpts(ddId, query) {
+  const q = String(query || '').toLowerCase();
+  document.querySelectorAll(`#${ddId} .cover-dd-opt`).forEach(opt => {
+    opt.style.display = !q || (opt.getAttribute('data-cover') || '').includes(q) ? '' : 'none';
+  });
+}
+
+function syncCoverDdLabel(ddId, cls) {
+  const covers = productCovers();
+  const selected = Array.from(document.querySelectorAll(`.${cls}:checked`)).map(cb => cb.value);
+  const label = document.getElementById(`${ddId}-label`);
+  if (label) label.textContent = coverDdSummary(covers, selected);
+}
+
+function patchRuleCover(coverId, on) {
+  if (!rulesCanEdit()) return;
+  const rule = currentRule();
+  if (!rule) return;
+  if (!Array.isArray(rule.coverIds)) rule.coverIds = [];
+  if (on) { if (!rule.coverIds.includes(coverId)) rule.coverIds.push(coverId); }
+  else rule.coverIds = rule.coverIds.filter(id => id !== coverId);
+  const covers = productCovers();
+  const picked = covers.filter(c => rule.coverIds.includes(c.id) || rule.coverIds.includes(c.code));
+  rule.cover = picked.length === 1 ? (picked[0].name || picked[0].code) : (picked.length ? `${picked.length} covers` : 'All Covers');
+  if (rule.scopes) rule.scopes.covers = picked.length ? picked.map(c => c.name || c.code) : ['All Covers'];
+  persistRules();
+  syncCoverDdLabel('el-cover-dd', 'el-cover-cb');
+}
+
+function patchRuleScopes(key, rawValue) {
+  if (!rulesCanEdit()) return;
+  const rule = currentRule();
+  if (!rule) return;
+  const normalized = normalizeEligibilityRule(rule);
+  rule.scopes = Object.assign({}, normalized.scopes, {
+    [key]: String(rawValue || '').split(',').map(s => s.trim()).filter(Boolean)
+  });
+  persistRules();
+  renderRuleList();
+}
+
+function patchRule(key, value, opts) {
+  if (!rulesCanEdit()) return;
+  const rule = currentRule();
+  if (!rule) return;
+  rule[key] = value;
+  if (key === 'category' && value === 'Cover Eligibility' && rule.cover === 'All Covers') rule.cover = productCovers()[0]?.name || 'Own Damage';
+  persistRules();
+  if (opts && opts.light) { renderRuleList(); refreshEligibilityMeta(); return; }
+  loadRule(activeRuleId);
+}
+
+function patchRuleCondition(i, key, value) {
+  if (!rulesCanEdit()) return;
+  const rule = currentRule();
+  if (!rule || !rule.conditions[i]) return;
+  rule.conditions[i][key] = value;
+  persistRules();
+  if (key !== 'value') loadRule(activeRuleId);
+}
+
+function patchRuleConditionAttr(i, attributeId) {
+  if (!rulesCanEdit()) return;
+  const rule = currentRule();
+  if (!rule || !rule.conditions[i]) return;
+  if (i === 0 && primaryLinkedAttributeId(rule)) return;
+  const attr = findRiskAttr(attributeId);
+  const found = findQuestionById(attr?.questionId || attr?.sourceQuestionId);
+  const type = riskDataType(attr, found?.q);
+  const ops = operatorsForType(type);
+  rule.conditions[i].attributeId = attributeId;
+  rule.conditions[i].sourceQuestionId = attr?.questionId || attr?.sourceQuestionId || '';
+  rule.conditions[i].field = attr ? riskAttributeFieldKey(attr) : '';
+  rule.conditions[i].op = ops[0] || '';
+  rule.conditions[i].value = '';
+  rule.conditions[i].value2 = '';
+  persistRules();
+  loadRule(activeRuleId);
+}
+
+
+function eligibilityConditionRowHtml(c, i, lockedId, ro, dis) {
+  const attr = resolveConditionAttr(c) || (i === 0 ? findRiskAttr(lockedId) : null);
+  const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+  const type = riskDataType(attr, found?.q);
+  const ops = operatorsForType(type);
+  const op = normalizeOp(c.op);
+  const opList = op && !ops.includes(op) ? [op, ...ops] : ops;
+  const lockFirst = i === 0 && !!lockedId;
+  const unavailable = conditionIsUnavailable(c);
+
+  return `
+    ${i > 0 ? `<div class="cb-connector">${htmlEsc((c.connector || 'AND').toUpperCase())}</div>` : ''}
+
+    ${unavailable && attr
+      ? `<div class="attr-warn">
+          ⚠ Linked Risk Attribute is no longer available for Eligibility.
+          <a href="${riskStudioHref()}&risk=${encodeURIComponent(attr.id || '')}">
+            Resolve in Risk Studio
+          </a>
+        </div>`
+      : ''}
+
+    <div class="cb-row" data-condition-index="${i}">
+
+      ${
+        lockFirst
+          ? `<input
+               type="text"
+               class="form-control cs-readonly-field"
+               data-el-validate="cond-attr-${i}"
+               value="${htmlEsc(attrDisplayName(attr || {}) || '')}"
+               readonly>`
+          : `<select
+               class="form-control"
+               data-el-validate="cond-attr-${i}"
+               ${dis}
+               onchange="
+                 patchRuleConditionAttr(${i}, this.value);
+                 clearEligFieldError(this);
+               "
+             >
+               ${groupedAttrOptionsHtml(c.attributeId || attr?.id || '', attr, '')}
+             </select>`
+      }
+
+      <select
+        class="form-control"
+        data-el-validate="cond-op-${i}"
+        ${dis}
+        onchange="
+          patchRuleCondition(${i}, 'op', this.value);
+          clearEligFieldError(this);
+        "
+      >
+        <option value="">Select operator</option>
+        ${opList.map(o => `
+          <option
+            value="${htmlEsc(o)}"
+            ${normalizeOp(o) === op ? 'selected' : ''}
+          >
+            ${htmlEsc(o)}
+          </option>
+        `).join('')}
+      </select>
+
+      <div class="cb-value">
+        ${conditionValueControl(c, i, ro)}
+      </div>
+
+      ${
+        ro || lockFirst
+          ? ''
+          : `<button
+               type="button"
+               class="btn btn-ghost btn-sm cb-remove"
+               onclick="removeRuleCondition(${i})"
+             >
+               Remove
+             </button>`
+      }
+
+    </div>
+  `;
+}
+
+
+function addRuleCondition(connector) {
+  if (!rulesCanEdit()) return;
+
+  const rule = currentRule();
+  if (!rule) return;
+
+  if (!Array.isArray(rule.conditions)) {
+    rule.conditions = [];
+  }
+
+  const linkedId = primaryLinkedAttributeId(rule);
+
+  // Keep the first linked condition tied to the Risk Attribute.
+  // Every additional condition starts empty and must be configured
+  // through the same Risk Attribute / Operator / Value controls.
+  const condition =
+    rule.conditions.length === 0 && linkedId
+      ? conditionFromAttributeId(linkedId)
+      : emptyCondition();
+
+  condition.connector = connector === 'OR' ? 'OR' : 'AND';
+  rule.conditions.push(condition);
+
+  persistRules();
+  loadRule(activeRuleId);
+}
+
+function addRuleConditionGroup() {
+  if (!rulesCanEdit()) return;
+
+  const rule = currentRule();
+  if (!rule) return;
+
+  if (!Array.isArray(rule.conditions)) {
+    rule.conditions = [];
+  }
+
+  const condition = emptyCondition();
+  condition.connector = 'OR';
+
+  rule.conditions.push(condition);
+
+  persistRules();
+  loadRule(activeRuleId);
+}
+
+
+function removeRuleCondition(i) {
+  if (!rulesCanEdit()) return;
+  const rule = currentRule();
+  if (!rule) return;
+  if ((rule.conditions || []).length <= 1) {
+    notifyElig('Cannot remove', 'At least one condition is required.', 'error');
+    return;
+  }
+  rule.conditions.splice(i, 1);
+  persistRules();
+  loadRule(activeRuleId);
+}
+
+function setRuleDirection(dir) {
+  patchRule('direction', dir, { light: false });
+}
+
+function setRuleLogic(logic) {
+  patchRule('logic', logic, { light: false });
+}
+
+function setOutcomeType(type) {
+  patchRule('outcomeType', type, { light: false });
+}
+
+function toggleRuleStatus(on) {
+  patchRule('status', on ? 'active' : 'inactive', { light: false });
+}
+
+function openRuleEditor(id) {
+  if (typeof PS !== 'undefined' && PS.closeModal) PS.closeModal();
+  if (id) activeRuleId = id;
+  const rule = currentRule() || RULES.find(r => r.id === id);
+  syncEligEditorQuery(id, primaryLinkedAttributeId(rule || {}));
+  enterEligibilityEditor(id);
+}
+
+function openEligibilityEditorOnLoad() {
+  ensureDefaultEligibilityRules();
+  refreshEligibilityMeta();
+
+  const params = new URLSearchParams(location.search);
+  const deep = params.get('rule');
+  const risk = params.get('risk');
+
+  // Only open the editor when the URL explicitly asks for a rule
+  // or a Risk Attribute configuration. Normal studio entry opens
+  // directly on the Eligibility Studio hub with all rules visible.
+  if (deep && (RULES.some(r => r.id === deep) || (pendingEligibilityRule && pendingEligibilityRule.id === deep)) && PS.studioHub) {
+    PS.studioHub.open(deep);
+    return;
+  }
+
+  if (risk) {
+    configureRuleFromAttribute(risk);
+    return;
+  }
+
+  // Default landing view: Eligibility Studio hub.
+  activeRuleId = '';
+  setEligHubVisible(true);
+  document.getElementById('studio-hub')?.classList.remove('hidden');
+  document.getElementById('studio-editor')?.classList.add('hidden');
+  if (PS.studioHub) {
+    PS.studioHub.mode = 'hub';
+    PS.studioHub.showHub?.();
+  }
+  renderAvailableRiskAttributesPanel();
+  refreshEligibilityMeta();
+}
+
+document.addEventListener('click', () => document.querySelectorAll('.cover-dd.open').forEach(el => el.classList.remove('open')));
+
+/* ═══════════════════════════════════════════════
+   RULE LIST
+═══════════════════════════════════════════════ */
+function ruleListCondLine(r) {
+  const rule = normalizeEligibilityRule(r);
+  const logic = String(rule.logic || 'and').toUpperCase();
+  const cond = (rule.conditions || []).map(compileConditionLine).join(` ${logic} `);
+  if (!cond) return 'No conditions configured';
+  const outcome = outcomeLabel(rule.outcomeType);
+  return `${cond} · ${outcome}`;
+}
+
+function ruleStatusDotClass(r) {
+  if (isRuleIncomplete(r)) return 'warning';
+  if (r.status === 'inactive') return 'inactive';
+  return 'active';
+}
+
+function renderRuleList() {
+  const list = document.getElementById('rule-list');
+  if (!list) return;
+  ensureDefaultEligibilityRules();
+  refreshEligibilityMeta();
+  const all = sidebarRules().map(normalizeEligibilityRule);
+  const productRules = all.filter(r => r.category === 'Product Eligibility');
+  const coverRules   = all.filter(r => r.category === 'Cover Eligibility');
+  const variantRules = all.filter(r => r.category === 'Variant Eligibility' || r.category === 'Renewal Eligibility');
+
+  const listHTML = (rules) => rules.map(r => {
+    const rule = normalizeEligibilityRule(r);
+    const dotCls = ruleStatusDotClass(rule);
+    const outcomeCls = rule.outcomeType === 'hard' ? 'hard' : (rule.outcomeType === 'soft' ? 'soft' : '');
+    const unsaved = pendingEligibilityRule && pendingEligibilityRule.id === rule.id && !RULES.some(x => x.id === rule.id);
+    return `
+    <div class="rule-item ${rule.id===activeRuleId?'active':''}" onclick="openRuleEditor('${rule.id}')" id="rule-item-${rule.id}">
+      <span class="rule-status-dot ${dotCls}" title="${dotCls === 'active' ? 'Active' : dotCls === 'warning' ? 'Needs Attention' : 'Inactive'}"></span>
+      <div class="rule-item-body">
+        <div class="rule-item-top">
+          <div class="rule-item-name">${htmlEsc(rule.name)}${unsaved ? ' <span style="font-size:10px;color:var(--color-brand)">(unsaved)</span>' : ''}</div>
+          <span class="rule-priority">P${htmlEsc(rule.priority)}</span>
+        </div>
+        <div class="rule-item-id">${htmlEsc(rule.id)}</div>
+        <div class="rule-item-cond" title="${htmlEsc(ruleListCondLine(rule))}">${htmlEsc(ruleListCondLine(rule))}</div>
+        <div class="rule-item-meta">
+          <span>${htmlEsc(formatEligDate(rule.effectiveFrom))} — ${htmlEsc(formatEligDate(rule.effectiveTo))}</span>
+          ${rule.cover && rule.cover !== 'All Covers' ? `<span class="rule-cover-badge">${htmlEsc(rule.cover)}</span>` : ''}
+          <span class="rule-outcome-badge ${outcomeCls}">${htmlEsc(outcomeLabel(rule.outcomeType))}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.innerHTML = `
+    <div class="rule-section-label">Product Eligibility</div>
+    ${productRules.length ? listHTML(productRules) : `<div style="padding:12px 14px;font-size:12px;color:var(--color-muted)">No product-level rules yet.</div>`}
+    <div class="rule-section-label" style="margin-top:var(--space-2)">Cover Eligibility</div>
+    ${coverRules.length ? listHTML(coverRules) : `<div style="padding:12px 14px;font-size:12px;color:var(--color-muted)">No cover-level rules yet.</div>`}
+    <div class="rule-section-label" style="margin-top:var(--space-2)">Renewal Eligibility</div>
+    ${variantRules.length ? listHTML(variantRules) : `<div style="padding:12px 14px;font-size:12px;color:var(--color-muted)">No renewal-level rules yet.</div>`}
+    <button class="rule-add-btn" type="button" onclick="openAddRuleModal()">
+      <svg width="12" height="12" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
+      Add eligibility rule
+    </button>
+  `;
+  const countEl = document.getElementById('rule-sidebar-count');
+  if (countEl) countEl.textContent = `${all.length} rule${all.length === 1 ? '' : 's'} · ${productRules.length} product · ${coverRules.length} cover`;
+}
+
+/* ═══════════════════════════════════════════════
+   LOAD RULE
+═══════════════════════════════════════════════ */
+function loadRule(id) {
+  if (id) activeRuleId = id;
+  if (!activeRuleId && pendingEligibilityRule) activeRuleId = pendingEligibilityRule.id;
+  document.querySelectorAll('.rule-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`rule-item-${activeRuleId}`)?.classList.add('active');
+  const rule = currentRule() || RULES.find(r => r.id === activeRuleId);
+  if (!rule) return;
+  const normalized = normalizeEligibilityRule(rule);
+  if (pendingEligibilityRule && pendingEligibilityRule.id === activeRuleId) {
+    pendingEligibilityRule = normalized;
+  } else {
+    const idx = RULES.findIndex(r => r.id === activeRuleId);
+    if (idx >= 0) RULES[idx] = normalized;
+  }
+  renderDetailPanel(normalized);
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER DETAIL PANEL
+═══════════════════════════════════════════════ */
+function applyCoverChoice(sel) {
+  const v = sel.value;
+  const rule = currentRule();
+  if (!rule) return;
+  if (!v || v === 'ALL') {
+    rule.cover = 'All Covers';
+    rule.coverIds = [];
+  } else {
+    const c = productCovers().find(x => String(x.id) === String(v) || x.code === v || x.name === v);
+    rule.cover = c?.name || c?.code || v;
+    rule.coverIds = c?.id ? [c.id] : [v];
+  }
+  persistRules();
+  loadRule(activeRuleId);
+}
+
+function coverSelectHtml(rule, dis) {
+  const covers = productCovers();
+  const selectedId = (rule.coverIds && rule.coverIds[0]) || '';
+  const opts = [`<option value="ALL" ${!selectedId && (!rule.cover || rule.cover === 'All Covers') ? 'selected' : ''}>All Covers</option>`]
+    .concat(covers.map(c => {
+      const sel = String(selectedId) === String(c.id) || rule.cover === c.name || rule.cover === c.code;
+      return `<option value="${htmlEsc(c.id)}" ${sel ? 'selected' : ''}>${htmlEsc(c.name || c.code)}</option>`;
+    }));
+  return `<select class="form-control" id="el-rule-cover" data-el-validate="cover" ${dis} onchange="applyCoverChoice(this)">${opts.join('')}</select>`;
+}
+
+function renderDetailPanel(r) {
+  const panel = document.getElementById('detail-panel');
+  if (!panel) return;
+  try {
+  const ro = !rulesCanEdit();
+  r = normalizeEligibilityRule(r);
+  if (!Array.isArray(r.coverIds)) r.coverIds = [];
+  const logic = String(r.logic || 'and');
+  const conditions = Array.isArray(r.conditions) ? r.conditions : [];
+  const scopes = r.scopes || ELIGIBILITY_RULE_TEMPLATE.scopes;
+  const dis = ro ? 'disabled' : '';
+  const rd = ro ? 'readonly' : '';
+  const catOpts = ['Product Eligibility', 'Cover Eligibility', 'Variant Eligibility'];
+
+  const linkedAttr = findRiskAttr(primaryLinkedAttributeId(r));
+  const lockedId = primaryLinkedAttributeId(r);
+
+  panel.innerHTML = `
+    <div style="margin-bottom:var(--space-4)">
+      <h2 style="font-size:18px;font-weight:700;margin:0">${htmlEsc(linkedAttr ? attrDisplayName(linkedAttr) : r.name)}</h2>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--color-muted);margin-top:4px">${htmlEsc(r.id)}</div>
+      <p style="font-size:13px;color:var(--color-muted);margin:8px 0 0">Create and configure eligibility rule using this risk attribute.</p>
+      <span class="badge badge-${r.status==='active'?'published':'draft'}" style="font-size:10px;margin-top:8px;display:inline-flex">● ${r.status==='active'?'Active':'Inactive'}</span>
+      ${isRuleIncomplete(r) ? `<div class="attr-warn" style="margin:12px 0 0">Needs Attention — complete the rule or restore the linked Risk Attribute in Risk Studio.</div>` : ''}
+    </div>
+    ${linkedRiskAttributeCardHtml(r)}
+
+    ${buildSection('identity','1','Rule Identity',`${htmlEsc(r.category)} · Priority ${r.priority}`, `
+      <div class="form-grid-2">
+        ${rf('Rule ID', `<input type="text" class="form-control cs-readonly-field" value="${htmlEsc(r.id)}" readonly style="font-family:'IBM Plex Mono',monospace;font-size:13px">`)}
+        ${rf('Rule Name *', `<input type="text" class="form-control" id="el-rule-name" data-el-validate="name" value="${htmlEsc(r.name)}" ${rd} oninput="patchRule('name', this.value, {light:true}); clearEligFieldError(this)" onblur="patchRule('name', this.value)">`)}
+        ${rf('Rule Category *', `<select class="form-control" id="el-rule-category" data-el-validate="category" ${dis} onchange="patchRule('category', this.value); clearEligFieldError(this)">${catOpts.map(o => `<option ${r.category===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}</select>`)}
+        ${rf('Priority *', `<input type="number" min="1" class="form-control" id="el-rule-priority" data-el-validate="priority" value="${htmlEsc(r.priority)}" ${rd} oninput="patchRule('priority', this.value, {light:true}); clearEligFieldError(this)">`)}
+        ${rf('Applicable Cover', coverSelectHtml(r, dis))}
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <div class="toggle-wrap">
+            <label class="toggle-switch ${r.status==='active'?'toggle-on':'toggle-off'}">
+              <input type="checkbox" ${r.status==='active'?'checked':''} ${dis} onchange="toggleRuleStatus(this.checked)" aria-label="Rule active">
+              <div class="toggle-slider"></div><div class="toggle-dot"></div>
+            </label>
+            <span>${r.status==='active'?'Active':'Inactive'}</span>
+          </div>
+        </div>
+        ${rf('Description', `<textarea class="form-control" rows="3" ${rd} oninput="patchRule('description', this.value, {light:true})">${htmlEsc(r.description || '')}</textarea>`, true)}
+        ${rf('Linked Coverages', coverChecksHtml(r.coverIds, { readonly: ro, inputClass: 'el-cover-cb', ddId: 'el-cover-dd', onchange: "patchRuleCover(this.value, this.checked)" }), true)}
+      </div>
+    `)}
+
+    ${buildSection('condition','2','Condition Builder',formatConditionSummary(r), `
+      <p style="font-size:12px;color:var(--color-muted);margin:0 0 12px">
+        Define the condition for eligibility using the selected Risk Attribute.
+      </p>
+      <div class="condition-builder">
+        <div class="cb-header">
+          <div class="cb-logic">
+            <button type="button" class="cb-logic-btn ${logic === 'and' ? 'active' : ''}" ${dis}
+              onclick="setRuleLogic('and')">ALL</button>
+            <button type="button" class="cb-logic-btn ${logic === 'or' ? 'active' : ''}" ${dis}
+              onclick="setRuleLogic('or')">ANY</button>
+          </div>
+        </div>
+
+        ${!eligibilityRiskAttributes().length
+          ? `<div class="attr-warn">No Risk Attributes are marked Available for Eligibility yet.</div>`
+          : ''}
+
+        <div class="cb-when">IF</div>
+
+        <div id="eligibility-condition-rows">
+          ${
+            conditions.length
+              ? conditions.map((c, i) => eligibilityConditionRowHtml(c, i, lockedId, ro, dis)).join('')
+              : `<div class="cb-empty">No conditions configured. Add at least one condition.</div>`
+          }
+        </div>
+
+        <div class="cb-actions">
+          ${
+            ro
+              ? ''
+              : `<button type="button" class="btn btn-ghost btn-sm"
+                   onclick="addRuleCondition('AND')">+ Add Condition</button>
+                 <button type="button" class="btn btn-ghost btn-sm"
+                   onclick="addRuleConditionGroup()">+ Add OR Group</button>`
+          }
+          <span style="font-size:12px;color:var(--color-muted);align-self:center">
+            ${logic === 'or' ? 'ANY (OR)' : 'ALL (AND)'} — conditions use eligible Risk Attributes only.
+          </span>
+        </div>
+      </div>
+
+      <div class="compiled-expression">
+        <span class="compiled-title">Compiled expression:</span>
+        <div>IF</div>
+        ${
+          conditions.length
+            ? conditions.map((c, i) => `
+                ${i ? `<div style="font-weight:700;color:var(--color-muted);margin:2px 0">
+                  ${(c.connector || logic).toUpperCase()}
+                </div>` : ''}
+                <div style="padding-left:12px">${htmlEsc(compileConditionLine(c))}</div>
+              `).join('')
+            : `<div style="color:var(--color-muted)">No condition configured.</div>`
+        }
+        <div style="margin-top:6px;font-weight:700">
+          THEN ${htmlEsc(r.direction === 'eligible' ? 'Eligible' : outcomeLabel(r.outcomeType))}
+        </div>
+      </div>
+    `)}
+
+    ${buildSection('outcome','3','Outcome Configuration', outcomeLabel(r.outcomeType), `
+      <div class="outcome-type-selector">
+        <div class="outcome-card ${r.outcomeType==='hard'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('hard')"`} style="cursor:${ro?'default':'pointer'}">
+          <div class="outcome-card-icon">🛑</div>
+          <div class="outcome-card-label">Hard Block</div>
+          <div class="outcome-card-desc">No quotation permitted</div>
+        </div>
+        <div class="outcome-card ${r.outcomeType==='soft'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('soft')"`} style="cursor:${ro?'default':'pointer'}">
+          <div class="outcome-card-icon">⚠️</div>
+          <div class="outcome-card-label">Soft Warning</div>
+          <div class="outcome-card-desc">Quote proceeds with warning</div>
+        </div>
+        <div class="outcome-card ${r.outcomeType==='refer'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('refer')"`} style="cursor:${ro?'default':'pointer'}">
+          <div class="outcome-card-icon">👤</div>
+          <div class="outcome-card-label">Refer to UW</div>
+          <div class="outcome-card-desc">Routes to underwriter queue</div>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Log to Audit</label>
+          <div class="toggle-wrap">
+            <label class="toggle-switch ${r.logAudit?'toggle-on':'toggle-off'}">
+              <input type="checkbox" ${r.logAudit?'checked':''} ${dis} onchange="patchRule('logAudit', this.checked, {light:true})" aria-label="Log to audit">
+              <div class="toggle-slider"></div><div class="toggle-dot"></div>
+            </label>
+            <span>${r.logAudit?'Yes':'No'}</span>
+          </div>
+        </div>
+        ${rf('Customer-facing Message', `<textarea class="form-control" id="el-customer-msg" data-el-validate="customer" rows="3" ${rd} oninput="patchRule('customerMsg', this.value, {light:true}); clearEligFieldError(this)">${htmlEsc(r.customerMsg || '')}</textarea>`, true)}
+        ${rf('Internal Message', `<textarea class="form-control" id="el-internal-msg" data-el-validate="internal" rows="2" ${rd} oninput="patchRule('internalMsg', this.value, {light:true}); clearEligFieldError(this)">${htmlEsc(r.internalMsg || '')}</textarea>`, true)}
+      </div>
+    `)}
+
+    
+    ${buildSection('effective','5','Effective Dates', `${r.effectiveFrom} — ${r.effectiveTo}`, `
+      <div class="form-grid-2">
+        ${rf('Effective From *', `<input type="date" class="form-control" id="el-effective-from" data-el-validate="from" value="${htmlEsc(isoDateValue(r.effectiveFrom))}" ${rd} oninput="patchRule('effectiveFrom', this.value, {light:true}); clearEligFieldError(this)">`)}
+        ${rf('Effective To *', `<input type="date" class="form-control" id="el-effective-to" data-el-validate="to" value="${htmlEsc(isoDateValue(r.effectiveTo))}" ${rd} oninput="patchRule('effectiveTo', this.value, {light:true}); clearEligFieldError(this)">`)}
+      </div>
+      <div style="margin-top:var(--space-3)">
+        <div class="toggle-wrap">
+          <label class="toggle-switch ${r.overrideEffective ? 'toggle-on' : 'toggle-off'}">
+            <input type="checkbox" ${r.overrideEffective ? 'checked' : ''} ${dis} onchange="patchRule('overrideEffective', this.checked, {light:true})" aria-label="Override effective period">
+            <div class="toggle-slider"></div><div class="toggle-dot"></div>
+          </label>
+          <span style="font-size:13px;color:var(--color-muted)">Override effective period (use dates different from the product version)</span>
+        </div>
+      </div>
+      <div class="callout callout-info" style="margin-top:var(--space-4)">
+        <div class="callout-body" style="font-size:12px">These dates inherit from the product version effective period. Toggle the override to set a narrower window.</div>
+      </div>
+    `)}
+
+    ${buildSection('preview','6','Rule Preview','Live summary of the complete rule', `
+      <div class="rule-preview-box">
+        <div class="rp-title">${htmlEsc(r.name)} (${htmlEsc(r.id)})</div>
+        <div class="rp-meta">${r.status==='active'?'Active':'Inactive'} · Priority ${r.priority} · ${htmlEsc(r.cover)}</div>
+        <div class="rp-line"><span class="rp-label">WHEN</span><span class="rp-value">${htmlEsc(conditions.map(compileConditionLine).join(` ${logic.toUpperCase()} `) || '—')}</span></div>
+        <div class="rp-line"><span class="rp-label">THEN</span><span class="rp-value">${htmlEsc(outcomeLabel(r.outcomeType).toUpperCase())}</span></div>
+        <div class="rp-line"><span class="rp-label">Customer Message:</span><span class="rp-message">"${htmlEsc(r.customerMsg)}"</span></div>
+        ${conditions.map(c => {
+          const attr = resolveConditionAttr(c);
+          const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+          return `<div class="rp-line"><span class="rp-label">Source:</span><span class="rp-value">Risk Studio → ${htmlEsc(found?.q?.label || attr?.name || c.field || '—')}</span></div>
+            <div class="rp-line"><span class="rp-label">Risk Attribute ID:</span><span class="rp-value">${htmlEsc(attr?.id || c.attributeId || '—')}</span></div>`;
+        }).join('')}
+        <div class="rp-line"><span class="rp-label">Effective:</span><span class="rp-value">${htmlEsc(r.effectiveFrom)} to ${htmlEsc(r.effectiveTo)}</span></div>
+      </div>
+    `)}
+  `;
+
+  openSections.forEach(id => {
+    document.getElementById(`sec-body-${id}`)?.classList.add('open');
+    document.getElementById(`sec-chev-${id}`)?.classList.add('open');
+  });
+  if (typeof window.addStudioSaveBar === 'function') window.addStudioSaveBar();
+  } catch (err) {
+    panel.innerHTML = `<div class="attr-warn">The rule editor could not be displayed. ${htmlEsc(err && err.message ? err.message : err)}</div>`;
+  }
+}
+
+function buildSection(id, num, title, subtitle, content) {
+  const isOpen = openSections.has(id);
+  return `<div class="section-card">
+    <div class="section-header" onclick="toggleSection('${id}')">
+      <div class="section-header-left">
+        <div class="section-number">${num}</div>
+        <div><div class="section-title">${title}</div><div class="section-subtitle">${htmlEsc(subtitle)}</div></div>
+      </div>
+      <svg class="section-chevron ${isOpen?'open':''}" id="sec-chev-${id}" width="16" height="16" viewBox="0 0 256 256" fill="none">
+        <path d="M181.66 133.66l-80 80a8 8 0 01-11.32-11.32L164.69 128 90.34 53.66a8 8 0 0111.32-11.32l80 80a8 8 0 010 11.32z" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="section-body ${isOpen?'open':''}" id="sec-body-${id}">
+      <div class="section-inner">${content}</div>
+    </div>
+  </div>`;
+}
+
+function filterEligAttrSearch(value) {
+  eligAttrSearch = value;
+  const rule = currentRule();
+  if (rule) renderDetailPanel(rule);
+}
+
+function goNextRatingStudio() {
+  const app = PS.prototypeApp;
+  const pid = productId || app?.context?.()?.productId;
+  const ver = productVersion || app?.context?.()?.version;
+  const next = app?.nextStudioInChain?.(pid, 'eligibility');
+  const dest = next?.file || 'rating-studio.html';
+  if (app?.canLeaveCurrentStudio && !app.canLeaveCurrentStudio(dest)) return;
+  window.location.assign(`${dest}?product=${encodeURIComponent(pid || '')}&id=${encodeURIComponent(pid || '')}&version=${encodeURIComponent(ver || '')}${next?.hash || ''}`);
+}
+
+function toggleSection(id) {
+  const body = document.getElementById(`sec-body-${id}`);
+  const chev = document.getElementById(`sec-chev-${id}`);
+  const isOpen = body?.classList.contains('open');
+  if (isOpen) { body?.classList.remove('open'); chev?.classList.remove('open'); openSections.delete(id); }
+  else        { body?.classList.add('open');    chev?.classList.add('open');    openSections.add(id); }
+}
+
+function rf(label, html, span) {
+  return `<div class="form-group${span ? ' span-2' : ''}"><label class="form-label">${label}</label>${html}</div>`;
+}
+
+function rof(label, value, mono=false) {
+  return `<div class="form-group"><label class="form-label">${label}</label>
+    <div style="font-size:${mono?'12px':'14px'};font-family:${mono?"'IBM Plex Mono',monospace":'inherit'};color:var(--color-ink);padding:4px 0">${value||'—'}</div>
+  </div>`;
+}
+
+function formatConditionSummary(r) {
+  const rule = normalizeEligibilityRule(r);
+  const logic = String(rule.logic || 'and').toUpperCase();
+  const conditions = Array.isArray(rule.conditions) ? rule.conditions : [];
+  return conditions.map(compileConditionLine).join(` ${logic} `) || 'No conditions';
+}
+
+function outcomeLabel(type) {
+  return type==='hard'?'Hard Block':type==='soft'?'Soft Warning':'Refer to Underwriter';
+}
+
+/* ═══════════════════════════════════════════════
+   TEST ELIGIBILITY MODAL
+═══════════════════════════════════════════════ */
+function collectTestFields() {
+  const fields = [];
+  const seen = new Set();
+  const add = (attr, c) => {
+    const key = attr?.id || c?.attributeId || c?.field;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    fields.push({ key, cond: c || { attributeId: attr.id, field: riskAttributeFieldKey(attr), sourceQuestionId: attr.questionId || attr.sourceQuestionId }, attr: attr || resolveConditionAttr(c) });
+  };
+  eligibilityRiskAttributes().forEach(a => add(a));
+  RULES.forEach(r => {
+    normalizeEligibilityRule(r).conditions.forEach(c => add(resolveConditionAttr(c), c));
+  });
+  return fields;
+}
+
+const TEST_FIELD_DEFAULTS = {};
+
+function testFieldInputHtml(item) {
+  const key = typeof item === 'string' ? item : item.key;
+  const cond = typeof item === 'object' ? item.cond : null;
+  const attr = typeof item === 'object' ? item.attr : resolveConditionAttr({ field: key, attributeId: key });
+  const found = findQuestionById(cond?.sourceQuestionId || attr?.questionId);
+  const label = found?.q?.label || attr?.name || key;
+  const type = riskDataType(attr, found?.q);
+  const id = 'test-' + String(key).replace(/[^a-z0-9_]/gi, '-');
+  const def = TEST_FIELD_DEFAULTS[key] ?? TEST_FIELD_DEFAULTS[slugField(label)] ?? '';
+  const opts = questionOptions(attr, found?.q);
+  if ((type === 'select' || type === 'multi-select') && opts.length) {
+    return `<div class="form-group"><label class="form-label">${htmlEsc(label)}</label>
+      <select id="${id}" class="form-control test-field" data-field="${htmlEsc(key)}" data-qid="${htmlEsc(attr?.questionId || '')}" ${type === 'multi-select' ? 'multiple' : ''}>
+        ${opts.map(o => `<option value="${htmlEsc(o.value)}">${htmlEsc(o.label)}</option>`).join('')}
+      </select></div>`;
+  }
+  if (type === 'boolean') {
+    return `<div class="form-group"><label class="form-label">${htmlEsc(label)}</label>
+      <select id="${id}" class="form-control test-field" data-field="${htmlEsc(key)}">
+        <option>Yes</option><option>No</option>
+      </select></div>`;
+  }
+  if (type === 'date') {
+    return `<div class="form-group"><label class="form-label">${htmlEsc(label)}</label>
+      <input type="date" id="${id}" class="form-control test-field" data-field="${htmlEsc(key)}" data-qid="${htmlEsc(attr?.questionId || '')}" value="${htmlEsc(def)}"></div>`;
+  }
+  if (type === 'number' || type === 'currency') {
+    return `<div class="form-group"><label class="form-label">${htmlEsc(label)}</label>
+      <input type="number" step="${type === 'currency' ? '0.01' : 'any'}" id="${id}" class="form-control test-field" data-field="${htmlEsc(key)}" data-qid="${htmlEsc(attr?.questionId || '')}" value="${htmlEsc(def)}" placeholder="Enter value"></div>`;
+  }
+  return `<div class="form-group"><label class="form-label">${htmlEsc(label)}</label>
+    <input type="text" id="${id}" class="form-control test-field" data-field="${htmlEsc(key)}" data-qid="${htmlEsc(attr?.questionId || '')}" value="${htmlEsc(def)}" placeholder="Enter value"></div>`;
+}
+
+function parseListValue(val) {
+  return String(val || '').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function inputValueForCondition(c, inputs) {
+  const attr = resolveConditionAttr(c);
+  const keys = [c.attributeId, attr?.id, c.field, attr?.questionId, c.sourceQuestionId, riskAttributeFieldKey(attr)].filter(Boolean);
+  for (const k of keys) {
+    if (inputs[k] !== undefined && inputs[k] !== null && String(inputs[k]).trim() !== '') return inputs[k];
+  }
+  for (const k of keys) {
+    if (Object.prototype.hasOwnProperty.call(inputs, k)) return inputs[k];
+  }
+  return undefined;
+}
+
+function compareCondition(field, op, value, inputs, cond) {
+  const c = cond || { field, op, value };
+  const raw = inputValueForCondition(c, inputs);
+  const nOp = normalizeOp(op);
+  if (nOp === 'IS EMPTY') return raw === undefined || raw === null || String(raw).trim() === '';
+  if (nOp === 'IS NOT EMPTY') return !(raw === undefined || raw === null || String(raw).trim() === '');
+  if (nOp === 'Is True') {
+    const t = String(raw).toLowerCase();
+    return t === 'yes' || t === 'true' || t === '1';
+  }
+  if (nOp === 'Is False') {
+    const t = String(raw).toLowerCase();
+    return t === 'no' || t === 'false' || t === '0';
+  }
+  if (raw === undefined || raw === null || String(raw).trim() === '') return null;
+  const numVal = parseFloat(value);
+  const numRaw = parseFloat(raw);
+  const dateRaw = Date.parse(raw);
+  const dateVal = Date.parse(value);
+  switch (nOp) {
+    case '<':
+    case 'Less Than': return numRaw < numVal;
+    case '>':
+    case 'Greater Than': return numRaw > numVal;
+    case '≤':
+    case 'Less Than or Equal': return numRaw <= numVal;
+    case '≥':
+    case 'Greater Than or Equal': return numRaw >= numVal;
+    case '=':
+    case 'Equals':
+    case 'On':
+      return String(raw).toLowerCase() === String(value).toLowerCase();
+    case '≠':
+    case 'Not Equals':
+      return String(raw).toLowerCase() !== String(value).toLowerCase();
+    case 'IN': return parseListValue(value).some(v => v.toLowerCase() === String(raw).toLowerCase());
+    case 'NOT IN': return !parseListValue(value).some(v => v.toLowerCase() === String(raw).toLowerCase());
+    case 'Starts with': return String(raw).toLowerCase().startsWith(String(value).toLowerCase());
+    case 'Ends with': return String(raw).toLowerCase().endsWith(String(value).toLowerCase());
+    case 'Is':
+    case 'Is not': {
+      const yes = ['yes', 'true', '1'].includes(String(raw).toLowerCase());
+      const wantYes = ['yes', 'true', '1'].includes(String(value).toLowerCase());
+      return nOp === 'Is' ? yes === wantYes : yes !== wantYes;
+    }
+    case 'Contains Any': {
+      const needles = parseListValue(value);
+      const hay = parseListValue(raw);
+      const blob = String(raw).toLowerCase();
+      return needles.some(n => hay.some(h => h.toLowerCase() === n.toLowerCase()) || blob.includes(n.toLowerCase()));
+    }
+    case 'Contains All': {
+      const needles = parseListValue(value);
+      const hay = parseListValue(raw);
+      const blob = String(raw).toLowerCase();
+      return needles.every(n => hay.some(h => h.toLowerCase() === n.toLowerCase()) || blob.includes(n.toLowerCase()));
+    }
+    case 'Contains':
+    case 'CONTAINS': {
+      const list = parseListValue(raw);
+      if (list.length > 1) return list.some(v => v.toLowerCase() === String(value).toLowerCase()) || String(raw).toLowerCase().includes(String(value).toLowerCase());
+      return String(raw).toLowerCase().includes(String(value).toLowerCase());
+    }
+    case 'Does not contain':
+    case 'Does Not Contain':
+    case 'NOT CONTAINS': return !String(raw).toLowerCase().includes(String(value).toLowerCase());
+    case 'Between': {
+      const lo = parseFloat(c.value);
+      const hi = parseFloat(c.value2);
+      return numRaw >= lo && numRaw <= hi;
+    }
+    case 'Before': return dateRaw < dateVal;
+    case 'After': return dateRaw > dateVal;
+    case 'Before or On': return dateRaw <= dateVal;
+    case 'After or On': return dateRaw >= dateVal;
+    default: return false;
+  }
+}
+
+function evaluateRule(rule, inputs) {
+  rule = normalizeEligibilityRule(rule);
+  if (rule.status !== 'active') return { triggered: false, na: true, summary: 'Inactive rule — skipped' };
+  const conditions = rule.conditions || [];
+  if (!conditions.length) return { triggered: false, na: true, summary: 'No conditions configured' };
+
+  const results = conditions.map(c => compareCondition(c.field, c.op, c.value, inputs, c));
+  if (results.some(r => r === null)) {
+    return { triggered: false, na: true, summary: conditions.map(c => `${compileConditionLine(c)} = ${inputValueForCondition(c, inputs) ?? 'N/A'}`).join(', ') + ' — N/A (not entered)' };
+  }
+
+  const logic = String(rule.logic || 'and').toLowerCase();
+  const combined = logic === 'or' ? results.some(Boolean) : results.every(Boolean);
+  const triggered = rule.direction === 'eligible' ? !combined : combined;
+  const condText = conditions.map(compileConditionLine).join(` ${logic.toUpperCase()} `);
+  const inputText = conditions.map(c => `${c.attributeId || c.field} = ${inputValueForCondition(c, inputs)}`).join(', ');
+  return { triggered, na: false, summary: inputText, condText };
+}
+
+function gatherTestInputs() {
+  const inputs = {};
+  document.querySelectorAll('.test-field').forEach(el => {
+    const field = el.getAttribute('data-field');
+    if (!field) return;
+    inputs[field] = el.value;
+    const qid = el.getAttribute('data-qid');
+    if (qid) inputs[qid] = el.value;
+  });
+  return inputs;
+}
+
+function openTestModal() {
+  const fields = collectTestFields();
+  PS.openModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">Test Eligibility</h2>
+      <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close"><svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M205.66 194.34a8 8 0 01-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 01-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0111.32-11.32L128 116.69l66.34-66.35a8 8 0 0111.32 11.32L139.31 128z" fill="currentColor"/></svg></button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div class="test-layout">
+        <div class="test-input-panel">
+          <div style="font-size:14px;font-weight:600;margin-bottom:var(--space-4)">Test Input Values</div>
+          ${fields.length ? fields.map(testFieldInputHtml).join('') : `<p style="font-size:13px;color:var(--color-muted)">Mark Risk Attributes as Available for Eligibility in Risk Studio, then enter sample values here.</p>`}
+          <button class="btn btn-primary" onclick="runEligibilityTest()" style="width:100%;justify-content:center;margin-top:var(--space-3)" ${fields.length ? '' : 'disabled'}>
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M221.69 199.77L160 96.92V40h8a8 8 0 000-16H88a8 8 0 000 16h8v56.92L34.31 199.77A16 16 0 0048 224h160a16 16 0 0013.69-24.23z" fill="currentColor"/></svg>
+            Run Eligibility Check
+          </button>
+        </div>
+        <div class="test-result-panel" id="test-results">
+          <div style="text-align:center;padding:48px 24px;color:var(--color-muted)">
+            <div style="font-size:28px;margin-bottom:8px">🧪</div>
+            <div style="font-size:14px;font-weight:500">Enter values and click Run</div>
+            <div style="font-size:13px;margin-top:4px">Results will appear here</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="PS.actionResult('info','Saved','Test case saved to simulation library.')">Save as Test Case</button>
+      <button class="btn btn-secondary" onclick="PS.closeModal()">Close</button>
+    </div>
+  `, 'modal-lg');
+}
+
+function runEligibilityTest() {
+  const inputs = gatherTestInputs();
+  const sorted = [...RULES].map(normalizeEligibilityRule).sort((a, b) => (a.priority || 99) - (b.priority || 99));
+  const results = sorted.map(rule => {
+    const ev = evaluateRule(rule, inputs);
+    return { rule, triggered: ev.triggered, pass: !ev.triggered, na: ev.na, summary: ev.summary, condText: ev.condText };
+  });
+
+  const triggered = results.filter(r => r.triggered);
+  const hardHits = triggered.filter(r => r.rule.outcomeType === 'hard');
+  const referHits = triggered.filter(r => r.rule.outcomeType === 'refer');
+  const eligible = hardHits.length === 0;
+  const overall = hardHits.length ? 'HARD BLOCK' : (referHits.length ? 'REFER TO UNDERWRITER' : (triggered.length ? 'WARNING' : 'ELIGIBLE'));
+  const resultPanel = document.getElementById('test-results');
+  if (!resultPanel) return;
+  const headline = hardHits.length
+    ? `Rule triggered: ${hardHits[0].rule.name}`
+    : (referHits.length ? 'Submission is routed for underwriting review.' : (triggered.length ? 'Submission can proceed with warning.' : 'No eligibility rules were triggered.'));
+  if (!resultPanel) return;
+
+  resultPanel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-5);padding:var(--space-4);border-radius:var(--radius-md);${!eligible ? 'background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35)' : 'background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.35)'}">
+      <span style="font-size:24px">${hardHits.length ? '❌' : '✅'}</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:${hardHits.length ? 'var(--color-danger)' : 'var(--color-success)'}">RESULT: ${htmlEsc(overall)}</div>
+        <div style="font-size:13px;color:var(--color-muted)">${htmlEsc(headline)}</div>
+      </div>
+    </div>
+
+    ${results.map(r => {
+      const cls = r.na ? 'test-na' : (r.pass ? 'test-pass' : 'test-fail');
+      const icon = r.na ? '○' : (r.pass ? '✓' : '✕');
+      return `
+      <div class="test-result-item ${cls}">
+        <span class="test-icon">${icon}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500">${htmlEsc(r.rule.name)} (${htmlEsc(r.rule.id)})</div>
+          ${(r.rule.conditions || []).map(c => {
+            const attr = resolveConditionAttr(c);
+            const actual = inputValueForCondition(c, inputs);
+            return `<div style="font-size:11px;color:var(--color-muted);margin-top:4px">
+              <div><strong>Risk Attribute:</strong> ${htmlEsc(attrDisplayName(attr || {}) || c.field || '—')}</div>
+              <div><strong>Actual Value:</strong> ${htmlEsc(actual == null || actual === '' ? '—' : actual)}</div>
+              <div><strong>Condition:</strong> ${htmlEsc(compileConditionLine(c))}</div>
+            </div>`;
+          }).join('')}
+          <div style="font-size:12px;color:var(--color-muted);margin-top:4px">${htmlEsc(r.summary)} — ${r.na ? 'N/A' : (r.pass ? 'PASS' : 'TRIGGERED')}</div>
+          ${r.triggered ? `<div style="font-size:12px;margin-top:4px"><strong>Outcome:</strong> ${htmlEsc(outcomeLabel(r.rule.outcomeType))}${r.rule.customerMsg ? ` — "${htmlEsc(r.rule.customerMsg)}"` : ''}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+/* ═══════════════════════════════════════════════
+   CONFLICTS MODAL
+═══════════════════════════════════════════════ */
+function openConflictsModal() {
+  const conflicts = detectConflicts();
+  const incomplete = RULES.filter(isRuleIncomplete);
+  const ruleCount = RULES.length;
+  const noIssues = !conflicts.length;
+
+  PS.openModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">Rule Conflicts</h2>
+      <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close"><svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M205.66 194.34a8 8 0 01-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 01-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0111.32-11.32L128 116.69l66.34-66.35a8 8 0 0111.32 11.32L139.31 128z" fill="currentColor"/></svg></button>
+    </div>
+    <div class="modal-body">
+      ${noIssues ? `
+      <div class="callout callout-success" style="margin-bottom:var(--space-4)">
+        <div class="callout-body">
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px">No conflicts detected</div>
+          <div style="font-size:13px;color:var(--color-muted)">All ${ruleCount} eligibility rule${ruleCount === 1 ? '' : 's'} have been analysed. No overlapping or contradictory conditions found.</div>
+        </div>
+      </div>` : ''}
+      ${incomplete.length ? `
+      <div class="callout callout-warning" style="margin-bottom:var(--space-4)">
+        <div class="callout-body">
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px">${incomplete.length} incomplete rule${incomplete.length === 1 ? '' : 's'}</div>
+          <div style="font-size:13px;color:var(--color-muted)">${incomplete.map(r => htmlEsc(r.name)).join(', ')} — missing conditions or outcome configuration.</div>
+        </div>
+      </div>` : ''}
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--color-muted);border-bottom:1px solid var(--color-border)">Conflict</th>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--color-muted);border-bottom:1px solid var(--color-border)">Rules Involved</th>
+          <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--color-muted);border-bottom:1px solid var(--color-border)">Type</th>
+          <th style="text-align:center;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--color-muted);border-bottom:1px solid var(--color-border)">Severity</th>
+        </tr></thead>
+        <tbody>
+          ${conflicts.length ? conflicts.map(c => `
+          <tr style="cursor:pointer" onclick="openRuleEditor('${htmlEsc(c.rules[0])}')">
+            <td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--color-border)">${htmlEsc(c.label)}</td>
+            <td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--color-border);font-family:'IBM Plex Mono',monospace">${htmlEsc(c.rules.join(', '))}</td>
+            <td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--color-border)">${htmlEsc(c.type)}</td>
+            <td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--color-border);text-align:center">${htmlEsc(c.severity)}</td>
+          </tr>`).join('') : `
+          <tr>
+            <td colspan="4" style="text-align:center;padding:32px;color:var(--color-muted);font-size:13px">
+              ✅ No conflicts detected across ${ruleCount} rule${ruleCount === 1 ? '' : 's'}
+            </td>
+          </tr>`}
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="PS.closeModal()">Close</button>
+    </div>
+  `, conflicts.length ? 'modal-lg' : 'modal-sm');
+}
+
+/* ═══════════════════════════════════════════════
+   VALIDATION
+═══════════════════════════════════════════════ */
+function clearEligFieldError(el) {
+  if (!el) return;
+  el.classList.remove('is-invalid');
+  el.nextElementSibling?.classList.contains('field-error') && el.nextElementSibling.remove();
+}
+
+function markEligError(el, message) {
+  if (!el) return;
+  el.classList.add('is-invalid');
+  if (!el.nextElementSibling || !el.nextElementSibling.classList.contains('field-error')) {
+    const p = document.createElement('div');
+    p.className = 'field-error';
+    p.textContent = message;
+    el.insertAdjacentElement('afterend', p);
+  } else {
+    el.nextElementSibling.textContent = message;
+  }
+}
+
+function notifyElig(title, msg, type) {
+  if (PS.prototypeApp?.showResult) PS.prototypeApp.showResult(title, msg, { type: type || 'error' });
+  else if (PS.actionResult) PS.actionResult(type || 'error', title, msg);
+}
+
+function validateEligibilityRule() {
+  document.querySelectorAll('#detail-panel .is-invalid').forEach(el => el.classList.remove('is-invalid'));
+  document.querySelectorAll('#detail-panel .field-error').forEach(el => el.remove());
+  const rule = currentRule();
+  if (!rule) return true;
+  const first = [];
+  const fail = (sel, msg) => {
+    const el = document.querySelector(sel);
+    markEligError(el, msg);
+    if (el) first.push(el);
+  };
+  if (!String(rule.name || '').trim()) fail('#el-rule-name', 'Rule Name is required.');
+  if (!String(rule.category || '').trim()) fail('#el-rule-category', 'Rule Category is required.');
+  const pri = Number(rule.priority);
+  if (!Number.isFinite(pri) || pri <= 0) fail('#el-rule-priority', 'Priority is required and must be a valid positive number.');
+  if (!rule.outcomeType) {
+    notifyElig('Cannot save', 'Outcome is required.', 'error');
+    first.push(document.querySelector('.outcome-card'));
+  }
+  if (!String(rule.cover || '').trim()) fail('#el-rule-cover', 'Applicable Cover is required.');
+  if (!String(rule.reasonCode || '').trim()) fail('#el-reason-code', 'This field is required.');
+  if (isPlaceholderDate(rule.effectiveFrom) || !isoDateValue(rule.effectiveFrom)) fail('#el-effective-from', 'This field is required.');
+  if (isPlaceholderDate(rule.effectiveTo) || !isoDateValue(rule.effectiveTo)) fail('#el-effective-to', 'This field is required.');
+  const fromT = Date.parse(isoDateValue(rule.effectiveFrom));
+  const toT = Date.parse(isoDateValue(rule.effectiveTo));
+  if (!Number.isNaN(fromT) && !Number.isNaN(toT) && toT < fromT) fail('#el-effective-to', 'Effective To cannot be earlier than Effective From.');
+  const linked = findRiskAttr(primaryLinkedAttributeId(rule));
+  if (!linked || !isAttrAvailableForNewRules(linked)) {
+    notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Studio.', 'error');
+    first.push(document.querySelector('.elig-linked-card'));
+  }
+  if ((rule.outcomeType === 'hard' || rule.outcomeType === 'soft') && !String(rule.customerMsg || '').trim()) {
+    fail('#el-customer-msg', 'Customer-facing message is required for Hard Block and Soft Warning.');
+  }
+  if (!String(rule.internalMsg || '').trim()) fail('#el-internal-msg', 'Internal message is required.');
+  const ids = RULES.map(r => r.id);
+  if (ids.filter(id => id === rule.id).length > 1) {
+    notifyElig('Cannot save', 'Rule ID must remain unique.', 'error');
+  }
+  const conditions = rule.conditions || [];
+  if (!conditions.length) {
+    notifyElig('Cannot save', 'Add at least one complete condition.', 'error');
+    first.push(document.querySelector('.condition-builder'));
+  }
+  conditions.forEach((c, i) => {
+    const attr = resolveConditionAttr(c);
+    const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+    const type = riskDataType(attr, found?.q);
+    if (!c.attributeId && !attr) fail(`[data-el-validate="cond-attr-${i}"]`, 'Risk Attribute is required.');
+    if (conditionIsUnavailable(c)) fail(`[data-el-validate="cond-attr-${i}"]`, 'Risk Attribute is no longer available in Risk Studio.');
+    if (!c.op) fail(`[data-el-validate="cond-op-${i}"]`, 'Operator is required.');
+    if (opNeedsValue(c.op) && String(c.value || '').trim() === '') {
+      fail(`[data-el-validate="cond-val-${i}"]`, 'This field is required.');
+    } else if (opNeedsTwoValues(c.op) && String(c.value2 || '').trim() === '') {
+      fail(`[data-el-validate="cond-val2-${i}"]`, 'This field is required.');
+    } else if (opNeedsValue(c.op) && (type === 'number' || type === 'currency') && Number.isNaN(Number(c.value))) {
+      fail(`[data-el-validate="cond-val-${i}"]`, 'Enter a valid numeric value.');
+    } else if (opNeedsValue(c.op) && type === 'date' && c.value && Number.isNaN(Date.parse(c.value)) && !/^\d{4}-\d{2}-\d{2}$/.test(c.value) && Number.isNaN(Date.parse(String(c.value)))) {
+      fail(`[data-el-validate="cond-val-${i}"]`, 'Enter a valid date.');
+    } else if (opNeedsValue(c.op) && (type === 'select' || type === 'multi-select')) {
+      const allowed = questionOptions(attr, found?.q);
+      if (allowed.length) {
+        const vals = String(c.value || '').split(',').map(s => s.trim()).filter(Boolean);
+        const ok = vals.every(v => allowed.some(o => o.value === v || o.label === v));
+        if (!ok) fail(`[data-el-validate="cond-val-${i}"]`, 'Value must be one of the configured options.');
+      }
+    }
+  });
+  if (first.length) {
+    const el = first[0];
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el?.focus?.();
+    notifyElig('Cannot save', 'Complete the required eligibility fields.', 'error');
+    return false;
+  }
+  return true;
+}
+
+function nextEligibilityRuleId() {
+  let n = RULES.length + 1;
+  let id = `ELG-${String(n).padStart(3, '0')}`;
+  while (RULES.some(r => r.id === id)) {
+    n += 1;
+    id = `ELG-${String(n).padStart(3, '0')}`;
+  }
+  return id;
+}
+
+/* ═══════════════════════════════════════════════
+   ADD RULE MODAL
+═══════════════════════════════════════════════ */
+function openAddRuleModal(opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  if (!rulesCanEdit()) {
+    notifyElig('Read-only', 'This published version cannot be edited.', 'error');
+    return;
+  }
+  if (opts.attributeId) {
+    configureRuleFromAttribute(opts.attributeId);
+    return;
+  }
+
+  const attrs = eligibilityRiskAttributes();
+  PS.openModal(`
+    <div class="elig-create-mode-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">How do you want to create it?</h2>
+        <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="elig-create-choice-list">
+          <button type="button" class="elig-create-choice" onclick="openEligibilityRuleFromAttributePicker()">
+            <span class="elig-create-choice-radio">○</span>
+            <span>
+              <strong>From Risk Attribute</strong>
+              <small>Link an existing Risk Attribute that is marked Available for Eligibility</small>
+            </span>
+          </button>
+          <button type="button" class="elig-create-choice" onclick="openManualEligibilityRuleModal()">
+            <span class="elig-create-choice-radio">○</span>
+            <span>
+              <strong>Create Manually</strong>
+              <small>Create a standalone Eligibility Rule without linking it to a Risk Attribute</small>
+            </span>
+          </button>
+        </div>
+        ${!attrs.length ? `<div class="elig-create-note">No Risk Attributes are currently available for Eligibility. You can still create a manual Eligibility Rule.</div>` : ''}
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+      </div>
+    </div>`);
+}
+
+function openEligibilityRuleFromAttributePicker() {
+  const attrs = eligibilityRiskAttributes();
+  if (!attrs.length) {
+    notifyElig('No Risk Attributes are available for Eligibility', 'Mark a Risk Attribute as Available for Eligibility in Risk Studio first.', 'error');
+    return;
+  }
+  PS.closeModal();
+  setTimeout(() => {
+    PS.openModal(`
+      <div class="modal-header">
+        <h2 class="modal-title">Create Eligibility Rule</h2>
+        <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--color-muted);margin:0 0 12px">Choose a Risk Attribute that is Available for Eligibility. The rule is configured in Eligibility Studio.</p>
+        <div class="form-group">
+          <label class="form-label" for="ar-pick-attr">Select Risk Attribute *</label>
+          <select id="ar-pick-attr" class="form-control">${groupedAttrOptionsHtml('', null, '')}</select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="openAddRuleModal()">← Back</button>
+        <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="beginRuleFromPicker()">Configure Rule</button>
+      </div>
+    `);
+  }, 0);
+}
+
+function beginRuleFromPicker() {
+  const id = document.getElementById('ar-pick-attr')?.value;
+  if (!id) {
+    notifyElig('Cannot create rule', 'Risk Attribute is required.', 'error');
+    return;
+  }
+  PS.closeModal();
+  configureRuleFromAttribute(id);
+}
+
+function nextManualEligibilityRuleId() {
+  let n = 1;
+  let id = `ELG-MAN-${String(n).padStart(3, '0')}`;
+  while (RULES.some(r => r.id === id) || (pendingEligibilityRule && pendingEligibilityRule.id === id)) {
+    n += 1;
+    id = `ELG-MAN-${String(n).padStart(3, '0')}`;
+  }
+  return id;
+}
+
+function renderManualEligibilityConditionRows() {
+  const host = document.getElementById('manual-elig-condition-host');
+  const draft = window.__eligManualCreate;
+  if (!host || !draft) return;
+
+  const rows = (draft.conditions || []).map((c, i) => `
+    ${i > 0 ? `<div class="cb-connector">${htmlEsc((c.connector || 'AND').toUpperCase())}</div>` : ''}
+    <div class="cb-row manual-elig-row" data-manual-condition="${i}">
+      <input type="text"
+        class="form-control"
+        id="me-field-${i}"
+        value="${htmlEsc(c.field || '')}"
+        placeholder="Field or attribute name"
+        oninput="patchManualEligibilityCondition(${i}, 'field', this.value)">
+
+      <select class="form-control"
+        id="me-op-${i}"
+        onchange="patchManualEligibilityCondition(${i}, 'op', this.value)">
+        <option value="">Select operator</option>
+        ${OPERATORS.map(o => `<option value="${htmlEsc(o)}"
+          ${normalizeOp(c.op) === normalizeOp(o) ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+      </select>
+
+      <input type="text"
+        class="form-control cb-value"
+        id="me-value-${i}"
+        value="${htmlEsc(c.value || '')}"
+        placeholder="Value"
+        oninput="patchManualEligibilityCondition(${i}, 'value', this.value)">
+
+      ${
+        draft.conditions.length > 1
+          ? `<button type="button" class="btn btn-ghost btn-sm cb-remove"
+               onclick="removeManualEligibilityCondition(${i})">Remove</button>`
+          : ''
+      }
+    </div>
+  `).join('');
+
+  host.innerHTML = `
+    <div class="condition-builder">
+      <div class="cb-header">
+        <span style="font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--color-muted)">
+          MANUAL CONDITION BUILDER
+        </span>
+        <div class="cb-logic">
+          <button type="button" class="cb-logic-btn ${(draft.logic || 'and') === 'and' ? 'active' : ''}"
+            onclick="setManualEligibilityLogic('and')">ALL</button>
+          <button type="button" class="cb-logic-btn ${(draft.logic || 'and') === 'or' ? 'active' : ''}"
+            onclick="setManualEligibilityLogic('or')">ANY</button>
+        </div>
+      </div>
+      <div class="cb-when">IF</div>
+      ${rows || `<div class="cb-empty">No conditions configured.</div>`}
+      <div class="cb-actions">
+        <button type="button" class="btn btn-ghost btn-sm"
+          onclick="addManualEligibilityCondition('AND')">+ Add Condition</button>
+        <button type="button" class="btn btn-ghost btn-sm"
+          onclick="addManualEligibilityCondition('OR')">+ Add OR Group</button>
+      </div>
+    </div>
+  `;
+}
+
+function setManualEligibilityLogic(logic) {
+  if (!window.__eligManualCreate) return;
+  window.__eligManualCreate.logic = logic === 'or' ? 'or' : 'and';
+  renderManualEligibilityConditionRows();
+}
+
+function patchManualEligibilityCondition(i, key, value) {
+  const draft = window.__eligManualCreate;
+  if (!draft?.conditions?.[i]) return;
+  draft.conditions[i][key] = value;
+}
+
+function addManualEligibilityCondition(connector) {
+  const draft = window.__eligManualCreate;
+  if (!draft) return;
+  draft.conditions.push({ field:'', op:'', value:'', value2:'', connector: connector || 'AND' });
+  renderManualEligibilityConditionRows();
+}
+
+function removeManualEligibilityCondition(i) {
+  const draft = window.__eligManualCreate;
+  if (!draft || draft.conditions.length <= 1) return;
+  draft.conditions.splice(i, 1);
+  renderManualEligibilityConditionRows();
+}
+
+function setManualEligibilityOutcome(type) {
+  if (!window.__eligManualCreate) return;
+  window.__eligManualCreate.outcomeType = type;
+  ['hard','soft','refer'].forEach(t => document.getElementById(`me-out-${t}`)?.classList.toggle('selected', t === type));
+}
+
+function openManualEligibilityRuleModal() {
+  PS.closeModal();
+  const id = nextManualEligibilityRuleId();
+  window.__eligManualCreate = {
+    id,
+    outcomeType: 'hard',
+    logic: 'and',
+    conditions: [{ field:'', op:'', value:'', value2:'', connector:'AND' }]
+  };
+
+  setTimeout(() => {
+    PS.openModal(`
+      <div class="manual-eligibility-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Create Eligibility Rule Manually</h2>
+          <button class="btn btn-icon" onclick="window.__eligManualCreate=null; PS.closeModal()" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body manual-eligibility-body">
+          <p class="manual-eligibility-intro">Create a standalone Eligibility Rule without linking it to a Risk Attribute or Questionnaire question.</p>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="me-name">Rule Name <span class="required">*</span></label>
+              <input id="me-name" class="form-control" type="text" placeholder="e.g., Restricted Territory Rule">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="me-id">Eligibility Rule ID</label>
+              <input id="me-id" class="form-control cs-readonly-field" value="${htmlEsc(id)}" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="me-category">Category <span class="required">*</span></label>
+              <select id="me-category" class="form-control">
+                <option value="">Select category...</option>
+                <option value="Product Eligibility">Product Eligibility</option>
+                <option value="Cover Eligibility">Cover Eligibility</option>
+                <option value="Jurisdiction">Jurisdiction</option>
+                <option value="Underwriting Eligibility">Underwriting Eligibility</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="me-priority">Priority <span class="required">*</span></label>
+              <input id="me-priority" class="form-control" type="number" min="1" value="10">
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label" for="me-cover">Applies To</label>
+              <select id="me-cover" class="form-control">
+                <option value="ALL">All Covers</option>
+                ${productCovers().map(c => `<option value="${htmlEsc(c.id)}">${htmlEsc(c.name || c.code || c.id)}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <div style="margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D">ELIGIBILITY CONDITIONS</div>
+          <div id="manual-elig-condition-host"></div>
+
+          <div style="margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D">OUTCOME</div>
+          <div class="outcome-type-selector">
+            <div id="me-out-hard" class="outcome-card selected" onclick="setManualEligibilityOutcome('hard')">
+              <div class="outcome-card-icon">🛑</div>
+              <div class="outcome-card-label">Hard Block</div>
+              <div class="outcome-card-desc">No quotation permitted</div>
+            </div>
+            <div id="me-out-soft" class="outcome-card" onclick="setManualEligibilityOutcome('soft')">
+              <div class="outcome-card-icon">⚠️</div>
+              <div class="outcome-card-label">Soft Warning</div>
+              <div class="outcome-card-desc">Quote proceeds with warning</div>
+            </div>
+            <div id="me-out-refer" class="outcome-card" onclick="setManualEligibilityOutcome('refer')">
+              <div class="outcome-card-icon">👤</div>
+              <div class="outcome-card-label">Refer to UW</div>
+              <div class="outcome-card-desc">Routes to underwriter queue</div>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="me-reason">Reason Code <span class="required">*</span></label>
+              <input id="me-reason" class="form-control" value="${htmlEsc(id)}" placeholder="e.g., ELIG-TERRITORY">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="me-description">Description</label>
+              <input id="me-description" class="form-control" placeholder="Internal rule description">
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label" for="me-customer-msg">Customer Message</label>
+              <textarea id="me-customer-msg" class="form-control" rows="2" placeholder="Message shown when this rule is triggered">This risk does not meet eligibility requirements for this product.</textarea>
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label" for="me-internal-msg">Internal Message</label>
+              <textarea id="me-internal-msg" class="form-control" rows="2" placeholder="Internal decision message">Eligibility rule triggered.</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="window.__eligManualCreate=null; PS.closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="createManualEligibilityRule()">Create Rule</button>
+        </div>
+      </div>
+    `);
+    renderManualEligibilityConditionRows();
+  }, 0);
+}
+
+function createManualEligibilityRule() {
+  const draft = window.__eligManualCreate;
+  if (!draft) return;
+
+  const nameEl = document.getElementById('me-name');
+  const catEl = document.getElementById('me-category');
+  const priEl = document.getElementById('me-priority');
+  const first = [];
+  document.querySelectorAll('#active-modal-overlay .is-invalid').forEach(el => el.classList.remove('is-invalid'));
+  document.querySelectorAll('#active-modal-overlay .field-error').forEach(el => el.remove());
+
+  const fail = (el, msg) => { markEligError(el, msg); if (el) first.push(el); };
+  const name = nameEl?.value.trim();
+  const category = catEl?.value;
+  const priority = Number(priEl?.value);
+
+  if (!name) fail(nameEl, 'This field is required.');
+  if (!category) fail(catEl, 'This field is required.');
+  if (!Number.isFinite(priority) || priority <= 0) fail(priEl, 'Priority is required and must be a valid positive number.');
+  if (!draft.outcomeType) {
+    notifyElig('Cannot create rule', 'Outcome is required.', 'error');
+    return;
+  }
+
+  (draft.conditions || []).forEach((c, i) => {
+    const fieldEl = document.getElementById(`me-field-${i}`);
+    const opEl = document.getElementById(`me-op-${i}`);
+    const valEl = document.getElementById(`me-value-${i}`);
+    if (!String(c.field || '').trim()) fail(fieldEl, 'Field or attribute name is required.');
+    if (!String(c.op || '').trim()) fail(opEl, 'Operator is required.');
+    if (opNeedsValue(c.op) && !String(c.value || '').trim()) fail(valEl, 'Enter a value.');
+  });
+
+  if (first.length) {
+    first[0]?.scrollIntoView({ behavior:'smooth', block:'center' });
+    first[0]?.focus?.();
+    notifyElig('Cannot create rule', 'Complete the required fields.', 'error');
+    return;
+  }
+
+  const id = draft.id || nextManualEligibilityRuleId();
+  const coverVal = document.getElementById('me-cover')?.value || 'ALL';
+  const coverIds = [];
+  let cover = 'All Covers';
+  if (coverVal !== 'ALL') {
+    const match = productCovers().find(c => String(c.id) === String(coverVal));
+    cover = match?.name || match?.code || coverVal;
+    coverIds.push(match?.id || coverVal);
+  }
+
+  const rule = normalizeEligibilityRule({
+    id,
+    name,
+    category,
+    cover,
+    coverIds,
+    priority,
+    description: document.getElementById('me-description')?.value.trim() || '',
+    source: 'Manual',
+    sourceQuestionId: '',
+    riskAttributeId: '',
+    lastUpdated: new Date().toISOString().slice(0,10),
+    reasonCode: document.getElementById('me-reason')?.value.trim() || id,
+    customerMsg: document.getElementById('me-customer-msg')?.value.trim() || '',
+    internalMsg: document.getElementById('me-internal-msg')?.value.trim() || '',
+    conditions: (draft.conditions || []).map(c => ({
+      attributeId: '',
+      sourceQuestionId: '',
+      field: String(c.field || '').trim(),
+      op: normalizeOp(c.op || ''),
+      value: String(c.value || ''),
+      value2: String(c.value2 || ''),
+      connector: c.connector || 'AND'
+    })),
+    outcomeType: draft.outcomeType,
+    logic: draft.logic || 'and',
+    logAudit: true,
+    effectiveFrom: '—',
+    effectiveTo: '—',
+    scopes: {
+      product: productName || PS.studioHub?.productName || 'This product',
+      version: productVersion ? `v${productVersion}` : '—',
+      covers: [cover],
+      segments: ['All Segments'],
+      channels: ['All Channels']
+    }
+  });
+
+  RULES.push(rule);
+  persistRules();
+  window.__eligManualCreate = null;
+  PS.closeModal();
+  refreshEligibilityMeta();
+  PS.studioHub?.paint?.();
+  PS.studioHub?.open?.(id);
+  notifyElig('Eligibility rule created', `${name} was added to this product.`, 'success');
+}
+
+function setCreateOutcome(type) {
+  if (!window.__eligCreate) return;
+  window.__eligCreate.outcomeType = type;
+  ['hard', 'soft', 'refer'].forEach(t => document.getElementById(`ar-out-${t}`)?.classList.toggle('selected', t === type));
+}
+
+function renderCreateConditionBuilder() {
+  const host = document.getElementById('ar-condition-host');
+  const draft = window.__eligCreate;
+  if (!host || !draft) return;
+  const conditions = draft.conditions;
+  const logic = String(draft.logic || 'and');
+  host.innerHTML = `
+    <div class="cb-header" style="border-bottom:1px solid var(--color-border)">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--color-muted)">CONDITION BUILDER</span>
+      <div class="cb-logic">
+        <button type="button" class="cb-logic-btn ${logic==='and'?'active':''}" onclick="setCreateLogic('and')">ALL</button>
+        <button type="button" class="cb-logic-btn ${logic==='or'?'active':''}" onclick="setCreateLogic('or')">ANY</button>
+      </div>
+    </div>
+    <div class="cb-when">WHEN</div>
+    ${conditions.map((c, i) => {
+      const attr = resolveConditionAttr(c);
+      const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+      const type = riskDataType(attr, found?.q);
+      const ops = operatorsForType(type);
+      const op = normalizeOp(c.op);
+      return `
+      ${i > 0 ? `<div class="cb-connector">${htmlEsc((c.connector || (logic === 'or' ? 'OR' : 'AND')).toUpperCase())}</div>` : ''}
+      <div class="cb-row">
+        <select class="form-control" style="flex:1.6" id="ar-attr-${i}" onchange="patchCreateConditionAttr(${i}, this.value)">
+          ${groupedAttrOptionsHtml(c.attributeId || '', attr, '')}
+        </select>
+        <select class="form-control" style="width:130px" id="ar-op-${i}" onchange="patchCreateCondition(${i}, 'op', this.value)">
+          <option value="">Operator</option>
+          ${ops.map(o => `<option ${o === op ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+        </select>
+        ${createValueControl(c, i, type, op)}
+        ${conditions.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" onclick="removeCreateCondition(${i})">Remove</button>` : ''}
+      </div>
+      ${attr ? `<div class="cb-source" style="margin-top:0"><strong>${htmlEsc(attrDisplayName(attr))}</strong> · ${htmlEsc(attr.id)} · Questionnaire → Risk Studio</div>` : ''}`;
+    }).join('')}
+    <div class="cb-actions">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addCreateCondition('AND')">+ Add Condition</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="addCreateCondition('OR')">+ Add OR Group</button>
+    </div>`;
+}
+
+function setCreateLogic(logic) {
+  if (!window.__eligCreate) return;
+  window.__eligCreate.logic = logic === 'or' ? 'or' : 'and';
+  renderCreateConditionBuilder();
+}
+
+function createValueControl(c, i, type, op) {
+  if (!opNeedsValue(op)) return `<input class="form-control cb-value" disabled placeholder="Not required">`;
+  if (opNeedsTwoValues(op)) {
+    return `<span style="display:flex;gap:8px;flex:1"><input type="number" class="form-control" id="ar-val-${i}" value="${htmlEsc(c.value || '')}" placeholder="From" oninput="patchCreateCondition(${i}, 'value', this.value)"><input type="number" class="form-control" id="ar-val2-${i}" value="${htmlEsc(c.value2 || '')}" placeholder="To" oninput="patchCreateCondition(${i}, 'value2', this.value)"></span>`;
+  }
+  if (type === 'boolean') {
+    return `<select class="form-control cb-value" id="ar-val-${i}" onchange="patchCreateCondition(${i}, 'value', this.value)"><option value="">Select</option><option ${c.value === 'Yes' ? 'selected' : ''}>Yes</option><option ${c.value === 'No' ? 'selected' : ''}>No</option></select>`;
+  }
+  const attr = resolveConditionAttr(c);
+  const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+  const opts = questionOptions(attr, found?.q);
+  if ((type === 'select' || type === 'multi-select' || op === 'IN' || op === 'NOT IN') && opts.length) {
+    return `<select class="form-control cb-value" id="ar-val-${i}" onchange="patchCreateCondition(${i}, 'value', this.value)"><option value="">Select</option>${opts.map(o => `<option value="${htmlEsc(o.value)}" ${String(c.value) === o.value ? 'selected' : ''}>${htmlEsc(o.label)}</option>`).join('')}</select>`;
+  }
+  const inputType = type === 'date' ? 'date' : (type === 'number' || type === 'currency' ? 'number' : 'text');
+  return `<input type="${inputType}" class="form-control cb-value" id="ar-val-${i}" value="${htmlEsc(c.value || '')}" placeholder="Enter a value." oninput="patchCreateCondition(${i}, 'value', this.value)">`;
+}
+
+function patchCreateCondition(i, key, value) {
+  const draft = window.__eligCreate;
+  if (!draft?.conditions[i]) return;
+  draft.conditions[i][key] = value;
+  if (key === 'op') renderCreateConditionBuilder();
+}
+
+function patchCreateConditionAttr(i, attributeId) {
+  const draft = window.__eligCreate;
+  if (!draft?.conditions[i]) return;
+  const attr = findRiskAttr(attributeId);
+  const found = findQuestionById(attr?.questionId || attr?.sourceQuestionId);
+  draft.conditions[i].attributeId = attributeId;
+  draft.conditions[i].sourceQuestionId = attr?.questionId || attr?.sourceQuestionId || '';
+  draft.conditions[i].field = attr ? riskAttributeFieldKey(attr) : '';
+  draft.conditions[i].op = operatorsForType(riskDataType(attr, found?.q))[0] || '';
+  draft.conditions[i].value = '';
+  draft.conditions[i].value2 = '';
+  renderCreateConditionBuilder();
+}
+
+function addCreateCondition(connector) {
+  const draft = window.__eligCreate;
+  if (!draft) return;
+  const c = emptyCondition();
+  c.connector = connector || 'AND';
+  draft.conditions.push(c);
+  renderCreateConditionBuilder();
+}
+
+function removeCreateCondition(i) {
+  const draft = window.__eligCreate;
+  if (!draft || draft.conditions.length <= 1) return;
+  draft.conditions.splice(i, 1);
+  renderCreateConditionBuilder();
+}
+
+function createEligibilityRule() {
+  const nameEl = document.getElementById('ar-name');
+  const catEl = document.getElementById('ar-cat');
+  document.querySelectorAll('#active-modal-overlay .is-invalid').forEach(el => el.classList.remove('is-invalid'));
+  document.querySelectorAll('#active-modal-overlay .field-error').forEach(el => el.remove());
+  const name = nameEl?.value.trim();
+  const category = catEl?.value;
+  const draft = window.__eligCreate || { conditions: [emptyCondition()], outcomeType: 'hard' };
+  const first = [];
+  const fail = (el, msg) => { markEligError(el, msg); if (el) first.push(el); };
+  if (!name) fail(nameEl, 'This field is required.');
+  if (!category) fail(catEl, 'This field is required.');
+  const priEl = document.getElementById('ar-priority');
+  const pri = Number(priEl?.value);
+  if (!Number.isFinite(pri) || pri <= 0) fail(priEl, 'Priority is required and must be a valid positive number.');
+  if (!draft.outcomeType) {
+    notifyElig('Cannot create rule', 'Outcome is required.', 'error');
+    first.push(document.querySelector('#ar-out-hard'));
+  }
+  if (!eligibilityRiskAttributes().length) {
+    notifyElig('Cannot create rule', 'Mark Risk Attributes as Available for Eligibility in Risk Studio first.', 'error');
+    return;
+  }
+  (draft.conditions || []).forEach((c, i) => {
+    const attrEl = document.getElementById(`ar-attr-${i}`);
+    const opEl = document.getElementById(`ar-op-${i}`);
+    const valEl = document.getElementById(`ar-val-${i}`);
+    if (!c.attributeId) fail(attrEl, 'This field is required.');
+    if (!c.op) fail(opEl, 'This field is required.');
+    if (opNeedsValue(c.op) && !String(c.value || '').trim()) fail(valEl, 'Enter a value.');
+    if (opNeedsTwoValues(c.op) && !String(c.value2 || '').trim()) fail(document.getElementById(`ar-val2-${i}`), 'Enter a value.');
+    const attr = resolveConditionAttr(c);
+    const type = riskDataType(attr, findQuestionById(c.sourceQuestionId || attr?.questionId)?.q);
+    if (opNeedsValue(c.op) && (type === 'number' || type === 'currency') && String(c.value) && Number.isNaN(Number(c.value))) fail(valEl, 'Value must be numeric.');
+  });
+  if (first.length) {
+    first[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    first[0]?.focus?.();
+    notifyElig('Cannot create rule', 'Complete the required fields.', 'error');
+    return;
+  }
+  const id = nextEligibilityRuleId();
+  const coverVal = document.getElementById('ar-cover')?.value || 'ALL';
+  const priority = pri;
+  const description = document.getElementById('ar-desc')?.value.trim() || '';
+  const coverIds = [];
+  let cover = 'All Covers';
+  if (coverVal && coverVal !== 'ALL') {
+    const match = productCovers().find(c => String(c.id) === String(coverVal));
+    cover = match?.name || match?.code || coverVal;
+    coverIds.push(match?.id || coverVal);
+  }
+  const tpl = normalizeEligibilityRule({
+    id, name, category, cover, priority, description, coverIds,
+    source: 'Product',
+    lastUpdated: new Date().toISOString().slice(0, 10),
+    reasonCode: `ELIG-${id.replace(/\D/g, '') || Date.now().toString().slice(-6)}`,
+    conditions: draft.conditions.map(normalizeCondition),
+    outcomeType: draft.outcomeType || 'hard',
+    logic: draft.logic || 'and'
+  });
+  RULES.push(tpl);
+  persistRules();
+  PS.closeModal();
+  refreshEligibilityMeta();
+  PS.studioHub?.paint?.();
+  PS.studioHub?.open?.(id);
+  notifyElig('Eligibility rule created', `${name} was added to this product.`, 'success');
+}
+</script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/underwriting-rule-store.js"></script>
+<script src="assets/prototype-app.js"></script>
+<script>
+(function wrapEligibilitySaveAndCreate() {
+  const origBar = window.addStudioSaveBar;
+  window.addStudioSaveBar = function () {
+    if (typeof origBar === 'function') origBar();
+    const btn = document.getElementById('ps-save-studio');
+    if (!btn) return;
+    const prev = btn.onclick;
+    btn.onclick = function (e) {
+      if (!validateEligibilityRule()) return;
+      if (!commitPendingEligibilityRule()) return;
+      persistRules();
+      renderRuleList();
+      if (typeof prev === 'function') prev.call(this, e);
+      notifyElig('Eligibility rule saved', 'The rule was saved in Eligibility Studio.', 'success');
+      PS.studioHub?.paint?.();
+      openRuleEditor(activeRuleId);
+    };
+  };
+  document.addEventListener('DOMContentLoaded', function () {});
+})();
+</script>
+</body>
+</html>

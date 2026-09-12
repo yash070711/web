@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Insurance Product Studio</title>
+  <meta name="description" content="Add, edit, and remove every dropdown and custom field used across Product Studio.">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .admin-layout { display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: start; }
+    .admin-nav { position: sticky; top: 16px; }
+    .admin-nav-item {
+      display: block; width: 100%; text-align: left; padding: 8px 12px; border: 0;
+      background: transparent; color: var(--color-muted); border-radius: 8px; cursor: pointer; font-size: 13px;
+    }
+    .admin-nav-item:hover { background: var(--color-surface); color: var(--color-ink); }
+    .admin-nav-item.active { background: var(--color-brand-light); color: var(--color-brand); font-weight: 650; }
+    .admin-group-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase;
+      color: var(--color-muted); padding: 14px 12px 6px;
+    }
+    .admin-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .admin-search { position: relative; flex: 1; min-width: 200px; }
+    .admin-search input {
+      width: 100%; height: 36px; padding: 0 12px 0 34px; border: 1px solid var(--color-border);
+      border-radius: 999px; background: var(--color-surface); color: var(--color-ink); font-size: 13px;
+    }
+    .admin-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-muted); }
+    .admin-card { border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-panel); margin-bottom: 14px; overflow: hidden; }
+    .admin-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--color-border); }
+    .admin-card-title { font-size: 14px; font-weight: 650; }
+    .admin-card-sub { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+    .admin-row { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid rgba(36,48,68,.7); }
+    .admin-row:last-child { border-bottom: 0; }
+    .admin-row input { flex: 1; }
+    .admin-empty { padding: 20px; text-align: center; color: var(--color-muted); font-size: 13px; }
+    .admin-add { display: flex; gap: 8px; padding: 12px 16px; background: rgba(11,18,32,.4); }
+    .admin-add input { flex: 1; }
+    @media (max-width: 900px) { .admin-layout { grid-template-columns: 1fr; } .admin-nav { position: static; } }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+  <main class="main-content" id="main-content">
+    <div class="page-header" style="padding-left:var(--space-5);padding-right:var(--space-5)">
+      <div class="page-header-left">
+        <h1 class="page-title">Admin Panel</h1>
+        <p class="page-subtitle">Add, edit, or remove every dropdown used across Product Studio. Custom fields you add here appear on cover, product, question, and risk forms.</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn btn-ghost" type="button" onclick="exportCatalog()">Export JSON</button>
+        <label class="btn btn-secondary" style="cursor:pointer">
+          Import JSON
+          <input type="file" accept="application/json" hidden onchange="importCatalog(event)">
+        </label>
+        <button class="btn btn-ghost" type="button" onclick="resetAll()">Restore defaults</button>
+      </div>
+    </div>
+    <div style="padding:0 var(--space-5) var(--space-6)">
+      <div class="admin-toolbar">
+        <div class="admin-search">
+          <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M229.66 218.34l-50.07-50.07a88 88 0 10-11.31 11.31l50.06 50.07a8 8 0 0011.32-11.31zM40 112a72 72 0 1172 72 72.08 72.08 0 01-72-72z"/></svg>
+          <input id="admin-q" type="search" placeholder="Search lists, values, fields…" oninput="renderAdmin()" aria-label="Search admin catalog">
+        </div>
+      </div>
+      <div class="admin-layout">
+        <aside class="card admin-nav" id="admin-nav"></aside>
+        <div id="admin-main"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="assets/data.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script>
+let activeGroup = 'all';
+
+function renderAdmin() {
+  const q = (document.getElementById('admin-q')?.value || '').trim().toLowerCase();
+  const groups = [{ group: 'All lists', lists: [] }, ...PS.admin.schema];
+  document.getElementById('admin-nav').innerHTML = groups.map((g, i) => {
+    const id = i === 0 ? 'all' : g.group;
+    return `${i ? `<div class="admin-group-label">${g.group}</div>` : ''}
+      <button type="button" class="admin-nav-item ${activeGroup===id?'active':''}" onclick="activeGroup='${id.replace(/'/g,"\\'")}';renderAdmin()">${i===0?'All lists':g.group}</button>`;
+  }).join('') + `<div class="admin-group-label">Forms</div>
+    <button type="button" class="admin-nav-item ${activeGroup==='fields'?'active':''}" onclick="activeGroup='fields';renderAdmin()">Custom fields</button>
+    <button type="button" class="admin-nav-item ${activeGroup==='valuation'?'active':''}" onclick="activeGroup='valuation';renderAdmin()">Valuation bases</button>`;
+
+  if (activeGroup === 'fields') { renderFields(q); return; }
+  if (activeGroup === 'valuation') { renderValuation(q); return; }
+
+  const lists = PS.admin.schema.flatMap(g => g.lists.map(l => Object.assign({ group: g.group }, l)))
+    .filter(l => activeGroup === 'all' || l.group === activeGroup)
+    .filter(l => {
+      if (!q) return true;
+      const hay = `${l.group} ${l.label} ${l.key} ${(PS.admin.options(l.key)||[]).join(' ')}`.toLowerCase();
+      return hay.includes(q);
+    });
+
+  document.getElementById('admin-main').innerHTML = lists.map(l => {
+    const items = PS.admin.options(l.key);
+    return `<section class="admin-card" data-key="${l.key}">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">${l.label}</div>
+          <div class="admin-card-sub">${l.group} · ${items.length} value${items.length===1?'':'s'} · used by dropdowns with key <span class="text-mono">${l.key}</span></div>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="PS.admin.resetList('${l.key}');renderAdmin()">Reset</button>
+      </div>
+      ${items.map((v,i) => `
+        <div class="admin-row">
+          <input class="form-control" value="${esc(v)}" onchange="PS.admin.updateOption('${l.key}',${i},this.value);renderAdmin()">
+          <button type="button" class="btn btn-ghost btn-sm" ${i===0?'disabled':''} onclick="PS.admin.moveOption('${l.key}',${i},${i-1});renderAdmin()" aria-label="Move up">↑</button>
+          <button type="button" class="btn btn-ghost btn-sm" ${i===items.length-1?'disabled':''} onclick="PS.admin.moveOption('${l.key}',${i},${i+1});renderAdmin()" aria-label="Move down">↓</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="PS.admin.removeOption('${l.key}',${i});renderAdmin()" aria-label="Remove">✕</button>
+        </div>`).join('') || `<div class="admin-empty">No values. Add one below.</div>`}
+      <div class="admin-add">
+        <input class="form-control" id="add-${l.key}" placeholder="Add a value…" onkeydown="if(event.key==='Enter'){event.preventDefault();addOpt('${l.key}')}">
+        <button type="button" class="btn btn-primary btn-sm" onclick="addOpt('${l.key}')">+ Add</button>
+      </div>
+    </section>`;
+  }).join('') || `<div class="admin-empty">No lists match that search.</div>`;
+}
+
+function renderFields(q) {
+  const fields = PS.admin.extraFields().filter(f => !q || `${f.label} ${f.id} ${f.appliesTo}`.toLowerCase().includes(q));
+  const listKeys = PS.admin.schema.flatMap(g => g.lists.map(l => l.key));
+  document.getElementById('admin-main').innerHTML = `
+    <section class="admin-card">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Custom fields</div>
+          <div class="admin-card-sub">These fields appear on cover and product forms across the studio. Anyone with admin access can add or remove them.</div>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" onclick="addField()">+ Add field</button>
+      </div>
+      ${fields.length ? fields.map(f => `
+        <div class="admin-row" style="flex-wrap:wrap">
+          <input class="form-control" style="flex:1.2" value="${esc(f.label)}" onchange="PS.admin.updateExtraField('${f.id}',{label:this.value})">
+          <select class="form-control" style="width:120px" onchange="PS.admin.updateExtraField('${f.id}',{type:this.value});renderAdmin()">
+            <option ${f.type==='text'?'selected':''}>text</option>
+            <option ${f.type==='number'?'selected':''}>number</option>
+            <option ${f.type==='textarea'?'selected':''}>textarea</option>
+            <option ${f.type==='select'?'selected':''}>select</option>
+          </select>
+          <select class="form-control" style="width:140px" onchange="PS.admin.updateExtraField('${f.id}',{appliesTo:this.value})">
+            <option value="cover" ${f.appliesTo==='cover'?'selected':''}>Cover forms</option>
+            <option value="product" ${f.appliesTo==='product'?'selected':''}>Product forms</option>
+            <option value="question" ${f.appliesTo==='question'?'selected':''}>Question forms</option>
+            <option value="risk" ${f.appliesTo==='risk'?'selected':''}>Risk forms</option>
+            <option value="all" ${f.appliesTo==='all'?'selected':''}>All forms</option>
+          </select>
+          ${f.type==='select' ? `<select class="form-control" style="width:180px" onchange="PS.admin.updateExtraField('${f.id}',{optionsKey:this.value})">${listKeys.map(k=>`<option ${f.optionsKey===k?'selected':''}>${k}</option>`).join('')}</select>` : `<input class="form-control" style="flex:1" placeholder="Placeholder" value="${esc(f.placeholder||'')}" onchange="PS.admin.updateExtraField('${f.id}',{placeholder:this.value})">`}
+          <button type="button" class="btn btn-ghost btn-sm" onclick="PS.admin.removeExtraField('${f.id}');renderAdmin()">✕</button>
+        </div>`).join('') : `<div class="admin-empty">No custom fields yet. Add one to collect extra data on covers or products.</div>`}
+    </section>`;
+}
+
+function renderValuation(q) {
+  const rows = PS.admin.records('valuationBases').filter(r => !q || `${r.id} ${r.name} ${r.desc}`.toLowerCase().includes(q));
+  document.getElementById('admin-main').innerHTML = `
+    <section class="admin-card">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-card-title">Valuation bases</div>
+          <div class="admin-card-sub">Cards in Coverage Studio · Financial Terms. Add AV, MV, RC, or any new basis.</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="PS.admin.resetList('valuationBases');renderAdmin()">Reset</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="addValuation()">+ Add basis</button>
+        </div>
+      </div>
+      ${rows.map((r,i) => `
+        <div class="admin-row" style="flex-wrap:wrap">
+          <input class="form-control" style="width:72px" value="${esc(r.id)}" onchange="PS.admin.updateRecord('valuationBases',${i},{id:this.value})">
+          <input class="form-control" style="flex:1" value="${esc(r.name)}" onchange="PS.admin.updateRecord('valuationBases',${i},{name:this.value})">
+          <input class="form-control" style="flex:1.6" value="${esc(r.desc||'')}" onchange="PS.admin.updateRecord('valuationBases',${i},{desc:this.value})">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="PS.admin.removeRecord('valuationBases',${i});renderAdmin()">✕</button>
+        </div>`).join('') || `<div class="admin-empty">No valuation bases.</div>`}
+    </section>`;
+}
+
+function addOpt(key) {
+  const el = document.getElementById('add-' + key);
+  if (!PS.admin.addOption(key, el?.value)) {
+    PS.actionResult?.('info', 'Not added', 'Enter a unique value.');
+    return;
+  }
+  el.value = '';
+  renderAdmin();
+}
+
+function addField() {
+  PS.admin.addExtraField({ label: 'New field', type: 'text', appliesTo: 'cover' });
+  renderAdmin();
+}
+
+function addValuation() {
+  PS.admin.addRecord('valuationBases', { id: 'XX', name: 'New basis', desc: '', tone: '#94A3B8', bg: 'rgba(148,163,184,.16)', icon: 'shield' });
+  renderAdmin();
+}
+
+function exportCatalog() {
+  const blob = new Blob([PS.admin.exportJson()], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'product-studio-admin-catalog.json';
+  a.click();
+}
+
+function importCatalog(ev) {
+  const file = ev.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { PS.admin.importJson(reader.result); renderAdmin(); PS.actionResult?.('success', 'Catalog imported', 'Dropdowns across the studio will use the new values.'); }
+    catch (err) { PS.actionResult?.('error', 'Import failed', String(err.message || err)); }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+
+function resetAll() {
+  if (!confirm('Restore every dropdown and custom field to the original defaults?')) return;
+  PS.admin.resetAll();
+  renderAdmin();
+}
+
+function esc(v) { return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+PS.nav.render('admin', [{ label: 'Admin Panel', href: '#' }]);
+renderAdmin();
+</script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+</body>
+</html>

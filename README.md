@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Veridex Product Studio (Next.js SaaS)
 
-## Getting Started
+Dynamic Product Studio: session-cookie auth, per-user workspace on the server, and full create / edit / delete on every field.
 
-First, run the development server:
+## Run
 
 ```bash
+cd web
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3001 (or http://localhost:3000). The dashboard loads immediately — there is no login or signup screen.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Your products are saved in `data/workspaces/USR-LOCAL.json`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How data is stored
 
-## Learn More
+Cookies cannot hold a full product catalogue (browser limit ~4KB). This app uses:
 
-To learn more about Next.js, take a look at the following resources:
+- **httpOnly session cookie** (`ps_session`) — signed user identity (email, name, role, active product).
+- **Server workspace files** — `data/workspaces/{userId}.json` for products, studios, audit, quotes, team, pricing, glossary.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Each registered user gets an isolated workspace.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` — development
+- `npm run build` — production build
+- `npm start` — run production server

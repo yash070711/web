@@ -1,0 +1,4119 @@
+{
+  "schema": "insurance-product-studio-product-v1",
+  "exportedAt": "2026-08-27T11:29:23.281Z",
+  "productId": "PRD-020",
+  "version": "2026.08",
+  "status": "draft",
+  "product": {
+    "id": "PRD-020",
+    "name": "QA Auto Motor Comprehensive",
+    "family": "Motor",
+    "version": "2026.08",
+    "status": "draft",
+    "effectiveFrom": "01-Sept-2026",
+    "effectiveTo": "31-Aug-2027",
+    "owner": "Anika Sharma",
+    "lastModifiedBy": "Anika Sharma",
+    "segment": "Personal Lines",
+    "code": "MOT-2026-804",
+    "description": "Finished motor comprehensive product created during an automated QA test of Product Studio.",
+    "jurisdictions": [
+      "India"
+    ],
+    "lastModified": "27-Aug-2026",
+    "lastModifiedAt": "2026-08-27T10:58:25.668Z",
+    "sortOrder": -1787828305668,
+    "sourceProductId": "PRD-015",
+    "pending": true
+  },
+  "identity": {
+    "id": "PRD-020",
+    "name": "QA Auto Motor Comprehensive",
+    "code": "MOT-2026-804",
+    "family": "Motor",
+    "segment": "Personal Lines",
+    "owner": "Anika Sharma",
+    "jurisdictions": [
+      "India"
+    ],
+    "description": "Finished motor comprehensive product created during an automated QA test of Product Studio.",
+    "effectiveFrom": "01-Sept-2026",
+    "effectiveTo": "31-Aug-2027",
+    "sourceProductId": "PRD-015",
+    "sourceVersion": null
+  },
+  "versions": [
+    {
+      "label": "2026.08",
+      "status": "draft",
+      "from": "01-Sept-2026",
+      "to": "31-Aug-2027",
+      "by": "Anika Sharma",
+      "on": "27-Aug-2026",
+      "gates": 0,
+      "sim": "Not Run"
+    }
+  ],
+  "studios": {
+    "coverage": [
+      {
+        "id": "COV-CT-001",
+        "name": "Own Damage — Truck & Chassis",
+        "code": "COV-OD-CT-001",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "First Party — Property Damage",
+        "description": "Covers accidental damage, fire, explosion, and natural peril loss to the insured truck, chassis, and permanently fitted equipment.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "180000",
+        "maxSingleLimit": "180000",
+        "subLimit": "",
+        "deductibleType": "percentage",
+        "deductibleAmount": "",
+        "deductiblePct": "2.5",
+        "minDeductible": "1000",
+        "maxDeductible": "8000",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "defaultSelected": true,
+        "mutualExclusions": [],
+        "coverVersion": "2026.08",
+        "conditionalOn": "",
+        "requiresCover": "",
+        "dependencies": [
+          {
+            "type": "Bundles with",
+            "dependsOn": "Third Party Liability",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Gross Vehicle Weight",
+            "operator": "≤",
+            "value": "49 tonnes"
+          },
+          {
+            "field": "Vehicle Age",
+            "operator": "≤",
+            "value": "20 years"
+          },
+          {
+            "field": "Body Type",
+            "operator": "is one of",
+            "value": "Rigid, Tractor Unit, Tipper, Tanker, Box, Flatbed"
+          }
+        ],
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "24",
+        "claimsNotifUnit": "hours",
+        "wordingDoc": "Commercial Truck Policy Wording — Own Damage clause",
+        "wordingDocs": [
+          {
+            "name": "Commercial Own Damage Clause",
+            "version": "v2026.08",
+            "code": "DOC-OD-CT-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-002",
+        "name": "Third Party Liability",
+        "code": "COV-TP-CT-001",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "Third Party Liability",
+        "description": "Statutory and excess third-party liability for death, bodily injury, and property damage arising from commercial truck use.",
+        "basisOfCoverage": "Limit of Indemnity",
+        "sumInsured": "1000000",
+        "maxSingleLimit": "1000000",
+        "subLimit": "5000000",
+        "deductibleType": "fixed",
+        "deductibleAmount": "2500",
+        "deductiblePct": "",
+        "coverVersion": "2026.08",
+        "defaultSelected": true,
+        "dependencies": [],
+        "constraints": [
+          {
+            "field": "Vehicle Registration",
+            "operator": "is",
+            "value": "Active CMV / HGV"
+          },
+          {
+            "field": "Operator Licence",
+            "operator": "is",
+            "value": "Valid"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Commercial Motor TPL Clause",
+            "version": "v2026.08",
+            "code": "DOC-TP-CT-001"
+          }
+        ],
+        "mutualExclusions": [],
+        "minDeductible": "",
+        "maxDeductible": "",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "conditionalOn": "",
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "14",
+        "claimsNotifUnit": "days"
+      },
+      {
+        "id": "COV-CT-003",
+        "name": "Driver & Cleaner Personal Accident",
+        "code": "COV-PA-CT-001",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "Benefit — Personal Accident",
+        "description": "Fixed benefit for accidental death or permanent disability of the named driver and cleaner while on duty.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "50000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "50000",
+        "defaultSelected": true,
+        "dependencies": [],
+        "constraints": [
+          {
+            "field": "Driver Licence Class",
+            "operator": "in",
+            "value": "HGV, CMV, Class 4/5"
+          },
+          {
+            "field": "Named Driver Age",
+            "operator": "≥",
+            "value": "25 years"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Commercial PA Schedule",
+            "version": "v2026.08",
+            "code": "DOC-PA-CT-001"
+          }
+        ],
+        "mutualExclusions": [],
+        "subLimit": "",
+        "deductiblePct": "",
+        "minDeductible": "",
+        "maxDeductible": "",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "conditionalOn": "",
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "14",
+        "claimsNotifUnit": "days"
+      },
+      {
+        "id": "COV-CT-004",
+        "name": "Goods in Transit",
+        "code": "COV-GIT-001",
+        "availability": "default",
+        "complete": true,
+        "type": "First Party — Cargo",
+        "description": "Covers loss or damage to lawful cargo carried on the insured truck, including loading and unloading at declared locations.",
+        "basisOfCoverage": "Declared Value",
+        "sumInsured": "250000",
+        "deductibleType": "percentage",
+        "deductiblePct": "1",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "250000",
+        "defaultSelected": true,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "requiresCover": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Goods Class",
+            "operator": "not in",
+            "value": "Class 1 explosives, radioactive"
+          },
+          {
+            "field": "Radius of Operation",
+            "operator": "≤",
+            "value": "1,500 km"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Goods in Transit Clause",
+            "version": "v2026.08",
+            "code": "DOC-GIT-001"
+          }
+        ],
+        "mutualExclusions": [],
+        "subLimit": "",
+        "deductibleAmount": "",
+        "minDeductible": "",
+        "maxDeductible": "",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "14",
+        "claimsNotifUnit": "days"
+      },
+      {
+        "id": "COV-CT-005",
+        "name": "Trailer & Semi-Trailer",
+        "code": "COV-TRL-001",
+        "availability": "optional",
+        "complete": true,
+        "type": "First Party — Property Damage",
+        "description": "Extends own-damage and theft cover to declared trailers and semi-trailers attached to the insured tractor unit.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "80000",
+        "deductibleType": "fixed",
+        "deductibleAmount": "1500",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "80000",
+        "defaultSelected": false,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Body type is Tractor Unit"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Trailer Count",
+            "operator": "≤",
+            "value": "2"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Trailer Extension Endorsement",
+            "version": "v2026.08",
+            "code": "DOC-TRL-001"
+          }
+        ],
+        "mutualExclusions": [],
+        "subLimit": "",
+        "deductiblePct": "",
+        "minDeductible": "",
+        "maxDeductible": "",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "14",
+        "claimsNotifUnit": "days"
+      },
+      {
+        "id": "COV-CT-006",
+        "name": "Theft & Hijack",
+        "code": "COV-TH-CT-001",
+        "availability": "default",
+        "complete": true,
+        "type": "First Party — Crime",
+        "description": "Covers theft of the truck, trailer, or cargo following forcible entry, hijack, or armed robbery while in transit.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "180000",
+        "deductibleType": "percentage",
+        "deductiblePct": "10",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "180000",
+        "defaultSelected": true,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Tracking Device",
+            "operator": "is",
+            "value": "Fitted and active"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Theft & Hijack Clause",
+            "version": "v2026.08",
+            "code": "DOC-TH-CT-001"
+          }
+        ],
+        "mutualExclusions": [],
+        "subLimit": "",
+        "deductibleAmount": "",
+        "minDeductible": "",
+        "maxDeductible": "",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "14",
+        "claimsNotifUnit": "days"
+      },
+      {
+        "id": "COV-CT-007",
+        "name": "Breakdown & Recovery",
+        "code": "COV-RSA-CT-001",
+        "availability": "addon",
+        "complete": true,
+        "type": "Service Benefit",
+        "description": "24/7 commercial recovery, towing to nearest authorised workshop, and roadside mechanical assistance. Up to 6 call-outs per year.",
+        "basisOfCoverage": "Service Limit",
+        "sumInsured": "Service",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "Service",
+        "defaultSelected": false,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Vehicle age ≤ 15 years"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Vehicle Age",
+            "operator": "≤",
+            "value": "15 years"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Commercial Recovery Terms",
+            "version": "v2026.08",
+            "code": "DOC-RSA-CT-001"
+          }
+        ],
+        "mutualExclusions": [],
+        "subLimit": "",
+        "deductiblePct": "",
+        "minDeductible": "",
+        "maxDeductible": "",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "14",
+        "claimsNotifUnit": "days"
+      },
+      {
+        "id": "COV-CT-008",
+        "name": "Loading, Unloading & Overturning",
+        "code": "COV-LU-001",
+        "availability": "addon",
+        "complete": true,
+        "type": "First Party — Working Risk",
+        "description": "Covers damage to the truck, trailer, or cargo caused by loading, unloading, tipping, or overturning during commercial operations.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "180000",
+        "deductibleType": "fixed",
+        "deductibleAmount": "3000",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "180000",
+        "defaultSelected": false,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Body Type",
+            "operator": "in",
+            "value": "Tipper, Tanker, Mixer"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Loading & Overturning Endorsement",
+            "version": "v2026.08",
+            "code": "DOC-LU-001"
+          }
+        ],
+        "mutualExclusions": [],
+        "subLimit": "",
+        "deductiblePct": "",
+        "minDeductible": "",
+        "maxDeductible": "",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "14",
+        "claimsNotifUnit": "days"
+      },
+      {
+        "id": "COV-614603",
+        "name": "Windscreen & Glass",
+        "code": "COV-OD-CT-001",
+        "availability": "addon",
+        "complete": true,
+        "type": "First Party — Glass",
+        "description": "Covers accidental damage to windscreen and vehicle glass with nil or reduced excess.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "180000",
+        "maxSingleLimit": "180000",
+        "subLimit": "",
+        "deductibleType": "percentage",
+        "deductibleAmount": "",
+        "deductiblePct": "2.5",
+        "minDeductible": "1000",
+        "maxDeductible": "8000",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "defaultSelected": true,
+        "mutualExclusions": [],
+        "coverVersion": "2026.08",
+        "conditionalOn": "",
+        "requiresCover": "",
+        "dependencies": [
+          {
+            "type": "Bundles with",
+            "dependsOn": "Third Party Liability",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Gross Vehicle Weight",
+            "operator": "≤",
+            "value": "49 tonnes"
+          },
+          {
+            "field": "Vehicle Age",
+            "operator": "≤",
+            "value": "20 years"
+          },
+          {
+            "field": "Body Type",
+            "operator": "is one of",
+            "value": "Rigid, Tractor Unit, Tipper, Tanker, Box, Flatbed"
+          }
+        ],
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "24",
+        "claimsNotifUnit": "hours",
+        "wordingDoc": "Commercial Truck Policy Wording — Own Damage clause",
+        "wordingDocs": [
+          {
+            "name": "Commercial Own Damage Clause",
+            "version": "v2026.08",
+            "code": "DOC-OD-CT-001"
+          }
+        ],
+        "status": "incomplete"
+      }
+    ],
+    "questionnaire": [
+      {
+        "id": "grp-1",
+        "name": "Truck Details",
+        "label": "Truck Details",
+        "questions": [
+          {
+            "id": "QST-CT-001",
+            "label": "Make & Model",
+            "internalName": "vehicle_make_model",
+            "type": "entity",
+            "typeLabel": "Entity Lookup",
+            "required": true,
+            "displayOrder": 1,
+            "helpText": "Manufacturer and model of the truck, e.g. Tata Prima 4928.S",
+            "channels": "Web, Mobile, Agent, API",
+            "example": "Tata Prima 4928.S",
+            "fieldType": "entity",
+            "inputFormat": "Entity lookup",
+            "validations": [
+              {
+                "rule": "Required",
+                "expr": "true",
+                "msg": "Make and model is required."
+              }
+            ],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-002",
+            "label": "Year of Manufacture",
+            "internalName": "vehicle_year_of_manufacture",
+            "type": "number",
+            "typeLabel": "Number",
+            "required": true,
+            "displayOrder": 2,
+            "derived": {
+              "attr": "vehicle_age",
+              "formula": "FLOOR(DATEDIFF(TODAY(), vehicle_year_of_manufacture, \"years\"))",
+              "dataType": "Number",
+              "usedIn": "Rating factors (vehicle age band), Eligibility rules (max 20 years)"
+            },
+            "helpText": "The year the vehicle was manufactured, as shown on the registration document. Used against the 20-year commercial cap.",
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "number",
+            "inputFormat": "4-digit year (YYYY)",
+            "min": "2005",
+            "max": "[Current Year]",
+            "step": "1",
+            "placeholder": "e.g., 2019",
+            "validations": [
+              {
+                "rule": "Min Value",
+                "expr": "2005",
+                "msg": "Vehicle must be manufactured in 2005 or later."
+              },
+              {
+                "rule": "Max Value",
+                "expr": "Current Year",
+                "msg": "Year of manufacture cannot be in the future."
+              },
+              {
+                "rule": "Required",
+                "expr": "true",
+                "msg": "This field is required."
+              }
+            ],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-003",
+            "label": "Gross Vehicle Weight (tonnes)",
+            "internalName": "gvw_tonnes",
+            "type": "number",
+            "typeLabel": "Number",
+            "required": true,
+            "displayOrder": 3,
+            "helpText": "Must be 49 tonnes or less for this product.",
+            "channels": "Web, Mobile, Agent, API",
+            "example": "16",
+            "min": "1",
+            "max": "49",
+            "fieldType": "number",
+            "validations": [
+              {
+                "rule": "Max Value",
+                "expr": "49",
+                "msg": "GVW must not exceed 49 tonnes."
+              }
+            ],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-004",
+            "label": "Body Type",
+            "internalName": "body_type",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "required": true,
+            "displayOrder": 4,
+            "helpText": "Tankers and tippers may refer to operations underwriting.",
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "select",
+            "options": [
+              {
+                "value": "Rigid",
+                "label": "Rigid"
+              },
+              {
+                "value": "Tractor Unit",
+                "label": "Tractor Unit"
+              },
+              {
+                "value": "Tipper",
+                "label": "Tipper"
+              },
+              {
+                "value": "Tanker",
+                "label": "Tanker"
+              },
+              {
+                "value": "Box",
+                "label": "Box"
+              },
+              {
+                "value": "Flatbed",
+                "label": "Flatbed"
+              }
+            ],
+            "validations": [
+              {
+                "rule": "Required",
+                "expr": "true",
+                "msg": "Select a body type."
+              }
+            ],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-005",
+            "label": "Insured Value",
+            "internalName": "vehicle_insured_value",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "required": true,
+            "displayOrder": 5,
+            "helpText": "Agreed value of the truck and chassis.",
+            "channels": "Web, Mobile, Agent, API",
+            "example": "180000",
+            "fieldType": "currency",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-006",
+            "label": "Axle Count",
+            "internalName": "axle_count",
+            "type": "number",
+            "typeLabel": "Number",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "number",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-007",
+            "label": "Tracking Device Fitted?",
+            "internalName": "tracking_fitted",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "required": true,
+            "displayOrder": 7,
+            "helpText": "Required for full Theft & Hijack and GIT limits.",
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "boolean",
+            "inputFormat": "Yes / No toggle",
+            "evidence": [
+              {
+                "condition": "tracking_fitted = No",
+                "type": "Tracker Certificate",
+                "message": "Upload tracker fitment certificate to restore full GIT and theft limits."
+              }
+            ],
+            "validations": [
+              {
+                "rule": "Required",
+                "expr": "true",
+                "msg": "Confirm whether a tracker is fitted."
+              }
+            ],
+            "conditions": []
+          }
+        ]
+      },
+      {
+        "id": "grp-2",
+        "name": "Operator & Driver",
+        "label": "Operator & Driver",
+        "questions": [
+          {
+            "id": "QST-CT-008",
+            "label": "Operator / Registered Owner",
+            "internalName": "operator_name",
+            "type": "text",
+            "typeLabel": "Text",
+            "required": true,
+            "displayOrder": 1,
+            "example": "Singh Logistics Pvt Ltd",
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "text",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-009",
+            "label": "Primary Driver — Full Name",
+            "internalName": "driver_full_name",
+            "type": "text",
+            "typeLabel": "Text",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "text",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-010",
+            "label": "Primary Driver — Date of Birth",
+            "internalName": "driver_date_of_birth",
+            "type": "date",
+            "typeLabel": "Date",
+            "required": true,
+            "displayOrder": 3,
+            "helpText": "Enter the primary driver's date of birth as shown on their identity document. Driver must be 25 or older at cover start.",
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "date",
+            "inputFormat": "DD-MM-YYYY",
+            "derived": {
+              "attr": "driver_age",
+              "formula": "FLOOR(DATEDIFF(TODAY(), driver_date_of_birth, \"years\"))",
+              "dataType": "Number",
+              "usedIn": "Rating factors (driver age band), Eligibility rules (minimum age 25)"
+            },
+            "evidence": [
+              {
+                "condition": "always",
+                "type": "HGV licence scan",
+                "message": "Upload a scan of the heavy-vehicle licence with date of birth."
+              }
+            ],
+            "validations": [
+              {
+                "rule": "Required",
+                "expr": "true",
+                "msg": "Date of birth is required."
+              }
+            ],
+            "conditions": []
+          },
+          {
+            "id": "QST-CT-011",
+            "label": "HGV / CMV Licence Class",
+            "internalName": "licence_class",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "select",
+            "options": [
+              {
+                "value": "HGV",
+                "label": "HGV"
+              },
+              {
+                "value": "CMV",
+                "label": "CMV"
+              },
+              {
+                "value": "Class 4",
+                "label": "Class 4"
+              },
+              {
+                "value": "Class 5",
+                "label": "Class 5"
+              }
+            ],
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-012",
+            "label": "Years of HGV Experience",
+            "internalName": "hgv_experience_years",
+            "type": "number",
+            "typeLabel": "Number",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "number",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-013",
+            "label": "Conviction History?",
+            "internalName": "driver_conviction_history",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "boolean",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-3",
+        "name": "Operations",
+        "label": "Operations",
+        "questions": [
+          {
+            "id": "QST-CT-014",
+            "label": "Goods Class Carried",
+            "internalName": "goods_class",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "required": true,
+            "displayOrder": 1,
+            "helpText": "Class 1 explosives and radioactive cargo are declined on this product.",
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "select",
+            "options": [
+              {
+                "value": "General merchandise",
+                "label": "General merchandise"
+              },
+              {
+                "value": "Perishable / refrigerated",
+                "label": "Perishable / refrigerated"
+              },
+              {
+                "value": "Construction materials",
+                "label": "Construction materials"
+              },
+              {
+                "value": "Fuel / flammable liquids",
+                "label": "Fuel / flammable liquids"
+              },
+              {
+                "value": "Chemicals (non-explosive)",
+                "label": "Chemicals (non-explosive)"
+              }
+            ],
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-015",
+            "label": "Radius of Operation (km)",
+            "internalName": "radius_km",
+            "type": "number",
+            "typeLabel": "Number",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "number",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-016",
+            "label": "Night Operations?",
+            "internalName": "night_operations",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "required": true,
+            "displayOrder": 3,
+            "helpText": "Night haul and tankers may be referred.",
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "boolean",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-017",
+            "label": "Annual Mileage",
+            "internalName": "annual_mileage",
+            "type": "number",
+            "typeLabel": "Number",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "number",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-018",
+            "label": "Trailer Attached?",
+            "internalName": "trailer_attached",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "boolean",
+            "conditional": true,
+            "conditions": [
+              {
+                "field": "Body Type",
+                "op": "=",
+                "value": "Tractor Unit"
+              }
+            ],
+            "exprPreview": "body_type = Tractor Unit",
+            "visibleWhen": "body_type = Tractor Unit",
+            "validations": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-4",
+        "name": "Policy Details",
+        "label": "Policy Details",
+        "questions": [
+          {
+            "id": "QST-CT-019",
+            "label": "Cover Start Date",
+            "internalName": "policy_start_date",
+            "type": "date",
+            "typeLabel": "Date",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "date",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-020",
+            "label": "Policy Period",
+            "internalName": "policy_period",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "select",
+            "options": [
+              {
+                "value": "12m",
+                "label": "12 months"
+              },
+              {
+                "value": "6m",
+                "label": "6 months"
+              }
+            ],
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-021",
+            "label": "Covers Required",
+            "internalName": "covers_required",
+            "type": "multisel",
+            "typeLabel": "Multi-select",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "multisel",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CT-022",
+            "label": "Payment Preference",
+            "internalName": "payment_preference",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, API",
+            "fieldType": "select",
+            "options": [
+              {
+                "value": "annual",
+                "label": "Annual"
+              },
+              {
+                "value": "monthly",
+                "label": "Monthly"
+              }
+            ],
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      }
+    ],
+    "eligibility": [
+      {
+        "id": "ELG-CT-001",
+        "name": "Min Driver Age — Commercial",
+        "field": "driver_age",
+        "operator": "<",
+        "value": "25",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 10,
+        "status": "active",
+        "description": "Named driver must be at least 25 years old for commercial truck cover.",
+        "customerMsg": "Commercial truck cover is only available to drivers aged 25 and over.",
+        "internalMsg": "Driver age below commercial minimum (25).",
+        "reasonCode": "ELIG-CT-MIN-AGE",
+        "direction": "ineligible",
+        "logic": "and",
+        "conditions": [
+          {
+            "field": "driver_age",
+            "op": "<",
+            "value": "25"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-002",
+        "name": "Valid HGV / CMV Licence",
+        "field": "licence_class",
+        "operator": "not in",
+        "value": "HGV, CMV, Class 4, Class 5",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 5,
+        "status": "active",
+        "description": "Primary driver must hold a valid heavy goods or commercial motor vehicle licence.",
+        "customerMsg": "A valid heavy vehicle licence is required for this product.",
+        "internalMsg": "Licence class not in HGV/CMV allowlist.",
+        "reasonCode": "ELIG-CT-LICENCE",
+        "conditions": [
+          {
+            "field": "licence_class",
+            "op": "not in",
+            "value": "HGV, CMV, Class 4, Class 5"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-003",
+        "name": "Max Vehicle Age",
+        "field": "vehicle_age",
+        "operator": ">",
+        "value": "20",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 20,
+        "status": "active",
+        "description": "Truck must be 20 years old or newer.",
+        "customerMsg": "This product is only available for trucks manufactured within the last 20 years.",
+        "reasonCode": "ELIG-CT-MAX-AGE",
+        "conditions": [
+          {
+            "field": "vehicle_age",
+            "op": ">",
+            "value": "20"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-004",
+        "name": "GVW Cap",
+        "field": "gvw_tonnes",
+        "operator": ">",
+        "value": "49",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 15,
+        "status": "active",
+        "description": "Gross vehicle weight must not exceed 49 tonnes.",
+        "customerMsg": "Vehicles above 49 tonnes require a specialist fleet product.",
+        "reasonCode": "ELIG-CT-GVW",
+        "conditions": [
+          {
+            "field": "gvw_tonnes",
+            "op": ">",
+            "value": "49"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-007",
+        "name": "Min HGV Experience",
+        "field": "hgv_experience_years",
+        "operator": "<",
+        "value": "2",
+        "outcome": "ineligible",
+        "outcomeType": "soft",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 18,
+        "status": "active",
+        "description": "Primary driver must have at least 2 years of heavy-vehicle experience.",
+        "customerMsg": "Drivers with under 2 years of HGV experience may receive a premium loading.",
+        "reasonCode": "ELIG-CT-EXP",
+        "conditions": [
+          {
+            "field": "hgv_experience_years",
+            "op": "<",
+            "value": "2"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-005",
+        "name": "Hazardous Goods Refer",
+        "field": "goods_class",
+        "operator": "in",
+        "value": "Class 1 explosives, radioactive",
+        "outcome": "refer",
+        "outcomeType": "refer",
+        "category": "Cover Eligibility",
+        "cover": "Goods in Transit",
+        "priority": 25,
+        "status": "active",
+        "description": "Class 1 explosives and radioactive cargo are referred to specialist underwriting.",
+        "customerMsg": "Hazardous cargo of this class needs a specialist review before we can quote.",
+        "reasonCode": "ELIG-CT-HAZMAT",
+        "conditions": [
+          {
+            "field": "goods_class",
+            "op": "in",
+            "value": "Class 1 explosives, radioactive"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-006",
+        "name": "Tracking Device for Theft Cover",
+        "field": "tracking_fitted",
+        "operator": "=",
+        "value": "No",
+        "outcome": "ineligible",
+        "outcomeType": "soft",
+        "category": "Cover Eligibility",
+        "cover": "Theft & Hijack",
+        "priority": 30,
+        "status": "active",
+        "description": "Theft & Hijack requires an active GPS tracking device.",
+        "customerMsg": "Theft cover can be added once an approved tracking device is fitted.",
+        "reasonCode": "ELIG-CT-TRACK",
+        "conditions": [
+          {
+            "field": "tracking_fitted",
+            "op": "=",
+            "value": "No"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      }
+    ],
+    "rating": [
+      {
+        "group": "BASE PREMIUM",
+        "items": [
+          {
+            "id": "RAT-CT-BR-001",
+            "name": "Base Rate — Commercial Truck",
+            "type": "base",
+            "amount": 1850,
+            "unit": "per year",
+            "cover": "Own Damage — Truck & Chassis (primary)",
+            "value": "$1,850/yr",
+            "notes": "Commercial motor base rate validated 12-Aug-2026 against 2025 heavy-vehicle loss ratios."
+          }
+        ]
+      },
+      {
+        "group": "RISK FACTORS",
+        "items": [
+          {
+            "id": "RAT-CT-FAC-001",
+            "name": "GVW Factor",
+            "type": "factor",
+            "field": "gvw_tonnes",
+            "lookupAttr": "gvw_tonnes",
+            "table1D": [
+              {
+                "band": "≤ 7.5t",
+                "mult": "0.85",
+                "note": "Light commercial"
+              },
+              {
+                "band": "7.6–16t",
+                "mult": "1.00",
+                "note": "Base band"
+              },
+              {
+                "band": "16.1–26t",
+                "mult": "1.25",
+                "note": ""
+              },
+              {
+                "band": "26.1–40t",
+                "mult": "1.55",
+                "note": ""
+              },
+              {
+                "band": "40.1–49t",
+                "mult": "1.85",
+                "note": "Maximum GVW"
+              }
+            ],
+            "bands": "≤ 7.5t ×0.85 · 7.6–16t ×1.00 · 16.1–26t ×1.25 · 26.1–40t ×1.55 · 40.1–49t ×1.85"
+          },
+          {
+            "id": "RAT-CT-FAC-002",
+            "name": "Radius of Operation",
+            "type": "factor",
+            "field": "radius_km",
+            "lookupAttr": "radius_km",
+            "table1D": [
+              {
+                "band": "0–150 km",
+                "mult": "0.90",
+                "note": "Local"
+              },
+              {
+                "band": "151–500 km",
+                "mult": "1.00",
+                "note": "Regional"
+              },
+              {
+                "band": "501–1,000 km",
+                "mult": "1.20",
+                "note": "Long haul"
+              },
+              {
+                "band": "1,001–1,500 km",
+                "mult": "1.40",
+                "note": "Interstate"
+              }
+            ],
+            "bands": "0–150 km ×0.90 · 151–500 km ×1.00 · 501–1,000 km ×1.20 · 1,001–1,500 km ×1.40"
+          },
+          {
+            "id": "RAT-CT-FAC-003",
+            "name": "Goods Class Factor",
+            "type": "factor",
+            "field": "goods_class",
+            "lookupAttr": "goods_class",
+            "table1D": [
+              {
+                "band": "General merchandise",
+                "mult": "1.00",
+                "note": ""
+              },
+              {
+                "band": "Perishable / refrigerated",
+                "mult": "1.15",
+                "note": ""
+              },
+              {
+                "band": "Construction materials",
+                "mult": "1.10",
+                "note": ""
+              },
+              {
+                "band": "Fuel / flammable liquids",
+                "mult": "1.45",
+                "note": "ADR / hazmat"
+              },
+              {
+                "band": "Chemicals (non-explosive)",
+                "mult": "1.35",
+                "note": ""
+              }
+            ],
+            "bands": "General merchandise ×1.00 · Perishable / refrigerated ×1.15 · Construction materials ×1.10 · Fuel / flammable liquids ×1.45 · Chemicals (non-explosive) ×1.35"
+          },
+          {
+            "id": "RAT-CT-FAC-004",
+            "name": "Driver Experience Factor",
+            "type": "factor",
+            "field": "hgv_experience_years",
+            "lookupAttr": "hgv_experience_years",
+            "table1D": [
+              {
+                "band": "2–4 years",
+                "mult": "1.30",
+                "note": "Inexperienced loading"
+              },
+              {
+                "band": "5–9 years",
+                "mult": "1.10",
+                "note": ""
+              },
+              {
+                "band": "10–14 years",
+                "mult": "1.00",
+                "note": "Base"
+              },
+              {
+                "band": "15+ years",
+                "mult": "0.90",
+                "note": "Preferred"
+              }
+            ],
+            "bands": "2–4 years ×1.30 · 5–9 years ×1.10 · 10–14 years ×1.00 · 15+ years ×0.90"
+          }
+        ]
+      },
+      {
+        "group": "LOADINGS",
+        "items": [
+          {
+            "id": "RAT-CT-LOAD-001",
+            "name": "Night Operations Loading",
+            "type": "loading",
+            "amount": "18%",
+            "condition": "night_operations = Yes",
+            "loadingType": "Percentage",
+            "loadingValue": "18"
+          },
+          {
+            "id": "RAT-CT-LOAD-002",
+            "name": "Inexperienced Driver",
+            "type": "loading",
+            "amount": "20%",
+            "condition": "hgv_experience_years < 2",
+            "loadingType": "Percentage",
+            "loadingValue": "20"
+          }
+        ]
+      },
+      {
+        "group": "DISCOUNTS",
+        "items": [
+          {
+            "id": "RAT-CT-DISC-001",
+            "name": "Tracker discount",
+            "type": "discount",
+            "amount": "5%",
+            "condition": "tracking_fitted = Yes"
+          }
+        ]
+      },
+      {
+        "group": "OTHER",
+        "items": [
+          {
+            "id": "RAT-CT-MIN-001",
+            "name": "Minimum premium",
+            "type": "minimum",
+            "amount": 1200,
+            "unit": "per year"
+          },
+          {
+            "id": "RAT-CT-FOR-001",
+            "name": "Payable premium formula",
+            "type": "formula",
+            "expression": "Base Premium × Risk Factors + Loadings − Discounts + Add-ons + Fees + Taxes = Payable Premium"
+          }
+        ]
+      },
+      {
+        "group": "FEES",
+        "items": [
+          {
+            "id": "RAT-CT-FEE-001",
+            "name": "Policy Admin Fee",
+            "type": "fee",
+            "amount": 45,
+            "feeType": "Fixed"
+          }
+        ]
+      },
+      {
+        "group": "TAXES",
+        "items": [
+          {
+            "id": "RAT-CT-TAX-001",
+            "name": "GST / Insurance Tax",
+            "type": "tax",
+            "amount": "18%",
+            "taxType": "Percentage"
+          }
+        ]
+      }
+    ],
+    "underwriting": [
+      {
+        "id": "UW-CT-DCL-001",
+        "name": "Disqualified HGV licence",
+        "outcome": "decline",
+        "field": "licence_status",
+        "operator": "in",
+        "value": "Suspended, Revoked, Disqualified",
+        "conditions": [
+          {
+            "field": "licence_status",
+            "op": "in",
+            "value": "Suspended, Revoked, Disqualified"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-DCL-002",
+        "name": "Explosives / radioactive cargo",
+        "outcome": "decline",
+        "field": "goods_class",
+        "operator": "in",
+        "value": "Class 1 explosives, radioactive",
+        "conditions": [
+          {
+            "field": "goods_class",
+            "op": "in",
+            "value": "Class 1 explosives, radioactive"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-REF-001",
+        "name": "High GVW or high value",
+        "outcome": "refer",
+        "field": "gvw_tonnes",
+        "operator": ">",
+        "value": "40",
+        "conditions": [
+          {
+            "field": "gvw_tonnes",
+            "op": ">",
+            "value": "40"
+          },
+          {
+            "connector": "OR",
+            "field": "vehicle_insured_value",
+            "op": ">",
+            "value": "250000"
+          }
+        ],
+        "logic": "or"
+      },
+      {
+        "id": "UW-CT-REF-002",
+        "name": "Fuel tanker / night haul",
+        "outcome": "refer",
+        "field": "body_type",
+        "operator": "=",
+        "value": "Tanker",
+        "conditions": [
+          {
+            "field": "body_type",
+            "op": "=",
+            "value": "Tanker"
+          },
+          {
+            "connector": "OR",
+            "field": "night_operations",
+            "op": "=",
+            "value": "Yes"
+          }
+        ],
+        "logic": "or"
+      },
+      {
+        "id": "UW-CT-LOAD-001",
+        "name": "Recent at-fault commercial claim",
+        "outcome": "load",
+        "field": "at_fault_claims_24m",
+        "operator": ">=",
+        "value": "1",
+        "loading": "20%",
+        "conditions": [
+          {
+            "field": "at_fault_claims_24m",
+            "op": ">=",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-RSTR-001",
+        "name": "Cap GIT without tracker",
+        "outcome": "restrict",
+        "field": "tracking_fitted",
+        "operator": "=",
+        "value": "No",
+        "restriction": "GIT limit $50,000",
+        "conditions": [
+          {
+            "field": "tracking_fitted",
+            "op": "=",
+            "value": "No"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-EVD-001",
+        "name": "Require inspection for high SI",
+        "outcome": "evidence",
+        "field": "vehicle_insured_value",
+        "operator": ">",
+        "value": "250000",
+        "description": "Request physical inspection and tracker certificate before bind.",
+        "conditions": [
+          {
+            "field": "vehicle_insured_value",
+            "op": ">",
+            "value": "250000"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-ACC-001",
+        "name": "Standard commercial accept",
+        "outcome": "accept",
+        "description": "Accept if no decline, refer, load, or restrict rule has fired.",
+        "conditions": []
+      }
+    ],
+    "distribution": [
+      {
+        "id": "CHAN-CT-B01",
+        "name": "Commercial Broker Portal",
+        "accessModel": "Restricted Access",
+        "commission": "18%",
+        "status": "active",
+        "description": "Appointed commercial motor brokers. Bind up to $200k OD SI.",
+        "comm": "18%",
+        "type": "Restricted Access",
+        "desc": "Appointed commercial motor brokers. Bind up to $200k OD SI.",
+        "icon": "•",
+        "auth": "Restricted Access",
+        "territories": [],
+        "commConfig": {
+          "type": "—",
+          "rate": "18%",
+          "basis": "—",
+          "override": "No",
+          "max": "—",
+          "clawback": "—",
+          "timing": "—",
+          "code": "—"
+        },
+        "rules": [],
+        "intermediaries": [],
+        "from": "—",
+        "to": "—"
+      },
+      {
+        "id": "CHAN-CT-D01",
+        "name": "Direct (Web) — Owner Operators",
+        "accessModel": "Open Access",
+        "commission": "0%",
+        "status": "active",
+        "description": "Self-serve quotes for single-truck owner-operators.",
+        "comm": "0%",
+        "type": "Open Access",
+        "desc": "Self-serve quotes for single-truck owner-operators.",
+        "icon": "•",
+        "auth": "Open Access",
+        "territories": [],
+        "commConfig": {
+          "type": "—",
+          "rate": "0%",
+          "basis": "—",
+          "override": "No",
+          "max": "—",
+          "clawback": "—",
+          "timing": "—",
+          "code": "—"
+        },
+        "rules": [],
+        "intermediaries": [],
+        "from": "—",
+        "to": "—"
+      },
+      {
+        "id": "CHAN-CT-API01",
+        "name": "Fleet TMS API",
+        "accessModel": "API Partners Only",
+        "commission": "8%",
+        "status": "active",
+        "description": "Headless quoting for transport-management systems.",
+        "comm": "8%",
+        "type": "API Partners Only",
+        "desc": "Headless quoting for transport-management systems.",
+        "icon": "•",
+        "auth": "API Partners Only",
+        "territories": [],
+        "commConfig": {
+          "type": "—",
+          "rate": "8%",
+          "basis": "—",
+          "override": "No",
+          "max": "—",
+          "clawback": "—",
+          "timing": "—",
+          "code": "—"
+        },
+        "rules": [],
+        "intermediaries": [],
+        "from": "—",
+        "to": "—"
+      }
+    ],
+    "documents": [
+      {
+        "id": "DOC-CT-WORD-001",
+        "name": "Commercial Truck Policy Wording",
+        "type": "Core",
+        "version": "2026.08",
+        "status": "approved",
+        "ver": "v2026.08",
+        "icon": "📄",
+        "identity": {
+          "type": "Core",
+          "format": "PDF",
+          "lang": "English",
+          "jur": "—",
+          "author": "—"
+        },
+        "trigger": {
+          "when": "Policy Issued",
+          "auto": true,
+          "del": "Email",
+          "copies": "1",
+          "reGen": "No"
+        },
+        "cond": {
+          "always": true,
+          "logic": []
+        },
+        "vars": [],
+        "comp": {
+          "req": false,
+          "rev": "—",
+          "d": "—",
+          "notes": "",
+          "legal": false,
+          "ref": "—"
+        },
+        "covers": []
+      },
+      {
+        "id": "DOC-CT-SCH-001",
+        "name": "Commercial Truck Schedule",
+        "type": "Core",
+        "version": "2026.08",
+        "status": "approved",
+        "ver": "v2026.08",
+        "icon": "📄",
+        "identity": {
+          "type": "Core",
+          "format": "PDF",
+          "lang": "English",
+          "jur": "—",
+          "author": "—"
+        },
+        "trigger": {
+          "when": "Policy Issued",
+          "auto": true,
+          "del": "Email",
+          "copies": "1",
+          "reGen": "No"
+        },
+        "cond": {
+          "always": true,
+          "logic": []
+        },
+        "vars": [],
+        "comp": {
+          "req": false,
+          "rev": "—",
+          "d": "—",
+          "notes": "",
+          "legal": false,
+          "ref": "—"
+        },
+        "covers": []
+      },
+      {
+        "id": "DOC-CT-CERT-001",
+        "name": "Certificate of Insurance (CMV)",
+        "type": "Core",
+        "version": "2026.08",
+        "status": "approved",
+        "ver": "v2026.08",
+        "icon": "📄",
+        "identity": {
+          "type": "Core",
+          "format": "PDF",
+          "lang": "English",
+          "jur": "—",
+          "author": "—"
+        },
+        "trigger": {
+          "when": "Policy Issued",
+          "auto": true,
+          "del": "Email",
+          "copies": "1",
+          "reGen": "No"
+        },
+        "cond": {
+          "always": true,
+          "logic": []
+        },
+        "vars": [],
+        "comp": {
+          "req": false,
+          "rev": "—",
+          "d": "—",
+          "notes": "",
+          "legal": false,
+          "ref": "—"
+        },
+        "covers": []
+      },
+      {
+        "id": "DOC-CT-END-001",
+        "name": "Goods in Transit Endorsement",
+        "type": "Endorsement",
+        "version": "2026.08",
+        "status": "approved",
+        "ver": "v2026.08",
+        "icon": "📄",
+        "identity": {
+          "type": "Endorsement",
+          "format": "PDF",
+          "lang": "English",
+          "jur": "—",
+          "author": "—"
+        },
+        "trigger": {
+          "when": "Policy Issued",
+          "auto": true,
+          "del": "Email",
+          "copies": "1",
+          "reGen": "No"
+        },
+        "cond": {
+          "always": true,
+          "logic": []
+        },
+        "vars": [],
+        "comp": {
+          "req": false,
+          "rev": "—",
+          "d": "—",
+          "notes": "",
+          "legal": false,
+          "ref": "—"
+        },
+        "covers": []
+      },
+      {
+        "id": "DOC-CT-END-002",
+        "name": "Trailer Extension Endorsement",
+        "type": "Endorsement",
+        "version": "2026.08",
+        "status": "approved",
+        "ver": "v2026.08",
+        "icon": "📄",
+        "identity": {
+          "type": "Endorsement",
+          "format": "PDF",
+          "lang": "English",
+          "jur": "—",
+          "author": "—"
+        },
+        "trigger": {
+          "when": "Policy Issued",
+          "auto": true,
+          "del": "Email",
+          "copies": "1",
+          "reGen": "No"
+        },
+        "cond": {
+          "always": true,
+          "logic": []
+        },
+        "vars": [],
+        "comp": {
+          "req": false,
+          "rev": "—",
+          "d": "—",
+          "notes": "",
+          "legal": false,
+          "ref": "—"
+        },
+        "covers": []
+      }
+    ],
+    "simulation": [
+      {
+        "id": 1,
+        "name": "Standard rigid 16t — 12yr HGV driver",
+        "cat": "Rating",
+        "exp": "Accept, $3,240.00",
+        "res": "pass",
+        "pExp": "$3,240.00",
+        "pAct": "$3,240.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 2,
+        "name": "Long-haul 40t tractor — 800 km radius",
+        "cat": "Rating",
+        "exp": "Accept, higher premium",
+        "res": "pass",
+        "pExp": "$5,110.00",
+        "pAct": "$5,110.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 3,
+        "name": "Driver age 23",
+        "cat": "Eligibility",
+        "exp": "Ineligible (Hard Block)",
+        "res": "pass",
+        "pExp": "N/A",
+        "pAct": "N/A",
+        "v": "0.0%"
+      },
+      {
+        "id": 4,
+        "name": "No HGV licence",
+        "cat": "Eligibility",
+        "exp": "Ineligible (Hard Block)",
+        "res": "pass",
+        "pExp": "N/A",
+        "pAct": "N/A",
+        "v": "0.0%"
+      },
+      {
+        "id": 5,
+        "name": "Class 1 explosives cargo",
+        "cat": "Underwriting",
+        "exp": "Decline",
+        "res": "pass",
+        "pExp": "N/A",
+        "pAct": "N/A",
+        "v": "0.0%"
+      },
+      {
+        "id": 6,
+        "name": "Fuel tanker night operations",
+        "cat": "Underwriting",
+        "exp": "Refer (Operations)",
+        "res": "pass",
+        "pExp": "$6,480.00*",
+        "pAct": "$6,480.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 7,
+        "name": "No tracker — GIT selected",
+        "cat": "Underwriting",
+        "exp": "Restrict GIT to $50k",
+        "res": "pass",
+        "pExp": "$3,390.00",
+        "pAct": "$3,390.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 8,
+        "name": "Trailer + GIT + breakdown add-on",
+        "cat": "Rating",
+        "exp": "Accept, covers stacked",
+        "res": "pass",
+        "pExp": "$4,820.00",
+        "pAct": "$4,820.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 9,
+        "name": "Claim-free 3 years, 8-truck fleet",
+        "cat": "Rating",
+        "exp": "25% NCD + 10% fleet",
+        "res": "pass",
+        "pExp": "$2,186.00",
+        "pAct": "$2,186.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 10,
+        "name": "Broker bind $220k SI",
+        "cat": "Distribution",
+        "exp": "Accept via broker override",
+        "res": "pass",
+        "pExp": "$5,640.00",
+        "pAct": "$5,640.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 11,
+        "name": "Boundary: driver age exactly 25",
+        "cat": "Boundary",
+        "exp": "Accept (edge)",
+        "res": "pass",
+        "pExp": "$3,640.00",
+        "pAct": "$3,640.00",
+        "v": "0.0%"
+      },
+      {
+        "id": 12,
+        "name": "Boundary: GVW exactly 49t",
+        "cat": "Boundary",
+        "exp": "Eligible (edge)",
+        "res": "pass",
+        "pExp": "$6,920.00",
+        "pAct": "$6,920.00",
+        "v": "0.0%"
+      }
+    ]
+  },
+  "pricing": {
+    "basePremium": 1850
+  },
+  "governance": [
+    {
+      "gate": "Product Owner",
+      "approver": "—",
+      "action": "Pending",
+      "date": "—",
+      "comment": "—"
+    },
+    {
+      "gate": "Actuarial",
+      "approver": "—",
+      "action": "Pending",
+      "date": "—",
+      "comment": "—"
+    },
+    {
+      "gate": "Underwriting",
+      "approver": "—",
+      "action": "Pending",
+      "date": "—",
+      "comment": "—"
+    },
+    {
+      "gate": "Compliance",
+      "approver": "—",
+      "action": "Pending",
+      "date": "—",
+      "comment": "—"
+    },
+    {
+      "gate": "Ops/Tech",
+      "approver": "—",
+      "action": "Pending",
+      "date": "—",
+      "comment": "—"
+    }
+  ],
+  "checklist": [
+    {
+      "studio": "Coverage Studio",
+      "status": "done",
+      "note": "8 covers configured"
+    },
+    {
+      "studio": "Questionnaire Studio",
+      "status": "done",
+      "note": "22 questions"
+    },
+    {
+      "studio": "Eligibility Studio",
+      "status": "done",
+      "note": "7 rules"
+    },
+    {
+      "studio": "Rating & Pricing Studio",
+      "status": "done",
+      "note": "GVW, radius, goods, experience"
+    },
+    {
+      "studio": "Underwriting Rules Studio",
+      "status": "done",
+      "note": "7 rules"
+    },
+    {
+      "studio": "Distribution Studio",
+      "status": "done",
+      "note": "3 channels"
+    },
+    {
+      "studio": "Document Studio",
+      "status": "done",
+      "note": "7 documents"
+    }
+  ],
+  "completion": 88,
+  "collectionsByVersion": {
+    "2026.08": {
+      "covers": [
+        {
+          "id": "COV-CT-001",
+          "name": "Own Damage — Truck & Chassis",
+          "code": "COV-OD-CT-001",
+          "availability": "mandatory",
+          "complete": true,
+          "type": "First Party — Property Damage",
+          "description": "Covers accidental damage, fire, explosion, and natural peril loss to the insured truck, chassis, and permanently fitted equipment.",
+          "basisOfCoverage": "Agreed Value",
+          "sumInsured": "180000",
+          "maxSingleLimit": "180000",
+          "subLimit": "",
+          "deductibleType": "percentage",
+          "deductibleAmount": "",
+          "deductiblePct": "2.5",
+          "minDeductible": "1000",
+          "maxDeductible": "8000",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "defaultSelected": true,
+          "mutualExclusions": [],
+          "coverVersion": "2026.08",
+          "conditionalOn": "",
+          "requiresCover": "",
+          "dependencies": [
+            {
+              "type": "Bundles with",
+              "dependsOn": "Third Party Liability",
+              "condition": "Always"
+            }
+          ],
+          "constraints": [
+            {
+              "field": "Gross Vehicle Weight",
+              "operator": "≤",
+              "value": "49 tonnes"
+            },
+            {
+              "field": "Vehicle Age",
+              "operator": "≤",
+              "value": "20 years"
+            },
+            {
+              "field": "Body Type",
+              "operator": "is one of",
+              "value": "Rigid, Tractor Unit, Tipper, Tanker, Box, Flatbed"
+            }
+          ],
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "24",
+          "claimsNotifUnit": "hours",
+          "wordingDoc": "Commercial Truck Policy Wording — Own Damage clause",
+          "wordingDocs": [
+            {
+              "name": "Commercial Own Damage Clause",
+              "version": "v2026.08",
+              "code": "DOC-OD-CT-001"
+            }
+          ]
+        },
+        {
+          "id": "COV-CT-002",
+          "name": "Third Party Liability",
+          "code": "COV-TP-CT-001",
+          "availability": "mandatory",
+          "complete": true,
+          "type": "Third Party Liability",
+          "description": "Statutory and excess third-party liability for death, bodily injury, and property damage arising from commercial truck use.",
+          "basisOfCoverage": "Limit of Indemnity",
+          "sumInsured": "1000000",
+          "maxSingleLimit": "1000000",
+          "subLimit": "5000000",
+          "deductibleType": "fixed",
+          "deductibleAmount": "2500",
+          "deductiblePct": "",
+          "coverVersion": "2026.08",
+          "defaultSelected": true,
+          "dependencies": [],
+          "constraints": [
+            {
+              "field": "Vehicle Registration",
+              "operator": "is",
+              "value": "Active CMV / HGV"
+            },
+            {
+              "field": "Operator Licence",
+              "operator": "is",
+              "value": "Valid"
+            }
+          ],
+          "wordingDocs": [
+            {
+              "name": "Commercial Motor TPL Clause",
+              "version": "v2026.08",
+              "code": "DOC-TP-CT-001"
+            }
+          ],
+          "mutualExclusions": [],
+          "minDeductible": "",
+          "maxDeductible": "",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "conditionalOn": "",
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "14",
+          "claimsNotifUnit": "days"
+        },
+        {
+          "id": "COV-CT-003",
+          "name": "Driver & Cleaner Personal Accident",
+          "code": "COV-PA-CT-001",
+          "availability": "mandatory",
+          "complete": true,
+          "type": "Benefit — Personal Accident",
+          "description": "Fixed benefit for accidental death or permanent disability of the named driver and cleaner while on duty.",
+          "basisOfCoverage": "Agreed Value",
+          "sumInsured": "50000",
+          "deductibleType": "none",
+          "deductibleAmount": "0",
+          "coverVersion": "2026.08",
+          "maxSingleLimit": "50000",
+          "defaultSelected": true,
+          "dependencies": [],
+          "constraints": [
+            {
+              "field": "Driver Licence Class",
+              "operator": "in",
+              "value": "HGV, CMV, Class 4/5"
+            },
+            {
+              "field": "Named Driver Age",
+              "operator": "≥",
+              "value": "25 years"
+            }
+          ],
+          "wordingDocs": [
+            {
+              "name": "Commercial PA Schedule",
+              "version": "v2026.08",
+              "code": "DOC-PA-CT-001"
+            }
+          ],
+          "mutualExclusions": [],
+          "subLimit": "",
+          "deductiblePct": "",
+          "minDeductible": "",
+          "maxDeductible": "",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "conditionalOn": "",
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "14",
+          "claimsNotifUnit": "days"
+        },
+        {
+          "id": "COV-CT-004",
+          "name": "Goods in Transit",
+          "code": "COV-GIT-001",
+          "availability": "default",
+          "complete": true,
+          "type": "First Party — Cargo",
+          "description": "Covers loss or damage to lawful cargo carried on the insured truck, including loading and unloading at declared locations.",
+          "basisOfCoverage": "Declared Value",
+          "sumInsured": "250000",
+          "deductibleType": "percentage",
+          "deductiblePct": "1",
+          "coverVersion": "2026.08",
+          "maxSingleLimit": "250000",
+          "defaultSelected": true,
+          "conditionalOn": "Own Damage — Truck & Chassis",
+          "requiresCover": "Own Damage — Truck & Chassis",
+          "dependencies": [
+            {
+              "type": "Requires",
+              "dependsOn": "Own Damage — Truck & Chassis",
+              "condition": "Always"
+            }
+          ],
+          "constraints": [
+            {
+              "field": "Goods Class",
+              "operator": "not in",
+              "value": "Class 1 explosives, radioactive"
+            },
+            {
+              "field": "Radius of Operation",
+              "operator": "≤",
+              "value": "1,500 km"
+            }
+          ],
+          "wordingDocs": [
+            {
+              "name": "Goods in Transit Clause",
+              "version": "v2026.08",
+              "code": "DOC-GIT-001"
+            }
+          ],
+          "mutualExclusions": [],
+          "subLimit": "",
+          "deductibleAmount": "",
+          "minDeductible": "",
+          "maxDeductible": "",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "14",
+          "claimsNotifUnit": "days"
+        },
+        {
+          "id": "COV-CT-005",
+          "name": "Trailer & Semi-Trailer",
+          "code": "COV-TRL-001",
+          "availability": "optional",
+          "complete": true,
+          "type": "First Party — Property Damage",
+          "description": "Extends own-damage and theft cover to declared trailers and semi-trailers attached to the insured tractor unit.",
+          "basisOfCoverage": "Agreed Value",
+          "sumInsured": "80000",
+          "deductibleType": "fixed",
+          "deductibleAmount": "1500",
+          "coverVersion": "2026.08",
+          "maxSingleLimit": "80000",
+          "defaultSelected": false,
+          "conditionalOn": "Own Damage — Truck & Chassis",
+          "dependencies": [
+            {
+              "type": "Requires",
+              "dependsOn": "Own Damage — Truck & Chassis",
+              "condition": "Body type is Tractor Unit"
+            }
+          ],
+          "constraints": [
+            {
+              "field": "Trailer Count",
+              "operator": "≤",
+              "value": "2"
+            }
+          ],
+          "wordingDocs": [
+            {
+              "name": "Trailer Extension Endorsement",
+              "version": "v2026.08",
+              "code": "DOC-TRL-001"
+            }
+          ],
+          "mutualExclusions": [],
+          "subLimit": "",
+          "deductiblePct": "",
+          "minDeductible": "",
+          "maxDeductible": "",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "14",
+          "claimsNotifUnit": "days"
+        },
+        {
+          "id": "COV-CT-006",
+          "name": "Theft & Hijack",
+          "code": "COV-TH-CT-001",
+          "availability": "default",
+          "complete": true,
+          "type": "First Party — Crime",
+          "description": "Covers theft of the truck, trailer, or cargo following forcible entry, hijack, or armed robbery while in transit.",
+          "basisOfCoverage": "Agreed Value",
+          "sumInsured": "180000",
+          "deductibleType": "percentage",
+          "deductiblePct": "10",
+          "coverVersion": "2026.08",
+          "maxSingleLimit": "180000",
+          "defaultSelected": true,
+          "conditionalOn": "Own Damage — Truck & Chassis",
+          "dependencies": [
+            {
+              "type": "Requires",
+              "dependsOn": "Own Damage — Truck & Chassis",
+              "condition": "Always"
+            }
+          ],
+          "constraints": [
+            {
+              "field": "Tracking Device",
+              "operator": "is",
+              "value": "Fitted and active"
+            }
+          ],
+          "wordingDocs": [
+            {
+              "name": "Theft & Hijack Clause",
+              "version": "v2026.08",
+              "code": "DOC-TH-CT-001"
+            }
+          ],
+          "mutualExclusions": [],
+          "subLimit": "",
+          "deductibleAmount": "",
+          "minDeductible": "",
+          "maxDeductible": "",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "14",
+          "claimsNotifUnit": "days"
+        },
+        {
+          "id": "COV-CT-007",
+          "name": "Breakdown & Recovery",
+          "code": "COV-RSA-CT-001",
+          "availability": "addon",
+          "complete": true,
+          "type": "Service Benefit",
+          "description": "24/7 commercial recovery, towing to nearest authorised workshop, and roadside mechanical assistance. Up to 6 call-outs per year.",
+          "basisOfCoverage": "Service Limit",
+          "sumInsured": "Service",
+          "deductibleType": "none",
+          "deductibleAmount": "0",
+          "coverVersion": "2026.08",
+          "maxSingleLimit": "Service",
+          "defaultSelected": false,
+          "conditionalOn": "Own Damage — Truck & Chassis",
+          "dependencies": [
+            {
+              "type": "Requires",
+              "dependsOn": "Own Damage — Truck & Chassis",
+              "condition": "Vehicle age ≤ 15 years"
+            }
+          ],
+          "constraints": [
+            {
+              "field": "Vehicle Age",
+              "operator": "≤",
+              "value": "15 years"
+            }
+          ],
+          "wordingDocs": [
+            {
+              "name": "Commercial Recovery Terms",
+              "version": "v2026.08",
+              "code": "DOC-RSA-CT-001"
+            }
+          ],
+          "mutualExclusions": [],
+          "subLimit": "",
+          "deductiblePct": "",
+          "minDeductible": "",
+          "maxDeductible": "",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "14",
+          "claimsNotifUnit": "days"
+        },
+        {
+          "id": "COV-CT-008",
+          "name": "Loading, Unloading & Overturning",
+          "code": "COV-LU-001",
+          "availability": "addon",
+          "complete": true,
+          "type": "First Party — Working Risk",
+          "description": "Covers damage to the truck, trailer, or cargo caused by loading, unloading, tipping, or overturning during commercial operations.",
+          "basisOfCoverage": "Agreed Value",
+          "sumInsured": "180000",
+          "deductibleType": "fixed",
+          "deductibleAmount": "3000",
+          "coverVersion": "2026.08",
+          "maxSingleLimit": "180000",
+          "defaultSelected": false,
+          "conditionalOn": "Own Damage — Truck & Chassis",
+          "dependencies": [
+            {
+              "type": "Requires",
+              "dependsOn": "Own Damage — Truck & Chassis",
+              "condition": "Always"
+            }
+          ],
+          "constraints": [
+            {
+              "field": "Body Type",
+              "operator": "in",
+              "value": "Tipper, Tanker, Mixer"
+            }
+          ],
+          "wordingDocs": [
+            {
+              "name": "Loading & Overturning Endorsement",
+              "version": "v2026.08",
+              "code": "DOC-LU-001"
+            }
+          ],
+          "mutualExclusions": [],
+          "subLimit": "",
+          "deductiblePct": "",
+          "minDeductible": "",
+          "maxDeductible": "",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "14",
+          "claimsNotifUnit": "days"
+        },
+        {
+          "id": "COV-614603",
+          "name": "Windscreen & Glass",
+          "code": "COV-OD-CT-001",
+          "availability": "addon",
+          "complete": true,
+          "type": "First Party — Glass",
+          "description": "Covers accidental damage to windscreen and vehicle glass with nil or reduced excess.",
+          "basisOfCoverage": "Agreed Value",
+          "sumInsured": "180000",
+          "maxSingleLimit": "180000",
+          "subLimit": "",
+          "deductibleType": "percentage",
+          "deductibleAmount": "",
+          "deductiblePct": "2.5",
+          "minDeductible": "1000",
+          "maxDeductible": "8000",
+          "copay": "0",
+          "waitingPeriod": "None",
+          "annualAggregate": false,
+          "defaultSelected": true,
+          "mutualExclusions": [],
+          "coverVersion": "2026.08",
+          "conditionalOn": "",
+          "requiresCover": "",
+          "dependencies": [
+            {
+              "type": "Bundles with",
+              "dependsOn": "Third Party Liability",
+              "condition": "Always"
+            }
+          ],
+          "constraints": [
+            {
+              "field": "Gross Vehicle Weight",
+              "operator": "≤",
+              "value": "49 tonnes"
+            },
+            {
+              "field": "Vehicle Age",
+              "operator": "≤",
+              "value": "20 years"
+            },
+            {
+              "field": "Body Type",
+              "operator": "is one of",
+              "value": "Rigid, Tractor Unit, Tipper, Tanker, Box, Flatbed"
+            }
+          ],
+          "lossBasis": "Per Occurrence",
+          "reinstatement": "Automatic (full limit)",
+          "benefitBasis": "Indemnity",
+          "claimsNotifPeriod": "24",
+          "claimsNotifUnit": "hours",
+          "wordingDoc": "Commercial Truck Policy Wording — Own Damage clause",
+          "wordingDocs": [
+            {
+              "name": "Commercial Own Damage Clause",
+              "version": "v2026.08",
+              "code": "DOC-OD-CT-001"
+            }
+          ],
+          "status": "incomplete"
+        }
+      ],
+      "questionGroups": [
+        {
+          "id": "grp-1",
+          "name": "Truck Details",
+          "label": "Truck Details",
+          "questions": [
+            {
+              "id": "QST-CT-001",
+              "label": "Make & Model",
+              "internalName": "vehicle_make_model",
+              "type": "entity",
+              "typeLabel": "Entity Lookup",
+              "required": true,
+              "displayOrder": 1,
+              "helpText": "Manufacturer and model of the truck, e.g. Tata Prima 4928.S",
+              "channels": "Web, Mobile, Agent, API",
+              "example": "Tata Prima 4928.S",
+              "fieldType": "entity",
+              "inputFormat": "Entity lookup",
+              "validations": [
+                {
+                  "rule": "Required",
+                  "expr": "true",
+                  "msg": "Make and model is required."
+                }
+              ],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-002",
+              "label": "Year of Manufacture",
+              "internalName": "vehicle_year_of_manufacture",
+              "type": "number",
+              "typeLabel": "Number",
+              "required": true,
+              "displayOrder": 2,
+              "derived": {
+                "attr": "vehicle_age",
+                "formula": "FLOOR(DATEDIFF(TODAY(), vehicle_year_of_manufacture, \"years\"))",
+                "dataType": "Number",
+                "usedIn": "Rating factors (vehicle age band), Eligibility rules (max 20 years)"
+              },
+              "helpText": "The year the vehicle was manufactured, as shown on the registration document. Used against the 20-year commercial cap.",
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "number",
+              "inputFormat": "4-digit year (YYYY)",
+              "min": "2005",
+              "max": "[Current Year]",
+              "step": "1",
+              "placeholder": "e.g., 2019",
+              "validations": [
+                {
+                  "rule": "Min Value",
+                  "expr": "2005",
+                  "msg": "Vehicle must be manufactured in 2005 or later."
+                },
+                {
+                  "rule": "Max Value",
+                  "expr": "Current Year",
+                  "msg": "Year of manufacture cannot be in the future."
+                },
+                {
+                  "rule": "Required",
+                  "expr": "true",
+                  "msg": "This field is required."
+                }
+              ],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-003",
+              "label": "Gross Vehicle Weight (tonnes)",
+              "internalName": "gvw_tonnes",
+              "type": "number",
+              "typeLabel": "Number",
+              "required": true,
+              "displayOrder": 3,
+              "helpText": "Must be 49 tonnes or less for this product.",
+              "channels": "Web, Mobile, Agent, API",
+              "example": "16",
+              "min": "1",
+              "max": "49",
+              "fieldType": "number",
+              "validations": [
+                {
+                  "rule": "Max Value",
+                  "expr": "49",
+                  "msg": "GVW must not exceed 49 tonnes."
+                }
+              ],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-004",
+              "label": "Body Type",
+              "internalName": "body_type",
+              "type": "select",
+              "typeLabel": "Single-select",
+              "required": true,
+              "displayOrder": 4,
+              "helpText": "Tankers and tippers may refer to operations underwriting.",
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "select",
+              "options": [
+                {
+                  "value": "Rigid",
+                  "label": "Rigid"
+                },
+                {
+                  "value": "Tractor Unit",
+                  "label": "Tractor Unit"
+                },
+                {
+                  "value": "Tipper",
+                  "label": "Tipper"
+                },
+                {
+                  "value": "Tanker",
+                  "label": "Tanker"
+                },
+                {
+                  "value": "Box",
+                  "label": "Box"
+                },
+                {
+                  "value": "Flatbed",
+                  "label": "Flatbed"
+                }
+              ],
+              "validations": [
+                {
+                  "rule": "Required",
+                  "expr": "true",
+                  "msg": "Select a body type."
+                }
+              ],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-005",
+              "label": "Insured Value",
+              "internalName": "vehicle_insured_value",
+              "type": "currency",
+              "typeLabel": "Currency",
+              "required": true,
+              "displayOrder": 5,
+              "helpText": "Agreed value of the truck and chassis.",
+              "channels": "Web, Mobile, Agent, API",
+              "example": "180000",
+              "fieldType": "currency",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-006",
+              "label": "Axle Count",
+              "internalName": "axle_count",
+              "type": "number",
+              "typeLabel": "Number",
+              "required": true,
+              "displayOrder": 6,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "number",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-007",
+              "label": "Tracking Device Fitted?",
+              "internalName": "tracking_fitted",
+              "type": "boolean",
+              "typeLabel": "Boolean",
+              "required": true,
+              "displayOrder": 7,
+              "helpText": "Required for full Theft & Hijack and GIT limits.",
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "boolean",
+              "inputFormat": "Yes / No toggle",
+              "evidence": [
+                {
+                  "condition": "tracking_fitted = No",
+                  "type": "Tracker Certificate",
+                  "message": "Upload tracker fitment certificate to restore full GIT and theft limits."
+                }
+              ],
+              "validations": [
+                {
+                  "rule": "Required",
+                  "expr": "true",
+                  "msg": "Confirm whether a tracker is fitted."
+                }
+              ],
+              "conditions": []
+            }
+          ]
+        },
+        {
+          "id": "grp-2",
+          "name": "Operator & Driver",
+          "label": "Operator & Driver",
+          "questions": [
+            {
+              "id": "QST-CT-008",
+              "label": "Operator / Registered Owner",
+              "internalName": "operator_name",
+              "type": "text",
+              "typeLabel": "Text",
+              "required": true,
+              "displayOrder": 1,
+              "example": "Singh Logistics Pvt Ltd",
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "text",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-009",
+              "label": "Primary Driver — Full Name",
+              "internalName": "driver_full_name",
+              "type": "text",
+              "typeLabel": "Text",
+              "required": true,
+              "displayOrder": 2,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "text",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-010",
+              "label": "Primary Driver — Date of Birth",
+              "internalName": "driver_date_of_birth",
+              "type": "date",
+              "typeLabel": "Date",
+              "required": true,
+              "displayOrder": 3,
+              "helpText": "Enter the primary driver's date of birth as shown on their identity document. Driver must be 25 or older at cover start.",
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "date",
+              "inputFormat": "DD-MM-YYYY",
+              "derived": {
+                "attr": "driver_age",
+                "formula": "FLOOR(DATEDIFF(TODAY(), driver_date_of_birth, \"years\"))",
+                "dataType": "Number",
+                "usedIn": "Rating factors (driver age band), Eligibility rules (minimum age 25)"
+              },
+              "evidence": [
+                {
+                  "condition": "always",
+                  "type": "HGV licence scan",
+                  "message": "Upload a scan of the heavy-vehicle licence with date of birth."
+                }
+              ],
+              "validations": [
+                {
+                  "rule": "Required",
+                  "expr": "true",
+                  "msg": "Date of birth is required."
+                }
+              ],
+              "conditions": []
+            },
+            {
+              "id": "QST-CT-011",
+              "label": "HGV / CMV Licence Class",
+              "internalName": "licence_class",
+              "type": "select",
+              "typeLabel": "Single-select",
+              "required": true,
+              "displayOrder": 4,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "select",
+              "options": [
+                {
+                  "value": "HGV",
+                  "label": "HGV"
+                },
+                {
+                  "value": "CMV",
+                  "label": "CMV"
+                },
+                {
+                  "value": "Class 4",
+                  "label": "Class 4"
+                },
+                {
+                  "value": "Class 5",
+                  "label": "Class 5"
+                }
+              ],
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-012",
+              "label": "Years of HGV Experience",
+              "internalName": "hgv_experience_years",
+              "type": "number",
+              "typeLabel": "Number",
+              "required": true,
+              "displayOrder": 5,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "number",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-013",
+              "label": "Conviction History?",
+              "internalName": "driver_conviction_history",
+              "type": "boolean",
+              "typeLabel": "Boolean",
+              "required": true,
+              "displayOrder": 6,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "boolean",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            }
+          ]
+        },
+        {
+          "id": "grp-3",
+          "name": "Operations",
+          "label": "Operations",
+          "questions": [
+            {
+              "id": "QST-CT-014",
+              "label": "Goods Class Carried",
+              "internalName": "goods_class",
+              "type": "select",
+              "typeLabel": "Single-select",
+              "required": true,
+              "displayOrder": 1,
+              "helpText": "Class 1 explosives and radioactive cargo are declined on this product.",
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "select",
+              "options": [
+                {
+                  "value": "General merchandise",
+                  "label": "General merchandise"
+                },
+                {
+                  "value": "Perishable / refrigerated",
+                  "label": "Perishable / refrigerated"
+                },
+                {
+                  "value": "Construction materials",
+                  "label": "Construction materials"
+                },
+                {
+                  "value": "Fuel / flammable liquids",
+                  "label": "Fuel / flammable liquids"
+                },
+                {
+                  "value": "Chemicals (non-explosive)",
+                  "label": "Chemicals (non-explosive)"
+                }
+              ],
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-015",
+              "label": "Radius of Operation (km)",
+              "internalName": "radius_km",
+              "type": "number",
+              "typeLabel": "Number",
+              "required": true,
+              "displayOrder": 2,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "number",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-016",
+              "label": "Night Operations?",
+              "internalName": "night_operations",
+              "type": "boolean",
+              "typeLabel": "Boolean",
+              "required": true,
+              "displayOrder": 3,
+              "helpText": "Night haul and tankers may be referred.",
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "boolean",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-017",
+              "label": "Annual Mileage",
+              "internalName": "annual_mileage",
+              "type": "number",
+              "typeLabel": "Number",
+              "required": true,
+              "displayOrder": 4,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "number",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-018",
+              "label": "Trailer Attached?",
+              "internalName": "trailer_attached",
+              "type": "boolean",
+              "typeLabel": "Boolean",
+              "required": true,
+              "displayOrder": 5,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "boolean",
+              "conditional": true,
+              "conditions": [
+                {
+                  "field": "Body Type",
+                  "op": "=",
+                  "value": "Tractor Unit"
+                }
+              ],
+              "exprPreview": "body_type = Tractor Unit",
+              "visibleWhen": "body_type = Tractor Unit",
+              "validations": [],
+              "evidence": []
+            }
+          ]
+        },
+        {
+          "id": "grp-4",
+          "name": "Policy Details",
+          "label": "Policy Details",
+          "questions": [
+            {
+              "id": "QST-CT-019",
+              "label": "Cover Start Date",
+              "internalName": "policy_start_date",
+              "type": "date",
+              "typeLabel": "Date",
+              "required": true,
+              "displayOrder": 1,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "date",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-020",
+              "label": "Policy Period",
+              "internalName": "policy_period",
+              "type": "select",
+              "typeLabel": "Single-select",
+              "required": true,
+              "displayOrder": 2,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "select",
+              "options": [
+                {
+                  "value": "12m",
+                  "label": "12 months"
+                },
+                {
+                  "value": "6m",
+                  "label": "6 months"
+                }
+              ],
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-021",
+              "label": "Covers Required",
+              "internalName": "covers_required",
+              "type": "multisel",
+              "typeLabel": "Multi-select",
+              "required": true,
+              "displayOrder": 3,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "multisel",
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            },
+            {
+              "id": "QST-CT-022",
+              "label": "Payment Preference",
+              "internalName": "payment_preference",
+              "type": "select",
+              "typeLabel": "Single-select",
+              "required": true,
+              "displayOrder": 4,
+              "channels": "Web, Mobile, Agent, API",
+              "fieldType": "select",
+              "options": [
+                {
+                  "value": "annual",
+                  "label": "Annual"
+                },
+                {
+                  "value": "monthly",
+                  "label": "Monthly"
+                }
+              ],
+              "validations": [],
+              "conditions": [],
+              "evidence": []
+            }
+          ]
+        }
+      ],
+      "eligibilityRules": [
+        {
+          "id": "ELG-CT-001",
+          "name": "Min Driver Age — Commercial",
+          "field": "driver_age",
+          "operator": "<",
+          "value": "25",
+          "outcome": "ineligible",
+          "outcomeType": "hard",
+          "category": "Product Eligibility",
+          "cover": "All Covers",
+          "priority": 10,
+          "status": "active",
+          "description": "Named driver must be at least 25 years old for commercial truck cover.",
+          "customerMsg": "Commercial truck cover is only available to drivers aged 25 and over.",
+          "internalMsg": "Driver age below commercial minimum (25).",
+          "reasonCode": "ELIG-CT-MIN-AGE",
+          "direction": "ineligible",
+          "logic": "and",
+          "conditions": [
+            {
+              "field": "driver_age",
+              "op": "<",
+              "value": "25"
+            }
+          ],
+          "effectiveFrom": "01-Aug-2026",
+          "effectiveTo": "31-Jul-2027"
+        },
+        {
+          "id": "ELG-CT-002",
+          "name": "Valid HGV / CMV Licence",
+          "field": "licence_class",
+          "operator": "not in",
+          "value": "HGV, CMV, Class 4, Class 5",
+          "outcome": "ineligible",
+          "outcomeType": "hard",
+          "category": "Product Eligibility",
+          "cover": "All Covers",
+          "priority": 5,
+          "status": "active",
+          "description": "Primary driver must hold a valid heavy goods or commercial motor vehicle licence.",
+          "customerMsg": "A valid heavy vehicle licence is required for this product.",
+          "internalMsg": "Licence class not in HGV/CMV allowlist.",
+          "reasonCode": "ELIG-CT-LICENCE",
+          "conditions": [
+            {
+              "field": "licence_class",
+              "op": "not in",
+              "value": "HGV, CMV, Class 4, Class 5"
+            }
+          ],
+          "effectiveFrom": "01-Aug-2026",
+          "effectiveTo": "31-Jul-2027"
+        },
+        {
+          "id": "ELG-CT-003",
+          "name": "Max Vehicle Age",
+          "field": "vehicle_age",
+          "operator": ">",
+          "value": "20",
+          "outcome": "ineligible",
+          "outcomeType": "hard",
+          "category": "Product Eligibility",
+          "cover": "All Covers",
+          "priority": 20,
+          "status": "active",
+          "description": "Truck must be 20 years old or newer.",
+          "customerMsg": "This product is only available for trucks manufactured within the last 20 years.",
+          "reasonCode": "ELIG-CT-MAX-AGE",
+          "conditions": [
+            {
+              "field": "vehicle_age",
+              "op": ">",
+              "value": "20"
+            }
+          ],
+          "effectiveFrom": "01-Aug-2026",
+          "effectiveTo": "31-Jul-2027"
+        },
+        {
+          "id": "ELG-CT-004",
+          "name": "GVW Cap",
+          "field": "gvw_tonnes",
+          "operator": ">",
+          "value": "49",
+          "outcome": "ineligible",
+          "outcomeType": "hard",
+          "category": "Product Eligibility",
+          "cover": "All Covers",
+          "priority": 15,
+          "status": "active",
+          "description": "Gross vehicle weight must not exceed 49 tonnes.",
+          "customerMsg": "Vehicles above 49 tonnes require a specialist fleet product.",
+          "reasonCode": "ELIG-CT-GVW",
+          "conditions": [
+            {
+              "field": "gvw_tonnes",
+              "op": ">",
+              "value": "49"
+            }
+          ],
+          "effectiveFrom": "01-Aug-2026",
+          "effectiveTo": "31-Jul-2027"
+        },
+        {
+          "id": "ELG-CT-007",
+          "name": "Min HGV Experience",
+          "field": "hgv_experience_years",
+          "operator": "<",
+          "value": "2",
+          "outcome": "ineligible",
+          "outcomeType": "soft",
+          "category": "Product Eligibility",
+          "cover": "All Covers",
+          "priority": 18,
+          "status": "active",
+          "description": "Primary driver must have at least 2 years of heavy-vehicle experience.",
+          "customerMsg": "Drivers with under 2 years of HGV experience may receive a premium loading.",
+          "reasonCode": "ELIG-CT-EXP",
+          "conditions": [
+            {
+              "field": "hgv_experience_years",
+              "op": "<",
+              "value": "2"
+            }
+          ],
+          "effectiveFrom": "01-Aug-2026",
+          "effectiveTo": "31-Jul-2027"
+        },
+        {
+          "id": "ELG-CT-005",
+          "name": "Hazardous Goods Refer",
+          "field": "goods_class",
+          "operator": "in",
+          "value": "Class 1 explosives, radioactive",
+          "outcome": "refer",
+          "outcomeType": "refer",
+          "category": "Cover Eligibility",
+          "cover": "Goods in Transit",
+          "priority": 25,
+          "status": "active",
+          "description": "Class 1 explosives and radioactive cargo are referred to specialist underwriting.",
+          "customerMsg": "Hazardous cargo of this class needs a specialist review before we can quote.",
+          "reasonCode": "ELIG-CT-HAZMAT",
+          "conditions": [
+            {
+              "field": "goods_class",
+              "op": "in",
+              "value": "Class 1 explosives, radioactive"
+            }
+          ],
+          "effectiveFrom": "01-Aug-2026",
+          "effectiveTo": "31-Jul-2027"
+        },
+        {
+          "id": "ELG-CT-006",
+          "name": "Tracking Device for Theft Cover",
+          "field": "tracking_fitted",
+          "operator": "=",
+          "value": "No",
+          "outcome": "ineligible",
+          "outcomeType": "soft",
+          "category": "Cover Eligibility",
+          "cover": "Theft & Hijack",
+          "priority": 30,
+          "status": "active",
+          "description": "Theft & Hijack requires an active GPS tracking device.",
+          "customerMsg": "Theft cover can be added once an approved tracking device is fitted.",
+          "reasonCode": "ELIG-CT-TRACK",
+          "conditions": [
+            {
+              "field": "tracking_fitted",
+              "op": "=",
+              "value": "No"
+            }
+          ],
+          "effectiveFrom": "01-Aug-2026",
+          "effectiveTo": "31-Jul-2027"
+        }
+      ],
+      "ratingComponents": [
+        {
+          "group": "BASE PREMIUM",
+          "items": [
+            {
+              "id": "RAT-CT-BR-001",
+              "name": "Base Rate — Commercial Truck",
+              "type": "base",
+              "amount": 1850,
+              "unit": "per year",
+              "cover": "Own Damage — Truck & Chassis (primary)",
+              "value": "$1,850/yr",
+              "notes": "Commercial motor base rate validated 12-Aug-2026 against 2025 heavy-vehicle loss ratios."
+            }
+          ]
+        },
+        {
+          "group": "RISK FACTORS",
+          "items": [
+            {
+              "id": "RAT-CT-FAC-001",
+              "name": "GVW Factor",
+              "type": "factor",
+              "field": "gvw_tonnes",
+              "lookupAttr": "gvw_tonnes",
+              "table1D": [
+                {
+                  "band": "≤ 7.5t",
+                  "mult": "0.85",
+                  "note": "Light commercial"
+                },
+                {
+                  "band": "7.6–16t",
+                  "mult": "1.00",
+                  "note": "Base band"
+                },
+                {
+                  "band": "16.1–26t",
+                  "mult": "1.25",
+                  "note": ""
+                },
+                {
+                  "band": "26.1–40t",
+                  "mult": "1.55",
+                  "note": ""
+                },
+                {
+                  "band": "40.1–49t",
+                  "mult": "1.85",
+                  "note": "Maximum GVW"
+                }
+              ],
+              "bands": "≤ 7.5t ×0.85 · 7.6–16t ×1.00 · 16.1–26t ×1.25 · 26.1–40t ×1.55 · 40.1–49t ×1.85"
+            },
+            {
+              "id": "RAT-CT-FAC-002",
+              "name": "Radius of Operation",
+              "type": "factor",
+              "field": "radius_km",
+              "lookupAttr": "radius_km",
+              "table1D": [
+                {
+                  "band": "0–150 km",
+                  "mult": "0.90",
+                  "note": "Local"
+                },
+                {
+                  "band": "151–500 km",
+                  "mult": "1.00",
+                  "note": "Regional"
+                },
+                {
+                  "band": "501–1,000 km",
+                  "mult": "1.20",
+                  "note": "Long haul"
+                },
+                {
+                  "band": "1,001–1,500 km",
+                  "mult": "1.40",
+                  "note": "Interstate"
+                }
+              ],
+              "bands": "0–150 km ×0.90 · 151–500 km ×1.00 · 501–1,000 km ×1.20 · 1,001–1,500 km ×1.40"
+            },
+            {
+              "id": "RAT-CT-FAC-003",
+              "name": "Goods Class Factor",
+              "type": "factor",
+              "field": "goods_class",
+              "lookupAttr": "goods_class",
+              "table1D": [
+                {
+                  "band": "General merchandise",
+                  "mult": "1.00",
+                  "note": ""
+                },
+                {
+                  "band": "Perishable / refrigerated",
+                  "mult": "1.15",
+                  "note": ""
+                },
+                {
+                  "band": "Construction materials",
+                  "mult": "1.10",
+                  "note": ""
+                },
+                {
+                  "band": "Fuel / flammable liquids",
+                  "mult": "1.45",
+                  "note": "ADR / hazmat"
+                },
+                {
+                  "band": "Chemicals (non-explosive)",
+                  "mult": "1.35",
+                  "note": ""
+                }
+              ],
+              "bands": "General merchandise ×1.00 · Perishable / refrigerated ×1.15 · Construction materials ×1.10 · Fuel / flammable liquids ×1.45 · Chemicals (non-explosive) ×1.35"
+            },
+            {
+              "id": "RAT-CT-FAC-004",
+              "name": "Driver Experience Factor",
+              "type": "factor",
+              "field": "hgv_experience_years",
+              "lookupAttr": "hgv_experience_years",
+              "table1D": [
+                {
+                  "band": "2–4 years",
+                  "mult": "1.30",
+                  "note": "Inexperienced loading"
+                },
+                {
+                  "band": "5–9 years",
+                  "mult": "1.10",
+                  "note": ""
+                },
+                {
+                  "band": "10–14 years",
+                  "mult": "1.00",
+                  "note": "Base"
+                },
+                {
+                  "band": "15+ years",
+                  "mult": "0.90",
+                  "note": "Preferred"
+                }
+              ],
+              "bands": "2–4 years ×1.30 · 5–9 years ×1.10 · 10–14 years ×1.00 · 15+ years ×0.90"
+            }
+          ]
+        },
+        {
+          "group": "LOADINGS",
+          "items": [
+            {
+              "id": "RAT-CT-LOAD-001",
+              "name": "Night Operations Loading",
+              "type": "loading",
+              "amount": "18%",
+              "condition": "night_operations = Yes",
+              "loadingType": "Percentage",
+              "loadingValue": "18"
+            },
+            {
+              "id": "RAT-CT-LOAD-002",
+              "name": "Inexperienced Driver",
+              "type": "loading",
+              "amount": "20%",
+              "condition": "hgv_experience_years < 2",
+              "loadingType": "Percentage",
+              "loadingValue": "20"
+            }
+          ]
+        },
+        {
+          "group": "DISCOUNTS",
+          "items": [
+            {
+              "id": "RAT-CT-DISC-001",
+              "name": "Tracker discount",
+              "type": "discount",
+              "amount": "5%",
+              "condition": "tracking_fitted = Yes"
+            }
+          ]
+        },
+        {
+          "group": "OTHER",
+          "items": [
+            {
+              "id": "RAT-CT-MIN-001",
+              "name": "Minimum premium",
+              "type": "minimum",
+              "amount": 1200,
+              "unit": "per year"
+            },
+            {
+              "id": "RAT-CT-FOR-001",
+              "name": "Payable premium formula",
+              "type": "formula",
+              "expression": "Base Premium × Risk Factors + Loadings − Discounts + Add-ons + Fees + Taxes = Payable Premium"
+            }
+          ]
+        },
+        {
+          "group": "FEES",
+          "items": [
+            {
+              "id": "RAT-CT-FEE-001",
+              "name": "Policy Admin Fee",
+              "type": "fee",
+              "amount": 45,
+              "feeType": "Fixed"
+            }
+          ]
+        },
+        {
+          "group": "TAXES",
+          "items": [
+            {
+              "id": "RAT-CT-TAX-001",
+              "name": "GST / Insurance Tax",
+              "type": "tax",
+              "amount": "18%",
+              "taxType": "Percentage"
+            }
+          ]
+        }
+      ],
+      "underwritingRules": [
+        {
+          "id": "UW-CT-DCL-001",
+          "name": "Disqualified HGV licence",
+          "outcome": "decline",
+          "field": "licence_status",
+          "operator": "in",
+          "value": "Suspended, Revoked, Disqualified",
+          "conditions": [
+            {
+              "field": "licence_status",
+              "op": "in",
+              "value": "Suspended, Revoked, Disqualified"
+            }
+          ]
+        },
+        {
+          "id": "UW-CT-DCL-002",
+          "name": "Explosives / radioactive cargo",
+          "outcome": "decline",
+          "field": "goods_class",
+          "operator": "in",
+          "value": "Class 1 explosives, radioactive",
+          "conditions": [
+            {
+              "field": "goods_class",
+              "op": "in",
+              "value": "Class 1 explosives, radioactive"
+            }
+          ]
+        },
+        {
+          "id": "UW-CT-REF-001",
+          "name": "High GVW or high value",
+          "outcome": "refer",
+          "field": "gvw_tonnes",
+          "operator": ">",
+          "value": "40",
+          "conditions": [
+            {
+              "field": "gvw_tonnes",
+              "op": ">",
+              "value": "40"
+            },
+            {
+              "connector": "OR",
+              "field": "vehicle_insured_value",
+              "op": ">",
+              "value": "250000"
+            }
+          ],
+          "logic": "or"
+        },
+        {
+          "id": "UW-CT-REF-002",
+          "name": "Fuel tanker / night haul",
+          "outcome": "refer",
+          "field": "body_type",
+          "operator": "=",
+          "value": "Tanker",
+          "conditions": [
+            {
+              "field": "body_type",
+              "op": "=",
+              "value": "Tanker"
+            },
+            {
+              "connector": "OR",
+              "field": "night_operations",
+              "op": "=",
+              "value": "Yes"
+            }
+          ],
+          "logic": "or"
+        },
+        {
+          "id": "UW-CT-LOAD-001",
+          "name": "Recent at-fault commercial claim",
+          "outcome": "load",
+          "field": "at_fault_claims_24m",
+          "operator": ">=",
+          "value": "1",
+          "loading": "20%",
+          "conditions": [
+            {
+              "field": "at_fault_claims_24m",
+              "op": ">=",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "id": "UW-CT-RSTR-001",
+          "name": "Cap GIT without tracker",
+          "outcome": "restrict",
+          "field": "tracking_fitted",
+          "operator": "=",
+          "value": "No",
+          "restriction": "GIT limit $50,000",
+          "conditions": [
+            {
+              "field": "tracking_fitted",
+              "op": "=",
+              "value": "No"
+            }
+          ]
+        },
+        {
+          "id": "UW-CT-EVD-001",
+          "name": "Require inspection for high SI",
+          "outcome": "evidence",
+          "field": "vehicle_insured_value",
+          "operator": ">",
+          "value": "250000",
+          "description": "Request physical inspection and tracker certificate before bind.",
+          "conditions": [
+            {
+              "field": "vehicle_insured_value",
+              "op": ">",
+              "value": "250000"
+            }
+          ]
+        },
+        {
+          "id": "UW-CT-ACC-001",
+          "name": "Standard commercial accept",
+          "outcome": "accept",
+          "description": "Accept if no decline, refer, load, or restrict rule has fired.",
+          "conditions": []
+        }
+      ],
+      "channels": [
+        {
+          "id": "CHAN-CT-B01",
+          "name": "Commercial Broker Portal",
+          "accessModel": "Restricted Access",
+          "commission": "18%",
+          "status": "active",
+          "description": "Appointed commercial motor brokers. Bind up to $200k OD SI.",
+          "comm": "18%",
+          "type": "Restricted Access",
+          "desc": "Appointed commercial motor brokers. Bind up to $200k OD SI.",
+          "icon": "•",
+          "auth": "Restricted Access",
+          "territories": [],
+          "commConfig": {
+            "type": "—",
+            "rate": "18%",
+            "basis": "—",
+            "override": "No",
+            "max": "—",
+            "clawback": "—",
+            "timing": "—",
+            "code": "—"
+          },
+          "rules": [],
+          "intermediaries": [],
+          "from": "—",
+          "to": "—"
+        },
+        {
+          "id": "CHAN-CT-D01",
+          "name": "Direct (Web) — Owner Operators",
+          "accessModel": "Open Access",
+          "commission": "0%",
+          "status": "active",
+          "description": "Self-serve quotes for single-truck owner-operators.",
+          "comm": "0%",
+          "type": "Open Access",
+          "desc": "Self-serve quotes for single-truck owner-operators.",
+          "icon": "•",
+          "auth": "Open Access",
+          "territories": [],
+          "commConfig": {
+            "type": "—",
+            "rate": "0%",
+            "basis": "—",
+            "override": "No",
+            "max": "—",
+            "clawback": "—",
+            "timing": "—",
+            "code": "—"
+          },
+          "rules": [],
+          "intermediaries": [],
+          "from": "—",
+          "to": "—"
+        },
+        {
+          "id": "CHAN-CT-API01",
+          "name": "Fleet TMS API",
+          "accessModel": "API Partners Only",
+          "commission": "8%",
+          "status": "active",
+          "description": "Headless quoting for transport-management systems.",
+          "comm": "8%",
+          "type": "API Partners Only",
+          "desc": "Headless quoting for transport-management systems.",
+          "icon": "•",
+          "auth": "API Partners Only",
+          "territories": [],
+          "commConfig": {
+            "type": "—",
+            "rate": "8%",
+            "basis": "—",
+            "override": "No",
+            "max": "—",
+            "clawback": "—",
+            "timing": "—",
+            "code": "—"
+          },
+          "rules": [],
+          "intermediaries": [],
+          "from": "—",
+          "to": "—"
+        }
+      ],
+      "documents": [
+        {
+          "id": "DOC-CT-WORD-001",
+          "name": "Commercial Truck Policy Wording",
+          "type": "Core",
+          "version": "2026.08",
+          "status": "approved",
+          "ver": "v2026.08",
+          "icon": "📄",
+          "identity": {
+            "type": "Core",
+            "format": "PDF",
+            "lang": "English",
+            "jur": "—",
+            "author": "—"
+          },
+          "trigger": {
+            "when": "Policy Issued",
+            "auto": true,
+            "del": "Email",
+            "copies": "1",
+            "reGen": "No"
+          },
+          "cond": {
+            "always": true,
+            "logic": []
+          },
+          "vars": [],
+          "comp": {
+            "req": false,
+            "rev": "—",
+            "d": "—",
+            "notes": "",
+            "legal": false,
+            "ref": "—"
+          },
+          "covers": []
+        },
+        {
+          "id": "DOC-CT-SCH-001",
+          "name": "Commercial Truck Schedule",
+          "type": "Core",
+          "version": "2026.08",
+          "status": "approved",
+          "ver": "v2026.08",
+          "icon": "📄",
+          "identity": {
+            "type": "Core",
+            "format": "PDF",
+            "lang": "English",
+            "jur": "—",
+            "author": "—"
+          },
+          "trigger": {
+            "when": "Policy Issued",
+            "auto": true,
+            "del": "Email",
+            "copies": "1",
+            "reGen": "No"
+          },
+          "cond": {
+            "always": true,
+            "logic": []
+          },
+          "vars": [],
+          "comp": {
+            "req": false,
+            "rev": "—",
+            "d": "—",
+            "notes": "",
+            "legal": false,
+            "ref": "—"
+          },
+          "covers": []
+        },
+        {
+          "id": "DOC-CT-CERT-001",
+          "name": "Certificate of Insurance (CMV)",
+          "type": "Core",
+          "version": "2026.08",
+          "status": "approved",
+          "ver": "v2026.08",
+          "icon": "📄",
+          "identity": {
+            "type": "Core",
+            "format": "PDF",
+            "lang": "English",
+            "jur": "—",
+            "author": "—"
+          },
+          "trigger": {
+            "when": "Policy Issued",
+            "auto": true,
+            "del": "Email",
+            "copies": "1",
+            "reGen": "No"
+          },
+          "cond": {
+            "always": true,
+            "logic": []
+          },
+          "vars": [],
+          "comp": {
+            "req": false,
+            "rev": "—",
+            "d": "—",
+            "notes": "",
+            "legal": false,
+            "ref": "—"
+          },
+          "covers": []
+        },
+        {
+          "id": "DOC-CT-END-001",
+          "name": "Goods in Transit Endorsement",
+          "type": "Endorsement",
+          "version": "2026.08",
+          "status": "approved",
+          "ver": "v2026.08",
+          "icon": "📄",
+          "identity": {
+            "type": "Endorsement",
+            "format": "PDF",
+            "lang": "English",
+            "jur": "—",
+            "author": "—"
+          },
+          "trigger": {
+            "when": "Policy Issued",
+            "auto": true,
+            "del": "Email",
+            "copies": "1",
+            "reGen": "No"
+          },
+          "cond": {
+            "always": true,
+            "logic": []
+          },
+          "vars": [],
+          "comp": {
+            "req": false,
+            "rev": "—",
+            "d": "—",
+            "notes": "",
+            "legal": false,
+            "ref": "—"
+          },
+          "covers": []
+        },
+        {
+          "id": "DOC-CT-END-002",
+          "name": "Trailer Extension Endorsement",
+          "type": "Endorsement",
+          "version": "2026.08",
+          "status": "approved",
+          "ver": "v2026.08",
+          "icon": "📄",
+          "identity": {
+            "type": "Endorsement",
+            "format": "PDF",
+            "lang": "English",
+            "jur": "—",
+            "author": "—"
+          },
+          "trigger": {
+            "when": "Policy Issued",
+            "auto": true,
+            "del": "Email",
+            "copies": "1",
+            "reGen": "No"
+          },
+          "cond": {
+            "always": true,
+            "logic": []
+          },
+          "vars": [],
+          "comp": {
+            "req": false,
+            "rev": "—",
+            "d": "—",
+            "notes": "",
+            "legal": false,
+            "ref": "—"
+          },
+          "covers": []
+        }
+      ],
+      "testCases": [
+        {
+          "id": 1,
+          "name": "Standard rigid 16t — 12yr HGV driver",
+          "cat": "Rating",
+          "exp": "Accept, $3,240.00",
+          "res": "pass",
+          "pExp": "$3,240.00",
+          "pAct": "$3,240.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 2,
+          "name": "Long-haul 40t tractor — 800 km radius",
+          "cat": "Rating",
+          "exp": "Accept, higher premium",
+          "res": "pass",
+          "pExp": "$5,110.00",
+          "pAct": "$5,110.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 3,
+          "name": "Driver age 23",
+          "cat": "Eligibility",
+          "exp": "Ineligible (Hard Block)",
+          "res": "pass",
+          "pExp": "N/A",
+          "pAct": "N/A",
+          "v": "0.0%"
+        },
+        {
+          "id": 4,
+          "name": "No HGV licence",
+          "cat": "Eligibility",
+          "exp": "Ineligible (Hard Block)",
+          "res": "pass",
+          "pExp": "N/A",
+          "pAct": "N/A",
+          "v": "0.0%"
+        },
+        {
+          "id": 5,
+          "name": "Class 1 explosives cargo",
+          "cat": "Underwriting",
+          "exp": "Decline",
+          "res": "pass",
+          "pExp": "N/A",
+          "pAct": "N/A",
+          "v": "0.0%"
+        },
+        {
+          "id": 6,
+          "name": "Fuel tanker night operations",
+          "cat": "Underwriting",
+          "exp": "Refer (Operations)",
+          "res": "pass",
+          "pExp": "$6,480.00*",
+          "pAct": "$6,480.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 7,
+          "name": "No tracker — GIT selected",
+          "cat": "Underwriting",
+          "exp": "Restrict GIT to $50k",
+          "res": "pass",
+          "pExp": "$3,390.00",
+          "pAct": "$3,390.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 8,
+          "name": "Trailer + GIT + breakdown add-on",
+          "cat": "Rating",
+          "exp": "Accept, covers stacked",
+          "res": "pass",
+          "pExp": "$4,820.00",
+          "pAct": "$4,820.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 9,
+          "name": "Claim-free 3 years, 8-truck fleet",
+          "cat": "Rating",
+          "exp": "25% NCD + 10% fleet",
+          "res": "pass",
+          "pExp": "$2,186.00",
+          "pAct": "$2,186.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 10,
+          "name": "Broker bind $220k SI",
+          "cat": "Distribution",
+          "exp": "Accept via broker override",
+          "res": "pass",
+          "pExp": "$5,640.00",
+          "pAct": "$5,640.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 11,
+          "name": "Boundary: driver age exactly 25",
+          "cat": "Boundary",
+          "exp": "Accept (edge)",
+          "res": "pass",
+          "pExp": "$3,640.00",
+          "pAct": "$3,640.00",
+          "v": "0.0%"
+        },
+        {
+          "id": 12,
+          "name": "Boundary: GVW exactly 49t",
+          "cat": "Boundary",
+          "exp": "Eligible (edge)",
+          "res": "pass",
+          "pExp": "$6,920.00",
+          "pAct": "$6,920.00",
+          "v": "0.0%"
+        }
+      ]
+    }
+  },
+  "audit": [
+    {
+      "id": "EVT-1787828767506-870",
+      "at": "2026-08-27T11:06:07.506Z",
+      "user": "Anika Sharma",
+      "role": "Product Manager",
+      "action": "MODIFIED",
+      "page": "simulation-studio.html",
+      "productId": "PRD-020",
+      "version": "2026.08",
+      "description": "testCases configuration saved",
+      "extra": {
+        "collection": "testCases"
+      }
+    },
+    {
+      "id": "EVT-1787828653805-382",
+      "at": "2026-08-27T11:04:13.805Z",
+      "user": "Anika Sharma",
+      "role": "Product Manager",
+      "action": "MODIFIED",
+      "page": "coverage-studio.html",
+      "productId": "PRD-020",
+      "version": "2026.08",
+      "description": "covers configuration saved",
+      "extra": {
+        "collection": "covers"
+      }
+    },
+    {
+      "id": "EVT-1787828614609-92",
+      "at": "2026-08-27T11:03:34.609Z",
+      "user": "Anika Sharma",
+      "role": "Product Manager",
+      "action": "MODIFIED",
+      "page": "coverage-studio.html",
+      "productId": "PRD-020",
+      "version": "2026.08",
+      "description": "covers configuration saved",
+      "extra": {
+        "collection": "covers"
+      }
+    },
+    {
+      "id": "EVT-1787828305669-356",
+      "at": "2026-08-27T10:58:25.669Z",
+      "user": "Anika Sharma",
+      "role": "Product Manager",
+      "action": "CREATED",
+      "page": "catalogue.html",
+      "productId": "PRD-020",
+      "version": "2026.08",
+      "description": "Created product QA Auto Motor Comprehensive 2026.08",
+      "extra": {
+        "productId": "PRD-020",
+        "version": "2026.08"
+      }
+    }
+  ],
+  "simulationRuns": [
+    {
+      "id": "RUN-1787828767513",
+      "type": "suite",
+      "status": "passed",
+      "total": 12,
+      "passed": 12,
+      "at": "2026-08-27T11:06:07.513Z",
+      "context": {
+        "page": "simulation-studio.html",
+        "productId": "PRD-020",
+        "version": "2026.08"
+      }
+    }
+  ]
+}

@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Underwriting Studio — Insurance Product Studio</title>
+  <meta name="description" content="Configure the risk appetite rules that evaluate quotation and risk data to produce underwriting decisions.">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studio-hub.css">
+  <style>
+    /* ── Two-panel layout ──────────────────────── */
+    .studio-layout { display: grid; grid-template-columns: 320px 1fr; gap: var(--space-5); align-items: start; }
+
+    /* ── Rule list sidebar ─────────────────────── */
+    .rule-sidebar { position: sticky; top: calc(56px + var(--space-6)); }
+    .rule-list { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2); }
+    .rule-section { margin-bottom: var(--space-2); }
+    .rule-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--space-2) var(--space-3); cursor: pointer;
+    }
+    .rule-section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: var(--color-muted);
+    }
+    .rule-item {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      padding: 10px var(--space-4);
+      border-radius: var(--radius-md); cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .1s, border-color .1s;
+    }
+    .rule-item:hover { background: var(--color-surface); }
+    .rule-item.active { background: var(--color-brand-light); border-left-color: var(--color-brand); }
+    .rule-outcome-badge {
+      display: inline-flex; height: 20px; padding: 0 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .3px; align-items: center;
+      text-transform: uppercase; flex-shrink: 0;
+    }
+    .outcome-accept   { background: #DCFCE7; color: var(--color-success); }
+    .outcome-decline  { background: #FEE2E2; color: var(--color-danger); }
+    .outcome-refer    { background: rgba(192,149,83,.22); color: var(--color-brand); }
+    .outcome-load     { background: #FEF3C7; color: var(--color-warning); }
+    .outcome-restrict { background: #E0E7FF; color: #4338CA; }
+    .outcome-evidence { background: var(--color-brand-light); color: var(--color-brand); }
+    
+    .rule-item-body { flex: 1; min-width: 0; }
+    .rule-item-name { font-size: 13px; font-weight: 500; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rule-item.active .rule-item-name { color: var(--color-brand); }
+    .rule-item-meta { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+    
+    .rule-status-icon { flex-shrink: 0; font-size: 12px; margin-top: 2px; }
+    .rule-status-active { color: var(--color-success); }
+
+    /* ── Section card ──────────────────────────── */
+    .section-card { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .section-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); cursor: pointer; user-select: none; transition: background .1s; }
+    .section-header:hover { background: var(--color-surface); }
+    .section-header-left { display: flex; align-items: center; gap: var(--space-3); }
+    .section-number { width: 24px; height: 24px; border-radius: 50%; background: var(--color-brand-light); color: var(--color-brand); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .section-title { font-size: 14px; font-weight: 600; }
+    .section-subtitle { font-size: 12px; color: var(--color-muted); margin-top: 1px; }
+    .section-chevron { color: var(--color-muted); transition: transform .2s; }
+    .section-chevron.open { transform: rotate(90deg); }
+    .section-body { border-top: 1px solid var(--color-border); max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+    .section-body.open { max-height: 2000px; overflow: visible; }
+    .section-inner { padding: var(--space-5) var(--space-6); }
+
+    /* ── Form grids ────────────────────────────── */
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-6); }
+    .span-2 { grid-column: 1 / -1; }
+
+    /* ── Toggle ────────────────────────────────── */
+    .toggle-wrap { display: flex; align-items: center; gap: var(--space-3); font-size: 13px; }
+    .toggle-switch { position: relative; width: 40px; height: 22px; display: inline-block; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; border-radius: 11px; cursor: pointer; transition: .2s; }
+    .toggle-on  .toggle-slider { background: var(--color-brand); }
+    .toggle-off .toggle-slider { background: var(--color-disabled); }
+    .toggle-dot { position: absolute; top: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: .2s; }
+    .toggle-on  .toggle-dot { left: calc(100% - 20px); }
+    .toggle-off .toggle-dot { left: 2px; }
+
+    /* ── Condition builder ─────────────────────── */
+    .condition-builder { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+    .cb-header {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+    }
+    .cb-dir-btn {
+      padding: 4px 12px; border: 1px solid var(--color-brand); border-radius: var(--radius-md); font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .3px; background: var(--color-brand-light); color: var(--color-brand);
+    }
+    .cb-group { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); }
+    .cb-group:last-child { border-bottom: none; }
+    .cb-group-label { font-size: 10px; font-weight: 700; color: var(--color-muted); margin-bottom: var(--space-2); }
+    .cb-row {
+      display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2);
+    }
+    .cb-row select, .cb-row input { height: 32px; font-size: 13px; }
+    .cb-logic-connector { font-size: 10px; font-weight: 700; color: var(--color-brand); text-align: center; margin-bottom: var(--space-2); }
+
+    /* ── Rule preview box ──────────────────────── */
+    .rule-preview-box {
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg); padding: var(--space-5);
+      border-left: 4px solid var(--color-brand);
+    }
+    .rp-title { font-size: 14px; font-weight: 700; margin-bottom: var(--space-2); }
+    .rp-meta { font-size: 12px; color: var(--color-muted); margin-bottom: var(--space-3); }
+    .rp-line { font-size: 13px; margin-bottom: var(--space-2); }
+    .rp-label { font-weight: 600; color: var(--color-muted); margin-right: 4px; }
+    .rp-value { color: var(--color-ink); }
+    .rp-message { font-style: italic; color: var(--color-muted); }
+
+    /* ── Test modal ────────────────────────────── */
+    .test-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: 480px; }
+    .test-input-panel { padding: var(--space-5); border-right: 1px solid var(--color-border); }
+    .test-result-panel { padding: var(--space-5); background: var(--color-surface); }
+    .test-result-item {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2); background: var(--color-panel); border: 1px solid var(--color-border);
+    }
+    .test-trigger { border-color: #FCA5A5; background: #FEF2F2; }
+    .test-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+    /* ── Decision tree modal ───────────────────── */
+    .dt-layout { display: grid; grid-template-columns: 300px 1fr; gap: 0; height: 600px; }
+    .dt-sidebar { padding: var(--space-4); border-right: 1px solid var(--color-border); overflow-y: auto; }
+    .dt-canvas { padding: var(--space-5); background: var(--color-surface); overflow: auto; display: flex; flex-direction: column; align-items: center; }
+    .dt-node {
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-panel); padding: var(--space-3); width: 280px; margin-bottom: var(--space-5);
+      position: relative; box-shadow: var(--shadow-sm);
+    }
+    .dt-node::after {
+      content: ''; position: absolute; bottom: -21px; left: 50%; width: 2px; height: 20px; background: var(--color-border);
+    }
+    .dt-node:last-child::after { display: none; }
+    .dt-node-title { font-size: 13px; font-weight: 600; margin-bottom: var(--space-2); }
+    .dt-edge { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: var(--space-2); }
+    .dt-edge-line { width: 40px; height: 2px; background: var(--color-border); }
+    .dt-outcome { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+    /* ── Context bar ───────────────────────────── */
+    .studio-context-bar {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); margin-bottom: var(--space-5); font-size: 13px;
+    }
+    .studio-context-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; background: var(--color-panel);
+      border: 1px solid var(--color-border); border-radius: 100px;
+      font-size: 12px; font-weight: 500;
+    }
+    .uw-source-badge {
+      display: inline-flex; align-items: center; height: 22px; padding: 0 10px;
+      border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: .35px;
+      background: rgba(71, 85, 105, .45); color: #CBD5E1; white-space: nowrap;
+    }
+    .uw-src-risk { background: rgba(249,115,22,.18); color: #FB923C; }
+    .uw-src-coverage { background: rgba(56,189,248,.15); color: #38BDF8; }
+    .uw-src-questions { background: rgba(139,92,246,.18); color: #A78BFA; }
+    .uw-src-product { background: rgba(148,163,184,.2); color: #CBD5E1; }
+    .uw-src-underwriting { background: rgba(192,149,83,.22); color: var(--color-brand); }
+    .cs-status.inactive { color: var(--color-danger); }
+
+    /* ── Rule detail drawer ─────────────────────── */
+    #uw-drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 400;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    #uw-drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    #uw-rule-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw);
+      background: var(--color-panel); border-left: 1px solid var(--color-border);
+      box-shadow: -8px 0 32px rgba(0,0,0,.25); z-index: 401;
+      display: flex; flex-direction: column; transform: translateX(100%);
+      transition: transform .25s cubic-bezier(.16,1,.3,1);
+    }
+    #uw-rule-drawer.open { transform: translateX(0); }
+    .uw-drawer-header { padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--color-border); }
+    .uw-drawer-title { font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--color-muted); margin-bottom: 6px; }
+    .uw-drawer-name { font-size: 18px; font-weight: 700; margin: 0 0 8px; color: var(--color-ink); }
+    .uw-drawer-id { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--color-muted); }
+    .uw-drawer-body { flex: 1; overflow-y: auto; padding: var(--space-5) var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+    .uw-drawer-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--color-muted); margin-bottom: 4px; }
+    .uw-drawer-field div { font-size: 14px; color: var(--color-ink); }
+    .uw-drawer-field.mono div { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+    .uw-drawer-footer { padding: var(--space-4) var(--space-6); border-top: 1px solid var(--color-border); display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    #uw-rule-drawer .uw-drawer-footer .btn { max-width:100%; }
+    .dt-tree-node { border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-panel); padding: 12px 16px; margin: 0 auto 16px; min-width: 220px; text-align: center; }
+    .dt-tree-branch { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; margin-bottom: 8px; }
+    .dt-tree-arm { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 140px; }
+    .dt-tree-connector { width: 2px; height: 16px; background: var(--color-border); margin: 0 auto; }
+    .dt-branch { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+    .dt-branch-row { display: flex; align-items: flex-start; justify-content: center; gap: 24px; width: 100%; flex-wrap: wrap; }
+    .dt-branch-arm { display: flex; flex-direction: column; align-items: center; min-width: 160px; }
+    .dt-branch-label { font-size: 11px; color: var(--color-muted); margin-bottom: 6px; }
+    .audit-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .audit-table th { text-align: left; padding: 8px 12px; font-size: 11px; text-transform: uppercase; color: var(--color-muted); border-bottom: 1px solid var(--color-border); }
+    .audit-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border); }
+    /* ── UI safeguards ───────────────────────────── */
+    .uw-page-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+    .uw-page-actions .btn { white-space:nowrap; }
+    .uw-rule-sidebar-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .uw-rule-list-wrap { max-height:calc(100vh - 300px); overflow-y:auto; }
+    .uw-modal-body-scroll { max-height:70vh; overflow-y:auto; }
+    @media (max-width: 900px) {
+      .studio-layout { grid-template-columns:1fr; }
+      .rule-sidebar { position:relative; top:auto; }
+      .uw-page-actions { width:100%; }
+    }
+  </style>
+
+<style id="uw-rule-form-patch">
+  /* Add Underwriting Rule form adjustments */
+  .uw-rule-form-patch-hidden { display:none !important; }
+  .uw-rule-form-select {
+    width:100%;
+    min-height:40px;
+    padding:0 36px 0 12px;
+    border:1px solid var(--color-border);
+    border-radius:var(--radius-md);
+    background:var(--color-panel);
+    color:var(--color-ink);
+    font:inherit;
+    outline:none;
+  }
+  .uw-rule-form-select:focus {
+    border-color:var(--color-brand);
+    box-shadow:0 0 0 2px rgba(192,149,83,.14);
+  }
+  .uw-source-note {
+    margin-top:5px;
+    font-size:11px;
+    color:var(--color-muted);
+  }
+</style>
+
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+  <main class="main-content" id="main-content">
+    <div class="page-inner">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title" id="studio-title">Underwriting Studio</h1>
+          <p class="page-subtitle" id="studio-subtitle">Loading…</p>
+        </div>
+        <div class="page-header-actions uw-page-actions" id="product-studio-actions">
+          <a class="btn btn-ghost" id="customer-view-btn" href="product-view.html">Customer view</a>
+          <a class="btn btn-secondary" id="view-product-btn" href="product-detail.html">View Product</a>
+          <button class="btn btn-ghost" onclick="openAuthorityModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M116 112v48a12 12 0 1024 0v-48a12 12 0 10-24 0zm12-88a104 104 0 10104 104A104.11 104.11 0 00128 24zm0 192a88 88 0 1188-88 88.1 88.1 0 01-88 88zm24-88a24 24 0 11-24-24 24 24 0 0124 24z" fill="currentColor"/></svg>
+            Authority
+          </button>
+          <button class="btn btn-ghost" onclick="openDecisionTreeModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 88h-48a8 8 0 000 16h16v40a16 16 0 01-16 16h-40v-16a8 8 0 00-16 0v48a8 8 0 0016 0v-16h40a32 32 0 0032-32v-40h16a8 8 0 000-16zM88 184a8 8 0 00-16 0v16H32a8 8 0 000 16h40v16a8 8 0 0016 0v-48zM120 40H80a8 8 0 000 16h40a16 16 0 0116 16v40h-16a8 8 0 000 16v-48a32 32 0 00-32-32H32a8 8 0 000 16h56v16a8 8 0 0016 0V40z" fill="currentColor"/></svg>
+            Decision Tree
+          </button>
+          <button class="btn btn-secondary" onclick="openTestRulesModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M221.69 199.77L160 96.92V40h8a8 8 0 000-16H88a8 8 0 000 16h8v56.92L34.31 199.77A16 16 0 0048 224h160a16 16 0 0013.69-24.23z" fill="currentColor"/></svg>
+            Test Rules
+          </button>
+          <button class="btn btn-primary" onclick="openAddUWRuleModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
+            Add Rule
+          </button>
+        </div>
+      </div>
+
+      <div id="studio-library-root" class="hidden"></div>
+      <div id="studio-product-workspace">
+      <div class="studio-context-bar">
+        <span id="ctx-count"></span>
+        <div style="margin-left:auto"><a id="ctx-back-link" href="product-detail.html" class="btn btn-ghost btn-sm">← Back to Product</a></div>
+      </div>
+
+      <div class="readonly-band" id="readonly-band" style="display:none">
+        <span>📌 This version is <strong>Published</strong> — underwriting rules are read-only.</span>
+        <button class="btn btn-primary btn-sm" onclick="PS.actionResult('info','Clone','Clone this version from Product Detail.')">Clone Version to Edit</button>
+      </div>
+
+      <div id="studio-hub"></div>
+      <div id="studio-editor" class="studio-hub-editor hidden">
+        <div class="cs-back">
+          <button class="btn btn-ghost btn-sm" type="button" onclick="PS.studioHub.back()">← Back to rules</button>
+        </div>
+      <div class="studio-layout">
+        <!-- LEFT: Rule List -->
+        <div class="rule-sidebar">
+          <div class="card">
+            <div class="card-header uw-rule-sidebar-header" style="padding:var(--space-4) var(--space-5)">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted)">Underwriting Rules</div>
+              <button class="btn btn-ghost btn-sm" type="button" onclick="openAddUWRuleModal()" aria-label="Add underwriting rule">+ Add</button>
+            </div>
+            <div class="rule-list uw-rule-list-wrap" id="rule-list"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Detail Panel -->
+        <div id="detail-panel" style="display:flex;flex-direction:column;gap:var(--space-4)"></div>
+      </div>
+      </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div id="uw-drawer-overlay" onclick="closeUwDrawer()"></div>
+<aside id="uw-rule-drawer" aria-label="Rule details">
+  <div class="uw-drawer-header">
+    <button class="btn btn-icon" type="button" onclick="closeUwDrawer()" aria-label="Close" style="float:right">×</button>
+    <div class="uw-drawer-title" id="uw-drawer-kicker">Rule</div>
+    <h2 class="uw-drawer-name" id="uw-drawer-name">—</h2>
+    <div class="uw-drawer-id" id="uw-drawer-id">—</div>
+  </div>
+  <div class="uw-drawer-body" id="uw-drawer-body"></div>
+  <div class="uw-drawer-footer" id="uw-drawer-footer"></div>
+</aside>
+<script src="assets/data.js"></script>
+<script src="assets/trucking-risk-seed.js"></script>
+<script src="assets/trucking-underwriting-seed.js"></script>
+<script src="assets/product-seeds.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/studio-hub.js"></script>
+<script src="assets/underwriting-rule-store.js"></script>
+<script src="assets/underwriting-studio-page.js"></script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+
+<script id="uw-rule-form-behavior">
+(function () {
+  'use strict';
+
+  function text(v) {
+    return String(v == null ? '' : v).trim();
+  }
+
+  function esc(v) {
+    return text(v).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function labelText(label) {
+    return text(label && label.textContent).replace(/\*/g,'').trim().toLowerCase();
+  }
+
+  function formGroupForLabel(label) {
+    return label && (label.closest('.form-group') || label.parentElement);
+  }
+
+  function controlForGroup(group) {
+    if (!group) return null;
+    return group.querySelector('input:not([type="hidden"]), select, textarea');
+  }
+
+  function findGroup(modal, labelNeedle) {
+    var labels = modal.querySelectorAll('label');
+    var needle = labelNeedle.toLowerCase();
+    for (var i = 0; i < labels.length; i++) {
+      if (labelText(labels[i]) === needle || labelText(labels[i]).indexOf(needle) === 0) {
+        return formGroupForLabel(labels[i]);
+      }
+    }
+    return null;
+  }
+
+  function questionnaireGroups() {
+    var out = [];
+
+    // Primary source: Questionnaire Studio's configured groups.
+    try {
+      if (window.PS && typeof PS.truckingQuestionGroups === 'function') {
+        var groups = PS.truckingQuestionGroups();
+        if (Array.isArray(groups)) {
+          groups.forEach(function (g) {
+            var value = text(g && (g.label || g.name || g.title || g.id));
+            if (value) out.push(value);
+          });
+        }
+      }
+    } catch (_) {}
+
+    // Also read question-group values exposed by Questionnaire Studio.
+    var candidates = [
+      window.QUESTIONS,
+      window.QUESTIONNAIRE_QUESTIONS,
+      window.QUESTION_BANK,
+      window.Q_DETAIL
+    ];
+
+    candidates.forEach(function (list) {
+      if (!list) return;
+      var arr = Array.isArray(list) ? list : Object.keys(list).map(function(k){ return list[k]; });
+      arr.forEach(function(q) {
+        if (!q || typeof q !== 'object') return;
+        var group = text(q.questionGroup || q.group || q.groupName || q.categoryGroup);
+        if (group) out.push(group);
+      });
+    });
+
+    // Read the actual persisted Questionnaire Studio group collection.
+    // Questionnaire Studio persists its editable groups as "questionGroups".
+    try {
+      var persistedGroupSources = [];
+
+      if (window.PS && PS.prototypeApp) {
+        // Support prototypeApp collection APIs when available.
+        ['getCollection', 'collection', 'readCollection'].forEach(function(method) {
+          try {
+            if (typeof PS.prototypeApp[method] === 'function') {
+              var value = PS.prototypeApp[method]('questionGroups');
+              if (Array.isArray(value)) persistedGroupSources.push(value);
+              else if (value && Array.isArray(value.items)) persistedGroupSources.push(value.items);
+            }
+          } catch (_) {}
+        });
+      }
+
+      // Also read localStorage, including the exact questionGroups key.
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (!key || !(/questionGroups|question|questionnaire/i.test(key))) continue;
+        var raw = localStorage.getItem(key);
+        if (!raw) continue;
+
+        var parsed;
+        try { parsed = JSON.parse(raw); } catch (_) { continue; }
+
+        var arr = Array.isArray(parsed) ? parsed : (
+          parsed && Array.isArray(parsed.questionGroups) ? parsed.questionGroups :
+          parsed && Array.isArray(parsed.questions) ? parsed.questions :
+          parsed && Array.isArray(parsed.items) ? parsed.items :
+          parsed && Array.isArray(parsed.data) ? parsed.data : []
+        );
+
+        if (Array.isArray(arr)) persistedGroupSources.push(arr);
+      }
+
+      persistedGroupSources.forEach(function(arr) {
+        arr.forEach(function(item) {
+          if (!item || typeof item !== 'object') return;
+
+          // A Questionnaire Studio group is normally {id,label,name,...}.
+          var directGroup = text(item.label || item.name || item.groupName);
+          if (directGroup) out.push(directGroup);
+
+          // Also support question records containing their group.
+          var nestedGroup = text(
+            item.questionGroup || item.group || item.questionGroupName || item.categoryGroup
+          );
+          if (nestedGroup) out.push(nestedGroup);
+        });
+      });
+    } catch (_) {}
+
+    if (!out.length) {
+      out = [
+        'Operations','Fleet','Vehicle','Driver','Commodity','Safety',
+        'Loss History','Policy Administration','Claims','Renewal'
+      ];
+    }
+
+    return Array.from(new Set(out)).sort(function(a,b){ return a.localeCompare(b); });
+  }
+
+  function underwriterOptions() {
+    var out = [];
+
+    // Preferred source: admin/catalog configuration.
+    try {
+      if (window.PS && PS.admin && typeof PS.admin.options === 'function') {
+        ['underwriters','underwriter','uwUsers','uw_users'].forEach(function(key) {
+          var vals = PS.admin.options(key);
+          if (Array.isArray(vals)) {
+            vals.forEach(function(v) {
+              var value = typeof v === 'string' ? v : text(v && (v.label || v.name || v.value));
+              if (value) out.push(value);
+            });
+          }
+        });
+      }
+    } catch (_) {}
+
+    // Also accept globally configured users/underwriters.
+    [window.UNDERWRITERS, window.UW_USERS, window.underwriters].forEach(function(list) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function(v) {
+        var value = typeof v === 'string' ? v : text(v && (v.label || v.name || v.value));
+        if (value) out.push(value);
+      });
+    });
+
+    // Sensible defaults if the project has not configured an admin list yet.
+    out.push(
+      'Junior Underwriter',
+      'Underwriter',
+      'Senior Underwriter',
+      'Commercial Underwriting Manager',
+      'Chief Underwriting Officer'
+    );
+
+    return Array.from(new Set(out)).sort(function(a,b){ return a.localeCompare(b); });
+  }
+
+  function replaceWithSelect(group, values, extraClass) {
+    if (!group) return null;
+    var old = controlForGroup(group);
+    if (!old) return null;
+
+    var select = document.createElement('select');
+    select.className = (old.className || 'form-control') + ' uw-rule-form-select ' + (extraClass || '');
+    select.id = old.id || '';
+    select.name = old.name || '';
+    select.setAttribute('aria-label', text(group.querySelector('label') && group.querySelector('label').textContent));
+    select.dataset.uwOriginalValue = old.value || '';
+
+    var current = text(old.value);
+    var options = values.slice();
+
+    if (current && options.indexOf(current) === -1) {
+      options.unshift(current);
+    }
+
+    select.innerHTML =
+      '<option value="">Select...</option>' +
+      options.map(function(v) {
+        return '<option value="' + esc(v) + '">' + esc(v) + '</option>';
+      }).join('');
+
+    select.value = current;
+    old.replaceWith(select);
+    return select;
+  }
+
+  function sourceRiskAttributes() {
+    var list = [];
+    var candidates = [
+      window.RISKS,
+      window.RISK_ATTRIBUTES,
+      window.riskAttributes
+    ];
+
+    candidates.forEach(function(arr) {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(function(r) {
+        if (!r || typeof r !== 'object') return;
+        var name = text(r.name || r.label || r.questionLabel);
+        var id = text(r.id || r.riskAttributeId);
+        var group = text(r.questionGroup || r.group);
+        if (name || id) list.push({name:name, id:id, group:group});
+      });
+    });
+
+    try {
+      var raw = localStorage.getItem('riskAttributes');
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        var arr = Array.isArray(parsed) ? parsed : (
+          parsed && Array.isArray(parsed.items) ? parsed.items : []
+        );
+        arr.forEach(function(r) {
+          var name = text(r && (r.name || r.label || r.questionLabel));
+          var id = text(r && (r.id || r.riskAttributeId));
+          var group = text(r && (r.questionGroup || r.group));
+          if (name || id) list.push({name:name,id:id,group:group});
+        });
+      }
+    } catch (_) {}
+
+    var seen = {};
+    return list.filter(function(r) {
+      var key = (r.id || r.name).toLowerCase();
+      if (seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  function wireRiskAttributeToQuestionGroup(modal, groupSelect) {
+    if (!groupSelect) return;
+    var riskGroup = findGroup(modal, 'Risk Attribute');
+    var riskSelect = riskGroup && controlForGroup(riskGroup);
+    if (!riskSelect || riskSelect.tagName !== 'SELECT') return;
+
+    var attrs = sourceRiskAttributes();
+
+    // If the existing risk-attribute select is populated, keep its options
+    // and map values back to Questionnaire Studio question groups.
+    riskSelect.addEventListener('change', function () {
+      var selectedText = riskSelect.options[riskSelect.selectedIndex]
+        ? text(riskSelect.options[riskSelect.selectedIndex].textContent) : '';
+      var selectedValue = text(riskSelect.value);
+      var found = attrs.find(function(r) {
+        return r.id === selectedValue || r.name === selectedText ||
+          r.id === selectedText;
+      });
+      if (found && found.group) {
+        var exists = Array.from(groupSelect.options).some(function(o) {
+          return o.value === found.group;
+        });
+        if (!exists) {
+          var opt = document.createElement('option');
+          opt.value = found.group;
+          opt.textContent = found.group;
+          groupSelect.appendChild(opt);
+        }
+        groupSelect.value = found.group;
+      }
+    });
+  }
+
+  function enhanceAddRuleModal(modal) {
+    if (!modal || modal.dataset.uwRuleEnhanced === '1') return;
+    if (!/add underwriting rule/i.test(modal.textContent || '')) return;
+
+    modal.dataset.uwRuleEnhanced = '1';
+
+    // 1. Remove Rule ID from the form. The existing rule engine still
+    // generates/maintains the ID internally.
+    var idGroup = findGroup(modal, 'Rule ID');
+    if (idGroup) {
+      idGroup.classList.add('uw-rule-form-patch-hidden');
+      var idControl = controlForGroup(idGroup);
+      if (idControl) {
+        // Rule ID is hidden from the user, but the existing create-rule
+        // validator still requires a non-empty ID. Keep the original control
+        // in the DOM and provide an automatic value.
+        idControl.disabled = false;
+        idControl.required = true;
+
+        function nextHiddenRuleId() {
+          var max = 0;
+          var sources = [
+            window.RULES,
+            window.UW_RULES,
+            window.underwritingRules,
+            window.UNDERWRITING_RULES
+          ];
+
+          sources.forEach(function(list) {
+            if (!Array.isArray(list)) return;
+            list.forEach(function(r) {
+              var value = text(r && (r.id || r.ruleId || r.ruleID));
+              var m = value.match(/(?:UW[-_])?(?:REF[-_])?(\d+)$/i);
+              if (m) max = Math.max(max, parseInt(m[1], 10) || 0);
+            });
+          });
+
+          try {
+            for (var i = 0; i < localStorage.length; i++) {
+              var key = localStorage.key(i);
+              var raw = key ? localStorage.getItem(key) : '';
+              if (!raw || !/underwriting|uw.?rules?/i.test(key || '')) continue;
+              var parsed;
+              try { parsed = JSON.parse(raw); } catch (_) { continue; }
+              var arr = Array.isArray(parsed) ? parsed :
+                (parsed && Array.isArray(parsed.rules) ? parsed.rules :
+                parsed && Array.isArray(parsed.items) ? parsed.items : []);
+              arr.forEach(function(r) {
+                var value = text(r && (r.id || r.ruleId || r.ruleID));
+                var m = value.match(/(?:UW[-_])?(?:REF[-_])?(\d+)$/i);
+                if (m) max = Math.max(max, parseInt(m[1], 10) || 0);
+              });
+            }
+          } catch (_) {}
+
+          return 'UW-REF-' + String(max + 1).padStart(3, '0');
+        }
+
+        // Always overwrite the hidden value for a new rule. This prevents the
+        // old "Rule name and ID are required" validation from firing.
+        idControl.value = nextHiddenRuleId();
+      }
+    }
+
+    // 2. Question Group comes from Questionnaire Studio groups.
+    var questionGroup = findGroup(modal, 'Question Group');
+    var groupSelect = replaceWithSelect(questionGroup, questionnaireGroups(), 'uw-question-group');
+    if (questionGroup && groupSelect) {
+      var note = document.createElement('div');
+      note.className = 'uw-source-note';
+      note.textContent = 'Options are sourced from Questionnaire Studio question groups.';
+      questionGroup.appendChild(note);
+    }
+
+    // 3. Assigned Underwriter is a dropdown.
+    var assigned = findGroup(modal, 'Assigned Underwriter');
+    replaceWithSelect(assigned, underwriterOptions(), 'uw-assigned-underwriter');
+
+    // 4. Fallback Underwriter is a dropdown.
+    var fallback = findGroup(modal, 'Fallback Underwriter');
+    replaceWithSelect(fallback, underwriterOptions(), 'uw-fallback-underwriter');
+
+    // 5. When a Risk Attribute is selected, use its linked Questionnaire
+    // question group automatically where that relationship is available.
+    wireRiskAttributeToQuestionGroup(modal, groupSelect);
+
+    // Reapply after any modal rerender.
+    var observer = new MutationObserver(function () {
+      if (!document.body.contains(modal)) {
+        observer.disconnect();
+        return;
+      }
+      var qg = findGroup(modal, 'Question Group');
+      var sel = qg && controlForGroup(qg);
+      if (qg && sel && sel.tagName !== 'SELECT') {
+        var newSel = replaceWithSelect(qg, questionnaireGroups(), 'uw-question-group');
+        if (newSel) wireRiskAttributeToQuestionGroup(modal, newSel);
+      }
+    });
+    observer.observe(modal, {childList:true, subtree:true});
+  }
+
+  function refreshQuestionGroupDropdowns() {
+    var groups = questionnaireGroups();
+    document.querySelectorAll('select.uw-question-group').forEach(function(select) {
+      var current = text(select.value);
+      var existing = Array.from(select.options).map(function(o){ return text(o.value); });
+      var merged = groups.slice();
+
+      if (current && merged.indexOf(current) === -1) merged.unshift(current);
+
+      var signature = merged.join('|');
+      if (select.dataset.uwGroupsSignature === signature) return;
+
+      select.innerHTML =
+        '<option value="">Select...</option>' +
+        merged.map(function(v) {
+          return '<option value="' + esc(v) + '">' + esc(v) + '</option>';
+        }).join('');
+
+      if (current && merged.indexOf(current) !== -1) select.value = current;
+      select.dataset.uwGroupsSignature = signature;
+    });
+  }
+
+  function findModal() {
+    var nodes = document.querySelectorAll(
+      '[role="dialog"], .modal, .modal-dialog, .modal-content, [class*="modal"]'
+    );
+    for (var i = 0; i < nodes.length; i++) {
+      if (/add underwriting rule/i.test(nodes[i].textContent || '')) return nodes[i];
+    }
+    return null;
+  }
+
+  // Watch for the existing application's modal. We do not replace the
+  // existing save handler, so its current rule persistence remains intact.
+  var bodyObserver = new MutationObserver(function () {
+    var modal = findModal();
+    if (modal) enhanceAddRuleModal(modal);
+  });
+
+  function start() {
+    bodyObserver.observe(document.body, {childList:true, subtree:true});
+    var existing = findModal();
+    if (existing) enhanceAddRuleModal(existing);
+
+    // Keep the Question Group dropdown synchronized with Questionnaire Studio.
+    // This means a newly created group appears without requiring an Underwriting
+    // Studio page refresh.
+    refreshQuestionGroupDropdowns();
+    setInterval(refreshQuestionGroupDropdowns, 1000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
+</script>
+
+</body>
+</html>

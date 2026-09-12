@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Distribution Channel — Insurance Product Studio</title>
+  <meta name="description" content="Configure a distribution channel from carrier through state with commission and account-level factors.">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .dc-page { max-width: 1440px; }
+    .dc-section { margin-bottom: var(--space-8); }
+    .dc-section-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: var(--space-4); margin-bottom: var(--space-5);
+    }
+    .dc-section-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .dc-section-help { font-size: 13px; color: var(--color-muted); }
+
+    .dc-flow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr);
+      gap: var(--space-3);
+      align-items: stretch;
+    }
+    .dc-connector {
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-muted); font-size: 18px; padding-bottom: 24px;
+    }
+    .dc-card {
+      background: var(--color-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      display: flex; flex-direction: column; min-height: 100%;
+    }
+    .dc-card-head {
+      display: flex; gap: var(--space-3); align-items: flex-start;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .dc-step {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      background: var(--color-brand); color: var(--color-on-brand);
+    }
+    .dc-card-title { font-size: 14px; font-weight: 600; }
+    .dc-card-help { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+    .dc-card-body { padding: var(--space-5); flex: 1; }
+
+    .dc-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; margin-bottom: 8px; }
+    .dc-input-suffix { position: relative; }
+    .dc-input-suffix .form-control { padding-right: 36px; }
+    .dc-suffix {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 12px; color: var(--color-muted); pointer-events: none;
+    }
+    .dc-reinsurer-list {
+      display: flex; flex-direction: column; gap: 6px;
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      padding: 8px; max-height: 160px; overflow: auto; background: var(--color-surface);
+      margin-bottom: 10px;
+    }
+    .dc-reinsurer-pick {
+      display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 4px 6px; border-radius: 6px;
+    }
+    .dc-reinsurer-pick:hover { background: var(--color-panel); }
+    .dc-reinsurer-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .dc-reinsurer-row {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
+    }
+    .dc-re-row-label { font-size: 12px; color: var(--color-muted); white-space: nowrap; }
+    .dc-re-input { width: 120px; }
+    .dc-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; padding: 6px 0; border-top: 1px solid var(--color-border);
+    }
+    .dc-total-row:first-of-type { border-top: none; }
+    .dc-valid { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 8px 10px; border-radius: var(--radius-md); }
+    .dc-valid.ok { color: var(--color-success); background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25); }
+    .dc-valid.err { color: var(--color-danger); background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25); }
+
+    .dc-info-panel {
+      margin-top: var(--space-4); padding: var(--space-4);
+      background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+    }
+    .dc-info-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--color-muted); margin-bottom: 10px; }
+    .dc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size: 13px; }
+    .dc-info-label { display: block; font-size: 11px; color: var(--color-muted); margin-bottom: 2px; }
+
+    .dc-dd { position: relative; }
+    .dc-dd.is-disabled { opacity: .65; pointer-events: none; }
+    .dc-dd-menu { min-width: 100%; }
+    .dc-dd-search { padding: 0 0 6px; margin-bottom: 4px; border-bottom: 1px solid var(--color-border); }
+    .dc-dd-option {
+      display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px;
+      font-size: 13px; cursor: pointer;
+    }
+    .dc-dd-option:hover { background: var(--color-surface); }
+    .dc-dd-item {
+      display: block; width: 100%; text-align: left; border: none; background: transparent;
+      padding: 8px 10px; font-size: 13px; color: var(--color-ink); cursor: pointer; border-radius: 6px;
+    }
+    .dc-dd-item:hover { background: var(--color-surface); }
+    .dc-dd-empty, .dc-empty { font-size: 13px; color: var(--color-muted); padding: 8px 0; }
+    .dc-city-menu { min-width: 200px; }
+
+    .dc-state-block {
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      padding: var(--space-4); margin-bottom: 10px; background: var(--color-surface);
+    }
+    .dc-state-head { margin-bottom: 10px; }
+    .dc-chip-product { border: 1px solid rgba(56,189,248,.35); }
+    .dc-chip-added { border: 1px solid rgba(192,149,83,.35); }
+    .dc-chip-tag {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+      margin-left: 4px; opacity: .75;
+    }
+    .dc-city-section { margin-top: 8px; }
+    .dc-state-commission { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--color-border); }
+    .dc-comm-inline { display: grid; grid-template-columns: 1fr 140px; gap: 8px; }
+
+    .dc-commission-block {
+      margin-top: var(--space-5); padding-top: var(--space-5);
+      border-top: 1px solid var(--color-border);
+    }
+    .dc-comm-title { font-size: 13px; font-weight: 600; margin-bottom: var(--space-3); }
+    .dc-toggle-row {
+      display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: var(--space-4); cursor: pointer;
+    }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .span-2 { grid-column: 1 / -1; }
+
+    .dc-factors-card { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .dc-factors-card .card-header { padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; color: var(--color-muted);
+      border-bottom: 1px solid var(--color-border); background: var(--color-surface);
+    }
+    .data-table td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table .form-control { height: 34px; font-size: 13px; }
+    .dc-factor-actions { white-space: nowrap; display: flex; gap: 4px; align-items: center; }
+    .dc-empty-cell { text-align: center; color: var(--color-muted); padding: 24px !important; }
+    .dc-factors-foot {
+      padding: var(--space-4) var(--space-5); font-size: 12px; color: var(--color-muted);
+      border-top: 1px solid var(--color-border); background: var(--color-surface);
+    }
+
+    @media (max-width: 1200px) {
+      .dc-flow { grid-template-columns: 1fr; }
+      .dc-connector { display: none; }
+    }
+    @media (max-width: 768px) {
+      .form-grid-2, .dc-info-grid, .dc-comm-inline { grid-template-columns: 1fr; }
+      .dc-reinsurer-row { grid-template-columns: 1fr; }
+      .page-header-actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+  <main class="main-content" id="main-content">
+    <div class="page-inner dc-page">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">Create Distribution Channel</h1>
+          <p class="page-subtitle">Configure reinsurance, then product, MGA, and state with commission and account-level factors.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary" type="button" onclick="DistCreate.cancel()">Cancel</button>
+          <button class="btn btn-primary" type="button" onclick="DistCreate.save()">Save Channel</button>
+        </div>
+      </div>
+
+      <section class="dc-section" aria-labelledby="dc-config-title">
+        <div class="dc-section-head">
+          <div>
+            <div class="dc-section-title" id="dc-config-title">Distribution Configuration</div>
+            <div class="dc-section-help">Reinsurance → Product & coverage → MGA → State & commission</div>
+          </div>
+        </div>
+        <div class="dc-flow">
+          <div class="dc-card" id="dc-card-carrier"></div>
+          <div class="dc-connector" aria-hidden="true">→</div>
+          <div class="dc-card" id="dc-card-product"></div>
+          <div class="dc-connector" aria-hidden="true">→</div>
+          <div class="dc-card" id="dc-card-mga"></div>
+          <div class="dc-connector" aria-hidden="true">→</div>
+          <div class="dc-card" id="dc-card-state"></div>
+        </div>
+      </section>
+
+      <section class="dc-section" aria-labelledby="dc-factors-title">
+        <div class="dc-factors-card">
+          <div class="card-header flex-between">
+            <div>
+              <div class="card-title" id="dc-factors-title">Account Level Factors</div>
+              <div class="card-subtitle">Define account-level factors that apply to this distribution channel.</div>
+            </div>
+            <button class="btn btn-primary btn-sm" type="button" onclick="DistCreate.addFactor()">+ Add Factor</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" aria-label="Account level factors">
+              <thead>
+                <tr>
+                  <th>Factor Name</th>
+                  <th>Factor Type</th>
+                  <th>Value</th>
+                  <th>Applies To</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dc-factors-body"></tbody>
+            </table>
+          </div>
+          <div class="dc-factors-foot">ⓘ Factors are applied in the order listed above.</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="assets/data.js"></script>
+<script src="assets/product-seeds.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+<script src="assets/distribution-create-data.js"></script>
+<script src="assets/distribution-create.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  PS.nav.render('distribution', [
+    { label: 'Distribution Studio', href: 'distribution-studio.html' },
+    { label: 'Create Channel', href: 'distribution-create.html' }
+  ]);
+  DistCreate.init();
+});
+</script>
+</body>
+</html>
