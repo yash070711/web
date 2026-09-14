@@ -1259,6 +1259,7 @@ const COVERS = [
       { field: 'Insured Value', operator: '≥', value: '$5,000' }
     ],
     lossBasis: 'Per Occurrence', reinstatement: 'Automatic (full limit)',
+    uwOverrideDeductible: false, uwOverrideClaimsBehaviour: false,
     benefitBasis: 'Indemnity', claimsNotifPeriod: '14', claimsNotifUnit: 'days',
     wordingDocs: [
       { name: 'Own Damage Clause — Standard', version: 'v2026.04', code: 'DOC-OD-CL-001' },
@@ -1285,6 +1286,7 @@ const COVERS = [
       { field: 'Vehicle Registration', operator: 'is', value: 'Active' }
     ],
     lossBasis: 'Per Occurrence', reinstatement: 'None (aggregate)',
+    uwOverrideDeductible: false, uwOverrideClaimsBehaviour: false,
     benefitBasis: 'Indemnity', claimsNotifPeriod: '7', claimsNotifUnit: 'days',
     wordingDocs: [
       { name: 'Third Party Liability Clause', version: 'v2026.04', code: 'DOC-TP-CL-001' }
@@ -1309,6 +1311,7 @@ const COVERS = [
       { field: 'Named Driver Age', operator: '≤', value: '70 years' }
     ],
     lossBasis: 'Per Person', reinstatement: 'Automatic',
+    uwOverrideDeductible: false, uwOverrideClaimsBehaviour: false,
     benefitBasis: 'Fixed Benefit', claimsNotifPeriod: '30', claimsNotifUnit: 'days',
     wordingDocs: [
       { name: 'Personal Accident Schedule', version: 'v2026.04', code: 'DOC-PA-SCH-001' }
@@ -1334,6 +1337,7 @@ const COVERS = [
       { field: 'Vehicle Age', operator: '≤', value: '12 years' }
     ],
     lossBasis: 'Per Occurrence', reinstatement: 'None — total loss',
+    uwOverrideDeductible: false, uwOverrideClaimsBehaviour: false,
     benefitBasis: 'Indemnity', claimsNotifPeriod: '14', claimsNotifUnit: 'days',
     wordingDocs: [
       { name: 'Theft & Total Loss Clause', version: 'v2026.04', code: 'DOC-TH-CL-001' }
@@ -1359,6 +1363,7 @@ const COVERS = [
       { field: 'Vehicle Age', operator: '≤', value: '10 years' }
     ],
     lossBasis: 'Per Call-out (max 3/year)', reinstatement: 'Automatic (annual)',
+    uwOverrideDeductible: false, uwOverrideClaimsBehaviour: false,
     benefitBasis: 'Service', claimsNotifPeriod: 'Immediate', claimsNotifUnit: '',
     wordingDocs: [
       { name: 'Roadside Assistance Terms', version: 'v2026.04', code: 'DOC-RSA-001' }
@@ -1382,6 +1387,7 @@ const COVERS = [
       { field: 'Vehicle Age', operator: '≤', value: '15 years' }
     ],
     lossBasis: 'Per Occurrence', reinstatement: 'Automatic',
+    uwOverrideDeductible: false, uwOverrideClaimsBehaviour: false,
     benefitBasis: 'Indemnity', claimsNotifPeriod: '14', claimsNotifUnit: 'days',
     wordingDocs: [
       { name: 'Glass Replacement Clause', version: 'v2026.04', code: 'DOC-WS-CL-001' }
@@ -3489,7 +3495,43 @@ function buildInsuredItemCard(it, index, ro, c) {
                    oninput="patchInsuredItem('${idAttr}','limitAmount',this.value,true)">
           </div>
           <span class="form-help">Required. Enter the maximum amount payable for this insured item.</span>
-        </div>`)}
+        </div>
+        <div class="form-group">
+  <label class="form-label">Fully Earned</label>
+  <div class="ii-inline-toggle">
+    <span class="ii-inline-toggle-label">${it.fullyEarned === true ? 'Yes' : 'No'}</span>
+    <label class="toggle-switch">
+      <input
+        type="checkbox"
+        ${it.fullyEarned === true ? 'checked' : ''}
+        ${ro ? 'disabled' : ''}
+        onchange="patchInsuredItem('${idAttr}','fullyEarned',this.checked,false)"
+        aria-label="Fully Earned"
+      >
+      <div class="toggle-slider"></div>
+      <div class="toggle-dot"></div>
+    </label>
+  </div>
+</div>
+        <div class="form-group">
+  <label class="form-label">Taxable</label>
+  <div class="ii-inline-toggle">
+    <span class="ii-inline-toggle-label">${it.taxable !== false ? 'Yes' : 'No'}</span>
+    <label class="toggle-switch">
+      <input
+        type="checkbox"
+        ${it.taxable !== false ? 'checked' : ''}
+        ${ro ? 'disabled' : ''}
+        onchange="patchInsuredItem('${idAttr}','taxable',this.checked,false)"
+        aria-label="Taxable"
+      >
+      <div class="toggle-slider"></div>
+      <div class="toggle-dot"></div>
+    </label>
+  </div>
+  
+        
+        `)}
         ${isServiceCover(c) ? `
         <div class="form-group">
           <label class="form-label">Service / Usage Limit</label>
@@ -3693,7 +3735,23 @@ function buildDeductibleSection(c, ro) {
   return `
     <div id="ded-block">
 
-      <div class="form-group" style="margin-bottom:16px">
+      <div class="form-group span-2" style="margin-bottom:16px">
+        <div class="uw-override-row">
+          <div>
+            <strong>Underwriter can override deductible</strong>
+            <p>Allows the underwriter to change the configured deductible for this coverage with an audit reason.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span>${c.uwOverrideDeductible ? 'Enabled' : 'Disabled'}</span>
+            <label class="toggle-switch">
+              <input type="checkbox" ${c.uwOverrideDeductible ? 'checked' : ''} ${roDis} onchange="patchCoverField('uwOverrideDeductible', this.checked)" aria-label="Underwriter can override deductible">
+              <div class="toggle-slider"></div><div class="toggle-dot"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group span-2" style="margin-bottom:16px">
         <label class="form-label">Deductible Type</label>
 
         <div class="ded-cards" role="radiogroup" aria-label="Deductible type">
@@ -3864,6 +3922,8 @@ function normalizeCover(cover, index) {
   c.annualAggregate = Boolean(c.annualAggregate);
   c.aggregateLimit = c.aggregateLimit ?? '';
   c.uwOverrideValuation = c.uwOverrideValuation !== false;
+  if (c.uwOverrideDeductible == null) c.uwOverrideDeductible = false;
+  if (c.uwOverrideClaimsBehaviour == null) c.uwOverrideClaimsBehaviour = false;
   ensureUwOverrides(c);
   c.coverVersion = coverVersionLabel();
   if (c.availability === 'mandatory') c.defaultSelected = true;
@@ -5460,20 +5520,10 @@ function renderDetailPanel(c) {
             <label class="form-label">Default Selected</label>
             <div class="toggle-wrap">
               <label class="toggle-switch">
-                <input type="checkbox" ${c.defaultSelected?'checked':''} ${ro||c.availability==='mandatory'?'disabled':''} onchange="patchCoverField('defaultSelected', this.checked); persistAndRefreshCover()">
+                <input type="checkbox" ${c.uwOverrideClaimsBehaviour ? 'checked' : ''} ${ro?'disabled':''} onchange="patchCoverField('uwOverrideClaimsBehaviour', this.checked)" aria-label="Underwriter can override claims behaviour">
                 <div class="toggle-slider"></div><div class="toggle-dot"></div>
               </label>
-              <span>${c.defaultSelected ? 'Yes' : 'No'}${c.availability==='mandatory'?' (enforced as Mandatory)':''}</span>
             </div>
-            <div class="dep-required-note">Optional covers can be pre-selected on the quote screen. Mandatory covers are always selected.</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Conditional On</label>
-            <select class="form-control" ${ro?'disabled':''} onchange="patchCoverField('conditionalOn', this.value)">
-              <option value="">None — always available</option>
-              ${otherCoverNames(c.id).map(n=>`<option ${c.conditionalOn===n?'selected':''}>${htmlEsc(n)}</option>`).join('')}
-            </select>
-            <div class="dep-required-note">Only show this cover when the selected cover is also chosen.</div>
           </div>
         </div>
       </div>

@@ -98,8 +98,9 @@ function buildWizardHTML() {
         <div class="form-group">
           <label class="form-label" for="w-owner">Product Owner <span class="required">*</span></label>
           <select id="w-owner" class="form-control" data-admin-key="productOwners">
-            ${adminList('productOwners', ['Anika Sharma', 'Rajan Mehta', 'Sunita Pillai', 'Priya Varghese']).map(o => `<option>${o}</option>`).join('')}
-          </select>
+  ${adminList('productOwners', ['Anuj', 'Vikram', 'Ayushi', 'Dev'])
+    .map(o => `<option>${o}</option>`).join('')}
+</select>
         </div>
         <div class="form-group">
           <label class="form-label" for="w-business-type">Business Type <span class="required">*</span></label>

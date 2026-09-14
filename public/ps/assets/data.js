@@ -63,9 +63,7 @@ PS.data = {
 
   activityFeed: [
     { userId:'U003', action:'published', subject:'Commercial Truck Comprehensive v2026.08', time:'Just now', status:'published' },
-    { userId:'U004', action:'published', subject:'Cyber Liability — SME v2026.09', time:'2 hours ago', status:'published' },
     { userId:'U002', action:'approved rating for', subject:'Commercial Truck Comprehensive', time:'Yesterday 14:22', status:'approved' },
-    { userId:'U003', action:'updated eligibility rules in', subject:'Cyber Liability — SME', time:'2 days ago', status:null },
     { userId:'U004', action:'commented on', subject:'Cyber Liability compliance review', time:'2 days ago', status:null }
   ],
 
