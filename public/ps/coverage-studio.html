@@ -3404,11 +3404,57 @@ function buildInsuredItemCard(it, index, ro, c) {
             ${quoteOpts.map(o => `<option ${it.quoteChoice===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
           </select>
         </div>
+        <div class="form-group span-2">
+          <div class="ii-toggle-row">
+            <div>
+              <strong>Underwriter can override valuation</strong>
+              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="ii-en">${it.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
+              <label class="toggle-switch">
+                <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
+                <div class="toggle-slider"></div><div class="toggle-dot"></div>
+              </label>
+            </div>
+          </div>
+          <div class="uw-auth-card-fields">
+            <div class="form-group">
+              <label class="form-label">Maximum variation (%)</label>
+              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Referral requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
+                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reason requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
+                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
         <div class="form-group">
           <label class="form-label">Limit Basis</label>
           <select class="form-control" ${ro?'disabled':''} onchange="setItemLimitBasisSelect('${idAttr}', this.value)">
             ${(isServiceCover(c) ? ['Not Applicable'] : LIMIT_BASIS_OPTS).map(o => `<option ${limitBasisValue===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
           </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Underwriter Limit Override</label>
+          <div class="ii-inline-toggle">
+            <span class="ii-inline-toggle-label">Allowed</span>
+            <div class="ii-inline-toggle-right">
+              <span class="ii-inline-toggle-state">${it.uwLimitOverride ? 'On' : 'Off'}</span>
+              <label class="toggle-switch">
+                <input type="checkbox" ${it.uwLimitOverride?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwLimitOverride',this.checked,false)" aria-label="Underwriter limit override">
+                <div class="toggle-slider"></div><div class="toggle-dot"></div>
+              </label>
+            </div>
+          </div>
         </div>
         ${isServiceCover(c) ? `
         <div class="form-group">
@@ -3463,39 +3509,6 @@ function buildInsuredItemCard(it, index, ro, c) {
           </div>
           <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
         </div>` : ''}
-        <div class="form-group span-2">
-          <div class="ii-toggle-row">
-            <div>
-              <strong>Underwriter can override valuation</strong>
-              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="ii-en">${it.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
-              <label class="toggle-switch">
-                <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
-                <div class="toggle-slider"></div><div class="toggle-dot"></div>
-              </label>
-            </div>
-          </div>
-          <div class="uw-auth-card-fields">
-            <div class="form-group">
-              <label class="form-label">Maximum variation (%)</label>
-              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Referral requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
-                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Reason requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
-                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-        </div>
       
       </div>
     </div>`;
@@ -4189,10 +4202,6 @@ function importCoverageLibrarySelection() {
   const added = addCatalogCoversToProduct(items);
   const skipped = items.length - added;
   PS.closeModal();
-  if (added) {
-    const ordered = coverEditorOrder();
-    if (ordered.length) activeCoverId = ordered[0].id;
-  }
   paintStudio();
   if (!added && skipped) {
     PS.actionResult?.('error', 'Already on product', 'All selected covers are already linked to this product.');
@@ -4324,8 +4333,6 @@ function useCheckedExistingCovers() {
   if (added) {
     studioMode = 'edit';
     resetPickCoverSelection();
-    const ordered = coverEditorOrder();
-    if (ordered.length) activeCoverId = ordered[0].id;
   }
   paintStudio();
   PS.actionResult?.('success', added ? 'Covers added' : 'Already on product', added
