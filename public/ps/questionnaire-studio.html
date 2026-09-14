@@ -908,6 +908,117 @@
 #questions-editor .q-item .trucking-q-select{display:none}
 @media(max-width:900px){.trucking-selection-toolbar{flex-wrap:wrap}.trucking-selection-toolbar .cs-search-wrap{max-width:none;flex-basis:100%}}
 </style>
+
+<style id="commercial-auto-library-redesign">
+  /* Commercial Auto library — matched to the existing warm/orange Questionnaire Studio palette. */
+  .caq-page{max-width:1120px;margin:0 auto;padding:0 0 28px;color:#171717}
+  .caq-breadcrumb{font-size:12px;color:#6f6a62;margin:2px 0 14px}
+  .caq-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px}
+  .caq-title{font-size:24px;line-height:1.2;margin:0 0 7px;color:#111;font-weight:750}
+  .caq-subtitle{font-size:13px;color:#77716a;margin:0}
+  .caq-selected-count{min-width:64px;padding:10px 13px;text-align:center;border-radius:9px;background:#fff4d7;color:#e79b08;border:1px solid #f0d69a;font-size:16px;font-weight:800;line-height:1.05}
+  .caq-selected-count span{font-size:10px;font-weight:500;color:#8b7860}
+  .caq-info{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border:1px solid #f0d18b;background:#fff6df;border-radius:9px;margin-bottom:16px;color:#5f5140}
+  .caq-info-icon{font-size:14px;color:#efa20b;margin-top:1px}
+  .caq-info strong{display:block;color:#171717;font-size:13px;margin-bottom:3px}
+  .caq-info span{display:block;font-size:12px;line-height:1.45;color:#6e655a}
+  .caq-stepper{display:flex;align-items:center;margin:8px 0 16px;color:#77716a}
+  .caq-step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650;white-space:nowrap}
+  .caq-step b{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#f1eee8;color:#77716a;font-size:12px}
+  .caq-step.active{color:#111}
+  .caq-step.active b{background:#111;color:#fff}
+  .caq-step-line{height:1px;background:#d8d2c9;width:min(430px,38vw);margin:0 10px}
+  .caq-library-card{border:1px solid #dfd8ce;border-radius:10px;background:#fff;overflow:hidden;box-shadow:0 1px 2px rgba(50,40,25,.04)}
+  .caq-library-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e5dfd6}
+  .caq-library-head h3{margin:0 0 5px;font-size:16px;color:#171717}
+  .caq-library-head p{margin:0;font-size:12px;color:#77716a}
+  .caq-library-total{text-align:center;min-width:58px;padding:7px 9px;background:#faf7f1;border-radius:7px;color:#111;font-size:16px;font-weight:800;line-height:1.05}
+  .caq-library-total span{font-size:9px;font-weight:500;color:#77716a}
+  .caq-search-row{display:flex;align-items:center;gap:18px;padding:12px 18px;border-bottom:1px solid #e5dfd6;background:#fbfaf8}
+  .caq-search-wrap{position:relative;flex:1;max-width:480px}
+  .caq-search-wrap>span{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#8a8379;font-size:16px}
+  .caq-search{width:100%;height:38px;padding:0 12px 0 31px;border:1px solid #ddd6cc;border-radius:7px;background:#fff;color:#171717;font-size:13px;outline:none}
+  .caq-search:focus{border-color:#efb33c;box-shadow:0 0 0 2px rgba(239,169,17,.12)}
+  .caq-link-btn{border:0;background:transparent;color:#d88900;font-size:12px;font-weight:650;cursor:pointer;padding:5px 0}
+  .caq-link-btn:hover{text-decoration:underline}
+  .caq-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:18px 18px 20px}
+  .caq-category-card{border:1px solid #ded8cf;border-radius:9px;padding:16px 14px;min-height:118px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;transition:border-color .15s,box-shadow .15s,transform .15s}
+  .caq-category-card:hover{border-color:#efc05a;box-shadow:0 3px 10px rgba(70,55,30,.08);transform:translateY(-1px)}
+  .caq-category-tag{display:inline-flex;align-self:flex-start;padding:3px 6px;border-radius:4px;background:#f4f1eb;color:#686157;font-size:9px;font-weight:700;margin-bottom:9px}
+  .caq-category-card h4{margin:0 0 5px;font-size:14px;color:#171717}
+  .caq-category-card p{margin:0;color:#77716a;font-size:11px;line-height:1.35}
+  .caq-category-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+  .caq-category-count{font-size:10px;color:#77716a}
+  .caq-open{border:0;background:transparent;color:#d88900;font-size:11px;font-weight:650;cursor:pointer;padding:0}
+  .caq-open:hover{text-decoration:underline}
+  .caq-empty{grid-column:1/-1;padding:42px 20px;text-align:center;color:#77716a;font-size:13px}
+  .caq-library-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-top:1px solid #e5dfd6;background:#fff;color:#77716a;font-size:11px}
+  .caq-primary-btn{border:0;border-radius:7px;padding:9px 13px;background:#e9e4dc;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
+  .caq-primary-btn:not(:disabled){background:#efa30b;color:#fff}
+  .caq-primary-btn:disabled{cursor:not-allowed;opacity:.8}
+
+  /* Category question drawer — same warm palette. */
+  .caq-drawer-overlay{position:fixed;inset:0;background:rgba(35,28,18,.20);z-index:10000;display:flex;justify-content:flex-end}
+  .caq-drawer{width:min(580px,100vw);height:100%;background:#fff;box-shadow:-8px 0 28px rgba(50,40,25,.16);display:flex;flex-direction:column}
+  .caq-drawer-head{padding:18px 17px 16px;border-bottom:1px solid #e2dcd3;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .caq-drawer-crumb{font-size:10px;color:#8a8176;margin-bottom:7px}
+  .caq-drawer-title{font-size:19px;color:#171717;font-weight:750;margin:0}
+  .caq-drawer-close{width:38px;height:38px;border:1px solid #d8d1c7;background:#fff;border-radius:8px;color:#333;font-weight:700;font-size:14px;cursor:pointer}
+  .caq-drawer-close:hover{background:#faf7f2}
+  .caq-drawer-body{padding:15px 17px;overflow:auto;flex:1}
+  .caq-add-specific{height:40px;border:1px dashed #efb33c;background:#fffaf0;border-radius:7px;color:#d88900;font-weight:700;width:100%;cursor:pointer;margin-bottom:10px}
+  .caq-add-specific:hover{background:#fff5dc}
+  .caq-drawer-search{height:40px;width:100%;border:1px solid #d8d1c7;border-radius:7px;padding:0 10px;font-size:13px;margin-bottom:12px;outline:none}
+  .caq-drawer-search:focus{border-color:#efb33c;box-shadow:0 0 0 2px rgba(239,169,17,.12)}
+  .caq-q-list{border-top:1px solid #e4ded5}
+  .caq-q-row{display:flex;align-items:flex-start;gap:10px;padding:13px 5px;border-bottom:1px solid #e5dfd6;cursor:pointer}
+  .caq-q-row:hover{background:#fffcf5}
+  .caq-q-row input{width:16px;height:16px;margin:1px 2px 0 0;accent-color:#efa30b;cursor:pointer;flex:0 0 auto}
+  .caq-q-copy{min-width:0}
+  .caq-q-label{display:block;font-size:13px;font-weight:650;color:#171717;line-height:1.35}
+  .caq-q-type{display:block;font-size:10px;color:#77716a;margin-top:3px}
+  .caq-drawer-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 17px;border-top:1px solid #e0d9d0;background:#fff}
+  .caq-drawer-footer span{font-size:12px;color:#77716a}
+  .caq-apply{border:0;border-radius:7px;background:#efa30b;color:#fff;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer}
+  .caq-apply:disabled{opacity:.45;cursor:not-allowed}
+  @media(max-width:850px){.caq-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.caq-step-line{width:16vw}}
+  @media(max-width:560px){.caq-category-grid{grid-template-columns:1fr}.caq-search-row{flex-wrap:wrap}.caq-search-wrap{flex-basis:100%;max-width:none}.caq-library-footer{align-items:flex-start;flex-direction:column}.caq-title{font-size:21px}}
+</style>
+
+
+<style id="caq-new-category-style">
+.caq-add-category-card{
+  border:1px dashed #b7a99a !important;
+  background:#fffdf9 !important;
+  color:var(--color-ink,#111) !important;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:122px;
+  text-align:center;
+}
+.caq-add-category-card:hover{
+  border-color:#d99a16 !important;
+  background:#fff8e8 !important;
+}
+.caq-add-plus{
+  font-size:24px;
+  line-height:1;
+  color:#d88f00;
+  font-weight:500;
+  margin-bottom:7px;
+}
+.caq-add-category-card strong{font-size:14px;}
+.caq-add-subtitle{
+  margin-top:5px;
+  color:#756d64;
+  font-size:11px;
+  font-weight:400;
+}
+</style>
+
 </head>
 <body>
 <div class="shell" id="app-shell">
@@ -968,28 +1079,49 @@
         <button class="btn btn-primary btn-sm" onclick="PS.actionResult('info','Clone to edit','Clone this version from Product Detail to make changes.')">Clone Version to Edit</button>
       </div>
 
-      <!-- Product-linked questions table -->
+      <!-- Updated Commercial Auto question-library flow -->
       <div class="qs-hub hidden" id="questions-hub">
-        <div class="card trucking-selection-page">
-          <div class="card-header trucking-selection-header">
-            <div>
-              <div class="card-title">Select Questions</div>
-              <div class="card-subtitle">Select the commercial trucking questions you want to configure. Selected questions will appear in the editor.</div>
-            </div>
-            <div class="trucking-selection-summary" id="trucking-hub-summary">0 selected</div>
+        <div class="caq-page">
+
+          <div class="caq-title-row">
+           
+            <div class="caq-selected-count" id="trucking-hub-summary">0<br><span>Selected</span></div>
           </div>
-          <div class="trucking-selection-toolbar">
-            <div class="cs-search-wrap">
-              <svg width="13" height="13" viewBox="0 0 256 256" fill="none"><path d="M229.66 218.34l-50.07-50.07a88 88 0 10-11.31 11.31l50.06 50.07a8 8 0 0011.32-11.31zM40 112a72 72 0 1172 72 72.08 72.08 0 01-72-72z" fill="currentColor"/></svg>
-              <input class="cs-search" id="trucking-selection-search" type="search" placeholder="Search questions..." oninput="renderTruckingSelectionPage()">
-            </div>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="selectAllTruckingQuestions()">Select all</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="clearTruckingQuestionSelection(); renderTruckingSelectionPage()">Clear all</button>
+
+         
+
+          <div class="caq-stepper">
+            <div class="caq-step active"><b>1</b><span>Select from Question Library</span></div>
+            <div class="caq-step-line"></div>
+            <div class="caq-step"><b>2</b><span>Configure selected fields</span></div>
           </div>
-          <div id="trucking-selection-list" class="trucking-selection-list"></div>
-          <div class="card-footer trucking-selection-footer">
-            <span id="trucking-selection-footer-count">0 questions selected</span>
-            <button type="button" class="btn btn-primary" onclick="continueToQuestionEditor()">Continue to Configure →</button>
+
+          <div class="caq-library-card">
+            <div class="caq-library-head">
+              <div>
+                <h3>Commercial Auto Question Library</h3>
+                <p>Open a category and select questions for Commercial Auto product.</p>
+              </div>
+              <div class="caq-library-total" id="caq-library-total">0<br><span>Questions</span></div>
+            </div>
+
+            <div class="caq-search-row">
+              <div class="caq-search-wrap">
+                <span>⌕</span>
+                <input id="trucking-selection-search" class="caq-search" type="search"
+                       placeholder="Search categories or questions..." oninput="renderTruckingSelectionPage()">
+              </div>
+              <button type="button" class="caq-link-btn" onclick="selectAllTruckingQuestions()">Select all</button>
+              <button type="button" class="caq-link-btn" onclick="clearTruckingQuestionSelection(); renderTruckingSelectionPage()">Clear all</button>
+            </div>
+
+            <div id="caq-category-grid" class="caq-category-grid"></div>
+
+            <div class="caq-library-footer">
+              <span>Commercial Auto library shown by default.</span>
+              <button type="button" class="caq-primary-btn" id="caq-configure-btn"
+                      onclick="continueToQuestionEditor()" disabled>Configure selected fields →</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1428,9 +1560,18 @@ function bootstrapQuestionGroups(bundle, product, persist) {
   // Commercial Trucking uses exactly TWO sections: Pre-bind and Post-bind.
   // Preserve the current configuration after the user makes a selection.
   const isTwoPhase = GROUPS.length === 2 &&
+    GROUPS.every(g => g && (g.bindPhase === 'pre-bind' || g.bindPhase === 'post-bind')) &&
     GROUPS.some(g => g.id === 'grp-trucking-pre-bind') &&
     GROUPS.some(g => g.id === 'grp-trucking-post-bind');
-  if (!isTwoPhase) useTruckingApplicationQuestionnaire(persist);
+  if (!isTwoPhase) {
+    // Do not introduce template/category questions. The Questionnaire Library
+    // selection is the source of truth for what enters the editor.
+    applyProductGroups([
+      { id:'grp-trucking-pre-bind', label:'Pre-bind', name:'Pre-bind', open:true, bindPhase:'pre-bind', questions:[] },
+      { id:'grp-trucking-post-bind', label:'Post-bind', name:'Post-bind', open:true, bindPhase:'post-bind', questions:[] }
+    ]);
+    if (persist) persistQuestions();
+  }
 }
 
 function ensureDefaultQuestionGroups() {
@@ -1861,8 +2002,10 @@ function renderTree() {
       </div>`;
     return;
   }
-  const preBind = GROUPS.filter(g => (g.bindPhase || 'pre-bind') !== 'post-bind');
-  const postBind = GROUPS.filter(g => g.bindPhase === 'post-bind');
+  const preGroup = GROUPS.find(g => (g.bindPhase || 'pre-bind') !== 'post-bind');
+  const postGroup = GROUPS.find(g => g.bindPhase === 'post-bind');
+  const preBind = preGroup ? [preGroup] : [];
+  const postBind = postGroup ? [postGroup] : [];
   tree.innerHTML = [
     renderPhaseSection('pre-bind', 'Pre-bind', preBind),
     renderPhaseSection('post-bind', 'Post-bind', postBind)
@@ -4296,6 +4439,431 @@ document.addEventListener('click', function(event) {
   const wrapper = document.getElementById('q-category-multi');
   if (wrapper && !wrapper.contains(event.target)) wrapper.classList.remove('open');
 });
+</script>
+
+
+<script id="commercial-auto-library-redesign-js">
+(function(){
+  const CATEGORY_DEFS = [
+    {id:'general', title:'General Information', desc:'Business identity and contact',
+      match:['business','legal','name','contact','email','phone','address','website']},
+    {id:'operations', title:'Business Operations', desc:'Authority, radius, territory',
+      match:['operation','authority','radius','territory','state','usdot','mc number','carrier','jurisdiction','business type']},
+    {id:'vehicle', title:'Vehicle Information', desc:'Vehicles, use, mileage',
+      match:['vehicle','vin','truck','tractor','trailer','fleet','mileage','gvw','gcwr','garaging','unit']},
+    {id:'driver', title:'Driver Information', desc:'Drivers, licenses, experience',
+      match:['driver','cdl','license','mvr','driving experience','violations','accident','medical qualification']},
+    {id:'cargo', title:'Commodity & Cargo', desc:'Goods hauled and exposure',
+      match:['cargo','commodity','goods','freight','haul','hazardous','load','broker']},
+    {id:'coverage', title:'Coverage Selection', desc:'Coverages, limits, deductibles',
+      match:['coverage','limit','deductible','liability','physical damage','cargo coverage','insurance']}
+  ];
+
+  const COMMERCIAL_TRUCKING_LIBRARY = [{"id":"CAQ-GEN-001","name":"Legal business name","label":"Legal business name","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-002","name":"Doing business as (DBA)","label":"Doing business as (DBA)","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-003","name":"Primary business address","label":"Primary business address","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-004","name":"Mailing address","label":"Mailing address","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-005","name":"Primary contact name","label":"Primary contact name","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-006","name":"Primary contact email","label":"Primary contact email","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-007","name":"Primary contact phone","label":"Primary contact phone","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-008","name":"Website","label":"Website","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-009","name":"Years in business","label":"Years in business","type":"Number","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-010","name":"Years operating as a trucking business","label":"Years operating as a trucking business","type":"Number","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-011","name":"Business ownership type","label":"Business ownership type","type":"Select","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-012","name":"NAICS code","label":"NAICS code","type":"Text","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-001","name":"Type of trucking operation","label":"Type of trucking operation","type":"Select","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-002","name":"Primary commodities hauled","label":"Primary commodities hauled","type":"Text","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-003","name":"Operating authority type","label":"Operating authority type","type":"Select","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-004","name":"USDOT number","label":"USDOT number","type":"Text","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-005","name":"MC number","label":"MC number","type":"Text","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-006","name":"State operating authority","label":"State operating authority","type":"Text","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-007","name":"Radius of operation","label":"Radius of operation","type":"Number","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-008","name":"Major states travelled","label":"Major states travelled","type":"Multiselect","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-009","name":"Major cities or lanes travelled","label":"Major cities or lanes travelled","type":"Text","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-010","name":"Do you require any filings?","label":"Do you require any filings?","type":"Boolean","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-011","name":"Does the insured require ICC filings?","label":"Does the insured require ICC filings?","type":"Boolean","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-012","name":"Does the insured need state filings?","label":"Does the insured need state filings?","type":"Boolean","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-013","name":"Permit numbers, if applicable","label":"Permit numbers, if applicable","type":"Text","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-OPS-014","name":"Percentage of interstate operations","label":"Percentage of interstate operations","type":"Number","extra":"Business Operations","category":"operations","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-001","name":"Total number of power units","label":"Total number of power units","type":"Number","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-002","name":"Total number of trailers","label":"Total number of trailers","type":"Number","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-003","name":"Are all owned vehicles scheduled on this application?","label":"Are all owned vehicles scheduled on this application?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-004","name":"Are all leased vehicles scheduled?","label":"Are all leased vehicles scheduled?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-005","name":"Are all hired, rented or borrowed vehicles scheduled?","label":"Are all hired, rented or borrowed vehicles scheduled?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-006","name":"Are all owner-operator vehicles scheduled?","label":"Are all owner-operator vehicles scheduled?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-007","name":"Is all equipment operated under the insured's authority scheduled?","label":"Is all equipment operated under the insured's authority scheduled?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-008","name":"Vehicle ownership type","label":"Vehicle ownership type","type":"Select","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-009","name":"Primary vehicle type","label":"Primary vehicle type","type":"Select","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-010","name":"Truck make and model","label":"Truck make and model","type":"Text","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-011","name":"Vehicle year","label":"Vehicle year","type":"Number","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-012","name":"Vehicle VIN","label":"Vehicle VIN","type":"Text","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-013","name":"Gross vehicle weight (GVW)","label":"Gross vehicle weight (GVW)","type":"Number","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-014","name":"Gross combination weight rating (GCWR)","label":"Gross combination weight rating (GCWR)","type":"Number","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-015","name":"Average annual mileage per power unit","label":"Average annual mileage per power unit","type":"Number","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-016","name":"Maximum radius driven","label":"Maximum radius driven","type":"Number","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-017","name":"Do you pull doubles?","label":"Do you pull doubles?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-018","name":"Do you pull triples?","label":"Do you pull triples?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-019","name":"Is any equipment trip leased?","label":"Is any equipment trip leased?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-020","name":"Does the applicant rent or lease trucks to others?","label":"Does the applicant rent or lease trucks to others?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-021","name":"Does the applicant rent or lease trailers to others?","label":"Does the applicant rent or lease trailers to others?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-022","name":"Are any vehicles used for local delivery?","label":"Are any vehicles used for local delivery?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-023","name":"Are any vehicles used for long-haul operations?","label":"Are any vehicles used for long-haul operations?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-024","name":"Are any vehicles used for refrigerated hauling?","label":"Are any vehicles used for refrigerated hauling?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-025","name":"Are any vehicles used for tanker operations?","label":"Are any vehicles used for tanker operations?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-026","name":"Are any vehicles used for flatbed operations?","label":"Are any vehicles used for flatbed operations?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-VEH-027","name":"Are any vehicles used for dump operations?","label":"Are any vehicles used for dump operations?","type":"Boolean","extra":"Vehicle Information","category":"vehicle","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-001","name":"Total number of active drivers","label":"Total number of active drivers","type":"Number","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-002","name":"Is the owner also a driver?","label":"Is the owner also a driver?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-003","name":"Do you use team driving?","label":"Do you use team driving?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-004","name":"Do you use owner-operator teams?","label":"Do you use owner-operator teams?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-005","name":"Do you use hot-seat, slip-seating or relay operations?","label":"Do you use hot-seat, slip-seating or relay operations?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-006","name":"Minimum driver age requirement","label":"Minimum driver age requirement","type":"Number","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-007","name":"Minimum required commercial driving experience","label":"Minimum required commercial driving experience","type":"Number","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-008","name":"Do all drivers hold required CDL licenses?","label":"Do all drivers hold required CDL licenses?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-009","name":"Are driver motor vehicle records reviewed?","label":"Are driver motor vehicle records reviewed?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-010","name":"How often are driver MVRs reviewed?","label":"How often are driver MVRs reviewed?","type":"Select","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-011","name":"Do you have a formal driver hiring standard?","label":"Do you have a formal driver hiring standard?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-012","name":"Do you perform pre-employment driver screening?","label":"Do you perform pre-employment driver screening?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-013","name":"Do you conduct drug and alcohol testing?","label":"Do you conduct drug and alcohol testing?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-014","name":"Do you have a driver training program?","label":"Do you have a driver training program?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-015","name":"Do you have a driver qualification file for each driver?","label":"Do you have a driver qualification file for each driver?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-016","name":"Do drivers have any major violations in the past 3 years?","label":"Do drivers have any major violations in the past 3 years?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-017","name":"Do drivers have any disqualifying violations?","label":"Do drivers have any disqualifying violations?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-DRV-018","name":"Do drivers have any accidents in the past 3 years?","label":"Do drivers have any accidents in the past 3 years?","type":"Boolean","extra":"Driver Information","category":"driver","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-001","name":"Primary commodity hauled","label":"Primary commodity hauled","type":"Select","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-002","name":"Secondary commodities hauled","label":"Secondary commodities hauled","type":"Multiselect","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-003","name":"Do you haul hazardous materials?","label":"Do you haul hazardous materials?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-004","name":"Hazardous material classes hauled","label":"Hazardous material classes hauled","type":"Multiselect","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-005","name":"Do you haul refrigerated or temperature-controlled cargo?","label":"Do you haul refrigerated or temperature-controlled cargo?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-006","name":"Do you haul household goods?","label":"Do you haul household goods?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-007","name":"Do you haul livestock or animals?","label":"Do you haul livestock or animals?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-008","name":"Do you haul vehicles or mobile equipment?","label":"Do you haul vehicles or mobile equipment?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-009","name":"Do you haul oversized or overweight loads?","label":"Do you haul oversized or overweight loads?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-010","name":"Do you haul high-value cargo?","label":"Do you haul high-value cargo?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-011","name":"Maximum value of a single load","label":"Maximum value of a single load","type":"Currency","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-012","name":"Do you use cargo securement procedures?","label":"Do you use cargo securement procedures?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-CAR-013","name":"Do you have written cargo handling procedures?","label":"Do you have written cargo handling procedures?","type":"Boolean","extra":"Commodity & Cargo","category":"cargo","lob":"Trucking","source":"library"},{"id":"CAQ-COV-001","name":"Coverage package requested","label":"Coverage package requested","type":"Select","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-002","name":"Auto liability limit requested","label":"Auto liability limit requested","type":"Currency","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-003","name":"Physical damage coverage requested","label":"Physical damage coverage requested","type":"Boolean","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-004","name":"Comprehensive deductible","label":"Comprehensive deductible","type":"Currency","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-005","name":"Collision deductible","label":"Collision deductible","type":"Currency","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-006","name":"Motor truck cargo coverage requested","label":"Motor truck cargo coverage requested","type":"Boolean","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-007","name":"Motor truck cargo limit","label":"Motor truck cargo limit","type":"Currency","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-008","name":"Motor truck cargo deductible","label":"Motor truck cargo deductible","type":"Currency","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-009","name":"Trailer interchange coverage requested","label":"Trailer interchange coverage requested","type":"Boolean","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-010","name":"Non-trucking liability coverage requested","label":"Non-trucking liability coverage requested","type":"Boolean","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-011","name":"Uninsured/underinsured motorist coverage requested","label":"Uninsured/underinsured motorist coverage requested","type":"Boolean","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-COV-012","name":"Medical payments coverage requested","label":"Medical payments coverage requested","type":"Boolean","extra":"Coverage Selection","category":"coverage","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-013","name":"Have you scheduled and listed all your owned vehicles for insurance coverage on this application?","label":"Have you scheduled and listed all your owned vehicles for insurance coverage on this application?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-014","name":"Have you scheduled and listed all your leased vehicles for insurance coverage on this application?","label":"Have you scheduled and listed all your leased vehicles for insurance coverage on this application?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-015","name":"Have you scheduled and listed all your hired, leased, rented, borrowed vehicles with or without drivers for insurance coverage on this application?","label":"Have you scheduled and listed all your hired, leased, rented, borrowed vehicles with or without drivers for insurance coverage on this application?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-016","name":"Have you scheduled and listed all your owner-operator vehicles for insurance coverage on this application?","label":"Have you scheduled and listed all your owner-operator vehicles for insurance coverage on this application?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-017","name":"Do you dispatch loads to any owner-operators, or other truckers or motor carriers that are NOT being insured on this policy?","label":"Do you dispatch loads to any owner-operators, or other truckers or motor carriers that are NOT being insured on this policy?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-018","name":"Do you act as a freight broker or a freight forwarder or arrange loads for others?","label":"Do you act as a freight broker or a freight forwarder or arrange loads for others?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-019","name":"Is all equipment operated under the insured’s authority scheduled on this application?","label":"Is all equipment operated under the insured’s authority scheduled on this application?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-020","name":"Are drivers hired with permanently leased autos?","label":"Are drivers hired with permanently leased autos?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-021","name":"Does applicant rent or lease Trucks to others?","label":"Does applicant rent or lease Trucks to others?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-022","name":"Does applicant rent or lease Trailer to others?","label":"Does applicant rent or lease Trailer to others?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-023","name":"Do you pull – Doubles?","label":"Do you pull – Doubles?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-024","name":"Do you pull – Tripples?","label":"Do you pull – Tripples?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-025","name":"Do you pull - Unsecured Loads?","label":"Do you pull - Unsecured Loads?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-026","name":"Do you haul oversize and or overweight loads?","label":"Do you haul oversize and or overweight loads?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-027","name":"Do you haul any hazardous materials or commodities that require a HAZMAT placard?","label":"Do you haul any hazardous materials or commodities that require a HAZMAT placard?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-028","name":"Do you haul any waste/refuse materials?","label":"Do you haul any waste/refuse materials?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-029","name":"Do you carry workers Compensation insurance for your drivers?","label":"Do you carry workers Compensation insurance for your drivers?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-030","name":"Do you use any team driving?","label":"Do you use any team driving?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-031","name":"Do you use any owner-operator teams?","label":"Do you use any owner-operator teams?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-032","name":"Do you use any hot seat, slip seating or relay driver operations?","label":"Do you use any hot seat, slip seating or relay driver operations?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-033","name":"Do you have a fleet safety program in place?","label":"Do you have a fleet safety program in place?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-034","name":"Do you have a vehicle maintenance program in place?","label":"Do you have a vehicle maintenance program in place?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-035","name":"Do you utilize or operate any mobile equipment, such as backhoe, bobcat, forklift or bulldozers in your operations?","label":"Do you utilize or operate any mobile equipment, such as backhoe, bobcat, forklift or bulldozers in your operations?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-036","name":"Do you currently use E-Logs?","label":"Do you currently use E-Logs?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-037","name":"Do you use Dashcams?","label":"Do you use Dashcams?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-038","name":"Do any of your commodities require temperature control?","label":"Do any of your commodities require temperature control?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-039","name":"Do you have any reefer trailers over 12 years old?","label":"Do you have any reefer trailers over 12 years old?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-040","name":"Do you haul containerized Freight?","label":"Do you haul containerized Freight?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-041","name":"Do you have a written trailer interchange agreement?","label":"Do you have a written trailer interchange agreement?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-042","name":"Does the insured haul Metal Coils?","label":"Does the insured haul Metal Coils?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-043","name":"Do you haul scrap metal?","label":"Do you haul scrap metal?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-044","name":"Do you haul refuse/Recyclables?","label":"Do you haul refuse/Recyclables?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-045","name":"Are Any tankers used?","label":"Are Any tankers used?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-046","name":"Do you haul oversized-overweight Commodities","label":"Do you haul oversized-overweight Commodities","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-047","name":"Do your trucks or trailers have any kind of alarm or theft Protection?","label":"Do your trucks or trailers have any kind of alarm or theft Protection?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-048","name":"Are trailers left loaded overnight?","label":"Are trailers left loaded overnight?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-049","name":"Is a unit ever left loaded in an unsecure lot (Side of road, parking lot, personal home etc.)","label":"Is a unit ever left loaded in an unsecure lot (Side of road, parking lot, personal home etc.)","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-050","name":"Do you have any terminal exposure for cargo?","label":"Do you have any terminal exposure for cargo?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-051","name":"Is insured’s name on all bill of ladings?","label":"Is insured’s name on all bill of ladings?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-052","name":"Does the insured act as a freight broker?","label":"Does the insured act as a freight broker?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"},{"id":"CAQ-GEN-053","name":"Does the insured give double brokered loads?","label":"Does the insured give double brokered loads?","type":"Boolean","extra":"General Information","category":"general","lob":"Trucking","source":"library"}];
+
+  function safeCatalog(){
+    return COMMERCIAL_TRUCKING_LIBRARY.map(x => Object.assign({}, x));
+  }
+
+  function questionText(q){ return String(q.name || q.label || q.question || '').trim(); }
+  function classify(q){
+    const explicit = String(q.category || q.questionCategory || q.extra || '').toLowerCase();
+    if(explicit){
+      const hit = CATEGORY_DEFS.find(c => explicit.includes(c.title.toLowerCase().split(' ')[0]) || explicit.includes(c.id));
+      if(hit) return hit.id;
+    }
+    const hay = questionText(q).toLowerCase();
+    let best = 'general', score = 0;
+    CATEGORY_DEFS.forEach(c=>{
+      const s = c.match.reduce((n,k)=>n+(hay.includes(k)?1:0),0);
+      if(s>score){score=s;best=c.id;}
+    });
+    return best;
+  }
+
+  function currentSelected(){
+    window.__CAQ_SELECTED_LIBRARY = window.__CAQ_SELECTED_LIBRARY || new Set();
+    return window.__CAQ_SELECTED_LIBRARY;
+  }
+
+  function syncLegacySelection(){
+    const selected=currentSelected();
+    window.__TRUCKING_SELECTED_QUESTIONS = new Set(selected);
+    try{
+      localStorage.setItem('riskStudioQuestionSelection',JSON.stringify({
+        product: typeof productId!=='undefined'?productId:'',
+        version: typeof productVersion!=='undefined'?productVersion:'',
+        questionIds:Array.from(selected),
+        updatedAt:new Date().toISOString()
+      }));
+    }catch(_){}
+  }
+
+  window.renderTruckingSelectionPage = function(){
+    const grid=document.getElementById('caq-category-grid');
+    if(!grid) return;
+    const catalog=safeCatalog();
+    const selected=currentSelected();
+    const query=String(document.getElementById('trucking-selection-search')?.value||'').trim().toLowerCase();
+
+    if(!window.__CAQ_SELECTION_INITIALIZED){
+      window.__CAQ_SELECTION_INITIALIZED = true;
+      try{
+        const raw=localStorage.getItem('riskStudioQuestionSelection');
+        const saved=raw ? JSON.parse(raw) : null;
+        const ids=Array.isArray(saved?.questionIds) ? saved.questionIds.map(String) : [];
+        const catalogIds=new Set(catalog.map(q=>String(q.id)));
+        ids.forEach(id=>{ if(catalogIds.has(id)) selected.add(id); });
+      }catch(_){}
+    }
+
+    const grouped=CATEGORY_DEFS.map(cat=>{
+      const questions=catalog.filter(q=>classify(q)===cat.id);
+      const visible=questions.filter(q=>!query || questionText(q).toLowerCase().includes(query) || cat.title.toLowerCase().includes(query) || cat.desc.toLowerCase().includes(query));
+      return Object.assign({},cat,{questions,visible});
+    }).filter(cat=>cat.visible.length || !query);
+
+    grid.innerHTML=grouped.map(cat=>{
+      const selectedCount=cat.questions.filter(q=>selected.has(String(q.id))).length;
+      return `
+        <div class="caq-category-card">
+          <div>
+            <span class="caq-category-tag">▦ Library category</span>
+            <h4>${typeof qEsc==='function'?qEsc(cat.title):cat.title}</h4>
+            <p>${typeof qEsc==='function'?qEsc(cat.desc):cat.desc}</p>
+          </div>
+          <div class="caq-category-bottom">
+            <span class="caq-category-count">${cat.questions.length} question${cat.questions.length===1?'':'s'}${selectedCount?` · ${selectedCount} selected`:''}</span>
+            <button type="button" class="caq-open" onclick="openCommercialAutoCategory('${cat.id}')">Open →</button>
+          </div>
+        </div>`;
+    }).join('') || '<div class="caq-empty">No categories or questions match your search.</div>';
+    if(!query){
+      grid.insertAdjacentHTML('beforeend', `
+        <button type="button" class="caq-category-card caq-add-category-card"
+                onclick="openTruckingNewCategoryModal()">
+          <span class="caq-add-plus">+</span>
+          <strong>Create new category</strong>
+          <span class="caq-add-subtitle">Product-specific category for Commercial Trucking</span>
+        </button>`);
+    }
+
+    const total=catalog.length;
+    const totalEl=document.getElementById('caq-library-total');
+    if(totalEl) totalEl.innerHTML=`${total}<br><span>Questions</span>`;
+    const summary=document.getElementById('trucking-hub-summary');
+    if(summary) summary.innerHTML=`${selected.size}<br><span>Selected</span>`;
+    const footer=document.getElementById('trucking-selection-footer-count');
+    if(footer) footer.textContent=`${selected.size} question${selected.size===1?'':'s'} selected`;
+    const cfg=document.getElementById('caq-configure-btn');
+    if(cfg) cfg.disabled=!selected.size;
+    syncLegacySelection();
+  };
+
+  window.openCommercialAutoCategory = function(categoryId){
+    const cat=CATEGORY_DEFS.find(c=>c.id===categoryId);
+    if(!cat) return;
+    const catalog=safeCatalog();
+    const selected=currentSelected();
+    const questions=catalog.filter(q=>classify(q)===categoryId);
+    const overlay=document.createElement('div');
+    overlay.className='caq-drawer-overlay';
+    overlay.id='caq-drawer-overlay';
+    overlay.innerHTML=`
+      <aside class="caq-drawer" role="dialog" aria-modal="true" aria-label="${cat.title}">
+        <div class="caq-drawer-head">
+          <div>
+            <div class="caq-drawer-crumb">Universal Question Library / Commercial Auto / ${cat.title}</div>
+            <h2 class="caq-drawer-title">${cat.title}</h2>
+          </div>
+          <button type="button" class="caq-drawer-close" onclick="closeCommercialAutoCategory()">Close</button>
+        </div>
+        <div class="caq-drawer-body">
+          <button type="button" class="caq-add-specific" onclick="closeCommercialAutoCategory(); openAddQuestionModal()">＋ Add product-specific question</button>
+          <input id="caq-drawer-search" class="caq-drawer-search" type="search" placeholder="Search category questions" oninput="filterCommercialAutoCategory()">
+          <div class="caq-q-list" id="caq-q-list">
+            ${questions.map((q,i)=>{
+              const id=String(q.id);
+              const label=questionText(q);
+              const type=String(q.type || q.fieldType || 'Text');
+              return `<label class="caq-q-row" data-search="${(label+' '+type).toLowerCase().replace(/"/g,'&quot;')}">
+                <input type="checkbox" class="caq-category-cb" value="${id.replace(/"/g,'&quot;')}" ${selected.has(id)?'checked':''}
+                  onchange="updateCommercialAutoCategoryCount()">
+                <span class="caq-q-copy">
+                  <span class="caq-q-label">${typeof qEsc==='function'?qEsc(label):label}</span>
+                  <span class="caq-q-type">Library suggestion: ${typeof qEsc==='function'?qEsc(type):type}</span>
+                </span>
+              </label>`;
+            }).join('') || '<div class="caq-empty">No questions in this category.</div>'}
+          </div>
+        </div>
+        <div class="caq-drawer-footer">
+          <span id="caq-drawer-count">${questions.filter(q=>selected.has(String(q.id))).length} selected</span>
+          <button type="button" class="caq-apply" onclick="applyCommercialAutoCategory('${cat.id}')">Apply selection</button>
+        </div>
+      </aside>`;
+    overlay.addEventListener('click',e=>{if(e.target===overlay)closeCommercialAutoCategory();});
+    document.body.appendChild(overlay);
+    setTimeout(()=>document.getElementById('caq-drawer-search')?.focus(),30);
+  };
+
+  window.filterCommercialAutoCategory=function(){
+    const query=String(document.getElementById('caq-drawer-search')?.value||'').toLowerCase();
+    document.querySelectorAll('#caq-q-list .caq-q-row').forEach(row=>{
+      row.style.display=(row.getAttribute('data-search')||'').includes(query)?'':'none';
+    });
+  };
+
+  window.updateCommercialAutoCategoryCount=function(){
+    const n=document.querySelectorAll('#caq-q-list .caq-category-cb:checked').length;
+    const el=document.getElementById('caq-drawer-count');
+    if(el) el.textContent=`${n} selected`;
+  };
+
+  window.applyCommercialAutoCategory=function(categoryId){
+    const selected=currentSelected();
+    document.querySelectorAll('#caq-q-list .caq-category-cb').forEach(cb=>{
+      if(cb.checked) selected.add(String(cb.value));
+      else selected.delete(String(cb.value));
+    });
+    syncLegacySelection();
+    closeCommercialAutoCategory();
+    renderTruckingSelectionPage();
+  };
+
+  window.closeCommercialAutoCategory=function(){
+    document.getElementById('caq-drawer-overlay')?.remove();
+  };
+
+  window.selectAllTruckingQuestions=function(){
+    const selected=currentSelected();
+    safeCatalog().forEach(q=>selected.add(String(q.id)));
+    syncLegacySelection();
+    renderTruckingSelectionPage();
+  };
+
+  window.clearTruckingQuestionSelection=function(){
+    currentSelected().clear();
+    syncLegacySelection();
+    renderTruckingSelectionPage();
+  };
+
+  window.continueToQuestionEditor=function(){
+    const selected=currentSelected();
+    if(!selected.size){
+      if(typeof qNotify==='function') qNotify('Select at least one question','Choose one or more questions before continuing.');
+      return;
+    }
+
+    const catalog=safeCatalog();
+    const items=catalog.filter(q=>selected.has(String(q.id)));
+    const existingByLabel=new Map(
+      (typeof allQuestions==='function' ? allQuestions() : [])
+        .map(q=>[String(q.label || q.name || '').trim().toLowerCase(), q])
+    );
+
+    // IMPORTANT: the editor contains ONLY questions selected in the
+    // Questionnaire Studio. Do not carry over old/unselected groups.
+    const preId='grp-trucking-pre-bind';
+    const postId='grp-trucking-post-bind';
+
+    const preQuestions=items.map((lib,index)=>{
+      const existing=existingByLabel.get(String(lib.name || lib.label || '').trim().toLowerCase());
+      const type=mapLibraryQuestionType(lib.type);
+      return {
+        ...(existing || {}),
+        id: existing?.id || `QST-${Date.now().toString(36)}${Math.random().toString(16).slice(2,6)}`,
+        label: lib.name || lib.label,
+        internalName: String(existing?.internalName || lib.code || lib.name || '')
+          .toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''),
+        type: existing?.type || type,
+        fieldType: existing?.fieldType || type,
+        required: existing?.required ?? false,
+        helpText: existing?.helpText || '',
+        help: existing?.help || existing?.helpText || '',
+        channels: existing?.channels || ['web','mobile','agent','api'],
+        validations: existing?.validations || [],
+        conditions: existing?.conditions || [],
+        evidence: existing?.evidence || [],
+        options: existing?.options || ((type==='select'||type==='multisel') ? [] : undefined),
+        coverIds: existing?.coverIds || [],
+        coverageChildSelections: existing?.coverageChildSelections || {},
+        conditional: existing?.conditional || false,
+        incomplete: existing?.incomplete || false,
+        bindPhase:'pre-bind',
+        order:index+1,
+        libraryId:String(lib.id)
+      };
+    });
+
+    const pre={
+      id:preId,
+      label:'Pre-bind',
+      name:'Pre-bind',
+      open:true,
+      bindPhase:'pre-bind',
+      questions:preQuestions
+    };
+    const post={
+      id:postId,
+      label:'Post-bind',
+      name:'Post-bind',
+      open:true,
+      bindPhase:'post-bind',
+      questions:[]
+    };
+
+    GROUPS.splice(0,GROUPS.length,pre,post);
+    groupOpen[preId]=true;
+    groupOpen[postId]=true;
+
+    persistQuestions();
+    refreshQuestionMeta();
+
+    studioMode='edit';
+    document.getElementById('questions-hub')?.classList.add('hidden');
+    document.getElementById('questions-editor')?.classList.remove('hidden');
+
+    if(typeof allQuestions==='function'){
+      const first=allQuestions()[0];
+      activeQId=first?.id || '';
+    }
+    if(typeof renderTree==='function') renderTree();
+    if(activeQId && typeof loadQuestion==='function') loadQuestion(activeQId);
+
+    if(typeof PS!=='undefined' && PS.actionResult){
+      PS.actionResult(
+        'success',
+        'Questions selected',
+        `${items.length} question${items.length===1?'':'s'} are ready to configure in Pre-bind.`
+      );
+    }
+  };
+
+  window.showQuestionHub=function(){
+    studioMode='hub';
+    document.getElementById('questions-hub')?.classList.remove('hidden');
+    document.getElementById('questions-editor')?.classList.add('hidden');
+    renderTruckingSelectionPage();
+  };
+
+  window.renderQuestionTable=function(){ renderTruckingSelectionPage(); };
+
+  // Make clicking an existing question in the editor continue to use the existing
+  // configuration flow. Only the library-selection screen is redesigned.
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape') closeCommercialAutoCategory();
+  });
+
+  // If the page has already been painted, refresh the redesigned library.
+  if(document.readyState!=='loading'){
+    setTimeout(()=>{ if(document.getElementById('caq-category-grid')) renderTruckingSelectionPage(); },0);
+  }
+})();
+</script>
+
+
+<script id="caq-new-category-functionality">
+(function(){
+  function esc(v){
+    return String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  window.openTruckingNewCategoryModal = function(){
+    if(!window.PS || typeof PS.openModal !== 'function') return;
+    PS.openModal(`
+      <div style="padding:22px;max-width:520px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div>
+            <div style="font-size:18px;font-weight:700">Create new category</div>
+            <div style="font-size:12px;color:#756d64;margin-top:4px">
+              Add a product-specific category for Commercial Trucking.
+            </div>
+          </div>
+          <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category name <span class="required">*</span></label>
+          <input id="caq-new-category-name" class="form-control"
+                 placeholder="e.g. Safety & Loss Control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input id="caq-new-category-desc" class="form-control"
+                 placeholder="Short description">
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+          <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveTruckingNewCategory()">Create category</button>
+        </div>
+      </div>`);
+    setTimeout(()=>document.getElementById('caq-new-category-name')?.focus(),50);
+  };
+
+  window.saveTruckingNewCategory = function(){
+    const name=document.getElementById('caq-new-category-name')?.value.trim();
+    const desc=document.getElementById('caq-new-category-desc')?.value.trim() || '';
+    if(!name){
+      const el=document.getElementById('caq-new-category-name');
+      el?.classList.add('is-invalid');
+      el?.focus();
+      return;
+    }
+
+    window.__TRUCKING_CUSTOM_CATEGORIES = window.__TRUCKING_CUSTOM_CATEGORIES || [];
+    const id='custom-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    if(window.__TRUCKING_CUSTOM_CATEGORIES.some(c=>c.id===id)){
+      PS.closeModal();
+      return;
+    }
+
+    window.__TRUCKING_CUSTOM_CATEGORIES.push({id,title:name,desc});
+
+    // Re-render the library, then append the custom category immediately
+    // before the Create new category card.
+    const grid=document.getElementById('caq-category-grid');
+    if(grid){
+      const addCard=grid.querySelector('.caq-add-category-card');
+      const card=document.createElement('button');
+      card.type='button';
+      card.className='caq-category-card';
+      card.dataset.categoryId=id;
+      card.innerHTML=`
+        <span class="caq-category-tag">▦ Product category</span>
+        <h4>${esc(name)}</h4>
+        <p>${esc(desc || 'Product-specific questions')}</p>
+        <div class="caq-category-bottom">
+          <span class="caq-category-count">0 questions</span>
+          <span class="caq-open">Open →</span>
+        </div>`;
+      if(addCard) grid.insertBefore(card,addCard); else grid.appendChild(card);
+      card.addEventListener('click',()=>openTruckingCustomCategory(id));
+    }
+    PS.closeModal();
+  };
+
+  window.openTruckingCustomCategory = function(id){
+    const cat=(window.__TRUCKING_CUSTOM_CATEGORIES||[]).find(c=>c.id===id);
+    if(!cat) return;
+    if(typeof window.openTruckingCustomCategoryEditor==='function'){
+      window.openTruckingCustomCategoryEditor(cat);
+      return;
+    }
+    if(window.PS && typeof PS.openModal==='function'){
+      PS.openModal(`
+        <div style="padding:22px;max-width:520px">
+          <h2 style="margin:0 0 8px">${esc(cat.title)}</h2>
+          <p style="color:#756d64;margin:0 0 16px">${esc(cat.desc || 'Product-specific questions')}</p>
+          <div class="cs-empty" style="padding:20px;text-align:left">
+            Add product-specific Commercial Trucking questions to this category.
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:16px">
+            <button class="btn btn-primary" onclick="PS.closeModal()">Close</button>
+          </div>
+        </div>`);
+    }
+  };
+})();
 </script>
 
 </body>

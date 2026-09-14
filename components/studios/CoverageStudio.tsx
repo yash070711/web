@@ -434,13 +434,6 @@ function insuredItemsSummary(cover: Row) {
   return `${items.length} Insured Item${items.length === 1 ? "" : "s"} — ${basis} — Limits configured per item`;
 }
 
-function deductibleSummary(cover: Row) {
-  const dtype = str(cover, "deductibleType", "none");
-  if (dtype === "none") return "No deductible";
-  if (dtype === "fixed") return `${money(str(cover, "deductibleAmount") || "0")} fixed`;
-  return `${str(cover, "deductiblePct") || "0"}% of claim`;
-}
-
 function financialSummary(cover: Row) {
   const items = insuredItemsOf(cover);
   const first = items[0];
@@ -1127,78 +1120,6 @@ export function CoverageStudio({
               {!readOnly && (
                 <button type="button" className="btn btn-ghost btn-sm" onClick={addInsuredItem}>+ Add Another Insured Item</button>
               )}
-            </Accordion>
-
-            <Accordion n={3} title="Deductible & Co-pay" subtitle={deductibleSummary(cover)} open={open.deductible} onToggle={() => setOpen((s) => ({ ...s, deductible: !s.deductible }))}>
-              {(() => {
-                const dedType = str(cover, "deductibleType", "none");
-                return (
-                  <div id="ded-block">
-                    <div className="form-group" style={{ marginBottom: 16 }}>
-                      <label className="form-label">Deductible Type</label>
-                      <div className="ded-cards" role="radiogroup" aria-label="Deductible type">
-                        {([["fixed", "Fixed Amount"], ["percentage", "Percentage"], ["none", "None"]] as const).map(([v, label]) => (
-                          <label key={v} className={`ded-card ${dedType === v ? "selected" : ""}`}>
-                            <input type="radio" name={`ded-${str(cover, "id")}`} disabled={readOnly} checked={dedType === v} onChange={() => update("deductibleType", v)} />
-                            <span className="ded-dot" />
-                            <strong>{label}</strong>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    {dedType === "none" ? (
-                      <p className="ft-help" style={{ margin: "0 0 12px" }}>No deductible applies to this cover.</p>
-                    ) : (
-                      <div className={dedType === "percentage" ? "form-grid-3" : "form-grid-2"}>
-                        {dedType === "percentage" ? (
-                          <Field label="Deductible (%)">
-                            <div className="pct-wrap">
-                              <input className="form-control" disabled={readOnly} value={str(cover, "deductiblePct")} onChange={(e) => update("deductiblePct", e.target.value.replace("%", ""))} />
-                              <span className="pct-suffix">%</span>
-                            </div>
-                          </Field>
-                        ) : null}
-                        <Field label="Minimum Deductible ($)">
-                          <div className="currency-wrap">
-                            <span className="currency-prefix">$</span>
-                            <input className="form-control currency-input" disabled={readOnly} value={str(cover, "minDeductible")} onChange={(e) => update("minDeductible", e.target.value)} />
-                          </div>
-                        </Field>
-                        <Field label="Maximum Deductible ($)">
-                          <div className="currency-wrap">
-                            <span className="currency-prefix">$</span>
-                            <input className="form-control currency-input" disabled={readOnly} value={str(cover, "maxDeductible")} onChange={(e) => update("maxDeductible", e.target.value)} />
-                          </div>
-                        </Field>
-                      </div>
-                    )}
-                    <div className="form-grid-2">
-                      <Field label="Waiting Period">
-                        <select className="form-control" disabled={readOnly} value={str(cover, "waitingPeriod", "None")} onChange={(e) => update("waitingPeriod", e.target.value)}>
-                          {["None", "30 days", "60 days", "90 days"].map((opt) => <option key={opt}>{opt}</option>)}
-                        </select>
-                      </Field>
-                      <Field label="Co-pay (%)">
-                        <div className="pct-wrap">
-                          <input className="form-control" disabled={readOnly} value={str(cover, "copay", "0")} onChange={(e) => update("copay", e.target.value.replace("%", ""))} />
-                          <span className="pct-suffix">%</span>
-                        </div>
-                      </Field>
-                      <div className="form-group span-2">
-                        <div className="vb-config" style={{ margin: 0 }}>
-                          <div className="toggle-wrap">
-                            <label className="toggle-switch">
-                              <input type="checkbox" disabled={readOnly} checked={Boolean(cover.annualAggregate)} onChange={(e) => update("annualAggregate", e.target.checked)} aria-label="Annual aggregate limit" />
-                              <div className="toggle-slider" /><div className="toggle-dot" />
-                            </label>
-                            <span>{cover.annualAggregate ? "Annual cap on" : "No annual cap"}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
             </Accordion>
 
             <Accordion n={4} title="Sub-limits" subtitle={subLimitsOf(cover).length ? `${subLimitsOf(cover).length} configured` : "Optional"} open={open.sublimits} onToggle={() => setOpen((s) => ({ ...s, sublimits: !s.sublimits }))}>

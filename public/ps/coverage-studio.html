@@ -1109,6 +1109,35 @@
     }
     @media (max-width: 980px) { .vb-cards { grid-template-columns: 1fr; } .ded-pills { flex-direction: column; } .ii-bases, .ii-vb-grid, .ded-cards { grid-template-columns: 1fr; } }
   </style>
+<style id="uw-valuation-end-style">
+.uw-valuation-settings-end{margin-top:16px;padding-top:14px;border-top:1px solid var(--color-border,#e4ded4);}
+.uw-valuation-settings-end .form-help{display:block;margin-top:4px;}
+</style>
+<style id="uw-override-together-style">
+.uw-override-combined-card{
+  padding:16px;
+  border:1px solid var(--color-border, #e4ded4);
+  border-radius:10px;
+  background:var(--color-surface, #fff);
+}
+.uw-override-combined-card .ii-toggle-row{
+  margin-bottom:0;
+}
+.uw-override-fields{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--color-border, #e4ded4);
+}
+.uw-override-fields .form-group{
+  margin:0;
+}
+@media(max-width:800px){
+  .uw-override-fields{grid-template-columns:1fr;}
+}
+</style>
 </head>
 <body>
 <div class="shell" id="app-shell">
@@ -3410,7 +3439,7 @@ function buildInsuredItemCard(it, index, ro, c) {
             ${quoteOpts.map(o => `<option ${it.quoteChoice===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group span-2">
+        <div class="form-group span-2 uw-override-combined-card">
           <div class="ii-toggle-row">
             <div>
               <strong>Underwriter can override valuation</strong>
@@ -3424,24 +3453,28 @@ function buildInsuredItemCard(it, index, ro, c) {
               </label>
             </div>
           </div>
-          <div class="uw-auth-card-fields">
+          ${it.uwOverrideValuation ? `
+          <div class="uw-override-fields">
             <div class="form-group">
               <label class="form-label">Maximum variation (%)</label>
               <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
+              <span class="form-help">Maximum percent an underwriter may move a value from the configured default.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Referral requirement</label>
               <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
                 ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
               </select>
+              <span class="form-help">Whether changing this field requires referral to a senior underwriter.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Reason requirement</label>
               <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
                 ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
               </select>
+              <span class="form-help">Whether a free-text audit reason is mandatory for overrides.</span>
             </div>
-          </div>
+          </div>` : ''}
         </div>
         <div class="form-group">
           <label class="form-label">Limit Basis</label>
@@ -3551,6 +3584,7 @@ function buildInsuredItemCard(it, index, ro, c) {
           </div>
           <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
         </div>` : ''}
+
       
       </div>
     </div>`;
@@ -3612,7 +3646,7 @@ function uwValuationOverrideToggleHtml(c, ro, showFields = true, label = 'Underw
         </label>
       </div>
     </div>
-    ${showFields ? `
+    ${showFields && c.uwOverrideValuation ? `
     <div class="uw-auth-card-fields">
       <div class="form-group">
         <label class="form-label">Maximum variation (%)</label>
@@ -5494,110 +5528,6 @@ function renderDetailPanel(c) {
 
   
     ${buildSection('insuredItems', '3', 'Insured Items, Valuation & Limits', formatInsuredItemsSummary(c), buildInsuredItemsSection(c, ro))}
-
-    ${buildSection('deductible', '4', 'Deductible & Co-pay', formatDeductibleSummary(c), buildDeductibleSection(c, ro))}
-
-    ${buildSection('dependencies', '6', 'Dependencies',
-      c.dependencies.length ? `${c.dependencies.length} rule${c.dependencies.length>1?'s':''} configured` : 'Optional',
-      `
-      <div class="dep-hero">
-        <div class="dep-hero-icon" aria-hidden="true">ⓘ</div>
-        <div>
-          <strong>Control how this cover behaves with other covers.</strong>
-          <p>Use dependencies for cover-to-cover relationships at quote time. For customer answers, risk attributes, age, revenue, territory and other risk-level rules, use Eligibility Studio.</p>
-        </div>
-      </div>
-
-      <div class="dep-block">
-        <div class="dep-block-head">
-          <div>
-            <div class="dep-block-title">Basic cover behaviour</div>
-            <div class="dep-block-sub">Set the default selection and when this cover becomes available.</div>
-          </div>
-        </div>
-        <div class="dep-relations" style="margin-bottom:0;padding-bottom:0;border-bottom:0">
-          <div class="form-group">
-            <label class="form-label">Default Selected</label>
-            <div class="toggle-wrap">
-              <label class="toggle-switch">
-                <input type="checkbox" ${c.uwOverrideClaimsBehaviour ? 'checked' : ''} ${ro?'disabled':''} onchange="patchCoverField('uwOverrideClaimsBehaviour', this.checked)" aria-label="Underwriter can override claims behaviour">
-                <div class="toggle-slider"></div><div class="toggle-dot"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dep-block soft">
-        <div class="dep-block-head">
-          <div>
-            <div class="dep-block-title">Mutual Exclusions <span style="font-weight:500;color:var(--color-muted)">(Optional)</span></div>
-            <div class="dep-block-sub">Prevent incompatible covers from being selected together on the same policy.</div>
-          </div>
-          <div class="dep-help-card"><strong>How it works:</strong> selecting this cover disables the covers listed below on the quote screen.</div>
-        </div>
-        ${mutualExclusionPickerHtml(c, ro)}
-      </div>
-
-      <div class="dep-block">
-        <div class="dep-rule-toolbar">
-          <div>
-            <div class="dep-rules-label">Dependency rules <span class="dep-rule-count">${c.dependencies.length} rule${c.dependencies.length===1?'':'s'}</span></div>
-            <div class="dep-block-sub">Start with a simple relationship. Add a condition only when the rule needs one.</div>
-          </div>
-          ${ro ? '' : `<button type="button" class="dep-add-btn" onclick="addDep()">＋ Add Dependency Rule</button>`}
-        </div>
-
-        <div class="dep-table-wrap">
-          <table class="dep-table">
-            <thead>
-              <tr>
-                <th style="width:40px">#</th>
-                <th>Type</th>
-                <th>Depends On</th>
-                <th>Condition</th>
-                <th>Quote Behaviour</th>
-                ${ro?'':'<th style="width:40px"></th>'}
-              </tr>
-            </thead>
-            <tbody id="dep-body-${c.id}">
-              ${c.dependencies.map((d,i) => {
-                const names = otherCoverNames(c.id);
-                const depOpts = d.dependsOn && !names.includes(d.dependsOn) ? [d.dependsOn, ...names] : names;
-                const depType = String(d.type || 'Requires');
-                const actionClass = depType.toLowerCase().replace(/\s+/g,'-');
-                const actionText = depType === 'Excludes' ? 'Hide / disable this cover' : depType === 'Bundles with' ? 'Recommend together' : 'Require / show this cover';
-                return `
-              <tr>
-                <td><span class="dep-row-number">${i+1}</span></td>
-                <td>${ro ? htmlEsc(d.type) : `<select class="form-control" style="min-width:115px" onchange="patchDep(${i},'type',this.value)">${DEP_TYPES.map(t=>`<option ${d.type===t?'selected':''}>${t}</option>`).join('')}</select>`}</td>
-                <td>${ro ? htmlEsc(d.dependsOn) : depOpts.length ? `<select class="form-control" onchange="patchDep(${i},'dependsOn',this.value)">${depOpts.map(n=>`<option ${n===d.dependsOn?'selected':''}>${htmlEsc(n)}</option>`).join('')}</select>` : `<input type="text" class="form-control" value="${htmlEsc(d.dependsOn||'')}" placeholder="Select a cover" oninput="patchDep(${i},'dependsOn',this.value)">`}</td>
-                <td>
-                  ${ro ? `<span style="color:var(--color-muted)">${htmlEsc(d.condition||'Always')}</span>` : `
-                    <input id="dep-condition-${c.id}-${i}" type="text" class="form-control" value="${htmlEsc(d.condition||'Always')}" placeholder="e.g. Always" oninput="patchDep(${i},'condition',this.value)">
-                    <div class="dep-condition-tools">
-                      <button type="button" class="dep-template-btn" onclick="setDepCondition(${i}, 'Always')">Always</button>
-                      <button type="button" class="dep-template-btn" onclick="setDepCondition(${i}, 'If selected')">If selected</button>
-                      <button type="button" class="dep-template-btn" onclick="setDepCondition(${i}, 'If limit ≥ $50,000')">If limit ≥ $50k</button>
-                    </div>`}
-                </td>
-                <td><span class="dep-action-badge ${actionClass}">${htmlEsc(actionText)}</span></td>
-                ${ro ? '' : `<td><button type="button" class="btn btn-ghost btn-sm" onclick="removeDep(${i})" title="Remove" aria-label="Remove dependency">✕</button></td>`}
-              </tr>`;
-              }).join('')}
-              ${c.dependencies.length===0 ? `<tr><td colspan="${ro?5:6}" class="vb-empty"><div class="vb-empty-title">No dependency rules yet</div>Start with “Requires” when one cover must exist before this cover can be selected.</td></tr>` : ''}
-            </tbody>
-          </table>
-        </div>
-
-        ${c.dependencies.length ? `<div class="dep-preview">
-          <div class="dep-preview-title">Preview logic</div>
-          <div class="dep-preview-text">${dependencyPreviewText(c)}</div>
-        </div>` : ''}
-
-        ${ro ? '' : `<div class="dep-tip"><strong>Configuration tip:</strong> Keep rules simple. Use <b>Requires</b> for prerequisites, <b>Excludes</b> for incompatible covers, and <b>Bundles with</b> when covers are normally selected together.</div>`}
-      </div>
-    `)}
 
     ${buildSection('claims', '7', 'Claims Behaviour', `${c.lossBasis} · ${c.benefitBasis}`, `
       <div class="form-grid-2">
