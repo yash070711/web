@@ -164,6 +164,9 @@ export type SessionUser = {
   email: string;
   name: string;
   role: string;
+  roleKind?: "risk-carrier" | "mga";
+  org?: string;
+  orgId?: string;
   productId?: string;
   version?: string;
 };

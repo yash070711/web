@@ -32,15 +32,6 @@ export const MODULES: Record<string, ModuleHelp> = {
       "Use Clone Version to edit a Published version without affecting live business.",
     ],
   },
-  jurisdiction: {
-    title: "Define Jurisdiction",
-    description:
-      "Set where this product may be sold — US states, cities or counties, and territory rules that constrain rating and eligibility downstream.",
-    tips: [
-      "Select states first; optionally narrow to specific cities within a state.",
-      "Empty city selection means the entire state is in scope.",
-    ],
-  },
   coverage: {
     title: "Coverage Studio",
     description:
@@ -172,7 +163,6 @@ export const FIELDS: Record<string, string> = {
   "linked coverages": "Questions appear only when at least one linked cover is selected.",
   "help text": "Guidance shown beneath the question to assist accurate answers.",
   "attribute name": "Risk field name used in rules and rating (e.g. driver_age).",
-  states: "US states included in this jurisdiction or territorial rule.",
   "cities / counties": "Optional narrowing within selected states. Leave empty to include the whole state.",
 };
 

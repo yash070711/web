@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MGU Assignment — Insurance Product Studio</title>
+  <meta name="description" content="Assign your carrier’s products to one or more MGUs.">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .mga-toggle { min-width: 150px; }
+    .mga-toggle input { width: 16px; height: 16px; accent-color: var(--color-brand); }
+    .mga-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+    .mga-status .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .mga-status.assigned { color: var(--color-success); }
+    .mga-status.revoked { color: var(--color-muted); }
+    .mga-status.assigned .dot { background: var(--color-success); }
+    .mga-status.revoked .dot { background: var(--color-disabled); }
+    .proc-track { font-size: 12px; color: var(--color-muted); }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+
+  <main class="main-content" id="main-content">
+    <div class="page-inner">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">MGU Assignment</h1>
+          <p class="page-subtitle" id="assignment-subtitle">Assign products to MGUs that will configure and distribute them.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-secondary" onclick="window.location.href='catalogue.html'">Open Catalogue</button>
+        </div>
+      </div>
+
+      <div class="callout callout-info mb-6">
+        <div class="callout-body">
+          Products you create stay owned by <strong id="owner-line">your risk carrier</strong>. Toggle an MGU to assign a product to it — the MGU will see the product in its
+          Assigned Products catalogue and can configure Question, Risk, Eligibility, Underwriting and Rating studios.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table id="assignment-table" aria-label="MGU assignment">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Crestline MGU</th>
+                <th>Northbridge MGU</th>
+                <th style="width:120px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="assignment-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens (1280px and wider).</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script>
+/* ── MGU Assignment ─────────────────────────────────────────── */
+const ASSIGNMENT_MGAS = ['MGA-CRESTLINE', 'MGA-NORTHBRIDGE'];
+
+function assignmentRows() {
+  const all = window.PS?.prototypeApp?.state?.products || [];
+  return all.filter(p => PS.auth.ownsProduct(p));
+}
+
+function mgaEntryFor(product, mgaId) {
+  return (product.assignedMGAs || []).find(m => m.mgaId === mgaId || m.mgaName === (PS.auth.ORGS[mgaId] || {}).name);
+}
+
+function renderAssignmentTable() {
+  const body = document.getElementById('assignment-body');
+  const rows = assignmentRows();
+  const owner = PS.data.currentUser.org || PS.data.currentUser.carrier;
+  document.getElementById('owner-line').textContent = owner || 'your risk carrier';
+  document.getElementById('assignment-subtitle').textContent = `${owner || 'Your carrier'} — ${rows.length} product${rows.length === 1 ? '' : 's'} ready to assign`;
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="6"><div class="empty-state" style="padding:48px 24px">
+      <div class="empty-state-title">No products owned by ${owner}</div>
+      <div class="empty-state-desc">Create a product in the catalogue first, then assign it to an MGU from here.</div>
+      <button class="btn btn-secondary btn-sm" onclick="window.location.href='catalogue.html'">Go to Product Catalogue</button>
+    </div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(p => {
+    const toggles = ASSIGNMENT_MGAS.map(mgaId => {
+      const entry = mgaEntryFor(p, mgaId);
+      const mga = PS.auth.ORGS[mgaId];
+      const active = Boolean(entry && entry.status !== 'revoked');
+      const statusHtml = entry && entry.status === 'assigned'
+        ? `<div class="mga-status assigned"><span class="dot"></span>Assigned${entry.assignedAt ? ' ' + entry.assignedAt : ''}</div>`
+        : `<div class="mga-status revoked"><span class="dot"></span>Not assigned</div>`;
+      const progress = active && entry.configuration
+        ? `<div class="proc-track">${entry.configuration.studiosDone || 0} of 5 studios configured${entry.configuration.lastSavedAt ? ' · last saved ' + entry.configuration.lastSavedAt : ''}</div>`
+        : '';
+      return `
+        <td>
+          <label class="mga-status approved" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" ${active ? 'checked' : ''} onchange="toggleMgaAssignment('${p.id}', '${mgaId}', this.checked)" aria-label="${mga.name} assignment">
+            <span class="mga-toggle-label">
+              ${statusHtml}
+              ${progress}
+            </span>
+          </label>
+        </td>`;
+    }).join('');
+
+    return `
+      <tr>
+        <td>
+          <a href="product-detail.html?id=${p.id}" style="font-weight:500">${p.name}</a>
+          <div style="font-size:11px;color:var(--color-muted);font-family:'IBM Plex Mono',monospace">${p.id}</div>
+        </td>
+        <td class="mono">${p.version}</td>
+        <td><span class="badge badge-${p.status}" role="status">${PS.statusLabel(p.status)}</span></td>
+        ${toggles}
+        <td onclick="event.stopPropagation()">
+          <div class="table-actions">
+            <a href="product-detail.html?id=${p.id}" class="btn btn-ghost btn-sm">Open product</a>
+            <a href="coverage-studio.html?product=${p.id}&version=${encodeURIComponent(p.version)}" class="btn btn-ghost btn-sm">Coverages</a>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function toggleMgaAssignment(productId, mgaId, active) {
+  const result = PS.prototypeApp.assignProductToMGA(productId, mgaId, Boolean(active));
+  if (!result.ok) {
+    PS.actionResult('error', 'Assignment not updated', result.error || 'Could not update this assignment.');
+  } else {
+    const mga = PS.auth.ORGS[mgaId];
+    PS.actionResult(active ? 'success' : 'warning', active ? 'Product assigned to MGU' : 'MGU assignment revoked',
+      `${result.product.name} is ${active ? 'now available to' : 'no longer available to'} ${mga.name}.`);
+  }
+  renderAssignmentTable();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  PS.nav.render('mgu-assignment', [{ label: 'MGU Assignment', href: 'mgu-assignment.html' }]);
+  renderAssignmentTable();
+});
+</script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+</body>
+</html>

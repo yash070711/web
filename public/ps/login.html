@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in — Insurance Product Studio</title>
+  <meta name="description" content="Sign in as a Risk Carrier or MGU to Veridex Product Studio.">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    /* ── Standalone, full-screen login page ───────────────────── */
+    html, body { background: #F5F1EA; }
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--color-panel);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .login-head {
+      padding: 28px 32px 22px;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .login-logo-mark {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: linear-gradient(135deg, #E9A11A, #C98500);
+      color: #fff; font-weight: 700; font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-body { padding: 26px 32px 30px; }
+    .login-h1 { font-size: 20px; font-weight: 650; color: var(--color-ink); margin: 0 0 4px; }
+    .login-sub { font-size: 13px; color: var(--color-muted); margin: 0 0 22px; }
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .role-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+      position: relative;
+    }
+    .role-card:hover { border-color: var(--color-brand); box-shadow: var(--shadow-sm); }
+    .role-card.selected { border-color: var(--color-brand); box-shadow: 0 0 0 3px rgba(233,161,26,.22); }
+    .role-card-radio {
+      position: absolute; top: 14px; right: 14px;
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--color-border);
+      background: var(--color-panel);
+    }
+    .role-card.selected .role-card-radio { border-color: var(--color-brand); background: var(--color-brand); box-shadow: inset 0 0 0 3px var(--color-panel); }
+    .role-card-icon { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; color: #fff; }
+    .role-card-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .role-card-desc { font-size: 12px; color: var(--color-muted); line-height: 1.45; }
+    .org-list { display: flex; flex-direction: column; gap: var(--space-2); margin-top: 4px; }
+    .org-item {
+      display: flex; align-items: center; gap: 10px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 11px 14px; cursor: pointer;
+      transition: border-color .15s;
+    }
+    .org-item:hover { border-color: var(--color-brand); }
+    .org-item.selected { border-color: var(--color-brand); box-shadow: 0 0 0 3px rgba(233,161,26,.22); }
+    .org-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .org-name { font-size: 14px; font-weight: 500; }
+    .org-kind { font-size: 12px; color: var(--color-muted); }
+    .login-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; gap: var(--space-3); }
+    .login-note { font-size: 12px; color: var(--color-muted); margin-top: 16px; line-height: 1.5; }
+    .login-err { color: var(--color-danger); font-size: 13px; margin-top: 12px; min-height: 18px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card" role="group" aria-label="Sign in">
+      <div class="login-head">
+        <div class="login-logo-mark">v</div>
+        <div>
+          <div style="font-size:16px;font-weight:650">Veridex Product Studio</div>
+          <div style="font-size:12px;color:var(--color-muted)">Working prototype — role login</div>
+        </div>
+      </div>
+
+      <div class="login-body">
+        <div id="step-role">
+          <h1 class="login-h1">Welcome back</h1>
+          <p class="login-sub">Choose how you work in the studio. You can sign out and switch roles at any time.</p>
+          <div class="role-grid">
+            <div class="role-card" role="button" tabindex="0" data-role="risk-carrier" aria-pressed="false">
+              <span class="role-card-radio"></span>
+              <div class="role-card-icon" style="background:#1A4F8A">
+                <svg width="20" height="20" viewBox="0 0 256 256" fill="none"><path d="M223 64.88a8 8 0 00-7.78-5.88H128a8 8 0 000 16h67.38l-56.56 56.56-35.97-35.97a8 8 0 00-11.31 0l-61.31 61.31a8 8 0 0011.31 11.31L96 108.69l35.97 35.97a8 8 0 0011.31 0L168 119.55V156a8 8 0 0016 0V76a8 8 0 00-8 0z" fill="currentColor"/></svg>
+              </div>
+              <div class="role-card-title">Risk Carrier</div>
+              <div class="role-card-desc">Create product definitions, add coverages and child coverages, then assign finished products to MGUs.</div>
+            </div>
+            <div class="role-card" role="button" tabindex="0" data-role="mga" aria-pressed="false">
+              <span class="role-card-radio"></span>
+              <div class="role-card-icon" style="background:#7C3AED">
+                <svg width="20" height="20" viewBox="0 0 256 256" fill="none"><path d="M117.25 157.92a60 60 0 10-66.5 0A95.83 95.83 0 004 224a8 8 0 008 8 8 8 0 008-8 80 80 0 01160 0 8 8 0 008 8 8 8 0 008-8 95.83 95.83 0 00-78.75-66.08zM40 108a44 44 0 1188 0 44 44 0 01-88 0zm154.79 66.8A96.51 96.51 0 00176.62 196a8 8 0 006.48 14.62 79.73 79.73 0 0013.63-8 95.77 95.77 0 00-1.94-27.82zM210.45 101a56 56 0 00-56-42.1 8 8 0 001.18 15.96 40 40 0 0154.05 31.87A55.2 55.2 0 00218.79 154a8 8 0 0014-9.15A56.21 56.21 0 00210.45 101z" fill="currentColor"/></svg>
+              </div>
+              <div class="role-card-title">MGU</div>
+              <div class="role-card-desc">Configure products assigned by risk carriers — questions, risk, eligibility, underwriting and rating.</div>
+            </div>
+          </div>
+          <div class="login-err" id="role-err"></div>
+          <div class="login-actions">
+            <span style="font-size:13px;color:var(--color-muted)">Select a role to continue</span>
+            <button class="btn btn-primary" id="to-org-btn" type="button" disabled>Continue</button>
+          </div>
+        </div>
+
+        <div id="step-org" class="hidden">
+          <h1 class="login-h1" id="org-heading">Choose your organization</h1>
+          <p class="login-sub" id="org-sub"></p>
+          <div class="org-list" id="org-list"></div>
+          <div class="login-err" id="org-err"></div>
+          <div class="login-actions">
+            <button class="btn btn-secondary" id="back-role-btn" type="button">← Back</button>
+            <button class="btn btn-primary" id="sign-in-btn" type="button" disabled>Sign in to Studio</button>
+          </div>
+        </div>
+
+        <p class="login-note">
+          Prototype login — no passwords. Select a role to continue; Risk Carrier opens the Veridex carrier
+          directly, MGU lets you pick your organization. Sessions persist until you choose <strong>Sign out</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script>
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    let role = null;
+
+    const COLORS = { 'RC-VERIDEX':'#1A4F8A', 'RC-ATLAS':'#0E7490', 'MGA-CRESTLINE':'#7C3AED', 'MGA-NORTHBRIDGE':'#9333EA' };
+
+    document.querySelectorAll('.role-card').forEach(card => {
+      card.addEventListener('click', () => selectRole(card.dataset.role));
+      card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectRole(card.dataset.role); } });
+    });
+
+    function selectRole(r) {
+      role = r;
+      document.querySelectorAll('.role-card').forEach(c => c.classList.toggle('selected', c.dataset.role === r));
+      document.querySelectorAll('.role-card').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.role === r)));
+      $('role-err').textContent = '';
+      $('to-org-btn').disabled = false;
+    }
+
+    $('to-org-btn').addEventListener('click', () => {
+      if (!role) { $('role-err').textContent = 'Choose a role first.'; return; }
+      if (role === 'risk-carrier') {
+        /* Single-carrier studio: signing in as Risk Carrier opens the Veridex carrier directly. */
+        PS.auth.login('RC-VERIDEX');
+        const dest = safeNext(new URLSearchParams(window.location.search).get('next')) || `${window.location.origin}/ps/index.html`;
+        window.location.replace(dest);
+        return;
+      }
+      const orgs = PS.auth.mgaOrgs();
+      $('org-heading').textContent = 'Choose your MGU';
+      $('org-sub').textContent = 'You will see products that risk carriers have assigned to this MGU.';
+      $('org-list').innerHTML = orgs.map(o => `
+        <div class="org-item" role="button" tabindex="0" data-org="${o.id}">
+          <span class="org-dot" style="background:${COLORS[o.id] || '#1A4F8A'}"></span>
+          <div style="flex:1">
+            <div class="org-name">${o.org.name}</div>
+            <div class="org-kind">MGU · ${o.org.user.name} (${o.org.user.title})</div>
+          </div>
+        </div>`).join('');
+      $('org-list').querySelectorAll('.org-item').forEach(item => {
+        item.addEventListener('click', () => selectOrg(item.dataset.org));
+        item.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOrg(item.dataset.org); } });
+      });
+      $('step-role').classList.add('hidden');
+      $('step-org').classList.remove('hidden');
+    });
+
+    $('back-role-btn').addEventListener('click', () => {
+      $('step-org').classList.add('hidden');
+      $('step-role').classList.remove('hidden');
+      selectOrg(null);
+    });
+
+    let orgId = null;
+    function selectOrg(id) {
+      orgId = id;
+      document.querySelectorAll('.org-item').forEach(i => i.classList.toggle('selected', i.dataset.org === id));
+      $('org-err').textContent = '';
+      $('sign-in-btn').disabled = !id;
+    }
+
+    function safeNext(raw) {
+      try {
+        const url = new URL(raw || '', window.location.origin);
+        if (url.origin === window.location.origin) return url.href;
+      } catch (_) {}
+      return null;
+    }
+
+    $('sign-in-btn').addEventListener('click', () => {
+      const session = PS.auth.login(orgId);
+      if (!session) { $('org-err').textContent = 'Could not start a session. Pick an organization.'; return; }
+      const next = safeNext(new URLSearchParams(location.search).get('next'));
+      window.location.href = next || (session.role === 'mga' ? '/ps/mgu.html' : '/ps/index.html');
+    });
+  })();
+  </script>
+</body>
+</html>

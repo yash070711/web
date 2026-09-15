@@ -32,7 +32,7 @@ export function Shell({
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const productStudios = new Set([
-    "jurisdiction", "coverage", "questionnaire", "risk",
+    "coverage", "questionnaire", "risk",
     "eligibility", "rating", "underwriting", "distribution", "document",
   ]);
   const navActive = productStudios.has(active) && productId ? active : (productStudios.has(active) && !productId ? "catalogue" : active);

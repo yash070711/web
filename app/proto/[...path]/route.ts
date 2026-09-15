@@ -12,7 +12,6 @@ const MAP: Record<string, string> = {
   "distribution-studio.html": "/distribution",
   "distribution-create.html": "/distribution",
   "document-studio.html": "/document-studio",
-  "jurisdiction-studio.html": "/jurisdiction",
   "pricing-library.html": "/pricing-library",
   "simulation-studio.html": "/simulation",
   "audit-log.html": "/audit-log",
@@ -46,7 +45,6 @@ export async function GET(
       "underwriting-studio.html": "underwriting",
       "distribution-studio.html": "distribution",
       "document-studio.html": "document",
-      "jurisdiction-studio.html": "jurisdiction",
       "product-detail.html": "",
       "product-view.html": "view",
     }).find(([k]) => k === file)?.[1];

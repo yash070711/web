@@ -20,12 +20,12 @@ PS.distributionCreate.reinsurers = [
 ];
 
 PS.distributionCreate.mgas = [
-  { id: 'MGA-001', name: 'ABC MGA Services' },
+  { id: 'MGA-001', name: 'ABC MGU Services' },
   { id: 'MGA-002', name: 'Global Risk Partners' },
   { id: 'MGA-003', name: 'Premier Underwriting Group' },
-  { id: 'MGA-004', name: 'Summit MGA' },
-  { id: 'MGA-005', name: 'United MGA' },
-  { id: 'MGA-006', name: 'Atlantic Risk MGA' }
+  { id: 'MGA-004', name: 'Summit MGU' },
+  { id: 'MGA-005', name: 'United MGU' },
+  { id: 'MGA-006', name: 'Atlantic Risk MGU' }
 ];
 
 PS.distributionCreate.commissionTypes = ['Percentage (%)', 'Flat Amount'];
@@ -39,11 +39,11 @@ PS.distributionCreate.commissionBases = [
 PS.distributionCreate.factorTypes = ['Percentage (%)', 'Multiplier', 'Flat Amount', 'Fixed Value'];
 PS.distributionCreate.appliesToOptions = [
   'All Accounts',
-  'All MGAs',
+  'All MGUs',
   'All States',
   'All Coverages',
   'All Products',
-  'Specific MGA',
+  'Specific MGU',
   'Specific State',
   'Specific Coverage'
 ];

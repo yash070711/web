@@ -26,12 +26,6 @@ const STUDIO_ROWS: Array<{
   href?: (id: string) => string;
   count?: (items: Record<string, unknown>[]) => number;
 }> = [
-  {
-    id: "jurisdiction",
-    countNoun: ["State", "States"],
-    expected: 1,
-    tone: "#38BDF8",
-  },
   { id: "coverage", collection: "covers", countNoun: ["Coverage", "Coverages"], expected: 6, tone: "#3B82F6" },
   {
     id: "questionnaire",
@@ -64,14 +58,11 @@ function stateFor(pct: number): HubStudioState {
 }
 
 export function buildHubStudios(workspace: Workspace, productId: string, version: string): HubStudio[] {
-  const product = workspace.products.find((p) => p.id === productId);
   return STUDIO_ROWS.map((row) => {
     const items = row.collection
       ? getCollection<Record<string, unknown>>(workspace, productId, version, row.collection)
       : [];
-    const count = row.id === "jurisdiction"
-      ? (product?.jurisdictions || []).length
-      : row.count ? row.count(items) : items.length;
+    const count = row.count ? row.count(items) : items.length;
     const pct = count === 0 ? 0 : 100;
     const noun = count === 1 ? row.countNoun[0] : row.countNoun[1];
     const meta = STUDIO_META[row.id];

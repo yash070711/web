@@ -245,7 +245,7 @@
       border-radius:10px;
       background:#FBF9F5;
       margin-bottom:12px;
-      overflow:hidden;
+      overflow:visible;
     }
     .rating-factor-card-head {
       display:flex;
@@ -291,6 +291,8 @@
     }
     .rating-factor-card-body {
       padding:14px;
+      overflow:visible;
+      position:relative;
     }
     .rating-factor-table-box {
       border:1px solid var(--color-border);
@@ -329,7 +331,66 @@
       border-radius:8px;
       background:var(--color-surface);
     }
-    .rating-factor-fixed {
+    
+    .rating-factors-section { overflow:visible !important; }
+    .rating-factors-section > .section-inner { overflow:visible; }
+    .rating-coverage-dropdown { position:relative; width:100%; z-index:100; }
+    .rating-coverage-dropdown-btn {
+      width:100%; min-height:40px; padding:8px 11px; box-sizing:border-box;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      text-align:left; cursor:pointer; background:var(--color-panel);
+      border:1px solid var(--color-border); border-radius:8px;
+      color:var(--color-ink); font-size:13px;
+    }
+    .rating-coverage-dropdown-btn:hover,
+    .rating-coverage-dropdown.open .rating-coverage-dropdown-btn {
+      border-color:var(--color-brand); box-shadow:0 0 0 3px rgba(192,149,83,.12);
+    }
+    .rating-coverage-selected {
+      display:flex; align-items:center; gap:6px; flex:1; min-width:0; overflow:hidden;
+      min-height:24px;
+    }
+    .rating-coverage-chip {
+      display:inline-flex; align-items:center; max-width:48%; min-width:0;
+      padding:4px 8px; border-radius:6px; background:var(--color-brand-light);
+      border:1px solid rgba(192,149,83,.22); color:var(--color-brand);
+      font-size:11px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .rating-coverage-placeholder { color:var(--color-muted); font-size:13px; }
+    .rating-coverage-more {
+      flex:0 0 auto; padding:4px 7px; border-radius:6px;
+      background:var(--color-surface); border:1px solid var(--color-border);
+      color:var(--color-muted); font-size:10px; font-weight:700;
+    }
+    .rating-coverage-dropdown-caret { color:var(--color-muted); flex:0 0 auto; font-size:12px; }
+    .rating-coverage-dropdown-menu {
+      display:none; position:absolute; z-index:10000; left:0; right:0; top:calc(100% + 6px);
+      max-height:300px; overflow:auto; padding:6px; box-sizing:border-box;
+      background:#fff; border:1px solid var(--color-border); border-radius:9px;
+      box-shadow:0 14px 32px rgba(15,23,42,.16);
+    }
+    .rating-coverage-dropdown.open .rating-coverage-dropdown-menu { display:block; }
+    .rating-coverage-menu-header {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:8px 9px; margin-bottom:4px; border-bottom:1px solid var(--color-border);
+      font-size:11px; font-weight:700; color:var(--color-ink);
+    }
+    .rating-coverage-count { color:var(--color-muted); font-weight:600; }
+    .rating-coverage-menu-list { max-height:250px; overflow:auto; padding:2px 4px 6px; }
+    .rating-coverage-group { padding:2px 0; }
+    .rating-coverage-group + .rating-coverage-group { border-top:1px solid var(--color-border); margin-top:4px; padding-top:6px; }
+    .rating-coverage-option { display:flex; align-items:center; gap:8px; min-height:32px; padding:6px 8px; border-radius:7px; cursor:pointer; font-size:12px; }
+    .rating-coverage-option:hover { background:var(--color-brand-light); }
+    .rating-coverage-option input { width:15px; height:15px; margin:0; flex:0 0 auto; accent-color:var(--color-brand); }
+    .rating-coverage-parent { font-weight:700; color:var(--color-ink); }
+    .rating-coverage-parent-copy { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+    .rating-coverage-parent-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rating-coverage-child-count { margin-left:auto; flex:0 0 auto; font-size:10px; color:var(--color-muted); font-weight:600; }
+    .rating-coverage-children { margin:1px 8px 4px 29px; padding-left:10px; border-left:1px solid var(--color-border); }
+    .rating-coverage-child { color:var(--color-muted); }
+    .rating-coverage-child-copy { display:flex; align-items:center; gap:5px; min-width:0; }
+    .rating-coverage-child-arrow { color:var(--color-muted); }
+.rating-factor-fixed {
       margin-top:12px;
       padding:10px 12px;
       border:1px solid var(--color-border);
@@ -345,6 +406,39 @@
     .pct-suffix { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--color-muted); font-size:13px; font-weight:600; pointer-events:none; }
     @media (max-width:900px) { .form-grid-3 { grid-template-columns:repeat(2,minmax(0,1fr)); } .form-grid-3 .span-3 { grid-column:1 / -1; } }
     @media (max-width:600px) { .form-grid-3 { grid-template-columns:1fr; } .form-grid-3 .span-3 { grid-column:1; } }
+
+    .rating-coverage-picker {
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      background: var(--color-surface);
+      padding: 8px;
+      max-height: 220px;
+      /* overflow-y: auto; */
+    }
+    /* The old picker was a boxed checkbox panel. The new control is a true dropdown. */
+    .rating-coverage-picker.rating-coverage-dropdown {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+      max-height: none;
+      overflow: visible;
+    }
+    .rating-coverage-options { display:flex; flex-direction:column; gap:2px; }
+    .rating-coverage-option {
+      display:flex; align-items:center; gap:8px;
+      min-height:32px; padding:5px 7px; border-radius:6px;
+      cursor:pointer; font-size:12px; color:var(--color-ink);
+    }
+    .rating-coverage-option:hover { background:var(--color-brand-light); }
+    .rating-coverage-option input { width:15px; height:15px; margin:0; accent-color:var(--color-brand); }
+    .rating-coverage-parent { font-weight:600; }
+    .rating-coverage-children {
+      margin-left:22px; padding-left:10px;
+      border-left:1px solid var(--color-border);
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .rating-coverage-child { color:var(--color-muted); font-weight:400; }
   </style>
 </head>
 <body>
@@ -539,6 +633,9 @@ function allRiskQuestions() {
 }
 
 function activeRiskDataset() {
+  // Always collapse the dataset by Questionnaire question ID before rendering.
+  // This prevents the same Risk Attribute from appearing twice even if stale
+  // or duplicate records exist in the persisted collection.
   const linked = allRiskQuestions().map(({ q, group }) => {
     const r = RISKS.find(x => (x.questionId || x.sourceQuestionId) === q.id);
     if (!r) return null;
@@ -559,7 +656,14 @@ function activeRiskDataset() {
       return r;
     });
 
-  return linked.concat(manual);
+  const seen = new Set();
+  return linked.concat(manual).filter(r => {
+    const questionId = String(r?.questionId || r?.sourceQuestionId || '').trim();
+    const key = questionId ? `question:${questionId}` : `risk:${String(r?.id || '')}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function selectedGroupMeta() {
@@ -764,12 +868,85 @@ function risksInGroup(group) {
   });
 }
 
+function dedupeRiskAttributes() {
+  const seenQuestionIds = new Set();
+  const seenManualIds = new Set();
+  const unique = [];
+
+  RISKS.forEach(r => {
+    const questionId = String(r?.questionId || r?.sourceQuestionId || '').trim();
+    const isQuestion = !!questionId && sourceKey(r) === 'question';
+
+    if (isQuestion) {
+      if (seenQuestionIds.has(questionId)) return;
+      seenQuestionIds.add(questionId);
+    } else {
+      const manualId = String(r?.id || '').trim();
+      if (manualId && seenManualIds.has(manualId)) return;
+      if (manualId) seenManualIds.add(manualId);
+    }
+
+    unique.push(r);
+  });
+
+  const changed = unique.length !== RISKS.length;
+  if (changed) {
+    RISKS.splice(0, RISKS.length, ...unique);
+  }
+  return changed;
+}
+
 function persistRisks() {
+  dedupeRiskAttributes();
   RISKS.forEach(r => {
     normalizeRisk(r);
     if (PS.prototypeApp?.riskAttributeFieldKey) r.fieldKey = PS.prototypeApp.riskAttributeFieldKey(r);
   });
   PS.prototypeApp?.persistCollection?.('riskAttributes', RISKS);
+}
+
+function removeRiskAttributeFromProduct(id) {
+  const risk = RISKS.find(r => String(r?.id) === String(id));
+  if (!risk) return;
+
+  const questionId = String(risk.questionId || risk.sourceQuestionId || '').trim();
+  const label = displayRiskName(risk);
+
+  if (!window.confirm(`Remove "${String(label).replace(/\"/g, '\\"')}" from this product?`)) return;
+
+  // If this Risk Attribute came from Questionnaire Studio, remove the
+  // explicit Risk selection and return the source question to General so
+  // the auto-sync does not recreate the Risk Attribute on the next paint.
+  if (questionId) {
+    const selected = getPersistedRiskQuestionIds();
+    selected.delete(questionId);
+    persistRiskQuestionIds(Array.from(selected));
+
+    const found = findQuestionById(questionId);
+    if (found?.q && String(found.q.questionCategory || '').toLowerCase() === 'risk') {
+      found.q.questionCategory = 'general';
+      PS.prototypeApp?.persistCollection?.('questionGroups', productQuestionGroups());
+    }
+  }
+
+  const index = RISKS.findIndex(r => String(r?.id) === String(id));
+  if (index >= 0) RISKS.splice(index, 1);
+
+  if (activeRiskId === id) {
+    activeRiskId = '';
+  }
+
+  persistRisks();
+  renderGroupSidebar();
+  PS.studioHub?.paint?.();
+
+  const remaining = activeRiskDataset();
+  if (remaining.length) {
+    activeRiskId = remaining[0].id;
+    PS.studioHub?.open?.(activeRiskId);
+  }
+
+  PS.actionResult?.('success', 'Risk attribute removed', `${label} was removed from this product.`);
 }
 
 function isTruckingRiskProduct() {
@@ -1333,7 +1510,7 @@ function createRiskAttributesFromSelectedQuestions() {
     found.q.questionCategory = 'risk';
 
     let risk = RISKS.find(r =>
-      (r.questionId || r.sourceQuestionId) === questionId && !r.sourceStale
+      (r.questionId || r.sourceQuestionId) === questionId
     );
 
     if (risk) {
@@ -1367,6 +1544,7 @@ function createRiskAttributesFromSelectedQuestions() {
     if (!firstCreatedId) firstCreatedId = risk.id;
   });
 
+  dedupeRiskAttributes();
   persistRisks();
 
   window.__RISK_SELECTED_QUESTION_IDS = new Set();
@@ -1434,67 +1612,69 @@ function getRiskFactorCoverageOptions() {
     PS.studioHub?.productVersion || ''
   );
 
-  const source = Array.isArray(bundle?.covers)
-    ? bundle.covers
-    : [];
+  const source = Array.isArray(bundle?.covers) ? bundle.covers : [];
 
-  return source
-    .flatMap(item => {
-      const parentId =
-        item.id ||
-        item.coverageId ||
-        item.code ||
-        item.key ||
-        item.name;
+  return source.flatMap(item => {
+    const parentId = String(
+      item?.id || item?.coverageId || item?.code || item?.key || item?.name || ''
+    ).trim();
 
-      const parentName =
-        item.name ||
-        item.label ||
-        item.title ||
-        item.coverageName ||
-        String(item);
+    const parentName = String(
+      item?.name || item?.label || item?.title || item?.coverageName || ''
+    ).trim();
 
-      const children =
-        item.children ||
-        item.childClass ||
-        item.childClasses ||
-        item.childCoverages ||
-        item.coverageClasses ||
-        [];
+    if (!parentId || !parentName) return [];
 
-      const parent = {
-        id: parentId,
-        name: parentName,
-        parentId: '',
-        parentName: '',
-        isChild: false
-      };
+    const rows = [{
+      id: parentId,
+      name: parentName,
+      parentId: '',
+      parentName: '',
+      isChild: false
+    }];
 
-      const childRows = Array.isArray(children)
-        ? children.map(child => ({
-            id:
-              child.id ||
-              child.coverageId ||
-              child.code ||
-              child.key ||
-              child.name,
+    // Coverage Studio stores child coverage classes primarily as additional
+    // insuredItems on the parent cover. Also support any explicit child array
+    // shape when available. The first insured item is the default parent item.
+    const insuredItems = Array.isArray(item?.insuredItems) ? item.insuredItems : [];
+    const explicitChildren = [
+      ...(Array.isArray(item?.children) ? item.children : []),
+      ...(Array.isArray(item?.childClass) ? item.childClass : []),
+      ...(Array.isArray(item?.childClasses) ? item.childClasses : []),
+      ...(Array.isArray(item?.childCoverages) ? item.childCoverages : []),
+      ...(Array.isArray(item?.coverageClasses) ? item.coverageClasses : [])
+    ];
 
-            name:
-              child.name ||
-              child.label ||
-              child.title ||
-              child.coverageName ||
-              String(child),
+    const childValues = [];
 
-            parentId,
-            parentName,
-            isChild: true
-          }))
-        : [];
+    insuredItems.slice(1).forEach(child => {
+      const id = String(child?.id || child?.typeId || child?.code || child?.type || child?.name || '').trim();
+      const name = String(child?.type || child?.name || child?.label || child?.title || '').trim();
+      if (id && name) childValues.push({ id, name });
+    });
 
-      return [parent, ...childRows];
-    })
-    .filter(item => item.id && item.name);
+    explicitChildren.forEach(child => {
+      const id = String(child?.id || child?.coverageId || child?.code || child?.key || child?.name || '').trim();
+      const name = String(child?.name || child?.label || child?.title || child?.coverageName || child?.type || '').trim();
+      if (id && name) childValues.push({ id, name });
+    });
+
+    const seen = new Set();
+    childValues.forEach(child => {
+      const key = `${parentId}::${child.id}::${child.name}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push({
+        id: child.id,
+        name: child.name,
+        parentId,
+        parentName,
+        isChild: true
+      });
+    });
+
+    return rows;
+  }).filter(item => item.id && item.name);
 }
 function newRatingFactor(r) {
   return {
@@ -1503,6 +1683,7 @@ function newRatingFactor(r) {
     status: 'draft',
     coverage: '',
     coverageId: '',
+    coverageIds: [],
     riskAttribute: displayRiskName(r),
     riskAttributeId: r?.id || '',
     ratingMethod: 'table',
@@ -1541,6 +1722,9 @@ function ensureRatingFactors(r) {
         fixedFactor:
           r.ratingFactor.fixedFactor ??
           (r.ratingFactor.ratingMethod === 'fixed' ? r.ratingFactor.amount : ''),
+        coverageIds: Array.isArray(r.ratingFactor.coverageIds)
+          ? r.ratingFactor.coverageIds.slice()
+          : (r.ratingFactor.coverageId ? [r.ratingFactor.coverageId] : []),
         table: r.ratingFactor.table
           ? {
               data: Array.isArray(r.ratingFactor.table.data)
@@ -1617,10 +1801,18 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
     : [];
 
   const factorName = factor?.name || `Risk Factor ${factorIndex + 1}`;
-  const coverageName =
-    coverages.find(c => String(c.id) === String(factor?.coverageId))?.name ||
-    factor?.coverage ||
-    'Coverage not selected';
+  const selectedCoverageIds = Array.isArray(factor?.coverageIds) && factor.coverageIds.length
+    ? factor.coverageIds.map(String)
+    : (factor?.coverageId ? [String(factor.coverageId)] : []);
+
+  const selectedCoverageNames = coverages
+    .filter(c => selectedCoverageIds.includes(String(c.id)))
+    .map(c => c.name)
+    .filter(Boolean);
+
+  const coverageName = selectedCoverageNames.length
+    ? selectedCoverageNames.join(', ')
+    : (factor?.coverage || 'Coverage not selected');
 
   return `
     <div class="rating-factor-card" data-rating-factor-card="${factorIndex}">
@@ -1671,31 +1863,161 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
           </div>
 
      <div class="form-group">
-  <label
-    class="form-label"
-    for="rating-factor-coverage-${factorIndex}"
-  >
+  <label class="form-label">
     Coverage <span class="required">*</span>
   </label>
 
-  <select
-    id="rating-factor-coverage-${factorIndex}"
-    class="form-control"
-  >
-    <option value="">Select Coverage</option>
+ <div class="rating-coverage-picker rating-coverage-dropdown" id="rating-factor-coverage-${factorIndex}">
+  ${(() => {
+    const selectedIds = new Set(
+      Array.isArray(factor?.coverageIds) && factor.coverageIds.length
+        ? factor.coverageIds.map(String)
+        : (factor?.coverageId ? [String(factor.coverageId)] : [])
+    );
 
-    ${coverages.map(c => `
-      <option
-        value="${String(c.id).replace(/"/g, '&quot;')}"
-        ${String(c.id) === String(factor?.coverageId || '') ? 'selected' : ''}
+    const esc = v => String(v ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+    const parents = coverages.filter(c => !c.isChild);
+
+    const selectedItems = coverages.filter(c =>
+      selectedIds.has(String(c.id))
+    );
+
+    const selectedLabel = selectedItems.length
+      ? `${selectedItems.length} coverage${selectedItems.length > 1 ? 's' : ''} selected`
+      : 'Select coverage(s)...';
+
+    return `
+      <button
+        type="button"
+        class="form-control rating-coverage-dropdown-btn"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        onclick="toggleRatingCoverageDropdown(${factorIndex})"
       >
-        ${c.isChild
-          ? `↳ ${String(c.name).replace(/</g, '&lt;')}`
-          : String(c.name).replace(/</g, '&lt;')
-        }
-      </option>
-    `).join('')}
-  </select>
+        <span class="rating-coverage-selected">
+          ${
+            selectedItems.length
+              ? selectedItems.slice(0, 2).map(c => `
+                  <span class="rating-coverage-chip">
+                    ${esc(c.isChild ? `${c.parentName} — ${c.name}` : c.name)}
+                  </span>
+                `).join('')
+              : `<span class="rating-coverage-placeholder">${esc(selectedLabel)}</span>`
+          }
+
+          ${
+            selectedItems.length > 2
+              ? `<span class="rating-coverage-more">+${selectedItems.length - 2} more</span>`
+              : ''
+          }
+        </span>
+
+        <span class="rating-coverage-dropdown-caret">⌄</span>
+      </button>
+
+      <div
+        class="rating-coverage-dropdown-menu"
+        id="rating-factor-coverage-menu-${factorIndex}"
+        role="listbox"
+        aria-multiselectable="true"
+      >
+
+        <div class="rating-coverage-menu-header">
+          <span>Select Coverage(s)</span>
+          <span class="rating-coverage-count">
+            ${selectedItems.length} selected
+          </span>
+        </div>
+
+        <div class="rating-coverage-menu-list">
+
+          ${parents.map(parent => {
+            const children = coverages.filter(
+              c =>
+                c.isChild &&
+                String(c.parentId) === String(parent.id)
+            );
+
+            const parentSelected = selectedIds.has(String(parent.id));
+            const childSelectedCount = children.filter(child =>
+              selectedIds.has(String(child.id))
+            ).length;
+
+            return `
+              <div class="rating-coverage-group">
+
+                <label class="rating-coverage-option rating-coverage-parent">
+                  <input
+                    type="checkbox"
+                    class="rating-coverage-checkbox"
+                    data-rating-coverage="${factorIndex}"
+                    value="${esc(parent.id)}"
+                    ${parentSelected ? 'checked' : ''}
+                    onchange="refreshRatingCoverageDropdown(${factorIndex})"
+                  >
+
+                  <span class="rating-coverage-parent-copy">
+                    <span class="rating-coverage-parent-name">
+                      ${esc(parent.name)}
+                    </span>
+
+                    ${
+                      children.length
+                        ? `<span class="rating-coverage-child-count">
+                            ${childSelectedCount}/${children.length} child${children.length !== 1 ? 'ren' : ''}
+                          </span>`
+                        : ''
+                    }
+                  </span>
+                </label>
+
+                ${
+                  children.length
+                    ? `
+                      <div class="rating-coverage-children">
+                        ${children.map(child => {
+                          const checked = selectedIds.has(String(child.id));
+
+                          return `
+                            <label class="rating-coverage-option rating-coverage-child">
+
+                              <input
+                                type="checkbox"
+                                class="rating-coverage-checkbox"
+                                data-rating-coverage="${factorIndex}"
+                                value="${esc(child.id)}"
+                                ${checked ? 'checked' : ''}
+                                onchange="refreshRatingCoverageDropdown(${factorIndex})"
+                              >
+
+                              <span class="rating-coverage-child-copy">
+                                <span class="rating-coverage-child-arrow">↳</span>
+                                <span>${esc(child.name)}</span>
+                              </span>
+
+                            </label>
+                          `;
+                        }).join('')}
+                      </div>
+                    `
+                    : ''
+                }
+
+              </div>
+            `;
+          }).join('')}
+
+        </div>
+      </div>
+    `;
+  })()}
+</div>
+  <span class="form-help">Select one or more coverages. Child coverage classes are shown under their parent.</span>
 </div>
 
           <div class="form-group">
@@ -1708,10 +2030,10 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
               onchange="toggleRatingFactorMethod(${factorIndex}, this.value)"
             >
               <option value="table" ${method === 'table' ? 'selected' : ''}>
-                Rating Table
+                Lookup Table
               </option>
               <option value="fixed" ${method === 'fixed' ? 'selected' : ''}>
-                Fixed Factor
+                Constant Factor
               </option>
             </select>
           </div>
@@ -1761,7 +2083,7 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
         >
           <div class="form-group" style="margin:0">
             <label class="form-label" for="rating-factor-fixed-value-${factorIndex}">
-              Fixed Rating Factor <span class="required">*</span>
+              Constant Rating Factor <span class="required">*</span>
             </label>
             <input
               id="rating-factor-fixed-value-${factorIndex}"
@@ -1776,7 +2098,7 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
               placeholder="e.g. 1.10"
             >
             <div style="margin-top:6px;font-size:11px;color:var(--color-muted)">
-              This factor is applied directly when the Fixed Factor method is selected.
+              This factor is applied directly when the Constant Factor method is selected.
             </div>
           </div>
         </div>
@@ -1854,6 +2176,31 @@ function addRatingTableRow(factorIndex) {
   const factor = factors[factorIndex];
   if (!factor) return;
 
+  // Preserve the current factor state before re-rendering the card.
+  // The coverage picker lives in the DOM, so without reading it here,
+  // loadRisk() would rebuild the card from stale factor data and clear
+  // the user's selected coverages.
+  const selectedCoverageIds = Array.from(
+    document.querySelectorAll(`[data-rating-coverage="${factorIndex}"]:checked`)
+  )
+    .map(el => String(el.value || '').trim())
+    .filter(Boolean);
+
+  factor.coverageIds = selectedCoverageIds;
+  factor.coverageId = selectedCoverageIds[0] || '';
+
+  const coverageOptions = getRiskFactorCoverageOptions();
+  factor.coverage = coverageOptions
+    .filter(c => selectedCoverageIds.includes(String(c.id)))
+    .map(c => c.name)
+    .join(', ');
+
+  const nameEl = document.getElementById(`rating-factor-name-${factorIndex}`);
+  if (nameEl) factor.name = String(nameEl.value || '').trim();
+
+  const methodEl = document.getElementById(`rating-factor-method-${factorIndex}`);
+  if (methodEl) factor.ratingMethod = String(methodEl.value || 'table').trim();
+
   const current = readRatingTableRows(factorIndex);
 
   factor.table = factor.table || { data: [] };
@@ -1930,6 +2277,75 @@ function markPanelValidation(el, msg) {
   }
 }
 
+function toggleRatingCoverageDropdown(index) {
+  const picker = document.getElementById(`rating-factor-coverage-${index}`);
+  if (!picker) return;
+  const btn = picker.querySelector('.rating-coverage-dropdown-btn');
+  if (btn?.disabled) return;
+
+  document.querySelectorAll('.rating-coverage-dropdown.open').forEach(other => {
+    if (other !== picker) {
+      other.classList.remove('open');
+      other.querySelector('.rating-coverage-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  const open = !picker.classList.contains('open');
+  picker.classList.toggle('open', open);
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function refreshRatingCoverageDropdown(index) {
+  const picker = document.getElementById(`rating-factor-coverage-${index}`);
+  if (!picker) return;
+
+  const selected = Array.from(
+    picker.querySelectorAll(`[data-rating-coverage="${index}"]:checked`)
+  ).map(el => String(el.value || '').trim()).filter(Boolean);
+
+  const options = getRiskFactorCoverageOptions();
+  const selectedItems = options.filter(c => selected.includes(String(c.id)));
+  const selectedHost = picker.querySelector('.rating-coverage-selected');
+  const countEl = picker.querySelector('.rating-coverage-count');
+
+  if (selectedHost) {
+    if (!selectedItems.length) {
+      selectedHost.innerHTML = '<span class="rating-coverage-placeholder">Select coverage(s)...</span>';
+    } else {
+      const esc = v => String(v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+      selectedHost.innerHTML = selectedItems.slice(0, 2).map(c => {
+        const name = c.isChild ? `${c.parentName} — ${c.name}` : c.name;
+        return `<span class="rating-coverage-chip">${esc(name)}</span>`;
+      }).join('') + (selectedItems.length > 2
+        ? `<span class="rating-coverage-more">+${selectedItems.length - 2} more</span>`
+        : '');
+    }
+  }
+
+  if (countEl) countEl.textContent = `${selected.length} selected`;
+}
+
+document.addEventListener('click', function(event) {
+  document.querySelectorAll('.rating-coverage-dropdown.open').forEach(picker => {
+    if (!picker.contains(event.target)) {
+      picker.classList.remove('open');
+      picker.querySelector('.rating-coverage-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+    }
+  });
+});
+
+document.addEventListener('keydown', function(event) {
+  if (event.key !== 'Escape') return;
+  document.querySelectorAll('.rating-coverage-dropdown.open').forEach(picker => {
+    picker.classList.remove('open');
+    picker.querySelector('.rating-coverage-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+  });
+});
+
 function saveRatingFactorsFromPanel(r) {
   const factors = ensureRatingFactors(r);
   const nextFactors = [];
@@ -1942,7 +2358,10 @@ function saveRatingFactorsFromPanel(r) {
     const fixedEl = document.getElementById(`rating-factor-fixed-value-${i}`);
 
     const name = String(nameEl?.value || '').trim();
-    const coverageId = String(coverageEl?.value || '').trim();
+    const coverageIds = Array.from(
+      document.querySelectorAll(`[data-rating-coverage="${i}"]:checked`)
+    ).map(el => String(el.value || '').trim()).filter(Boolean);
+    const coverageId = coverageIds[0] || '';
     const method = String(methodEl?.value || 'table').trim();
 
     let valid = true;
@@ -1952,20 +2371,23 @@ function saveRatingFactorsFromPanel(r) {
       valid = false;
     }
 
-    if (!coverageId) {
-      markPanelValidation(coverageEl, 'Coverage is required.');
+    if (!coverageIds.length) {
+      const picker = document.getElementById(`rating-factor-coverage-${i}`);
+      markPanelValidation(picker, 'Select at least one coverage.');
       valid = false;
     }
 
-    const coverage = getRiskFactorCoverageOptions()
-      .find(item => String(item.id) === String(coverageId));
+    const coverageOptions = getRiskFactorCoverageOptions();
+    const selectedCoverages = coverageOptions
+      .filter(item => coverageIds.includes(String(item.id)));
 
     const next = {
       id: existing.id || `RAT-FACTOR-${String(Date.now()).slice(-6)}-${i + 1}`,
       name,
       status: 'draft',
-      coverage: coverage?.name || '',
+      coverage: selectedCoverages.map(item => item.name).join(', '),
       coverageId,
+      coverageIds,
       riskAttribute: displayRiskName(r),
       riskAttributeId: r.id,
       ratingMethod: method,
@@ -2105,7 +2527,7 @@ function loadRisk(id) {
   const factors = ensureRatingFactors(r);
 
   p.innerHTML = `
-    <div class="section-card">
+    <div class="section-card rating-factors-section">
       <div class="section-inner">
 
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
@@ -2129,41 +2551,6 @@ function loadRisk(id) {
         }
 
         <div class="form-grid-2">
-
-          <div class="form-group">
-            <label class="form-label">Risk Attribute ID</label>
-            <div class="mono">${r.id}</div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Source</label>
-            <div>
-              <span class="rs-source-badge ${manual ? '' : 'is-question'}">
-                ${manual ? 'MANUAL' : 'QUESTION'}
-              </span>
-              ${manual ? 'Risk Studio' : 'Questionnaire Studio'}
-            </div>
-          </div>
-
-          ${manual
-            ? ''
-            : `
-              <div class="form-group">
-                <label class="form-label">Source Question</label>
-                <div>${q?.label || r.questionLabel || '—'}</div>
-              </div>
-            `
-          }
-
-          ${manual
-            ? ''
-            : `
-              <div class="form-group">
-                <label class="form-label">Question ID</label>
-                <div class="mono">${q?.id || r.questionId || '—'}</div>
-              </div>
-            `
-          }
 
           <div class="form-group">
             <label class="form-label">Question Group</label>
@@ -2274,42 +2661,6 @@ function loadRisk(id) {
             >${String(r.riskNotes || '').replace(/</g, '&lt;')}</textarea>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Used By</label>
-            <div style="display:flex;gap:12px;flex-wrap:wrap;padding-top:7px">
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-                <input
-                  type="checkbox"
-                  class="rk-used-by"
-                  value="eligibility"
-                  ${usedBy.includes('eligibility') ? 'checked' : ''}
-                >
-                Eligibility
-              </label>
-
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-                <input
-                  type="checkbox"
-                  class="rk-used-by"
-                  value="rating"
-                  ${usedBy.includes('rating') ? 'checked' : ''}
-                >
-                Rating
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Eligibility Availability</label>
-            <label style="display:flex;align-items:center;gap:8px;padding-top:7px;font-size:13px">
-              <input
-                type="checkbox"
-                id="rk-available-eligibility"
-                ${r.availableForEligibility ? 'checked' : ''}
-              >
-              Available for eligibility rules
-            </label>
-          </div>
 
         </div>
 
@@ -2500,7 +2851,10 @@ function saveRiskDetail() {
     persist: 'riskAttributes',
     persistTarget: () => RISKS,
     skipProductColumn: true,
-    getItems: () => activeRiskDataset().filter(itemMatchesSelectedGroup),
+    getItems: () => {
+      dedupeRiskAttributes();
+      return activeRiskDataset().filter(itemMatchesSelectedGroup);
+    },
     emptyHtml: riskEmptyStateHtml,
     applyItems: list => {
       RISKS.splice(0, RISKS.length, ...(Array.isArray(list) ? list : []).map(r => normalizeRisk(Object.assign({}, r, {
@@ -2514,14 +2868,29 @@ function saveRiskDetail() {
         optionRisk: r.optionRisk || {},
         ratingFactor: r.ratingFactor || null,
         ratingFactors: Array.isArray(r.ratingFactors)
-          ? r.ratingFactors
-          : (r.ratingFactor ? [r.ratingFactor] : []),
+          ? r.ratingFactors.map(f => ({
+              ...f,
+              coverageIds: Array.isArray(f.coverageIds)
+                ? f.coverageIds
+                : (f.coverageId ? [f.coverageId] : [])
+            }))
+          : (r.ratingFactor ? [{
+              ...r.ratingFactor,
+              coverageIds: Array.isArray(r.ratingFactor.coverageIds)
+                ? r.ratingFactor.coverageIds
+                : (r.ratingFactor.coverageId ? [r.ratingFactor.coverageId] : [])
+            }] : []),
         usedBy: r.usedBy || [],
         availableForEligibility: r.availableForEligibility === true || (Array.isArray(r.usedBy) && r.usedBy.includes('eligibility')),
         status: r.status || 'draft',
         description: r.description || r.desc || ''
       }))));
+      // Remove duplicate Risk Attributes that point to the same Questionnaire question
+      // before the collection is rendered or persisted.
+      dedupeRiskAttributes();
       syncRiskAttributesFromQuestionnaire();
+      dedupeRiskAttributes();
+      persistRisks();
       renderGroupSidebar();
     },
     getActiveId: () => activeRiskId,
@@ -2533,6 +2902,10 @@ function saveRiskDetail() {
     hubTitle: 'Risk Attributes',
     hubSubtitle: 'Risk Attributes from Questionnaire questions or created manually',
     addOnclick: 'openAddRiskModal()',
+    rowMenuHtml: item => `
+      <button type="button" onclick="PS.studioHub.open('${item.id}')">Configure</button>
+      <button type="button" onclick="removeRiskAttributeFromProduct('${item.id}')">Remove from product</button>
+    `,
     deepParam: 'risk',
     searchKeys: ['name', 'id', 'questionGroup', 'questionId', 'sourceQuestionId', 'questionLabel'],
     searchPlaceholder: 'Search attribute, question, or ID…',

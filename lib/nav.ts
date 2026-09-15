@@ -13,7 +13,6 @@ export const NAV: NavItem[] = [
   { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "house" },
   { group: "PRODUCT STUDIO" },
   { id: "catalogue", label: "Product Catalogue", href: "/catalogue", icon: "book-open" },
-  { id: "jurisdiction", label: "Define Jurisdiction", href: "/jurisdiction", icon: "map-pin", studio: "jurisdiction" },
   { id: "coverage", label: "Coverage Studio", href: "/coverage-studio", icon: "umbrella", studio: "coverage" },
   { id: "questionnaire", label: "Questionnaire Studio", href: "/questionnaire-studio", icon: "list-checks", studio: "questionnaire" },
   { id: "risk", label: "Risk Studio", href: "/risk-studio", icon: "warning", studio: "risk" },
@@ -38,12 +37,6 @@ export const STUDIO_META: Record<
   string,
   { title: string; collection: string; itemLabel: string; description: string }
 > = {
-  jurisdiction: {
-    title: "Define Jurisdiction",
-    collection: "jurisdictions",
-    itemLabel: "State",
-    description: "US states where this product may be quoted or bound.",
-  },
   coverage: {
     title: "Coverage Studio",
     collection: "covers",

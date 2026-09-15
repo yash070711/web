@@ -8,7 +8,6 @@ import { UnderwritingStudio } from "./UnderwritingStudio";
 import { DistributionStudio } from "./DistributionStudio";
 import { DocumentStudio } from "./DocumentStudio";
 import { RiskStudio } from "./RiskStudio";
-import { JurisdictionStudio } from "./JurisdictionStudio";
 import type { Row } from "./shared";
 import type { Product } from "@/lib/types";
 
@@ -52,6 +51,5 @@ export function StudioSwitch({
   if (studio === "distribution") return <DistributionStudio {...props} items={collections.channels || []} />;
   if (studio === "document") return <DocumentStudio {...props} items={collections.documents || []} />;
   if (studio === "risk") return <RiskStudio {...props} items={collections.riskAttributes || []} />;
-  if (studio === "jurisdiction") return <JurisdictionStudio product={product} />;
   return <div className="page-inner"><p className="text-muted">Unknown studio.</p></div>;
 }

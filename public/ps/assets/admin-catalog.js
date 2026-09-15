@@ -14,7 +14,7 @@
         { key: 'productTypes', label: 'Product types', items: ['Commercial Auto', 'Personal Auto', 'Inland Marine', 'Commercial Property', 'Homeowners'] },
         { key: 'linesOfBusiness', label: 'Lines of business', items: ['Commercial Auto', 'Personal Auto', 'Inland Marine', 'Commercial Property', 'Homeowners'] },
         { key: 'carriers', label: 'Carriers', items: ['Veridex Insurance', 'Example Carrier', 'Pacific Specialty', 'Harbor Mutual'] },
-        { key: 'mgaOptions', label: 'MGA options', items: ['Summit MGA', 'Atlantic Risk MGA', 'Example MGA', 'Pacific Coast MGA', 'Midwest Specialty MGA', 'Harbor Point MGA'] },
+        { key: 'mguOptions', label: 'MGU options', items: ['Summit MGU', 'Atlantic Risk MGU', 'Example MGU', 'Pacific Coast MGU', 'Midwest Specialty MGU', 'Harbor Point MGU'] },
         { key: 'productOwners', label: 'Product owners', items: ['Anika Sharma', 'Rajan Mehta', 'Sunita Pillai', 'Priya Varghese', 'David Okonkwo'] },
         { key: 'productStatuses', label: 'Product statuses', items: ['Draft', 'Active', 'Inactive', 'Archived'] },
         { key: 'marketSegments', label: 'Market segments', items: ['Personal Lines', 'Commercial Lines', 'Group', 'Specialty'] },

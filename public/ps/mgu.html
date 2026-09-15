@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MGU Dashboard — Insurance Product Studio</title>
+  <meta name="description" content="Your MGU work queue — products assigned to you by risk carriers, ready to configure.">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .mono { font-family: 'IBM Plex Mono', monospace; }
+
+    .sec-title { font-size: 15px; font-weight: 700; }
+    .sec-sub { font-size: 12px; color: var(--color-muted); }
+
+    /* Attention table — compact work queue */
+    .attention-count {
+      font-size: 12px; font-weight: 600; color: var(--color-muted);
+      background: var(--color-border); border-radius: 100px; padding: 3px 10px; white-space: nowrap;
+    }
+    .attention-count b { color: var(--color-ink); }
+    .att-type-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .att-type-label { font-size: 13px; font-weight: 500; }
+    .att-product {
+      display: inline-block; font-size: 14px; font-weight: 600;
+      color: var(--color-ink); text-decoration: none;
+    }
+    .att-product:hover { color: var(--color-brand); }
+
+    /* All products — filters + compact table */
+    .ap-filters { display: flex; gap: 8px; align-items: center; }
+    .ap-filters .form-control { height: 34px; font-size: 13px; min-width: 150px; }
+    .status-ind { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .status-ind .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .table-wrap { overflow-x: auto; }
+    .table-wrap table { min-width: 940px; }
+    .table-wrap td.cell-name { min-width: 180px; }
+    .cell-sub { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+    .cell-list { font-size: 11px; color: var(--color-muted); max-width: 220px; line-height: 15px; }
+
+    /* Config progress — compact */
+    .cfg-mini { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .cfg-mini-track { flex: 1; height: 5px; max-width: 110px; border-radius: 100px; background: var(--color-border); overflow: hidden; }
+    .cfg-mini-fill { height: 100%; border-radius: 100px; background: var(--color-brand); }
+    .cfg-mini-fill.ok { background: var(--color-success); }
+    .cfg-mini-label { font-size: 11px; color: var(--color-muted); white-space: nowrap; }
+
+    .view-stack { display: flex; flex-direction: column; gap: var(--space-4); }
+
+    /* KPI summary strip */
+    .kpi-strip { margin-bottom: 0; }
+    .kpi-sub { gap: 8px; flex-wrap: wrap; }
+    .kpi-trend-flat { color: var(--color-muted); }
+    @media (max-width: 1100px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px) { .kpi-strip { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+
+  <main class="main-content" id="main-content">
+    <div class="page-inner">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title" id="mgu-title">MGU Dashboard</h1>
+          <p class="page-subtitle" id="mgu-subtitle">Products assigned to you by risk carriers — open one and configure it.</p>
+        </div>
+      </div>
+
+      <!-- ══ DASHBOARD VIEW ═══════════════════════════════════════ -->
+      <div id="view-dashboard" class="view-stack">
+
+        <!-- KPI SUMMARY -->
+        <div class="kpi-strip" id="kpi-strip" aria-label="Portfolio summary">
+          <div class="kpi-card">
+            <div class="kpi-number" id="kpi-active-value">0</div>
+            <div class="kpi-label">Total Active Products</div>
+            <div class="kpi-sub"><span id="kpi-active-trend"></span><span>· Published and Approved versions</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-number" id="kpi-pending-value">0</div>
+            <div class="kpi-label">Pending Approval</div>
+            <div class="kpi-sub"><span id="kpi-pending-trend"></span><span>· Awaiting governance action</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-number" id="kpi-draft-value">0</div>
+            <div class="kpi-label">In Draft</div>
+            <div class="kpi-sub"><span id="kpi-draft-trend"></span><span>· Versions in active design</span></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-number" id="kpi-released-value">0</div>
+            <div class="kpi-label">Published This Month</div>
+            <div class="kpi-sub"><span id="kpi-released-trend"></span><span>· Released this calendar month</span></div>
+          </div>
+        </div>
+
+        <!-- NEED YOUR ATTENTION -->
+        <section class="card" id="attention">
+          <div class="card-header">
+            <div>
+              <div class="sec-title">Needs Your Attention</div>
+              <div class="sec-sub">Actions assigned to your role or awaiting your input.</div>
+            </div>
+            <span class="attention-count" id="attention-count"><b>0</b> items</span>
+          </div>
+          <div class="table-wrap">
+            <table aria-label="Actions needing your attention">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Product</th>
+                  <th>Detail</th>
+                  <th>Since</th>
+                  <th style="width:110px">Action</th>
+                </tr>
+              </thead>
+              <tbody id="attention-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ALL PRODUCTS -->
+        <section class="card" id="all-products">
+          <div class="card-header">
+            <div>
+              <div class="sec-title">All Products</div>
+              <div class="sec-sub" id="all-products-sub">Every product assigned to your MGU — from one or more risk carriers.</div>
+            </div>
+            <div class="ap-filters">
+              <select id="ap-filter-status" class="form-control" onchange="setProductFilter('status', this.value)" aria-label="Filter by status">
+                <option value="all">Filter by Status</option>
+              </select>
+              <select id="ap-filter-coverage" class="form-control" onchange="setProductFilter('coverage', this.value)" aria-label="Filter by coverage">
+                <option value="all">Filter by Coverage</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table aria-label="All products assigned to this MGU">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Code</th>
+                  <th>Coverages</th>
+                  <th>Latest Version</th>
+                  <th>Status</th>
+                  <th>Assigned Date</th>
+                  <th>Proposed Effective Date</th>
+                  <th>Last Modified</th>
+                  <th style="width:160px">Action</th>
+                </tr>
+              </thead>
+              <tbody id="all-products-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens (1280px and wider).</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script>
+/* ── MGU Dashboard — work queue ─────────────────────────────── */
+const MGU_STUDIOS = [
+  { file: 'questionnaire-studio.html', label: 'Questionnaire' },
+  { file: 'risk-studio.html', label: 'Risk' },
+  { file: 'eligibility-studio.html', label: 'Eligibility' },
+  { file: 'underwriting-studio.html', label: 'Underwriting' },
+  { file: 'rating-studio.html', label: 'Rating & Pricing' }
+];
+
+const MGU_STUDIO_IDS = ['questionnaire', 'risk', 'eligibility', 'underwriting', 'rating'];
+
+const productFilter = { status: 'all', coverage: 'all' };
+
+function mguRows() {
+  const all = window.PS?.prototypeApp?.state?.products || [];
+  return all.filter(p => PS.auth.isAssignedToMe(p));
+}
+
+function mguEntry(product) {
+  const s = PS.auth.current();
+  return (product.assignedMGAs || []).find(m =>
+    (m.mgaId === s.orgId || m.mgaName === s.org) && m.status !== 'revoked');
+}
+
+function parseDate(str) {
+  const t = String(str || '').trim();
+  if (!t) return null;
+  const d = new Date(t);
+  return isNaN(d.getTime()) ? null : d;
+}
+function daysBetween(from, to) {
+  return Math.round((to - from) / 86400000);
+}
+
+function configInfo(p, entry) {
+  entry = entry || mguEntry(p);
+  const cfg = (entry && entry.configuration) || {};
+  const seeded = Number(cfg.studiosDone) || 0;
+  const doneList = Array.isArray(cfg.studios) ? cfg.studios.filter(Boolean) : [];
+  const done = Math.min(doneList.length || seeded, MGU_STUDIOS.length);
+  const pct = MGU_STUDIOS.length ? Math.round((done / MGU_STUDIOS.length) * 100) : 0;
+  const status = done >= MGU_STUDIOS.length ? 'complete' : done === 0 ? 'not-started' : 'in-progress';
+  return {
+    done, total: MGU_STUDIOS.length, pct, status,
+    configured: new Set(doneList),
+    lastSavedAt: cfg.lastSavedAt || null,
+    assignedAt: (entry && entry.assignedAt) || null
+  };
+}
+
+function attentionFor(p) {
+  const info = configInfo(p);
+  const reasons = [];
+  let tier = 0; // 2=high, 1=medium, 0=none
+  const label = ['none', 'medium', 'high'];
+
+  if (info.status !== 'complete') {
+    if (info.done === 0) {
+      const assignedDays = info.assignedAt ? daysBetween(parseDate(info.assignedAt), new Date()) : null;
+      reasons.push(assignedDays !== null && assignedDays <= 14
+        ? 'Newly assigned — configuration not started'
+        : 'Configuration not started');
+      tier = Math.max(tier, 2);
+    } else {
+      reasons.push(`Configuration in progress (${info.done}/${info.total} studios complete)`);
+      tier = Math.max(tier, 1);
+    }
+    reasons.push(`${info.total - info.done} required studio${info.total - info.done === 1 ? '' : 's'} incomplete`);
+  }
+
+  const effDate = p.effectiveFrom ? parseDate(p.effectiveFrom) : null;
+  if (effDate) {
+    const daysTo = daysBetween(new Date(), effDate);
+    if (daysTo <= 60) {
+      tier = Math.max(tier, 1);
+      reasons.push(
+        daysTo >= 0
+          ? `Effective date approaching (${p.effectiveFrom}${daysTo <= 14 ? ' — soon' : ''})`
+          : `Effective date passed (${p.effectiveFrom})`
+      );
+      if (daysTo >= 0 && daysTo <= 14) tier = 2;
+    }
+  }
+
+  return { tier: label[tier], reasons, info };
+}
+
+function viewHref(p) {
+  return `product-detail.html?id=${p.id}&version=${encodeURIComponent(p.version)}`;
+}
+
+/* ── Need Your Attention ────────────────────────────────────── */
+function daysAgoLabel(str) {
+  const d = parseDate(str);
+  if (!d) return '—';
+  const days = daysBetween(d, new Date());
+  if (days <= 0) return 'Today';
+  if (days === 1) return '1 day ago';
+  return `${days} days ago`;
+}
+
+function draftDetail(info) {
+  if (info.done === 0) return `${info.total} required studios not started.`;
+  return `Configuration in progress — ${info.done}/${info.total} studios complete, ${info.total - info.done} remaining.`;
+}
+
+function expiringDetail(p) {
+  const lead = p.effectiveTo ? `Effective end date ${p.effectiveTo} — ` : '';
+  return `${lead}plan the successor version before expiry.`;
+}
+
+const ATTENTION_ICONS = {
+  approval: `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" style="color:#B45309;flex-shrink:0"><path d="M208 40H48a16 16 0 00-16 16v58.67c0 89.18 71.16 121.55 90.6 128.63a15.91 15.91 0 0010.8 0c19.44-7.08 90.6-39.45 90.6-128.63V56a16 16 0 00-16-16z" fill="currentColor"/></svg>`,
+  draft: `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" style="color:#9A3412;flex-shrink:0"><path d="M236.8 188.09L149.35 36.22a24.76 24.76 0 00-42.7 0L19.2 188.09a23.51 23.51 0 000 23.72A24.35 24.35 0 0040.55 224h174.9a24.35 24.35 0 0021.33-12.19 23.51 23.51 0 00.02-23.72z" fill="currentColor"/></svg>`,
+  expiring: `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" style="color:#B45309;flex-shrink:0"><path d="M128 24a104 104 0 100 208A104 104 0 00128 24zm0 192a88 88 0 110-176 88 88 0 010 176zm64-88a8 8 0 01-8 8h-56a8 8 0 01-8-8V72a8 8 0 0116 0v48h48a8 8 0 018 8z" fill="currentColor"/></svg>`
+};
+
+function attentionRows() {
+  const rows = [];
+  mguRows().forEach(p => {
+    const entry = mguEntry(p) || {};
+    const info = configInfo(p, entry);
+    const a = attentionFor(p);
+    const progress = {
+      pct: info.pct,
+      label: info.status === 'not-started' ? 'Not Started' : info.status === 'complete' ? 'Completed' : 'In Progress'
+    };
+
+    if (info.status !== 'complete') {
+      rows.push({
+        type: 'draft', typeLabel: 'Draft Incomplete',
+        product: p.name, productId: p.id, version: p.version,
+        detail: draftDetail(info),
+        progress,
+        since: daysAgoLabel(entry.assignedAt), when: entry.assignedAt,
+        actionLabel: 'Complete',
+        href: `product-detail.html?id=${p.id}#studios`
+      });
+    }
+
+    if (a.reasons.some(r => /effective date/i.test(r))) {
+      rows.push({
+        type: 'expiring', typeLabel: 'Version Expiring',
+        product: p.name, productId: p.id, version: p.version,
+        detail: expiringDetail(p),
+        progress,
+        since: daysAgoLabel(entry.assignedAt), when: entry.assignedAt,
+        actionLabel: 'View',
+        href: `${viewHref(p)}#overview`
+      });
+    }
+  });
+  rows.sort((x, y) => (parseDate(y.when)?.getTime() || 0) - (parseDate(x.when)?.getTime() || 0));
+  return rows;
+}
+
+function renderAttention() {
+  const body = document.getElementById('attention-body');
+  const rows = attentionRows();
+  const count = document.getElementById('attention-count');
+  if (count) count.innerHTML = `<b>${rows.length}</b> item${rows.length === 1 ? '' : 's'}`;
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="5"><div class="empty-state" style="padding:32px 24px">
+      <div class="empty-state-title">Nothing needs your attention</div>
+      <div class="empty-state-desc">Every assigned product has its full studio configuration in place.</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td>
+        <div class="att-type-cell">
+          ${ATTENTION_ICONS[r.type] || ''}
+          <span class="att-type-label">${r.typeLabel}</span>
+        </div>
+      </td>
+      <td>
+        <a class="att-product" href="product-detail.html?id=${r.productId}">${r.product}</a>
+        <div class="cell-sub">${r.productId} · v${r.version}</div>
+        <div class="cfg-mini" title="Configuration progress">
+          <div class="cfg-mini-track"><div class="cfg-mini-fill ${r.progress && r.progress.pct >= 100 ? 'ok' : ''}" style="width:${r.progress.pct}%"></div></div>
+          <span class="cfg-mini-label">${r.progress.pct}% / ${r.progress.label}</span>
+        </div>
+      </td>
+      <td style="font-size:13px;color:var(--color-muted);max-width:300px">${r.detail}</td>
+      <td style="font-size:13px;color:var(--color-muted);white-space:nowrap">${r.since}</td>
+      <td><a href="${r.href}" class="btn btn-primary btn-sm" style="white-space:nowrap">${r.actionLabel} →</a></td>
+    </tr>
+  `).join('');
+}
+
+/* ── All Products ───────────────────────────────────────────── */
+const STATUS_DOT = { draft: '#B66F00', review: '#C98500', approved: '#2563EB', published: '#159947', superseded: '#7C3AED', retired: '#8A8377' };
+
+function coverNames(p) {
+  try {
+    const bundle = PS.prototypeApp.getProductBundle(p.id, p.version);
+    return Array.isArray(bundle?.covers) ? bundle.covers.map(c => c.name).filter(Boolean) : [];
+  } catch (_) { return []; }
+}
+
+function populateProductFilters() {
+  const rows = mguRows();
+  const statusOpts  = ['all', ...new Set(rows.map(p => p.status).filter(Boolean))];
+  const coverageOpts = ['all', ...new Set(rows.flatMap(p => coverNames(p)).sort())];
+
+  document.getElementById('ap-filter-status').innerHTML =
+    `<option value="all">Filter by Status</option>` +
+    statusOpts.filter(v => v !== 'all').map(v =>
+      `<option value="${v}" ${productFilter.status === v ? 'selected' : ''}>${PS.statusLabel(v)}</option>`).join('');
+
+  document.getElementById('ap-filter-coverage').innerHTML =
+    `<option value="all">Filter by Coverage</option>` +
+    coverageOpts.filter(v => v !== 'all').map(v =>
+      `<option value="${v}" ${productFilter.coverage === v ? 'selected' : ''}>${v}</option>`).join('');
+}
+
+function setProductFilter(key, value) {
+  productFilter[key] = value;
+  renderAllProducts();
+}
+
+function statusMark(p) {
+  const color = STATUS_DOT[p.status] || 'var(--color-muted)';
+  return `<span class="status-ind"><i class="dot" style="background:${color}"></i>${PS.statusLabel(p.status)}</span>`;
+}
+
+function renderAllProducts() {
+  const body = document.getElementById('all-products-body');
+  const sub = document.getElementById('all-products-sub');
+  const all = mguRows();
+  const filtered = productFilter.status !== 'all' || productFilter.coverage !== 'all';
+  const rows = all.filter(p =>
+    (productFilter.status === 'all' || p.status === productFilter.status) &&
+    (productFilter.coverage === 'all' || coverNames(p).includes(productFilter.coverage))
+  ).sort((a, b) => String(a.name).localeCompare(b.name));
+
+  sub.textContent = `Every product assigned to your MGU — from one or more risk carriers. (${rows.length}${filtered ? ' of ' + all.length : ''} assigned)`;
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="9"><div class="empty-state" style="padding:44px 24px">
+      <div class="empty-state-title">${all.length ? 'No products match these filters' : 'No products assigned to you yet'}</div>
+      <div class="empty-state-desc">${all.length ? 'Try adjusting the status or coverage filter.' : 'When a risk carrier assigns a product to your MGU it will appear here, ready to configure.'}</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(p => {
+    const entry = mguEntry(p) || {};
+    return `
+    <tr>
+      <td class="cell-name">
+        <a href="${viewHref(p)}" style="font-weight:600">${p.name}</a>
+      </td>
+      <td class="mono" style="font-size:12px">${p.code || p.id}</td>
+      <td style="font-size:13px"><div class="cell-list">${coverNames(p).join(', ') || '—'}</div></td>
+      <td class="mono" style="font-size:12px">${p.version || '—'}</td>
+      <td>${statusMark(p)}</td>
+      <td class="mono" style="font-size:12px">${entry.assignedAt || '—'}</td>
+      <td class="mono" style="font-size:12px">${p.effectiveFrom || '—'}</td>
+      <td class="mono" style="font-size:12px">${p.lastModified || '—'}</td>
+      <td><a href="${viewHref(p)}" class="btn btn-primary btn-sm" style="white-space:nowrap">View / Configure →</a></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── KPI Summary ───────────────────────────────────────────── */
+function monthKey(d) {
+  return d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` : null;
+}
+function monthShift(key, offset) {
+  const [y, m] = key.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + offset, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+function inMonth(p, field, key) {
+  return monthKey(parseDate(p[field])) === key;
+}
+function trendMark(n) {
+  if (n > 0) return `<span class="kpi-trend-up">↑ ${n} vs last month</span>`;
+  if (n < 0) return `<span class="kpi-trend-down">↓ ${Math.abs(n)} vs last month</span>`;
+  return `<span class="kpi-trend-flat">— same as last month</span>`;
+}
+
+function kpiMetrics() {
+  const rows = mguRows();
+  const cur = monthKey(new Date());
+  const last = monthShift(cur, -1);
+  const delta = (bucket, field) =>
+    bucket.filter(p => inMonth(p, field, cur)).length - bucket.filter(p => inMonth(p, field, last)).length;
+
+  const active = rows.filter(p => p.status === 'published' || p.status === 'approved');
+  const pending = rows.filter(p => p.status === 'review');
+  const draft = rows.filter(p => p.status === 'draft');
+  const released = rows.filter(p => p.status === 'published');
+
+  return [
+    { value: active.length, trend: delta(active, 'lastModified') },
+    { value: pending.length, trend: delta(pending, 'lastModified') },
+    { value: draft.length, trend: delta(draft, 'lastModified') },
+    { value: released.filter(p => inMonth(p, 'effectiveFrom', cur)).length, trend: delta(released, 'effectiveFrom') }
+  ];
+}
+
+function renderKpis() {
+  const ids = [['kpi-active-value', 'kpi-active-trend'], ['kpi-pending-value', 'kpi-pending-trend'], ['kpi-draft-value', 'kpi-draft-trend'], ['kpi-released-value', 'kpi-released-trend']];
+  kpiMetrics().forEach((m, i) => {
+    const [valueId, trendId] = ids[i];
+    document.getElementById(valueId).textContent = m.value;
+    document.getElementById(trendId).innerHTML = trendMark(m.trend);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const me = PS.data?.currentUser?.org || 'your MGU';
+  document.getElementById('mgu-subtitle').textContent =
+    `${me} — only products assigned to you by risk carriers appear here. Open one and configure it in the studios.`;
+
+  renderKpis();
+  renderAttention();
+  populateProductFilters();
+  renderAllProducts();
+  PS.nav.render('mgu', [{ label: 'MGU Dashboard', href: 'mgu.html' }]);
+});
+</script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+</body>
+</html>

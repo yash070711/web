@@ -473,6 +473,7 @@
 const FULL_PRODUCTS = [
   { id:'PRD-015', name:'Commercial Truck Comprehensive', family:'Trucking', version:'2026.08',       status:'published',  effectiveFrom:'01-Aug-2026', effectiveTo:'31-Jul-2027', owner:'Sunita Pillai', lastModified:'24-Aug-2026', sortOrder:0 },
   { id:'PRD-011', name:'Commercial Vehicle Fleet',      family:'Trucking', version:'2026.05-DRAFT', status:'draft',      effectiveFrom:null,          effectiveTo:null,          owner:'Anika Sharma',  lastModified:'18-Aug-2026', sortOrder:1 },
+  { id:'PRD-020', name:'Cyber Liability — SME',         family:'Cyber',    version:'2026.09',       status:'published',  effectiveFrom:'01-Sep-2026', effectiveTo:'31-Aug-2027', owner:'David Okonkwo', lastModified:'12-Sep-2026', sortOrder:2 },
 ];
 
 const VERSION_HISTORY = {
@@ -504,6 +505,14 @@ let searchDebounce;
 /* â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 document.addEventListener('DOMContentLoaded', () => {
   PS.nav.render('catalogue', [{ label:'Product Catalogue', href:'catalogue.html' }]);
+
+  // Role-scoped actions: MGUs cannot create or import products into the carrier catalogue.
+  if (PS.auth.isLoggedIn() && PS.auth.isMGA()) {
+    ['new-product-btn','import-btn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    });
+  }
 
   // Build family filter options
   document.getElementById('family-options').innerHTML = ALL_FAMILIES.map(f => `
@@ -547,8 +556,17 @@ function catalogueModifiedAt(p) {
   return Number.isNaN(fallback) ? 0 : fallback;
 }
 
+function catalogueSource() {
+  if (PS.auth.isLoggedIn() && PS.auth.isMGA()) {
+    const live = PS.prototypeApp?.state?.products;
+    const list = (Array.isArray(live) && live.length) ? live : [];
+    return list.filter(p => PS.auth.isAssignedToMe(p));
+  }
+  return FULL_PRODUCTS;
+}
+
 function getFiltered() {
-  let data = [...FULL_PRODUCTS];
+  let data = [...catalogueSource()];
   const q = filters.search.toLowerCase();
   if (q) data = data.filter(p => p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q) || p.family.toLowerCase().includes(q));
   if (filters.families.length) data = data.filter(p => filters.families.includes(p.family));
@@ -594,6 +612,7 @@ function renderList(data) {
       <td>
         <a href="product-detail.html?id=${p.id}" onclick="event.stopPropagation()" class="cat-product-name">${nameHtml}</a>
         <div class="cat-product-id">${p.id}</div>
+        ${PS.auth.isMGA() && p.carrier ? `<div style="font-size:11px;color:var(--color-muted)">Risk carrier: ${p.carrier}</div>` : ''}
       </td>
       <td><span class="family-badge">${p.family}</span></td>
       <td class="mono">${p.version}</td>
@@ -700,9 +719,9 @@ function highlightMatch(text, q) {
 }
 function updateSubtitle(count) {
   const families = new Set(getFiltered().map(p=>p.family)).size;
+  const rolePrefix = PS.auth.isMGA() ? 'Assigned to you — ' : '';
   document.getElementById('catalogue-subtitle').textContent =
-    count === 3 ? '3 products across 2 product families'
-    : `${count} product${count!==1?'s':''} found`;
+    `${rolePrefix}${count} product${count!==1?'s':''} across ${families} product famil${families===1?'y':'ies'}`;
 }
 
 function navigateToProduct(id, event) {
@@ -836,8 +855,9 @@ function toggleRowMenu(event, id) {
   document.querySelectorAll('[id^="row-menu-"]').forEach(m => m.remove());
   const btn = event.currentTarget;
   const rect = btn.getBoundingClientRect();
-  const p = FULL_PRODUCTS.find(x=>x.id===id);
-  const canRetire = ['published','superseded'].includes(p.status);
+  const p = catalogueSource().find(x=>x.id===id) || FULL_PRODUCTS.find(x=>x.id===id);
+  const isMga = PS.auth.isMGA();
+  const canRetire = !isMga && ['published','superseded'].includes(p.status);
   const menu = document.createElement('div');
   menu.id = `row-menu-${id}`;
   menu.className = 'dropdown-menu';
@@ -845,11 +865,11 @@ function toggleRowMenu(event, id) {
   menu.innerHTML = `
     <div class="dropdown-item" onclick="navigateTo('product-detail.html?id=${id}')">View Product</div>
     <div class="dropdown-item" onclick="navigateTo(PS.customerViewHref('${id}'))">Customer view</div>
-    <div class="dropdown-item" onclick="openCloneModal('${id}')">Clone Product</div>
+    ${isMga ? '' : `<div class="dropdown-item" onclick="openCloneModal('${id}')">Clone Product</div>`}
     <div class="dropdown-item" onclick="navigateTo('product-detail.html?id=${id}#versions')">View All Versions</div>
     <div class="dropdown-item" onclick="navigateTo('audit-log.html?product=${id}')">View Audit Log</div>
-    <div class="dropdown-sep"></div>
-    <div class="dropdown-item danger" onclick="openDeleteModal('${id}')">Delete Product</div>
+    ${isMga ? '' : `<div class="dropdown-sep"></div>
+    <div class="dropdown-item danger" onclick="openDeleteModal('${id}')">Delete Product</div>`}
     ${canRetire ? `<div class="dropdown-item danger" onclick="openRetireModal('${id}')">Retire Product</div>` : ''}
   `;
   document.body.appendChild(menu);

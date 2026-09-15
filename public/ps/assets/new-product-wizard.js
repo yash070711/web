@@ -58,6 +58,21 @@ function openNewProductWizard() {
   }, 0);
 }
 
+function wizardStudioOptions() {
+  const all = [
+    { id: 's-coverage', label: 'Coverage Studio', desc: 'Define what is covered, limits, deductibles, and exclusions.', checked: true },
+    { id: 's-quest', label: 'Questionnaire Studio', desc: 'Build the questions asked at quote, application, and renewal.', checked: true },
+    { id: 's-risk', label: 'Risk Studio', desc: 'Trucking risk data: business type, fleet, radius, commodities, DOT/MC.', checked: true },
+    { id: 's-eligibility', label: 'Eligibility Studio', desc: 'Set rules for who can buy this product.', checked: true },
+    { id: 's-rating', label: 'Rating & Pricing Studio', desc: 'Configure base rates, factors, and premium calculation rules.', checked: true },
+    { id: 's-dist', label: 'Distribution Studio', desc: 'Configure channels, broker agreements, and commission structures.', checked: false },
+    { id: 's-doc', label: 'Document Studio', desc: 'Set up policy documents, endorsements, and certificate templates.', checked: false }
+  ];
+  const mguOnly = ['s-quest', 's-risk', 's-eligibility', 's-rating'];
+  const isRiskCarrier = window.PS?.auth?.current?.()?.role === 'risk-carrier';
+  return isRiskCarrier ? all.filter(s => !mguOnly.includes(s.id)) : all;
+}
+
 function buildWizardHTML() {
   const cloneSources = wizardProductList()
     .filter(p => p.status === 'published' || p.status === 'approved')
@@ -184,15 +199,7 @@ function buildWizardHTML() {
     <div class="wizard-step" id="wizard-step-3">
       <p style="font-size:14px;color:var(--color-muted);margin-bottom:var(--space-5)">Select which studios to configure during setup. You can access any studio later from the product detail page.</p>
       <div style="display:flex;flex-direction:column;gap:var(--space-3)">
-        ${[
-          { id: 's-coverage', label: 'Coverage Studio', desc: 'Define what is covered, limits, deductibles, and exclusions.', checked: true },
-          { id: 's-quest', label: 'Questionnaire Studio', desc: 'Build the questions asked at quote, application, and renewal.', checked: true },
-          { id: 's-risk', label: 'Risk Studio', desc: 'Trucking risk data: business type, fleet, radius, commodities, DOT/MC.', checked: true },
-          { id: 's-eligibility', label: 'Eligibility Studio', desc: 'Set rules for who can buy this product.', checked: true },
-          { id: 's-rating', label: 'Rating & Pricing Studio', desc: 'Configure base rates, factors, and premium calculation rules.', checked: true },
-          { id: 's-dist', label: 'Distribution Studio', desc: 'Configure channels, broker agreements, and commission structures.', checked: false },
-          { id: 's-doc', label: 'Document Studio', desc: 'Set up policy documents, endorsements, and certificate templates.', checked: false }
-        ].map(s => `
+        ${wizardStudioOptions().map(s => `
         <label style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-lg);cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--color-surface)'" onmouseleave="this.style.background=''">
           <input type="checkbox" id="${s.id}" ${s.checked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--color-brand);margin-top:1px;flex-shrink:0">
           <div>

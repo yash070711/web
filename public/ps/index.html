@@ -40,16 +40,16 @@
               <svg width="12" height="12" viewBox="0 0 256 256" fill="none"><path d="M213.66 101.66l-80 80a8 8 0 01-11.32 0l-80-80a8 8 0 0111.32-11.32L128 164.69l74.34-74.35a8 8 0 0111.32 11.32z" fill="currentColor"/></svg>
             </button>
             <div class="dropdown-menu hidden" id="quick-actions-menu">
-              <div class="dropdown-item" onclick="handleQuickAction('new-product')">
+              <div class="dropdown-item" id="quick-new-product" onclick="handleQuickAction('new-product')">
                 <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
                 New Product
               </div>
-              <div class="dropdown-item" onclick="handleQuickAction('clone-product')">
+              <div class="dropdown-item" id="quick-clone-product" onclick="handleQuickAction('clone-product')">
                 <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M216 32H88a8 8 0 00-8 8v40H40a8 8 0 00-8 8v128a8 8 0 008 8h128a8 8 0 008-8v-40h40a8 8 0 008-8V40a8 8 0 00-8-8zm-56 176H48V96h112zm48-48h-32V88a8 8 0 00-8-8H96V48h112z" fill="currentColor"/></svg>
                 Clone Existing Product
               </div>
-              <div class="dropdown-sep"></div>
-              <div class="dropdown-item" onclick="handleQuickAction('run-simulation')">
+              <div class="dropdown-sep" id="quick-build-sep"></div>
+              <div class="dropdown-item" id="quick-simulation" onclick="handleQuickAction('run-simulation')">
                 <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M221.69 199.77L160 96.92V40h8a8 8 0 000-16H88a8 8 0 000 16h8v56.92L34.31 199.77A16 16 0 0048 224h160a16 16 0 0013.69-24.23z" fill="currentColor"/></svg>
                 Run Simulation
               </div>
@@ -245,10 +245,34 @@ document.addEventListener('DOMContentLoaded', function() {
   // Render nav
   PS.nav.render('dashboard', [{ label: 'Dashboard', href: 'index.html' }]);
 
-  // Time-aware greeting
+  // Time-aware greeting (persona-aware: name + organization)
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('page-greeting').textContent = `${greeting}, Vikram & Sons.`;
+  const cur = PS.data.currentUser;
+  document.getElementById('page-greeting').textContent =
+    cur?.roleKind === 'mga' ? `${greeting}, ${cur.org}.` : `${greeting}, ${cur.name || cur.org || 'MGU'}.`;
+  const roleLine = cur?.roleKind === 'mga' ? ` (${cur.org} MGU)` : '';
+  document.getElementById('page-subtitle').textContent =
+    `Insurance Product Studio — ${cur?.name || 'Product Studio'} · ${cur?.roleKind === 'mga' ? 'MGU' : 'MGU'}${roleLine} — ${monthYear}`;
+
+  // Role-scoped quick actions: MGUs must not create or clone products;
+  // Risk Carriers only work with product creation/coverage + MGU assignment.
+  if (PS.auth.isLoggedIn()) {
+    const hidden = PS.auth.isMGA()
+      ? ['quick-new-product','quick-clone-product','quick-build-sep','quick-simulation']
+      : ['quick-build-sep','quick-simulation'];
+    hidden.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    });
+  }
+
+  if (PS.auth.isLoggedIn() && PS.auth.isMGA()) {
+    const titleEls = document.querySelectorAll('#product-status-card .card-title');
+    if (titleEls.length) titleEls[0].textContent = 'Assigned Products';
+    const subEls = document.querySelectorAll('#product-status-card .card-subtitle');
+    if (subEls.length) subEls[0].textContent = 'Products assigned to your MGU by MGUs — view or download the full JSON.';
+  }
 
   // Month/Year subtitle
   const now = new Date();
@@ -324,7 +348,8 @@ function renderActivityFeed() {
 /* ── Dynamic Dashboard Metrics ─────────────────────────────── */
 function dashboardProducts() {
   const live = PS.prototypeApp?.state?.products;
-  return Array.isArray(live) && live.length ? live : (PS.data.products || []);
+  const list = Array.isArray(live) && live.length ? live : (PS.data.products || []);
+  return PS.auth.visibleProducts(list);
 }
 
 function normaliseStatus(status) {
@@ -467,7 +492,7 @@ function renderProductsTable(data) {
           <button class="btn btn-ghost btn-sm" type="button" onclick="event.stopPropagation(); viewFullProductJson('${p.id}','${p.version || ''}')">View JSON</button>
           <button class="btn btn-ghost btn-sm" type="button" onclick="event.stopPropagation(); downloadFullProductJson('${p.id}','${p.version || ''}')">Download JSON</button>
           <a href="product-view.html?id=${p.id}" class="btn btn-ghost btn-sm">Customer view</a>
-          <button class="btn btn-ghost btn-sm" onclick="handleClone('${p.id}')">Clone</button>
+          ${PS.data.currentUser.roleKind === 'mga' ? '' : `<button class="btn btn-ghost btn-sm" onclick="handleClone('${p.id}')">Clone</button>`}
           <button class="btn btn-ghost btn-sm" onclick="toggleRowMenu(event,'${p.id}')" aria-label="More options">
             <svg width="14" height="14" viewBox="0 0 256 256" fill="none"><path d="M140 128a12 12 0 11-12-12 12 12 0 0112 12zm56-12a12 12 0 100 24 12 12 0 000-24zm-136 0a12 12 0 100 24 12 12 0 000-24z" fill="currentColor"/></svg>
           </button>
@@ -480,7 +505,8 @@ function renderProductsTable(data) {
 
 function dashboardProductList() {
   const live = PS.prototypeApp?.state?.products;
-  return (live && live.length) ? live : (PS.data.products || []);
+  const list = (live && live.length) ? live : (PS.data.products || []);
+  return PS.auth.visibleProducts(list);
 }
 
 function openDashboardJsonPicker() {
@@ -607,12 +633,13 @@ function toggleRowMenu(event, id) {
   menu.id = `row-menu-${id}`;
   menu.className = 'dropdown-menu';
   menu.style.cssText = `position:fixed;top:${rect.bottom+4}px;right:${window.innerWidth - rect.right}px;z-index:999`;
+  const isMga = PS.data.currentUser.roleKind === 'mga';
   menu.innerHTML = `
     <div class="dropdown-item" onclick="window.location.href='product-detail.html?id=${id}'">View Product</div>
     <div class="dropdown-item" onclick="window.location.href='product-view.html?id=${id}'">Customer view</div>
-    <div class="dropdown-item" onclick="handleClone('${id}');document.getElementById('row-menu-${id}')?.remove()">Clone Version</div>
+    ${isMga ? '' : `<div class="dropdown-item" onclick="handleClone('${id}');document.getElementById('row-menu-${id}')?.remove()">Clone Version</div>
     <div class="dropdown-sep"></div>
-    <div class="dropdown-item danger" onclick="confirmRetire('${id}');document.getElementById('row-menu-${id}')?.remove()">Retire</div>
+    <div class="dropdown-item danger" onclick="confirmRetire('${id}');document.getElementById('row-menu-${id}')?.remove()">Retire</div>`}
   `;
   document.body.appendChild(menu);
   setTimeout(() => document.addEventListener('click', () => menu.remove(), {once:true}), 0);

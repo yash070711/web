@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { htmlHrefToNext } from "@/lib/html-pages";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   if (pathname.startsWith("/ps/") || pathname.startsWith("/_next/")) {
     return NextResponse.next();
   }
-  if (pathname === "/login" || pathname === "/register" || pathname.startsWith("/login/") || pathname.startsWith("/register/")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (pathname === "/register" || pathname.startsWith("/register/")) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
   if (pathname === "/") {
     return NextResponse.redirect(new URL("/dashboard", request.url));

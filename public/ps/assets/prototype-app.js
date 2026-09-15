@@ -144,7 +144,6 @@
       [/\/products\/[^/]+\/underwriting/, 'underwriting-studio.html'],
       [/\/products\/[^/]+\/distribution/, 'distribution-studio.html'],
       [/\/products\/[^/]+\/document/, 'document-studio.html'],
-      [/\/products\/[^/]+\/jurisdiction/, 'jurisdiction-studio.html'],
       [/\/products\/[^/]+\/?$/, 'product-detail.html'],
       [/\/coverage-studio/, 'coverage-studio.html'],
       [/\/questionnaire-studio/, 'questionnaire-studio.html'],
@@ -155,7 +154,6 @@
       [/\/distribution\/create/, 'distribution-create.html'],
       [/\/distribution/, 'distribution-studio.html'],
       [/\/document-studio/, 'document-studio.html'],
-      [/\/jurisdiction/, 'jurisdiction-studio.html'],
       [/\/simulation/, 'simulation-studio.html'],
       [/\/audit-log|\/audit/, 'audit-log.html'],
       [/\/governance/, 'governance.html'],
@@ -163,7 +161,9 @@
       [/\/pricing-library/, 'pricing-library.html'],
       [/\/integration/, 'integration-monitor.html'],
       [/\/roles/, 'roles-access.html'],
-      [/\/glossary/, 'glossary.html']
+      [/\/glossary/, 'glossary.html'],
+[/\/mgu-assignment/, 'mgu-assignment.html'],
+      [/\/mgu/, 'mgu.html']
     ];
     for (const [re, file] of nextToHtml) {
       if (re.test(path)) return file;
@@ -384,6 +384,30 @@
     return target;
   }
 
+  /* When an MGU saves configuration in one of its five studios, record the
+     progress against the product's assignment so the MGU dashboard can show
+     configuration status and attention priority. */
+  function trackMguStudioProgress(collectionName) {
+    const mguStudioIds = { questionGroups:'questionnaire', riskAttributes:'risk', eligibilityRules:'eligibility', ratingComponents:'rating', underwritingRules:'underwriting' };
+    const studioId = mguStudioIds[collectionName];
+    if (!studioId) return;
+    const s = window?.PS?.auth?.current?.();
+    if (!s || s.role !== 'mga') return;
+    const ctx = context();
+    const product = ctx.productId ? productById(ctx.productId) : null;
+    if (!product) return;
+    const entry = (product.assignedMGAs || []).find(m => m.mgaId === s.orgId || m.mgaName === s.org);
+    if (!entry || entry.status === 'revoked') return;
+    entry.configuration = entry.configuration || {};
+    const done = Array.isArray(entry.configuration.studios) ? entry.configuration.studios.filter(Boolean) : [];
+    if (done.indexOf(studioId) === -1) done.push(studioId);
+    entry.configuration.studios = done;
+    entry.configuration.studiosDone = done.length;
+    entry.configuration.lastSavedAt = displayDate(today()) || today();
+    persistProduct(product, state.productDetails[productId]);
+    saveState();
+  }
+
   function persistCollection(name, target) {
     try {
       if (name === 'covers' && typeof applyCoverCompletionFlags === 'function') {
@@ -391,6 +415,7 @@
       }
       state.collections[collectionKey(name)] = clone(target);
       saveState();
+      trackMguStudioProgress(name);
       addAudit('MODIFIED', `${name} configuration saved`, { collection:name });
       storeFullProductJson(context().productId, context().version);
       refreshStudioNav();
@@ -816,6 +841,43 @@
     }
   }
 
+  /* Assign / revoke an MGU on a Risk Carrier-owned product. */
+  function assignProductToMGA(productId, mgaId, active) {
+    const product = productById(productId);
+    if (!product) return { ok:false, error:'Product not found.' };
+    if (!active && !product.assignedMGAs?.some(m => m.mgaId === mgaId)) return { ok:false, error:'This MGU is not assigned.' };
+    const mga = (window.PS?.auth?.ORGS || {})[mgaId];
+    if (!mga) return { ok:false, error:'Unknown MGU.' };
+    if (product.carrierId && PS.auth && !PS.auth.ownsProduct(product)) {
+      return { ok:false, error:'You can only manage MGU assignment for products owned by your risk carrier.' };
+    }
+    product.assignedMGAs = Array.isArray(product.assignedMGAs) ? product.assignedMGAs : [];
+    let entry = product.assignedMGAs.find(m => m.mgaId === mgaId);
+    if (active) {
+      if (!entry) {
+        entry = { mgaId, mgaName:mga.name, status:'assigned', assignedAt:displayDate(today()) || today(), configuration:{ studiosDone:0, lastSavedAt:null } };
+        product.assignedMGAs.push(entry);
+      } else {
+        entry.status = 'assigned';
+        if (!entry.assignedAt) entry.assignedAt = displayDate(today());
+      }
+    } else if (entry) {
+      entry.status = 'revoked';
+    }
+    persistProduct(product, state.productDetails[productId]);
+    if (typeof FULL_PRODUCTS !== 'undefined') {
+      const row = FULL_PRODUCTS.find(p => p.id === productId);
+      if (row) { row.carrierId = product.carrierId; row.carrier = product.carrier; row.assignedMGAs = clone(product.assignedMGAs); }
+    }
+    if (PS.data?.products) {
+      const row = PS.data.products.find(p => p.id === productId);
+      if (row) { row.carrierId = product.carrierId; row.carrier = product.carrier; row.assignedMGAs = clone(product.assignedMGAs); }
+    }
+    addAudit(active ? 'MGU_ASSIGNED' : 'MGU_REVOKED', `${active ? 'Assigned' : 'Removed'} ${mga.name} ${active ? 'to' : 'from'} ${product.name}`, { productId, mgaId, status:active ? 'assigned' : 'revoked' });
+    addNotification(active ? 'Product assigned to MGU' : 'MGU assignment revoked', `${product.name} is ${active ? 'now available to' : 'no longer available to'} ${mga.name} (${product.id}).`, `mgu-assignment.html?id=${encodeURIComponent(productId)}`);
+    return { ok:true, product, entry, active };
+  }
+
   const STUDIO_COLLECTION_MAP = {
     's-coverage': 'covers',
     's-quest': 'questionGroups',
@@ -848,7 +910,6 @@
     documents: 'document'
   };
 const STUDIO_NAV_CHAIN = [
-  { id: 'jurisdiction', file: 'jurisdiction-studio.html', title: 'Define Jurisdiction' },
   { id: 'coverage', file: 'coverage-studio.html', title: 'Coverage Studio' },
   { id: 'questionnaire', file: 'questionnaire-studio.html', title: 'Questionnaire Studio' },
   { id: 'risk', file: 'risk-studio.html', title: 'Risk Studio' },
@@ -859,7 +920,6 @@ const STUDIO_NAV_CHAIN = [
 ];  
   const PAGE_TO_STUDIO_ID = {
     'coverage-studio.html': 'coverage',
-    'jurisdiction-studio.html': 'jurisdiction',
     'questionnaire-studio.html': 'questionnaire',
     'risk-studio.html': 'risk',
     'eligibility-studio.html': 'eligibility',
@@ -1045,50 +1105,6 @@ function coverValidationIssues(cover) {
     return null;
   }
 
-  function liveJurisdictionRows() {
-    if (typeof JUR_ROWS !== 'undefined' && Array.isArray(JUR_ROWS) && routeName() === 'jurisdiction-studio.html') return JUR_ROWS;
-    return null;
-  }
-
-  function jurisdictionRowIssues(row, index) {
-    const issues = [];
-    if (!row || !String(row.state || '').trim()) {
-      issues.push({ index, field: 'state', key: `row:${index}:state` });
-    }
-    if (row && row.available !== true && row.available !== false) {
-      issues.push({ index, field: 'available', key: `row:${index}:available` });
-    }
-    if (row && !String(row.admitted || '').trim()) {
-      issues.push({ index, field: 'admitted', key: `row:${index}:admitted` });
-    }
-    if (row && !String(row.effectiveFrom || '').trim()) {
-      issues.push({ index, field: 'effectiveFrom', key: `row:${index}:effectiveFrom` });
-    }
-    if (row && row.effectiveFrom && row.effectiveTo && row.effectiveTo < row.effectiveFrom) {
-      issues.push({ index, field: 'effectiveTo', key: `row:${index}:effectiveTo`, message: 'Effective To must be on or after Effective From.' });
-    }
-    return issues;
-  }
-
-  function jurisdictionValidationIssues(rows) {
-    const list = Array.isArray(rows) ? rows : [];
-    if (!list.length) return [{ key: 'empty', message: 'Add at least one state before continuing.' }];
-    return list.flatMap((row, i) => jurisdictionRowIssues(row, i));
-  }
-
-  function calculateJurisdictionCompletion(rows) {
-    const list = Array.isArray(rows) ? rows : [];
-    if (!list.length) return { pct: 0, complete: 0, total: 0 };
-    const complete = list.filter(row => !jurisdictionRowIssues(row, 0).length).length;
-    return { pct: Math.round((complete / list.length) * 100), complete, total: list.length };
-  }
-
-  function canLeaveJurisdiction() {
-    const ctx = context();
-    const rows = liveJurisdictionRows() || jurisdictionSetupFor(ctx.productId) || [];
-    return jurisdictionValidationIssues(rows).length === 0;
-  }
-
   function previousIncompleteStudio(studioId, productId, version) {
     const chain = enabledStudioChain(productId || context().productId);
     const idx = chain.findIndex(s => s.id === studioId);
@@ -1108,10 +1124,6 @@ function coverValidationIssues(cover) {
     const product = productById(pid) || state.productDetails[pid];
     if (studioId === 'coverage') {
       return calculateCoverageCompletion(liveCoversForCompletion() || bundle.covers || []);
-    }
-    if (studioId === 'jurisdiction') {
-      const rows = liveJurisdictionRows() || jurisdictionSetupFor(pid) || [];
-      return calculateJurisdictionCompletion(rows);
     }
     const count = studioContentCount(pid, ver, studioId);
     if (studioId === 'eligibility' && typeof window.eligibilityStudioCompletion === 'function') {
@@ -1146,11 +1158,6 @@ function coverValidationIssues(cover) {
     if (page === 'coverage-studio.html' || studioId === 'coverage') {
       return validateSelectedCoverages();
     }
-    if (page === 'jurisdiction-studio.html' || studioId === 'jurisdiction') {
-      const rows = liveJurisdictionRows() || jurisdictionSetupFor(context().productId) || [];
-      const issues = jurisdictionValidationIssues(rows);
-      return { ok: !issues.length, issues };
-    }
     if (!studioId) return { ok: true, results: [] };
     const { pct } = calculateStudioCompletion(studioId);
     return { ok: pct >= 100, results: [], pct };
@@ -1182,7 +1189,6 @@ function coverValidationIssues(cover) {
     calculateStudioCompletion,
     calculateOverallCompletion,
     canLeaveCurrentStudio,
-    canLeaveJurisdiction,
     previousIncompleteStudio,
     updateCompletionUI() {
       if (typeof window.updateCompletionUI === 'function') window.updateCompletionUI();
@@ -1202,7 +1208,6 @@ function coverValidationIssues(cover) {
       try { return PS.studioHub.items().length; } catch (_) { /* ignore */ }
     }
     if (studioId === 'coverage' && typeof COVERS !== 'undefined') return COVERS.length;
-    if (studioId === 'jurisdiction' && typeof JUR_ROWS !== 'undefined') return JUR_ROWS.length;
     if (studioId === 'questionnaire' && typeof GROUPS !== 'undefined') {
       return GROUPS.reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 0), 0);
     }
@@ -1218,12 +1223,9 @@ function coverValidationIssues(cover) {
     const live = liveStudioCount(studioId);
     if (live !== null) return live;
     const bundle = getProductBundle(productId, version);
-    const product = productById(productId) || state.productDetails[productId];
     switch (studioId) {
       case 'coverage':
         return (bundle.covers || []).length;
-      case 'jurisdiction':
-        return jurisdictionSetupFor(productId).length || (product?.jurisdictions || []).length;
       case 'questionnaire':
         return (bundle.questionGroups || []).reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 1), 0);
       case 'risk':
@@ -1245,7 +1247,6 @@ function coverValidationIssues(cover) {
 
   function enabledStudioChain(productId) {
     const enabled = new Set(enabledStudioIdsFor(productId));
-    enabled.add('jurisdiction');
     enabled.add('risk');
     return STUDIO_NAV_CHAIN.filter(row => enabled.has(row.id));
   }
@@ -1420,7 +1421,6 @@ function coverValidationIssues(cover) {
     if (status !== 'draft') return null;
     const bundle = getProductBundle(productId, version || product.version) || {};
     const enabled = new Set(enabledStudioIdsFor(productId) || []);
-    enabled.add('jurisdiction');
     const qCount = (bundle.questionGroups || []).reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 1), 0);
     const ratingCount = (bundle.rating || []).reduce((n, g) => n + (Array.isArray(g.items) ? g.items.length : 1), 0);
     const studioHref = (file) => `${file}?product=${encodeURIComponent(productId)}&id=${encodeURIComponent(productId)}&version=${encodeURIComponent(version || product.version || '')}`;
@@ -1428,10 +1428,6 @@ function coverValidationIssues(cover) {
       {
         id: 'coverage', label: 'Coverages', href: studioHref('coverage-studio.html'),
         done: product.coversNeedPick && product.coversPicked !== true ? false : calculateCoverageCompletion(bundle.covers || []).pct >= 100
-      },
-      {
-        id: 'jurisdiction', label: 'Jurisdiction', href: studioHref('jurisdiction-studio.html'),
-        done: calculateJurisdictionCompletion(jurisdictionSetupFor(productId) || []).pct >= 100
       },
       {
         id: 'questionnaire', label: 'Questions', href: studioHref('questionnaire-studio.html'),
@@ -1670,7 +1666,9 @@ function coverValidationIssues(cover) {
       productType: lob,
       lineOfBusiness: document.getElementById('w-lob')?.value || '',
       businessType: document.getElementById('w-business-type')?.value || 'New',
-      carrier: PS.data?.currentUser?.carrier || 'Veridex Insurance',
+      carrierId: PS.data?.currentUser?.orgId || (PS.auth && PS.auth.isRiskCarrier() ? (PS.auth.current() || {}).orgId : null) || 'RC-VERIDEX',
+      carrier: PS.data?.currentUser?.org || PS.data?.currentUser?.carrier || 'Veridex Insurance',
+      assignedMGAs: [],
       mga: [],
       code,
       description: document.getElementById('w-desc')?.value,
@@ -1898,6 +1896,7 @@ function coverValidationIssues(cover) {
     ensureProductDetail,
     persistProduct,
     deleteProduct,
+    assignProductToMGA,
     updateProductIdentity,
     hydrateFromWorkspace,
     nextProductId,
@@ -1918,8 +1917,6 @@ function coverValidationIssues(cover) {
     productBuildStage,
     calculateStudioCompletion,
     calculateCoverageCompletion,
-    calculateJurisdictionCompletion,
-    canLeaveJurisdiction,
     previousIncompleteStudio,
     calculateOverallCompletion,
     canLeaveCurrentStudio,
@@ -1956,7 +1953,17 @@ function coverValidationIssues(cover) {
       return;
     }
     keep.forEach(product => {
-      if (!state.products.some(existing => existing.id === product.id)) state.products.push(clone(product));
+      const existing = state.products.find(p => p.id === product.id);
+      if (!existing) {
+        state.products.push(clone(product));
+        return;
+      }
+      /* Role-model migration: copy carrier ownership + MGU assignment
+         metadata from seeds onto products already in browser storage. */
+      if (product.carrierId && !existing.carrierId) existing.carrierId = product.carrierId;
+      if (product.carrier && !existing.carrier) existing.carrier = product.carrier;
+      if (product.assignedMGAs && !existing.assignedMGAs) existing.assignedMGAs = clone(product.assignedMGAs);
+      if (product.owner && !existing.owner) existing.owner = product.owner;
     });
   }
 
@@ -2078,6 +2085,16 @@ function coverValidationIssues(cover) {
     if (items.length && !items.some(i => i.id === activeCompId)) activeCompId = items[0].id;
   }
 
+  /* Role-based page access. Keep Risk Carriers out of the MGU
+     configuration studios and MGUs out of carrier-side builder
+     pages. Re-point the browser to the role home when denied. */
+  (function enforceRolePageAccess() {
+    if (typeof window.PS === 'undefined' || !window.PS.auth || !window.PS.auth.isLoggedIn()) return;
+    if (window.PS.auth.pageAccessFor(routeName()) === false) {
+      window.location.replace(window.PS.auth.homeFor(window.PS.auth.current().role));
+    }
+  })();
+
   /* Dashboard commands and table data. */
   if (routeName() === 'index.html') {
     if (PS.data?.products) PS.data.products.splice(0, PS.data.products.length, ...clone(state.products));
@@ -2088,7 +2105,7 @@ function coverValidationIssues(cover) {
       if (!name || !family) return showResult('Product not created', 'Product name and family are required.', { type:'error' });
       const id = nextProductId();
       const version = nextVersionLabel([]);
-      const product = { id, name, family, version, status:'draft', owner:PS.data.currentUser.name, lastModifiedBy:PS.data.currentUser.name, lastModified:displayDate(today()), lastModifiedAt:now(), effectiveFrom:null, effectiveTo:null, description:document.getElementById('new-product-desc')?.value.trim() || 'New product configuration.', pending:true };
+      const product = { id, name, family, version, status:'draft', owner:PS.data.currentUser.name, carrierId:PS.data?.currentUser?.orgId || 'RC-VERIDEX', carrier:PS.data?.currentUser?.org || PS.data?.currentUser?.carrier || 'Veridex Insurance', assignedMGAs:[], lastModifiedBy:PS.data.currentUser.name, lastModified:displayDate(today()), lastModifiedAt:now(), effectiveFrom:null, effectiveTo:null, description:document.getElementById('new-product-desc')?.value.trim() || 'New product configuration.', pending:true };
       persistProduct(product, productDetailFrom(product));
       applyCreatedProductToPage(product);
       rememberContext({ productId:id, version });
@@ -2103,7 +2120,7 @@ function coverValidationIssues(cover) {
       if (!source) return showResult('Clone not created', `Product ${id} was not found.`, { type:'error' });
       const newId = nextProductId();
       const label = nextVersionLabel([]);
-      const product = Object.assign({}, clone(source), { id:newId, name:`${source.name} — Copy`, version:label, status:'draft', owner:PS.data.currentUser.name, effectiveFrom:null, effectiveTo:null, lastModified:displayDate(today()), sourceProductId:id });
+      const product = Object.assign({}, clone(source), { id:newId, name:`${source.name} — Copy`, version:label, status:'draft', owner:PS.data.currentUser.name, carrierId:PS.data?.currentUser?.orgId || 'RC-VERIDEX', carrier:PS.data?.currentUser?.org || PS.data?.currentUser?.carrier || 'Veridex Insurance', assignedMGAs:[], effectiveFrom:null, effectiveTo:null, lastModified:displayDate(today()), sourceProductId:id });
       persistProduct(product, productDetailFrom(product, state.productDetails[id]));
       applyCreatedProductToPage(product);
       addAudit('CREATED', `Cloned ${source.name} to ${product.name}`, { productId:newId, version:label, sourceProductId:id });
@@ -2351,7 +2368,8 @@ function coverValidationIssues(cover) {
       const newId = nextProductId();
       const product = Object.assign({}, clone(source), {
         id:newId, name, version:label, status:'draft', effectiveFrom:null, effectiveTo:null,
-        owner, lastModified:displayDate(today()), sortOrder:state.products.length,
+        owner, carrierId:PS.data?.currentUser?.orgId || 'RC-VERIDEX', carrier:PS.data?.currentUser?.org || PS.data?.currentUser?.carrier || 'Veridex Insurance', assignedMGAs:[],
+        lastModified:displayDate(today()), sortOrder:state.products.length,
         sourceProductId:id, sourceVersion:source.version
       });
       const sourceDetail = state.productDetails[id] || null;

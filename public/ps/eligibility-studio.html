@@ -381,6 +381,299 @@
     .cb-filter input { height: 32px; font-size: 12px; flex: 1; }
     .cb-empty-group { padding: 12px 16px; font-size: 12px; color: var(--color-muted); }
   </style>
+
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Eligibility Studio redesign — landing page + questionnaire picker
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --elig-ink:#17202f;
+  --elig-muted:#687386;
+  --elig-line:#e5e8ee;
+  --elig-soft:#f7f8fa;
+  --elig-panel:#ffffff;
+  --elig-brand:#c48a22;
+  --elig-brand-soft:#fff6df;
+  --elig-navy:#142033;
+  --elig-green:#198754;
+}
+
+#main-content { background:#f4f6f8; }
+.page-inner { max-width:1480px; }
+.page-header {
+  margin-bottom:18px;
+  padding-bottom:18px;
+  border-bottom:1px solid var(--elig-line);
+}
+.page-title { letter-spacing:-.4px; }
+.page-subtitle { max-width:760px; }
+.page-header-actions { gap:8px; flex-wrap:wrap; }
+.page-header-actions .btn { border-radius:8px; }
+.page-header-actions .btn-primary { box-shadow:0 4px 12px rgba(196,138,34,.18); }
+
+.studio-context-bar {
+  min-height:46px;
+  padding:7px 12px;
+  border:1px solid var(--elig-line);
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(20,32,51,.04);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.studio-context-pill { background:#eef2f7!important; color:#334155!important; border:1px solid #dce2ea; border-radius:999px!important; padding:5px 9px!important; font-weight:650; }
+.cs-stat { background:#fff; border:1px solid var(--elig-line); border-radius:999px; padding:5px 9px; }
+
+.eligibility-hero {
+  display:flex;
+  justify-content:space-between;
+  gap:24px;
+  align-items:stretch;
+  padding:24px 26px;
+  margin:0 0 18px;
+  border:1px solid #dfe4eb;
+  border-radius:14px;
+  background:linear-gradient(135deg,#fff 0%,#fafbfc 65%,#f4f0e7 100%);
+  box-shadow:0 6px 18px rgba(20,32,51,.05);
+}
+.eligibility-hero-copy { max-width:820px; }
+.eligibility-eyebrow { font-size:10px; letter-spacing:1.2px; font-weight:800; color:var(--elig-brand); margin-bottom:8px; }
+.eligibility-hero h2 { margin:0; font-size:25px; line-height:1.18; letter-spacing:-.5px; color:var(--elig-ink); }
+.eligibility-hero p { margin:8px 0 15px; color:var(--elig-muted); font-size:13px; line-height:1.55; max-width:700px; }
+.eligibility-flow-mini { display:flex; align-items:center; flex-wrap:wrap; gap:7px; font-size:11px; color:#64748b; }
+.eligibility-flow-mini span { padding:6px 9px; border:1px solid #dfe4eb; border-radius:7px; background:#fff; }
+.eligibility-flow-mini .current { color:#9a6813; border-color:#e9ca86; background:#fff8e9; font-weight:700; }
+.eligibility-flow-mini b { color:#a7afbc; }
+.eligibility-hero-action { min-width:245px; align-self:center; display:flex; align-items:center; gap:12px; padding:14px; border:1px solid #e4e7ec; border-radius:10px; background:#fff; }
+.eligibility-hero-action strong { display:block; font-size:13px; color:var(--elig-ink); }
+.eligibility-hero-action span { display:block; margin-top:3px; font-size:11px; line-height:1.4; color:var(--elig-muted); }
+.eligibility-hero-icon { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; background:#edf8f1; color:var(--elig-green); font-weight:800; }
+
+/* Studio hub surfaces */
+#studio-hub { min-width:0; }
+#studio-hub > * { border-radius:12px; }
+#studio-hub .card, #studio-hub .section-card, #studio-hub .cs-card { border-color:var(--elig-line); box-shadow:0 3px 12px rgba(20,32,51,.035); }
+#studio-hub .card-header, #studio-hub .section-header { background:#fff; }
+#studio-hub .cs-toolbar, #studio-hub .studio-hub-toolbar { gap:8px; }
+#studio-hub table th { background:#fafbfc; color:#667085; font-size:10px; letter-spacing:.5px; }
+#studio-hub table td { padding-top:11px; padding-bottom:11px; }
+#studio-hub .cs-empty { border:1px dashed #d8dee7; border-radius:12px; background:#fff; }
+
+/* Available attributes panel */
+.elig-avail { margin-top:18px; background:#fff; border:1px solid var(--elig-line); border-radius:12px; padding:18px 20px; box-shadow:0 3px 12px rgba(20,32,51,.035); }
+.elig-avail > div:first-child { padding-bottom:3px; }
+.elig-avail table { border:1px solid var(--elig-line); border-radius:9px; overflow:hidden; }
+.elig-avail th { background:#f8fafc; }
+.elig-avail td { height:48px; }
+.elig-group-nav { background:#f8fafc; border-color:#e3e7ed; }
+.elig-group-row { min-height:37px; }
+.elig-group-row.active { background:#fff7e7; color:#9a6813; }
+
+/* Main add-rule mode modal */
+.elig-create-mode-modal { min-width:520px; }
+.elig-create-mode-modal .modal-header { padding-bottom:8px; }
+.elig-create-mode-modal .modal-body { padding-top:12px; }
+.elig-create-choice-list { display:grid!important; grid-template-columns:1fr 1fr; gap:12px!important; }
+.elig-create-mode-modal .elig-create-choice {
+  min-height:142px; padding:18px!important; border-radius:12px!important; background:#fff!important;
+  flex-direction:column; gap:13px!important; box-shadow:0 2px 8px rgba(20,32,51,.035);
+}
+.elig-create-mode-modal .elig-create-choice:hover { background:#fffaf0!important; transform:translateY(-1px); box-shadow:0 6px 16px rgba(20,32,51,.07); }
+.elig-create-choice-radio { width:32px; height:32px; display:grid; place-items:center; border-radius:9px; background:#f4f6f8; font-size:18px!important; }
+.elig-create-mode-modal .elig-create-choice:first-child .elig-create-choice-radio { background:#fff4d9; color:#a66f10; }
+.elig-create-mode-modal .elig-create-choice:last-child .elig-create-choice-radio { background:#edf2f8; color:#3f5b7b; }
+.elig-create-mode-modal .elig-create-choice strong { font-size:15px!important; }
+.elig-create-mode-modal .elig-create-choice small { font-size:12px!important; }
+.elig-create-note { border-radius:9px!important; }
+
+/* Questionnaire selection modal */
+.elig-question-picker-modal { width:min(980px, calc(100vw - 48px)); }
+.elig-picker-header { align-items:flex-start!important; }
+.elig-modal-kicker { font-size:9px; font-weight:800; letter-spacing:1px; color:var(--elig-brand); margin-bottom:5px; }
+.elig-modal-subtitle { margin:5px 0 0; color:var(--elig-muted); font-size:12px; line-height:1.45; }
+.elig-picker-toolbar { display:flex; align-items:center; gap:8px; padding:11px 18px; border-top:1px solid var(--elig-line); border-bottom:1px solid var(--elig-line); background:#fafbfc; }
+.elig-picker-search { position:relative; flex:1; min-width:240px; }
+.elig-picker-search > span { position:absolute; left:11px; top:7px; z-index:2; color:#8792a3; font-size:16px; }
+.elig-picker-search input { padding-left:32px; height:34px; background:#fff; }
+.elig-selected-count { margin-left:auto; padding:5px 9px; border-radius:999px; background:#eef2f7; color:#526174; font-size:11px; font-weight:700; white-space:nowrap; }
+.elig-picker-body { background:#f7f8fa; max-height:67vh; overflow:auto; }
+.elig-picker-info { display:flex; gap:8px; align-items:flex-start; padding:10px 12px; margin-bottom:14px; border:1px solid #ead9ad; background:#fff9e9; border-radius:9px; color:#74551d; font-size:11px; line-height:1.45; }
+.elig-info-icon { flex:0 0 auto; width:17px; height:17px; border-radius:50%; display:grid; place-items:center; background:#e7c774; color:#fff; font-weight:800; }
+.elig-q-groups { display:flex; flex-direction:column; gap:12px; }
+.elig-q-group { border:1px solid #dfe4eb; border-radius:11px; background:#fff; overflow:hidden; }
+.elig-q-group-head { display:flex; align-items:center; justify-content:space-between; padding:10px 13px; background:#fafbfc; border-bottom:1px solid var(--elig-line); }
+.elig-q-group-head > div { display:flex; align-items:center; gap:8px; }
+.elig-q-group-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.55px; color:#526174; }
+.elig-q-group-count { min-width:22px; text-align:center; padding:2px 6px; border-radius:999px; background:#edf1f5; color:#64748b; font-size:9px; font-weight:700; }
+.btn-xs { padding:4px 7px!important; font-size:10px!important; }
+.elig-q-list { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:10px; }
+.elig-q-card { position:relative; display:flex; align-items:center; gap:10px; min-height:62px; padding:10px 11px; border:1px solid #e1e5eb; border-radius:9px; background:#fff; cursor:pointer; transition:.12s ease; }
+.elig-q-card:hover { border-color:#d2b166; background:#fffdf8; }
+.elig-q-card input { position:absolute; opacity:0; pointer-events:none; }
+.elig-q-card:has(input:checked) { border-color:#d8ad55; background:#fff8e9; box-shadow:0 0 0 1px rgba(196,138,34,.08); }
+.elig-q-check { width:17px; height:17px; flex:0 0 auto; border:1.5px solid #b7bfcb; border-radius:5px; background:#fff; position:relative; }
+.elig-q-card input:checked + .elig-q-check { background:var(--elig-brand); border-color:var(--elig-brand); }
+.elig-q-card input:checked + .elig-q-check:after { content:'✓'; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-size:11px; font-weight:800; }
+.elig-q-copy { min-width:0; flex:1; }
+.elig-q-label { display:block; font-size:12px; font-weight:650; color:var(--elig-ink); line-height:1.3; }
+.elig-q-meta { display:flex; align-items:center; gap:5px; margin-top:4px; color:#7a8595; font-size:9px; }
+.elig-q-meta code { font-family:'IBM Plex Mono',monospace; font-size:9px; }
+.elig-q-source { align-self:flex-start; padding:3px 6px; border-radius:999px; background:#f0f3f7; color:#667386; font-size:8px; font-weight:700; white-space:nowrap; }
+.elig-q-empty { padding:40px 20px; text-align:center; color:var(--elig-muted); font-size:12px; }
+.elig-footer-selection { margin-right:auto; color:#7a8595; font-size:10px; }
+
+@media (max-width:900px) {
+  .eligibility-hero { flex-direction:column; }
+  .eligibility-hero-action { min-width:0; }
+  .elig-q-list { grid-template-columns:1fr; }
+}
+@media (max-width:680px) {
+  .elig-create-mode-modal { min-width:0; }
+  .elig-create-choice-list { grid-template-columns:1fr!important; }
+  .elig-picker-toolbar { flex-wrap:wrap; }
+  .elig-picker-search { flex-basis:100%; }
+  .elig-footer-selection { display:none; }
+}
+
+/* Questionnaire-linked eligibility editor */
+.elig-editor-page { margin-top: 8px; }
+.elig-editor-back { margin-bottom: 12px; }
+.elig-editor-layout {
+  display:grid; grid-template-columns:300px minmax(0,1fr); gap:18px; align-items:start;
+}
+.elig-question-sidebar { display:flex; flex-direction:column; gap:14px; position:sticky; top:18px; min-width:0; }
+.elig-question-sidebar-card, .elig-rule-nav-card {
+  background:#fff; border:1px solid var(--elig-line); border-radius:12px; overflow:hidden;
+  box-shadow:0 4px 14px rgba(20,32,51,.045);
+}
+.elig-sidebar-head {
+  display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+  padding:15px 15px 12px; border-bottom:1px solid #edf0f4;
+}
+.elig-sidebar-kicker { font-size:9px; font-weight:800; letter-spacing:1px; color:#9a6813; margin-bottom:4px; }
+.elig-sidebar-title { font-size:14px; font-weight:750; color:var(--elig-ink); }
+.elig-sidebar-count { margin-top:3px; font-size:11px; color:var(--elig-muted); }
+.elig-selected-question-list { padding:8px; }
+.elig-selected-question {
+  display:flex; align-items:flex-start; gap:9px; padding:11px 9px; margin-bottom:6px;
+  border:1px solid #e5e8ee; border-radius:9px; background:#fbfcfd;
+}
+.elig-selected-question:last-child { margin-bottom:0; }
+.elig-selected-question.is-primary { border-color:#e6c77f; background:#fff9eb; }
+.elig-selected-question-number {
+  width:22px; height:22px; border-radius:7px; display:grid; place-items:center; flex:0 0 22px;
+  background:#eef2f7; color:#536176; font-size:10px; font-weight:800;
+}
+.elig-selected-question.is-primary .elig-selected-question-number { background:#c48a22; color:#fff; }
+.elig-selected-question-body { min-width:0; flex:1; }
+.elig-selected-question-label { font-size:12px; font-weight:700; color:#1b2535; line-height:1.35; }
+.elig-selected-question-meta { margin-top:4px; font-size:10px; color:#788396; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.elig-question-check { color:#198754; font-size:12px; font-weight:800; padding-top:3px; }
+.elig-sidebar-empty { padding:18px 14px; text-align:center; color:var(--elig-muted); display:flex; flex-direction:column; align-items:center; gap:7px; }
+.elig-sidebar-empty-icon { width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#fff6df; color:#a86f12; font-weight:800; }
+.elig-sidebar-empty strong { font-size:12px; color:var(--elig-ink); }
+.elig-sidebar-empty span { font-size:10px; line-height:1.45; }
+.elig-rule-nav-card .rule-list { max-height:360px; overflow:auto; padding:8px; }
+.elig-detail-panel { min-width:0; display:flex; flex-direction:column; gap:14px; }
+.elig-detail-panel > div:first-child {
+  padding:18px 20px; margin:0 !important; background:#fff; border:1px solid var(--elig-line);
+  border-radius:12px; box-shadow:0 4px 14px rgba(20,32,51,.04);
+}
+.elig-detail-panel .studio-section, .elig-detail-panel .card, .elig-detail-panel .section-card {
+  border-color:var(--elig-line); border-radius:12px; box-shadow:0 3px 12px rgba(20,32,51,.035);
+}
+.elig-detail-panel .condition-builder, .elig-detail-panel .compiled-expression { border-radius:10px; }
+.elig-detail-panel .elig-linked-card { display:none; }
+@media (max-width: 980px) {
+  .elig-editor-layout { grid-template-columns:1fr; }
+  .elig-question-sidebar { position:static; }
+  .elig-rule-nav-card { display:none; }
+}
+
+/* Questionnaire rule queue */
+.elig-selected-question {
+  width:100%;
+  text-align:left;
+  font:inherit;
+  color:inherit;
+  cursor:pointer;
+  position:relative; display:flex; align-items:center; gap:10px; padding:11px 10px; border:1px solid var(--color-border,#e5e7eb); border-radius:10px; background:#fff; margin-bottom:7px; transition:.15s ease; }
+.elig-selected-question.is-current { border-color:#e3a008; background:#fff8e6; box-shadow:inset 3px 0 0 #e3a008; }
+.elig-selected-question.is-completed { background:#f4fbf7; border-color:#cfe9da; }
+.elig-selected-question.is-upcoming { background:#fafbfc; }
+.elig-selected-question-number { width:24px; height:24px; border-radius:50%; display:grid; place-items:center; flex:0 0 24px; background:#eef2f7; color:#425466; font-size:11px; font-weight:700; }
+.is-current .elig-selected-question-number { background:#d99000; color:#fff; }
+.is-completed .elig-selected-question-number { background:#d9f1e1; color:#16834d; }
+.elig-selected-question-body { min-width:0; flex:1; }
+.elig-selected-question-label { font-size:12px; font-weight:700; color:var(--color-ink,#172033); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.elig-selected-question-meta { margin-top:3px; font-size:10px; color:var(--color-muted,#708096); }
+.elig-selected-question-state { flex:0 0 auto; font-size:9px; font-weight:700; padding:3px 7px; border-radius:999px; color:#68778a; background:#edf1f5; }
+.is-current .elig-selected-question-state { color:#9a6200; background:#ffe6a8; }
+.is-completed .elig-selected-question-state { color:#137447; background:#dff4e7; }
+
+</style>
+
+
+<style id="eligibility-studio-recreated-ui">
+/* Recreated Eligibility Studio home — warm existing palette, no external dependencies. */
+#elig-main-page{min-width:0}
+#elig-main-page .eligibility-hero{display:none!important}
+.elig-recreated-home{display:grid;grid-template-columns:285px minmax(0,1fr);gap:14px;align-items:start}
+.elig-recreated-card{background:#fff;border:1px solid #e3ddd2;border-radius:11px;box-shadow:0 2px 8px rgba(35,29,20,.035)}
+.elig-rules-panel{position:sticky;top:74px;overflow:hidden}
+.elig-rules-head{padding:15px 15px 12px;border-bottom:1px solid #e8e2d8}
+.elig-rules-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.elig-rules-title{font-size:11px;font-weight:800;letter-spacing:.55px;text-transform:uppercase;color:#5e574d}
+.elig-rules-sub{font-size:10px;color:#8a8175;margin-top:4px}
+.elig-add-link{border:0;background:none;color:#c98100;font-size:11px;font-weight:700;cursor:pointer}
+.elig-rule-search{margin:11px 12px 7px;width:calc(100% - 24px);height:34px;border:1px solid #ddd6cb;border-radius:7px;padding:0 10px;font-size:12px;outline:none}
+.elig-rule-search:focus{border-color:#e0a323;box-shadow:0 0 0 2px rgba(224,163,35,.12)}
+.elig-recreated-rule-list{padding:4px 7px 10px;max-height:calc(100vh - 330px);overflow:auto}
+.elig-recreated-rule-list .rule-item{padding:10px 8px}
+.elig-recreated-rule-list .rule-item.active{background:#fff4d9;border-color:#e8ca88;box-shadow:inset 3px 0 0 #d8940a}
+.elig-recreated-rule-list .rule-item.active .rule-item-name{color:#9a6813}
+.elig-recreated-rule-list .rule-section-label{padding:10px 8px 6px}
+.elig-recreated-rule-list .rule-add-btn{width:calc(100% - 10px);margin:5px}
+
+.elig-work-area{min-width:0}
+.elig-about-strip{border:1px solid #ecd49e;background:#fff8e8;border-radius:10px;padding:11px 13px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start}
+.elig-about-icon{width:24px;height:24px;border-radius:50%;background:#fff0c8;color:#bf7b00;display:grid;place-items:center;font-weight:800;font-size:12px;flex:0 0 auto}
+.elig-about-title{font-size:12px;font-weight:750;color:#28241e}
+.elig-about-text{font-size:11px;color:#71695e;margin-top:3px;line-height:1.45}
+.elig-flow-card{border:1px solid #e3ddd2;background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.elig-flow-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.55px;color:#81776a;margin-bottom:8px}
+.elig-flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.elig-flow-step{padding:7px 9px;border:1px solid #e4ded5;border-radius:7px;background:#faf9f6;font-size:10px;color:#5d574e}
+.elig-flow-step.current{background:#fff4d9;border-color:#e8ca88;color:#9a6813;font-weight:750}
+.elig-flow-arrow{color:#b0a89c;font-size:12px}
+
+.elig-attrs-card{padding:0;overflow:hidden}
+.elig-attrs-head{padding:15px 16px 12px;border-bottom:1px solid #e8e2d8;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.elig-attrs-title{font-size:15px;font-weight:750;color:#25221e}
+.elig-attrs-sub{font-size:11px;color:#7a7166;margin-top:4px}
+.elig-attrs-count{padding:7px 10px;border-radius:7px;background:#fff6df;color:#a46d08;font-size:11px;font-weight:750;white-space:nowrap}
+.elig-attrs-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:11px 16px;border-bottom:1px solid #eee9e1;background:#fcfbf9}
+.elig-attrs-toolbar input,.elig-attrs-toolbar select{height:34px;border:1px solid #ddd6cb;border-radius:7px;background:#fff;padding:0 9px;font-size:11px;color:#423c34;outline:none}
+.elig-attrs-toolbar input{width:250px}.elig-attrs-toolbar select{min-width:125px}
+.elig-attrs-toolbar input:focus,.elig-attrs-toolbar select:focus{border-color:#dda02b}
+.elig-available-wrap{overflow:auto}
+.elig-available-wrap table{width:100%;border:0!important;border-radius:0!important;border-collapse:collapse;min-width:760px}
+.elig-available-wrap th{padding:9px 10px!important;background:#faf9f6!important;border-bottom:1px solid #e5dfd5!important;color:#837a6e!important;font-size:9px!important;letter-spacing:.5px;text-transform:uppercase}
+.elig-available-wrap td{padding:10px!important;border-bottom:1px solid #eee9e1!important;font-size:11px;color:#514a41}
+.elig-available-wrap tr:last-child td{border-bottom:0!important}
+.elig-available-wrap tr:hover td{background:#fffcf5}
+.elig-available-wrap .elig-attr-name{color:#2b2823!important}
+.elig-available-wrap .btn-primary{background:#fff;border:1px solid #dda02b;color:#a96e00;box-shadow:none}
+.elig-available-wrap .btn-primary:hover{background:#fff6df}
+.elig-available-wrap .badge-published{background:#edf7ef!important;color:#267243!important;border:1px solid #cce8d3!important}
+.elig-attrs-footer{padding:10px 16px;border-top:1px solid #e8e2d8;font-size:10px;color:#81786d;display:flex;justify-content:space-between}
+
+@media(max-width:1050px){.elig-recreated-home{grid-template-columns:1fr}.elig-rules-panel{position:relative;top:auto}.elig-recreated-rule-list{max-height:none}}
+</style>
+
 </head>
 <body>
 <div class="shell" id="app-shell">
@@ -415,7 +708,7 @@
             <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
              Create New Rule
           </button>
-          <button class="btn btn-secondary" type="button" onclick="openEligibilityLibrary()">Use Existing Rule</button>
+          <button class="btn btn-secondary" type="button" onclick="openEligibilityLibrary()">Use Rule Template</button>
           <button class="btn btn-secondary" type="button" onclick="goNextRatingStudio()">Next: Rating &amp; Pricing Studio</button>
         </div>
       </div>
@@ -433,30 +726,60 @@
       </div>
 
    
-        <p style="margin-top:12px">A Risk Attribute is an input. An Eligibility Rule is the decision you configure here. Marking an attribute available does not create a rule.</p>
+        <p style="margin-top:12px">A Questionnaire question is an input. An Eligibility Rule is the decision you configure here. Create rules from Questionnaire questions or define conditions manually.</p>
       </div>
       <div id="elig-main-page" class="elig-main-page">
-        <div id="elig-available-attrs" class="elig-avail"></div>
+        <section class="eligibility-hero">
+          <div class="eligibility-hero-copy">
+            <div class="eligibility-eyebrow">COMMERCIAL TRUCKING · ELIGIBILITY</div>
+            <h2>Control which risks can enter the product</h2>
+            <p>Build eligibility decisions from Questionnaire questions, review rule outcomes, and keep every rule traceable back to its source.</p>
+            <div class="eligibility-flow-mini">
+              <span>Questionnaire</span><b>→</b><span>Risk Studio</span><b>→</b><span class="current">Eligibility Studio</span><b>→</b><span>Rating &amp; Pricing</span>
+            </div>
+          </div>
+          <div class="eligibility-hero-action">
+            <div class="eligibility-hero-icon">✓</div>
+            <div>
+              <strong>Eligibility gate</strong>
+              <span>Evaluate a submission before rating begins.</span>
+            </div>
+          </div>
+        </section>
+
         <div id="studio-hub"></div>
       </div>
-      <div id="studio-editor" class="studio-hub-editor hidden">
-        <div class="cs-back">
+      <div id="studio-editor" class="studio-hub-editor hidden elig-editor-page">
+        <div class="cs-back elig-editor-back">
           <button class="btn btn-ghost btn-sm" type="button" onclick="backToEligHub()">← Back to Eligibility Studio</button>
         </div>
-        <div class="studio-layout">
-          <div class="rule-sidebar">
-            <div class="card">
-              <div class="card-header rule-sidebar-header">
+        <div class="elig-editor-layout">
+          <aside class="elig-question-sidebar">
+            <div class="elig-question-sidebar-card">
+              <div class="elig-sidebar-head">
                 <div>
-                  <div class="rule-sidebar-title">Eligibility Rules</div>
-                  <div class="rule-sidebar-count" id="rule-sidebar-count"></div>
+                  <div class="elig-sidebar-kicker">RULE INPUTS</div>
+                  <div class="elig-sidebar-title">Selected Questions</div>
+                  <div class="elig-sidebar-count" id="elig-selected-question-sidebar-count">0 questions</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" type="button" onclick="openEligibilityRuleFromQuestionnairePicker()">Change</button>
+              </div>
+              <div id="elig-selected-question-sidebar" class="elig-selected-question-list"></div>
+            </div>
+
+            <div class="elig-rule-nav-card">
+              <div class="elig-sidebar-head">
+                <div>
+                  <div class="elig-sidebar-kicker">RULES</div>
+                  <div class="elig-sidebar-title">Eligibility Rules</div>
+                  <div class="elig-sidebar-count" id="rule-sidebar-count"></div>
                 </div>
                 <button class="btn btn-ghost btn-sm" type="button" onclick="openAddRuleModal()">+ Add</button>
               </div>
               <div class="rule-list" id="rule-list"></div>
             </div>
-          </div>
-          <div id="detail-panel" style="display:flex;flex-direction:column;gap:var(--space-4)"></div>
+          </aside>
+          <main id="detail-panel" class="elig-detail-panel"></main>
         </div>
       </div>
       </div>
@@ -604,6 +927,14 @@ function findRiskAttr(idOrKey) {
 
 function resolveConditionAttr(c) {
   if (!c) return null;
+  // A condition created directly from a Questionnaire question (sourceQuestionId set,
+  // no attributeId) is a first-class eligibility input on its own — it must never be
+  // silently re-bound to an unrelated Risk Attribute just because a field/name happens
+  // to match. Only conditions that were explicitly linked to a Risk Attribute (attributeId
+  // set) or legacy conditions with no question link at all go through attribute resolution.
+  if (!c.attributeId && c.sourceQuestionId) {
+    return findQuestionById(c.sourceQuestionId)?.q ? null : findRiskAttr(c.sourceQuestionId);
+  }
   return findRiskAttr(c.attributeId)
     || findRiskAttr(c.sourceQuestionId)
     || findRiskAttr(c.field)
@@ -613,6 +944,8 @@ function resolveConditionAttr(c) {
 
 function conditionIsUnavailable(c) {
   const attr = resolveConditionAttr(c);
+  const linkedQuestion = c?.sourceQuestionId ? findQuestionById(c.sourceQuestionId) : null;
+  if (!attr && linkedQuestion?.q) return false;
   if (!attr) return !!(c.attributeId || c.field);
   const status = String(attr.status || 'active').toLowerCase();
   if (status === 'inactive' || status === 'disabled' || attr.sourceStale) return true;
@@ -691,11 +1024,16 @@ function emptyCondition() {
 
 function normalizeCondition(c) {
   const raw = c && typeof c === 'object' ? c : {};
-  const attr = resolveConditionAttr(raw);
-  const found = findQuestionById(raw.sourceQuestionId || attr?.questionId || attr?.sourceQuestionId);
-  const attributeId = raw.attributeId || attr?.id || '';
+  const directQuestion = raw.sourceQuestionId && !raw.attributeId
+    ? findQuestionById(raw.sourceQuestionId)?.q
+    : null;
+  const attr = directQuestion ? null : resolveConditionAttr(raw);
+  const found = directQuestion
+    ? findQuestionById(raw.sourceQuestionId)
+    : findQuestionById(raw.sourceQuestionId || attr?.questionId || attr?.sourceQuestionId);
+  const attributeId = directQuestion ? '' : (raw.attributeId || attr?.id || '');
   const sourceQuestionId = raw.sourceQuestionId || attr?.questionId || attr?.sourceQuestionId || '';
-  const field = raw.field || (attr ? riskAttributeFieldKey(attr) : '');
+  const field = raw.field || (directQuestion ? questionFieldKey(directQuestion) : (attr ? riskAttributeFieldKey(attr) : ''));
   return {
     attributeId,
     sourceQuestionId,
@@ -1017,6 +1355,7 @@ function enterEligibilityEditor(id) {
   if (PS.studioHub) PS.studioHub.mode = 'edit';
   renderRuleList();
   loadRule(activeRuleId);
+  updateQuestionnaireQueueSaveButton();
   const backBtn = document.querySelector('#studio-editor .cs-back button');
   if (backBtn) {
     backBtn.textContent = '← Back to Eligibility Studio';
@@ -1214,6 +1553,34 @@ function normalizeEligibilityRule(rule) {
   const tpl = ELIGIBILITY_RULE_TEMPLATE;
   const scopesIn = r.scopes && typeof r.scopes === 'object' ? r.scopes : {};
   const dates = defaultEffectiveDates();
+  const linkedQuestionIds = Array.isArray(r.linkedQuestionIds)
+    ? [...new Set(r.linkedQuestionIds.map(String).filter(Boolean))]
+    : [];
+  const isQuestionnaireRule = String(r.source || '').toLowerCase() === 'questionnaire' || linkedQuestionIds.length > 0;
+
+  let normalizedConditions;
+  if (Array.isArray(r.conditions) && r.conditions.length) {
+    normalizedConditions = r.conditions.map(normalizeCondition).map(c => {
+      // Questionnaire-linked conditions are direct Questionnaire inputs.
+      // Never let stale attributeId values from older saves turn them back into
+      // Risk Attribute conditions.
+      if (isQuestionnaireRule && c.sourceQuestionId && linkedQuestionIds.includes(String(c.sourceQuestionId))) {
+        // Older versions auto-created an '=' operator with an empty value.
+        // Treat that as an unconfigured condition so the editor starts clean.
+        const migratedOp = (c.op && String(c.value || '').trim()) ? c.op : '';
+        return { ...c, attributeId: '', op: migratedOp, field: c.field || questionFieldKey(findQuestionById(c.sourceQuestionId)?.q) };
+      }
+      return c;
+    });
+  } else if (linkedQuestionIds.length) {
+    normalizedConditions = linkedQuestionIds
+      .map(id => findQuestionById(id)?.q)
+      .filter(Boolean)
+      .map(q => ({ ...conditionFromQuestion(q), op: '', value: '', value2: '' }));
+  } else {
+    normalizedConditions = [emptyCondition()];
+  }
+
   return Object.assign({}, tpl, r, {
     name: r.name || r.label || tpl.name,
     category: r.category || tpl.category,
@@ -1223,7 +1590,8 @@ function normalizeEligibilityRule(rule) {
     description: r.description || r.desc || tpl.description,
     direction: r.direction || tpl.direction,
     logic: r.logic || tpl.logic,
-    conditions: Array.isArray(r.conditions) && r.conditions.length ? r.conditions.map(normalizeCondition) : [emptyCondition()],
+    linkedQuestionIds,
+    conditions: normalizedConditions,
     outcomeType: r.outcomeType || tpl.outcomeType,
     reasonCode: r.reasonCode || tpl.reasonCode,
     customerMsg: r.customerMsg || tpl.customerMsg,
@@ -1231,7 +1599,8 @@ function normalizeEligibilityRule(rule) {
     logAudit: r.logAudit !== false,
     effectiveFrom: isPlaceholderDate(r.effectiveFrom) ? dates.from : r.effectiveFrom,
     effectiveTo: isPlaceholderDate(r.effectiveTo) ? dates.to : r.effectiveTo,
-    riskAttributeId: r.riskAttributeId || (Array.isArray(r.conditions) && r.conditions[0]?.attributeId) || '',
+    // Questionnaire rules never carry a Risk Attribute identity.
+    riskAttributeId: isQuestionnaireRule ? '' : (r.riskAttributeId || (Array.isArray(r.conditions) && r.conditions[0]?.attributeId) || ''),
     overrideEffective: !!r.overrideEffective,
     scopes: {
       product: scopesIn.product || hub?.productName || tpl.scopes.product,
@@ -1248,6 +1617,7 @@ function normalizeEligibilityRule(rule) {
    STATE
 ═══════════════════════════════════════════════ */
 let activeRuleId = '';
+let activeQuestionId = '';
 let openSections = new Set(['identity','condition','outcome','scope','effective','preview']);
 
 /* ═══════════════════════════════════════════════
@@ -1279,7 +1649,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSidebar: renderRuleList,
     noun: 'rules',
     hubTitle: 'Eligibility Rules',
-    hubSubtitle: 'Saved eligibility rules for this product. Open a rule to edit it in the Eligibility Rule Editor.',
+    hubSubtitle: 'Saved eligibility rules for this product. Rules can be created from Questionnaire questions or configured manually.',
     addOnclick: 'openAddRuleModal()',
     emptyHtml: eligibilityEmptyStateHtml,
     skipProductColumn: true,
@@ -1289,7 +1659,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const r = normalizeEligibilityRule(item);
       const names = (r.conditions || []).map(c => {
         const a = resolveConditionAttr(c);
-        return `${compileConditionLine(c)} ${a?.name || ''} ${c.attributeId || ''} ${c.field || ''}`;
+        const q = c.sourceQuestionId ? findQuestionById(c.sourceQuestionId)?.q : null;
+        return `${compileConditionLine(c)} ${a?.name || ''} ${q?.label || ''} ${c.attributeId || ''} ${c.sourceQuestionId || ''} ${c.field || ''}`;
       }).join(' ');
       return `${r.id} ${r.name} ${names} ${outcomeLabel(r.outcomeType)}`;
     },
@@ -1314,7 +1685,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const active = items.filter(r => normalizeEligibilityRule(r).status === 'active').length;
       const attrs = eligibilityRiskAttributes().length;
       const conflicts = detectConflicts().length;
-      return [`${items.length} Rules`, `${attrs} Risk Attributes Available`, `${active} Active`, `${conflicts} Conflicts`];
+      return [`${items.length} Rules`, `${allEligibilityQuestions().length} Questions Available`, `${active} Active`, `${conflicts} Conflicts`];
     },
     onPaint: () => { renderAvailableRiskAttributesPanel(); refreshEligibilityMeta(); },
     isCreated: item => normalizeEligibilityRule(item).status === 'active' && !isRuleIncomplete(item),
@@ -1325,9 +1696,13 @@ document.addEventListener('DOMContentLoaded', () => {
     columns: [
       { header: 'Rule Name', value: r => r.name, primary: true },
       { header: 'Rule ID', value: r => r.id, mono: true },
-      { header: 'Linked Risk Attribute', value: r => {
-        const a = findRiskAttr(primaryLinkedAttributeId(r));
-        return a ? attrDisplayName(a) : '—';
+      { header: 'Linked Questions', value: r => {
+        const rule = normalizeEligibilityRule(r);
+        const ids = Array.isArray(rule.linkedQuestionIds) && rule.linkedQuestionIds.length
+          ? rule.linkedQuestionIds
+          : (rule.conditions || []).map(c => c.sourceQuestionId).filter(Boolean);
+        const labels = ids.map(id => findQuestionById(id)?.q?.label || id).filter(Boolean);
+        return labels.length ? labels.join(', ') : '—';
       } },
       { header: 'Category', value: r => r.category || '—' },
       { header: 'Outcome', value: r => outcomeLabel(r.outcomeType) },
@@ -1410,20 +1785,59 @@ function persistRules() {
 function eligibilityEmptyStateHtml() {
   const attrs = eligibilityRiskAttributes();
   const href = riskStudioHref();
+
   return `
     <div class="cs-empty" style="text-align:left;max-width:none;padding:28px">
-      <div style="font-size:16px;font-weight:650;margin-bottom:8px;color:var(--color-ink)">No eligibility rules configured for this product.</div>
-      <div style="font-size:13px;color:var(--color-muted);margin-bottom:16px;line-height:1.5">Eligibility rules determine whether a submission can proceed, requires a warning, or must be referred to an underwriter. They are not created automatically when a Risk Attribute becomes available.</div>
-      ${attrs.length
-        ? `<div style="font-size:13px;margin-bottom:14px">${attrs.length} Risk Attributes are currently available. Use Configure Rule on an attribute to create a decision.</div>`
-        : `<div class="attr-warn" style="margin:0 0 16px">No Risk Attributes are available for Eligibility. Risk Attributes appear here only when a Risk-category Questionnaire question has been converted into a Risk Attribute and marked Available for Eligibility in Risk Studio. <a class="btn btn-primary btn-sm" href="${href}">Go to Risk Studio</a></div>`}
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" type="button" onclick="openAddRuleModal()">+ Create New Rule</button>
-        <button class="btn btn-secondary" type="button" onclick="openEligibilityLibrary()">Use Existing Rule</button>
+      <div style="font-size:16px;font-weight:650;margin-bottom:8px;color:var(--color-ink)">
+        No eligibility rules configured for this product.
       </div>
-    </div>`;
-}
 
+      <div style="font-size:13px;color:var(--color-muted);margin-bottom:16px;line-height:1.5">
+        Eligibility rules determine whether a submission can proceed, requires a warning,
+        or must be referred to an underwriter. Create them from Questionnaire questions
+        or define them manually.
+      </div>
+
+      ${
+        attrs.length
+          ? `
+            <div style="font-size:13px;margin-bottom:14px">
+              ${attrs.length} Risk Attributes are currently available.
+              Use Configure Rule on an attribute to create a decision.
+            </div>
+          `
+          : `
+            <div class="attr-warn" style="margin:0 0 16px">
+              No Risk Attributes are available for Eligibility.
+              Risk Attributes appear here only when a Risk-category Questionnaire
+              question has been converted into a Risk Attribute and marked
+              Available for Eligibility in Risk Studio.
+
+              <a class="btn btn-primary btn-sm" href="${href}">
+                Go to Risk Studio
+              </a>
+            </div>
+          `
+      }
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button
+          class="btn btn-primary"
+          type="button"
+          onclick="openAddRuleModal()">
+          + Create New Rule
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          type="button"
+          onclick="openEligibilityLibrary()">
+          Use Existing Rule
+        </button>
+      </div>
+    </div>
+  `;
+}
 function openEligibilityLibrary() {
   if (PS.studioHub?.openCatalogModal) PS.studioHub.openCatalogModal();
 }
@@ -1583,7 +1997,7 @@ function refreshEligibilityMeta() {
   if (titleEl) titleEl.textContent = `Eligibility Studio — ${productName} v${productVersion}`;
   const subtitle = document.getElementById('studio-subtitle');
   if (subtitle) {
-    subtitle.textContent = 'Create and manage eligibility rules using Risk Attributes from Risk Studio.';
+    subtitle.textContent = 'Create and manage eligibility rules using Questionnaire questions or manual conditions.';
   }
   const ctx = document.getElementById('ctx-count');
   if (ctx) {
@@ -1770,15 +2184,49 @@ function patchRuleConditionAttr(i, attributeId) {
 }
 
 
+function linkedQuestionOptionsHtml(rule, selectedId) {
+  const ids = Array.isArray(rule?.linkedQuestionIds) ? [...new Set(rule.linkedQuestionIds.map(String))] : [];
+  const selected = String(selectedId || '');
+  let html = '<option value="">Select Questionnaire question...</option>';
+  ids.forEach(id => {
+    const q = findQuestionById(id)?.q;
+    if (!q) return;
+    html += `<option value="${htmlEsc(id)}" ${String(id) === selected ? 'selected' : ''}>${htmlEsc(q.label || id)} · ${htmlEsc(id)}</option>`;
+  });
+  return html;
+}
+
+function patchRuleConditionQuestion(i, questionId) {
+  if (!rulesCanEdit()) return;
+  const rule = currentRule();
+  if (!rule || !rule.conditions[i]) return;
+  const id = String(questionId || '');
+  const q = findQuestionById(id)?.q;
+  if (!q) return;
+  const type = riskDataType(null, q);
+  rule.conditions[i].attributeId = '';
+  rule.conditions[i].sourceQuestionId = id;
+  rule.conditions[i].field = questionFieldKey(q);
+  rule.conditions[i].op = '';
+  rule.conditions[i].value = '';
+  rule.conditions[i].value2 = '';
+  persistRules();
+  loadRule(activeRuleId);
+}
+
 function eligibilityConditionRowHtml(c, i, lockedId, ro, dis) {
-  const attr = resolveConditionAttr(c) || (i === 0 ? findRiskAttr(lockedId) : null);
-  const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
+  const directQuestion = c?.sourceQuestionId && !c?.attributeId ? findQuestionById(c.sourceQuestionId)?.q : null;
+  const attr = directQuestion ? null : (resolveConditionAttr(c) || (i === 0 ? findRiskAttr(lockedId) : null));
+  const found = directQuestion ? findQuestionById(c.sourceQuestionId) : findQuestionById(c.sourceQuestionId || attr?.questionId);
   const type = riskDataType(attr, found?.q);
   const ops = operatorsForType(type);
   const op = normalizeOp(c.op);
   const opList = op && !ops.includes(op) ? [op, ...ops] : ops;
   const lockFirst = i === 0 && !!lockedId;
   const unavailable = conditionIsUnavailable(c);
+  const questionnaireQuestion = directQuestion || (!attr && c.sourceQuestionId ? found?.q : null);
+  const isQuestionLinked = !!questionnaireQuestion;
+  const isQuestionnaireRule = Array.isArray(currentRule()?.linkedQuestionIds) && currentRule().linkedQuestionIds.length > 0;
 
   return `
     ${i > 0 ? `<div class="cb-connector">${htmlEsc((c.connector || 'AND').toUpperCase())}</div>` : ''}
@@ -1790,29 +2238,47 @@ function eligibilityConditionRowHtml(c, i, lockedId, ro, dis) {
             Resolve in Risk Studio
           </a>
         </div>`
-      : ''}
+      : isQuestionLinked
+        ? `<div class="cb-source" style="margin:0 0 8px"><strong>Questionnaire:</strong> ${htmlEsc(questionnaireQuestion.label || questionnaireQuestion.id)} · ${htmlEsc(questionnaireQuestion.id)}</div>`
+        : ''}
 
     <div class="cb-row" data-condition-index="${i}">
 
       ${
-        lockFirst
+        isQuestionLinked
           ? `<input
                type="text"
                class="form-control cs-readonly-field"
                data-el-validate="cond-attr-${i}"
-               value="${htmlEsc(attrDisplayName(attr || {}) || '')}"
+               value="${htmlEsc(questionnaireQuestion.label || questionnaireQuestion.id)}"
                readonly>`
-          : `<select
-               class="form-control"
-               data-el-validate="cond-attr-${i}"
-               ${dis}
-               onchange="
-                 patchRuleConditionAttr(${i}, this.value);
-                 clearEligFieldError(this);
-               "
-             >
-               ${groupedAttrOptionsHtml(c.attributeId || attr?.id || '', attr, '')}
-             </select>`
+          : (isQuestionnaireRule
+              ? `<select
+                   class="form-control"
+                   data-el-validate="cond-attr-${i}"
+                   ${dis}
+                   onchange="patchRuleConditionQuestion(${i}, this.value); clearEligFieldError(this);"
+                 >
+                   ${linkedQuestionOptionsHtml(currentRule(), c.sourceQuestionId || '')}
+                 </select>`
+              : lockFirst
+            ? `<input
+                 type="text"
+                 class="form-control cs-readonly-field"
+                 data-el-validate="cond-attr-${i}"
+                 value="${htmlEsc(attrDisplayName(attr || {}) || '')}"
+                 readonly>`
+            : `<select
+                 class="form-control"
+                 data-el-validate="cond-attr-${i}"
+                 ${dis}
+                 onchange="
+                   patchRuleConditionAttr(${i}, this.value);
+                   clearEligFieldError(this);
+                 "
+               >
+                 ${groupedAttrOptionsHtml(c.attributeId || attr?.id || '', attr, '')}
+               </select>`)
       }
 
       <select
@@ -1867,14 +2333,14 @@ function addRuleCondition(connector) {
   }
 
   const linkedId = primaryLinkedAttributeId(rule);
+  const isQuestionnaireRule = Array.isArray(rule.linkedQuestionIds) && rule.linkedQuestionIds.length > 0;
 
-  // Keep the first linked condition tied to the Risk Attribute.
-  // Every additional condition starts empty and must be configured
-  // through the same Risk Attribute / Operator / Value controls.
+  // Questionnaire-linked rules use their linked Questionnaire questions directly.
+  // Risk Attribute rules retain the existing Risk Studio behavior.
   const condition =
-    rule.conditions.length === 0 && linkedId
-      ? conditionFromAttributeId(linkedId)
-      : emptyCondition();
+    isQuestionnaireRule
+      ? emptyCondition()
+      : (rule.conditions.length === 0 && linkedId ? conditionFromAttributeId(linkedId) : emptyCondition());
 
   condition.connector = connector === 'OR' ? 'OR' : 'AND';
   rule.conditions.push(condition);
@@ -1972,6 +2438,7 @@ function openEligibilityEditorOnLoad() {
   }
   renderAvailableRiskAttributesPanel();
   refreshEligibilityMeta();
+  setTimeout(() => window.renderRecreatedEligibilityHome?.(), 60);
 }
 
 document.addEventListener('click', () => document.querySelectorAll('.cover-dd.open').forEach(el => el.classList.remove('open')));
@@ -2044,6 +2511,78 @@ function renderRuleList() {
   if (countEl) countEl.textContent = `${all.length} rule${all.length === 1 ? '' : 's'} · ${productRules.length} product · ${coverRules.length} cover`;
 }
 
+function renderSelectedQuestionSidebar(rule) {
+  const host = document.getElementById('elig-selected-question-sidebar');
+  const count = document.getElementById('elig-selected-question-sidebar-count');
+  if (!host) return;
+
+  const ids = [...new Set(
+    (Array.isArray(rule?.linkedQuestionIds) && rule.linkedQuestionIds.length
+      ? rule.linkedQuestionIds
+      : (rule?.conditions || []).map(c => c.sourceQuestionId).filter(Boolean))
+      .map(String)
+      .filter(Boolean)
+  )];
+
+  const questions = ids.map(id => {
+    const found = findQuestionById(id);
+    return { id, q: found?.q, group: found?.group };
+  }).filter(item => item.q || item.id);
+
+  if (count) count.textContent = `${questions.length} question${questions.length === 1 ? '' : 's'} selected`;
+
+  if (!questions.length) {
+    host.innerHTML = `
+      <div class="elig-sidebar-empty">
+        <div class="elig-sidebar-empty-icon">?</div>
+        <strong>No Questionnaire questions linked</strong>
+        <span>Select questions from Questionnaire Studio to use them as rule inputs.</span>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openEligibilityRuleFromQuestionnairePicker()">Select Questions</button>
+      </div>`;
+    return;
+  }
+
+  const linkedIds = new Set(
+    (Array.isArray(rule?.linkedQuestionIds) ? rule.linkedQuestionIds : [])
+      .map(String)
+  );
+  if (!activeQuestionId || !linkedIds.has(String(activeQuestionId))) {
+    activeQuestionId = questions[0]?.id || '';
+  }
+
+  host.innerHTML = questions.map((item, i) => {
+    const isCurrent = String(activeQuestionId) === String(item.id);
+    const stateClass = isCurrent ? 'is-current' : 'is-upcoming';
+    const stateLabel = isCurrent ? 'Selected' : 'Input';
+    return `
+      <button type="button" class="elig-selected-question ${stateClass}"
+        title="Configure ${htmlEsc(item.q?.label || item.id)}"
+        onclick="focusEligibilityQuestion('${htmlEsc(item.id)}')">
+        <div class="elig-selected-question-number">${i + 1}</div>
+        <div class="elig-selected-question-body">
+          <div class="elig-selected-question-label">${htmlEsc(item.q?.label || item.id)}</div>
+          <div class="elig-selected-question-meta">${htmlEsc(item.id)}${item.group?.label ? ` · ${htmlEsc(item.group.label)}` : ''}</div>
+        </div>
+        <span class="elig-selected-question-state">${stateLabel}</span>
+      </button>`;
+  }).join('');
+}
+
+
+function focusEligibilityQuestion(questionId) {
+  activeQuestionId = String(questionId || '');
+  renderSelectedQuestionSidebar(currentRule());
+  const rule = currentRule();
+  if (!rule) return;
+  const index = (rule.conditions || []).findIndex(c => String(c.sourceQuestionId || '') === activeQuestionId);
+  if (index < 0) return;
+  requestAnimationFrame(() => {
+    const row = document.getElementById(`condition-row-${index}`) || document.querySelector(`[data-condition-index="${index}"]`);
+    row?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row?.querySelector('select, input, button')?.focus?.();
+  });
+}
+
 /* ═══════════════════════════════════════════════
    LOAD RULE
 ═══════════════════════════════════════════════ */
@@ -2061,6 +2600,7 @@ function loadRule(id) {
     const idx = RULES.findIndex(r => r.id === activeRuleId);
     if (idx >= 0) RULES[idx] = normalized;
   }
+  renderSelectedQuestionSidebar(normalized);
   renderDetailPanel(normalized);
 }
 
@@ -2115,11 +2655,10 @@ function renderDetailPanel(r) {
     <div style="margin-bottom:var(--space-4)">
       <h2 style="font-size:18px;font-weight:700;margin:0">${htmlEsc(linkedAttr ? attrDisplayName(linkedAttr) : r.name)}</h2>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--color-muted);margin-top:4px">${htmlEsc(r.id)}</div>
-      <p style="font-size:13px;color:var(--color-muted);margin:8px 0 0">Create and configure eligibility rule using this risk attribute.</p>
+      <p style="font-size:13px;color:var(--color-muted);margin:8px 0 0">Create and configure the eligibility rule using the linked Questionnaire questions or Risk Attribute.</p>
       <span class="badge badge-${r.status==='active'?'published':'draft'}" style="font-size:10px;margin-top:8px;display:inline-flex">● ${r.status==='active'?'Active':'Inactive'}</span>
       ${isRuleIncomplete(r) ? `<div class="attr-warn" style="margin:12px 0 0">Needs Attention — complete the rule or restore the linked Risk Attribute in Risk Studio.</div>` : ''}
     </div>
-    ${linkedRiskAttributeCardHtml(r)}
 
     ${buildSection('identity','1','Rule Identity',`${htmlEsc(r.category)} · Priority ${r.priority}`, `
       <div class="form-grid-2">
@@ -2145,7 +2684,7 @@ function renderDetailPanel(r) {
 
     ${buildSection('condition','2','Condition Builder',formatConditionSummary(r), `
       <p style="font-size:12px;color:var(--color-muted);margin:0 0 12px">
-        Define the condition for eligibility using the selected Risk Attribute.
+        Define the condition for eligibility using the selected Questionnaire question(s) or Risk Attribute.
       </p>
       <div class="condition-builder">
         <div class="cb-header">
@@ -2157,7 +2696,7 @@ function renderDetailPanel(r) {
           </div>
         </div>
 
-        ${!eligibilityRiskAttributes().length
+        ${(!Array.isArray(r.linkedQuestionIds) || !r.linkedQuestionIds.length) && !eligibilityRiskAttributes().length
           ? `<div class="attr-warn">No Risk Attributes are marked Available for Eligibility yet.</div>`
           : ''}
 
@@ -2181,7 +2720,7 @@ function renderDetailPanel(r) {
                    onclick="addRuleConditionGroup()">+ Add OR Group</button>`
           }
           <span style="font-size:12px;color:var(--color-muted);align-self:center">
-            ${logic === 'or' ? 'ANY (OR)' : 'ALL (AND)'} — conditions use eligible Risk Attributes only.
+            ${logic === 'or' ? 'ANY (OR)' : 'ALL (AND)'} — conditions use the selected Questionnaire questions or eligible Risk Attributes.
           </span>
         </div>
       </div>
@@ -2269,8 +2808,9 @@ function renderDetailPanel(r) {
         ${conditions.map(c => {
           const attr = resolveConditionAttr(c);
           const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
-          return `<div class="rp-line"><span class="rp-label">Source:</span><span class="rp-value">Risk Studio → ${htmlEsc(found?.q?.label || attr?.name || c.field || '—')}</span></div>
-            <div class="rp-line"><span class="rp-label">Risk Attribute ID:</span><span class="rp-value">${htmlEsc(attr?.id || c.attributeId || '—')}</span></div>`;
+          const sourceLabel = attr ? 'Risk Studio' : (found?.q ? 'Questionnaire Studio' : 'Manual');
+          return `<div class="rp-line"><span class="rp-label">Source:</span><span class="rp-value">${htmlEsc(sourceLabel)} → ${htmlEsc(found?.q?.label || attr?.name || c.field || '—')}</span></div>
+            ${attr ? `<div class="rp-line"><span class="rp-label">Risk Attribute ID:</span><span class="rp-value">${htmlEsc(attr.id || c.attributeId || '—')}</span></div>` : ''}`;
         }).join('')}
         <div class="rp-line"><span class="rp-label">Effective:</span><span class="rp-value">${htmlEsc(r.effectiveFrom)} to ${htmlEsc(r.effectiveTo)}</span></div>
       </div>
@@ -2729,10 +3269,24 @@ function validateEligibilityRule() {
   const fromT = Date.parse(isoDateValue(rule.effectiveFrom));
   const toT = Date.parse(isoDateValue(rule.effectiveTo));
   if (!Number.isNaN(fromT) && !Number.isNaN(toT) && toT < fromT) fail('#el-effective-to', 'Effective To cannot be earlier than Effective From.');
-  const linked = findRiskAttr(primaryLinkedAttributeId(rule));
-  if (!linked || !isAttrAvailableForNewRules(linked)) {
-    notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Studio.', 'error');
-    first.push(document.querySelector('.elig-linked-card'));
+  const hasQuestionnaireLinks = Array.isArray(rule.linkedQuestionIds) && rule.linkedQuestionIds.length > 0;
+  if (hasQuestionnaireLinks) {
+    const linkedIds = rule.linkedQuestionIds.map(String);
+    const uniqueIds = new Set(linkedIds);
+    if (uniqueIds.size !== linkedIds.length) {
+      notifyElig('Cannot save', 'Duplicate Questionnaire questions are linked to this rule.', 'error');
+    }
+    const missing = [...uniqueIds].filter(qid => !findQuestionById(qid)?.q);
+    if (missing.length) {
+      notifyElig('Cannot save', `${missing.length === 1 ? 'A linked Questionnaire question is' : 'Some linked Questionnaire questions are'} no longer available. Reselect the questions for this rule.`, 'error');
+      first.push(document.getElementById('elig-selected-question-sidebar'));
+    }
+  } else {
+    const linked = findRiskAttr(primaryLinkedAttributeId(rule));
+    if (!linked || !isAttrAvailableForNewRules(linked)) {
+      notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Studio.', 'error');
+      first.push(document.querySelector('.elig-linked-card'));
+    }
   }
   if ((rule.outcomeType === 'hard' || rule.outcomeType === 'soft') && !String(rule.customerMsg || '').trim()) {
     fail('#el-customer-msg', 'Customer-facing message is required for Hard Block and Soft Warning.');
@@ -2751,8 +3305,9 @@ function validateEligibilityRule() {
     const attr = resolveConditionAttr(c);
     const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
     const type = riskDataType(attr, found?.q);
-    if (!c.attributeId && !attr) fail(`[data-el-validate="cond-attr-${i}"]`, 'Risk Attribute is required.');
-    if (conditionIsUnavailable(c)) fail(`[data-el-validate="cond-attr-${i}"]`, 'Risk Attribute is no longer available in Risk Studio.');
+    const questionLinked = !!(c.sourceQuestionId && found?.q);
+    if (!c.attributeId && !attr && !questionLinked) fail(`[data-el-validate="cond-attr-${i}"]`, 'Questionnaire question or Risk Attribute is required.');
+    if (!questionLinked && conditionIsUnavailable(c)) fail(`[data-el-validate="cond-attr-${i}"]`, 'Risk Attribute is no longer available in Risk Studio.');
     if (!c.op) fail(`[data-el-validate="cond-op-${i}"]`, 'Operator is required.');
     if (opNeedsValue(c.op) && String(c.value || '').trim() === '') {
       fail(`[data-el-validate="cond-val-${i}"]`, 'This field is required.');
@@ -2791,6 +3346,249 @@ function nextEligibilityRuleId() {
   return id;
 }
 
+
+/* ═══════════════════════════════════════════════
+   QUESTIONNAIRE-LINKED ELIGIBILITY RULES
+═══════════════════════════════════════════════ */
+function allEligibilityQuestions() {
+  const out = [];
+  const seen = new Set();
+  productQuestionGroups().forEach(group => {
+    (group.questions || []).forEach(q => {
+      if (!q || !q.id || seen.has(String(q.id))) return;
+      seen.add(String(q.id));
+      out.push({ q, group });
+    });
+  });
+  return out;
+}
+
+function questionFieldKey(q) {
+  if (!q) return '';
+  return q.internalName || q.fieldKey || slugField(q.label || q.id);
+}
+
+function conditionFromQuestion(q) {
+  const c = emptyCondition();
+  if (!q) return c;
+  const type = riskDataType(null, q);
+  c.sourceQuestionId = q.id;
+  c.field = questionFieldKey(q);
+  c.op = operatorsForType(type)[0] || '';
+  return c;
+}
+
+function questionnaireQuestionPickerHtml() {
+  const groups = new Map();
+  allEligibilityQuestions().forEach(({ q, group }) => {
+    const label = group?.label || group?.name || 'Other';
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(q);
+  });
+
+  return [...groups.entries()].map(([groupName, questions]) => `
+    <section class="elig-q-group" data-question-group="${htmlEsc(groupName)}">
+      <div class="elig-q-group-head">
+        <div>
+          <span class="elig-q-group-title">${htmlEsc(groupName)}</span>
+          <span class="elig-q-group-count">${questions.length}</span>
+        </div>
+        <button type="button" class="btn btn-ghost btn-xs" onclick="selectEligibilityQuestionGroup(this)">Select group</button>
+      </div>
+      <div class="elig-q-list">
+        ${questions.map(q => `
+          <label class="elig-q-card" data-question-search="${htmlEsc(`${q.label || q.id} ${q.id} ${q.fieldType || q.type || ''}`)}">
+            <input type="checkbox" class="elig-question-cb" value="${htmlEsc(q.id)}" onchange="refreshEligibilityQuestionSelection()">
+            <span class="elig-q-check"></span>
+            <span class="elig-q-copy">
+              <span class="elig-q-label">${htmlEsc(q.label || q.id)}</span>
+              <span class="elig-q-meta"><code>${htmlEsc(q.id)}</code><span>•</span>${htmlEsc(q.fieldType || q.type || 'Text')}</span>
+            </span>
+            <span class="elig-q-source">Questionnaire</span>
+          </label>
+        `).join('')}
+      </div>
+    </section>
+  `).join('') || `<div class="elig-q-empty">No Questionnaire questions are configured for this product.</div>`;
+}
+
+function refreshEligibilityQuestionSelection() {
+  const count = document.querySelectorAll('.elig-question-cb:checked').length;
+  const label = document.getElementById('elig-selected-question-count');
+  if (label) label.textContent = `${count} selected`;
+  const useBtn = document.getElementById('elig-use-selected-btn');
+  if (useBtn) useBtn.disabled = count === 0;
+}
+
+function filterEligibilityQuestionPicker(query) {
+  const q = String(query || '').trim().toLowerCase();
+  document.querySelectorAll('.elig-q-card').forEach(card => {
+    const hay = String(card.getAttribute('data-question-search') || '').toLowerCase();
+    card.style.display = !q || hay.includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.elig-q-group').forEach(group => {
+    const visible = group.querySelectorAll('.elig-q-card:not([style*="display: none"])').length;
+    group.style.display = visible ? '' : 'none';
+  });
+}
+
+function selectAllEligibilityQuestions() {
+  document.querySelectorAll('.elig-q-card').forEach(card => {
+    if (card.style.display !== 'none') {
+      const cb = card.querySelector('.elig-question-cb');
+      if (cb) cb.checked = true;
+    }
+  });
+  refreshEligibilityQuestionSelection();
+}
+
+function clearEligibilityQuestions() {
+  document.querySelectorAll('.elig-question-cb').forEach(cb => cb.checked = false);
+  refreshEligibilityQuestionSelection();
+}
+
+function selectEligibilityQuestionGroup(button) {
+  const group = button.closest('.elig-q-group');
+  if (!group) return;
+  group.querySelectorAll('.elig-q-card').forEach(card => {
+    if (card.style.display !== 'none') {
+      const cb = card.querySelector('.elig-question-cb');
+      if (cb) cb.checked = true;
+    }
+  });
+  refreshEligibilityQuestionSelection();
+}
+
+function openEligibilityRuleFromQuestionnairePicker() {
+  PS.closeModal();
+  setTimeout(() => {
+    PS.openModal(`
+      <div class="elig-question-picker-modal">
+        <div class="modal-header elig-picker-header">
+          <div>
+            <div class="elig-modal-kicker">QUESTIONNAIRE SOURCE</div>
+            <h2 class="modal-title">Select questions for eligibility</h2>
+            <p class="elig-modal-subtitle">Only questions configured in this product's Questionnaire Studio are shown here. Select one or more.</p>
+          </div>
+          <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+        </div>
+
+        <div class="elig-picker-toolbar">
+          <div class="elig-picker-search">
+            <span>⌕</span>
+            <input type="search" class="form-control" placeholder="Search questions or Question ID…" oninput="filterEligibilityQuestionPicker(this.value)">
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="selectAllEligibilityQuestions()">Select visible</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="clearEligibilityQuestions()">Clear</button>
+          <span class="elig-selected-count" id="elig-selected-question-count">0 selected</span>
+        </div>
+
+        <div class="modal-body elig-picker-body">
+          <div class="elig-picker-info">
+            <span class="elig-info-icon">i</span>
+            <span>These questions become linked inputs for the new eligibility rule. Their label, ID, and data type remain managed by Questionnaire Studio.</span>
+          </div>
+          <div class="elig-q-groups">${questionnaireQuestionPickerHtml()}</div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="openAddRuleModal()">← Back</button>
+          <span class="risk-footer-spacer"></span>
+          <span class="elig-footer-selection" id="elig-footer-selection">Questions will be linked to this rule</span>
+          <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+          <button class="btn btn-primary" id="elig-use-selected-btn" disabled onclick="createEligibilityRuleFromQuestions()">Use Selected Questions</button>
+        </div>
+      </div>
+    `, 'modal-lg');
+    refreshEligibilityQuestionSelection();
+  }, 0);
+}
+
+function createEligibilityRuleFromQuestions() {
+  const ids = [...new Set(
+    Array.from(document.querySelectorAll('.elig-question-cb:checked'))
+      .map(el => String(el.value))
+      .filter(Boolean)
+  )];
+
+  if (!ids.length) {
+    notifyElig('No questions selected', 'Select at least one Questionnaire question.', 'error');
+    return;
+  }
+
+  const questions = ids.map(id => findQuestionById(id)?.q).filter(Boolean);
+  if (questions.length !== ids.length) {
+    notifyElig('Cannot create rule', 'One or more selected Questionnaire questions are no longer available.', 'error');
+    return;
+  }
+
+  // All selected Questionnaire questions belong to ONE eligibility rule.
+  // They are direct Questionnaire inputs and are represented as configurable conditions.
+  const id = nextEligibilityRuleId();
+  const firstQuestion = questions[0];
+  // Selected Questionnaire questions are linked inputs, not automatically
+  // configured eligibility conditions. Keep them available in the rule and
+  // start each corresponding condition unconfigured.
+  const conditions = questions.map(q => {
+    const c = conditionFromQuestion(q);
+    c.op = '';
+    c.value = '';
+    c.value2 = '';
+    c.attributeId = '';
+    return c;
+  });
+  const rule = normalizeEligibilityRule({
+    id,
+    name: `${firstQuestion.label || firstQuestion.id} Eligibility`,
+    category: 'Product Eligibility',
+    cover: 'All Covers',
+    coverIds: [],
+    priority: 10,
+    status: 'active',
+    description: '',
+    source: 'Questionnaire',
+    sourceQuestionId: firstQuestion.id,
+    linkedQuestionIds: ids,
+    conditions,
+    riskAttributeId: '',
+    outcomeType: 'hard',
+    logic: 'and',
+    reasonCode: id,
+    customerMsg: 'This risk does not meet eligibility requirements for this product.',
+    internalMsg: 'Eligibility rule triggered.',
+    logAudit: true,
+    effectiveFrom: defaultEffectiveDates().from,
+    effectiveTo: defaultEffectiveDates().to,
+    scopes: {
+      product: productName || PS.studioHub?.productName || 'This product',
+      version: productVersion ? `v${productVersion}` : '—',
+      covers: ['All Covers'],
+      segments: ['All Segments'],
+      channels: ['All Channels']
+    }
+  });
+
+  RULES.push(rule);
+  activeQuestionId = ids[0] || '';
+  persistRules();
+  PS.closeModal();
+  activeRuleId = id;
+  refreshEligibilityMeta();
+  PS.studioHub?.paint?.();
+  PS.studioHub?.open?.(id);
+  notifyElig('Eligibility rule created', `${questions.length} Questionnaire question${questions.length === 1 ? '' : 's'} linked to ${rule.name}.`, 'success');
+}
+
+function updateQuestionnaireQueueSaveButton() {
+  const btn = document.getElementById('ps-save-studio');
+  if (!btn) return;
+  btn.textContent = 'Save Changes';
+}
+
+function openAddRuleModalFromQuestionnaire() {
+  openEligibilityRuleFromQuestionnairePicker();
+}
+
 /* ═══════════════════════════════════════════════
    ADD RULE MODAL
 ═══════════════════════════════════════════════ */
@@ -2805,7 +3603,6 @@ function openAddRuleModal(opts) {
     return;
   }
 
-  const attrs = eligibilityRiskAttributes();
   PS.openModal(`
     <div class="elig-create-mode-modal">
       <div class="modal-header">
@@ -2814,22 +3611,21 @@ function openAddRuleModal(opts) {
       </div>
       <div class="modal-body">
         <div class="elig-create-choice-list">
-          <button type="button" class="elig-create-choice" onclick="openEligibilityRuleFromAttributePicker()">
+          <button type="button" class="elig-create-choice" onclick="openEligibilityRuleFromQuestionnairePicker()">
             <span class="elig-create-choice-radio">○</span>
             <span>
-              <strong>From Risk Attribute</strong>
-              <small>Link an existing Risk Attribute that is marked Available for Eligibility</small>
+              <strong>From Questionnaire</strong>
+              <small>Select one or more questions configured in Questionnaire Studio</small>
             </span>
           </button>
           <button type="button" class="elig-create-choice" onclick="openManualEligibilityRuleModal()">
             <span class="elig-create-choice-radio">○</span>
             <span>
               <strong>Create Manually</strong>
-              <small>Create a standalone Eligibility Rule without linking it to a Risk Attribute</small>
+              <small>Create an Eligibility Rule and define the conditions manually</small>
             </span>
           </button>
         </div>
-        ${!attrs.length ? `<div class="elig-create-note">No Risk Attributes are currently available for Eligibility. You can still create a manual Eligibility Rule.</div>` : ''}
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
@@ -3376,16 +4172,192 @@ function createEligibilityRule() {
     btn.onclick = function (e) {
       if (!validateEligibilityRule()) return;
       if (!commitPendingEligibilityRule()) return;
+      const savedId = activeRuleId;
       persistRules();
       renderRuleList();
       if (typeof prev === 'function') prev.call(this, e);
+
       notifyElig('Eligibility rule saved', 'The rule was saved in Eligibility Studio.', 'success');
       PS.studioHub?.paint?.();
       openRuleEditor(activeRuleId);
+      updateQuestionnaireQueueSaveButton();
     };
   };
   document.addEventListener('DOMContentLoaded', function () {});
 })();
 </script>
+
+<script id="eligibility-studio-recreated-ui-js">
+(function(){
+  function recreatedEligibilityHome(){
+    const host=document.getElementById('studio-hub');
+    if(!host) return;
+    host.innerHTML=`
+      <div class="elig-recreated-home">
+        <aside class="elig-recreated-card elig-rules-panel">
+          <div class="elig-rules-head">
+            <div class="elig-rules-head-row">
+              <div>
+                <div class="elig-rules-title">Eligibility Rules</div>
+                <div class="elig-rules-sub"><span id="recreated-rule-count">0</span> rules · 1 product · 0 cover</div>
+              </div>
+              <button class="elig-add-link" type="button" onclick="openAddRuleModal()">+ Add</button>
+            </div>
+          </div>
+          <input id="recreated-rule-search" class="elig-rule-search" placeholder="Search rules..." oninput="filterRecreatedRules(this.value)">
+          <div id="recreated-rule-list" class="elig-recreated-rule-list"></div>
+        </aside>
+
+        <section class="elig-work-area">
+          <div class="elig-about-strip">
+            <div class="elig-about-icon">?</div>
+            <div>
+              <div class="elig-about-title">About Eligibility Studio</div>
+              <div class="elig-about-text">Eligibility rules use Risk Attributes from Risk Studio that were explicitly marked Available for Eligibility. They do not directly use Questionnaire questions.</div>
+            </div>
+          </div>
+
+          <div class="elig-flow-card">
+            <div class="elig-flow-label">Eligibility data flow</div>
+            <div class="elig-flow">
+              <span class="elig-flow-step">Questionnaire<br><small>Collect answers</small></span>
+              <span class="elig-flow-arrow">→</span>
+              <span class="elig-flow-step">Risk-category questions</span>
+              <span class="elig-flow-arrow">→</span>
+              <span class="elig-flow-step">Risk Attributes</span>
+              <span class="elig-flow-arrow">→</span>
+              <span class="elig-flow-step current">Available for Eligibility</span>
+              <span class="elig-flow-arrow">→</span>
+              <span class="elig-flow-step">Eligibility Rules</span>
+            </div>
+          </div>
+
+          <div class="elig-recreated-card elig-attrs-card">
+            <div class="elig-attrs-head">
+              <div>
+                <div class="elig-attrs-title">Available Risk Attributes</div>
+                <div class="elig-attrs-sub">These are the Risk Attributes from Risk Studio that are explicitly marked Available for Eligibility.</div>
+              </div>
+              <div class="elig-attrs-count" id="recreated-attrs-count">0 available</div>
+            </div>
+            <div id="recreated-attrs-host"></div>
+            <div class="elig-attrs-footer">
+              <span>Only eligible Risk Attributes can be used in conditions.</span>
+              <span>Source: Questionnaire → Risk Studio</span>
+            </div>
+          </div>
+        </section>
+      </div>`;
+    renderRecreatedRules();
+    renderRecreatedAttrs();
+  }
+
+  function renderRecreatedRules(){
+    const host=document.getElementById('recreated-rule-list');
+    if(!host) return;
+    try{
+      ensureDefaultEligibilityRules();
+      refreshEligibilityMeta();
+    }catch(_){}
+    const all=(typeof sidebarRules==='function'?sidebarRules():RULES||[]).map(r=>typeof normalizeEligibilityRule==='function'?normalizeEligibilityRule(r):r);
+    const q=String(document.getElementById('recreated-rule-search')?.value||'').toLowerCase().trim();
+    const filtered=all.filter(r=>!q || String(r.name||'').toLowerCase().includes(q) || String(r.id||'').toLowerCase().includes(q));
+    const product=filtered.filter(r=>String(r.category||'Product Eligibility')==='Product Eligibility');
+    const cover=filtered.filter(r=>String(r.category||'')==='Cover Eligibility');
+    const item=r=>`<div class="rule-item ${r.id===activeRuleId?'active':''}" onclick="openRuleEditor('${String(r.id).replace(/'/g,"\\'")}')">
+      <span class="rule-status-dot ${typeof ruleStatusDotClass==='function'?ruleStatusDotClass(r):'active'}"></span>
+      <div class="rule-item-body">
+        <div class="rule-item-top"><div class="rule-item-name">${htmlEsc(r.name||'Unnamed Rule')}</div><span class="rule-priority">P${htmlEsc(r.priority??10)}</span></div>
+        <div class="rule-item-id">${htmlEsc(r.id||'')}</div>
+        <div class="rule-item-cond">${htmlEsc(typeof ruleListCondLine==='function'?ruleListCondLine(r):'')}</div>
+      </div>
+    </div>`;
+    host.innerHTML=`<div class="rule-section-label">PRODUCT ELIGIBILITY</div>${product.length?product.map(item).join(''):'<div class="elig-sidebar-empty" style="padding:14px 9px">No product eligibility rules yet.</div>'}
+      <div class="rule-section-label">COVER ELIGIBILITY</div>${cover.length?cover.map(item).join(''):'<div style="padding:8px 9px 14px;color:var(--color-muted);font-size:10px">No cover-level rules yet.</div>'}`;
+    const c=document.getElementById('recreated-rule-count'); if(c)c.textContent=all.length;
+  }
+
+  function renderRecreatedAttrs(){
+    const host=document.getElementById('recreated-attrs-host');
+    if(!host) return;
+    const all=typeof eligibilityRiskAttributes==='function'?eligibilityRiskAttributes():[];
+    const types=[...new Set(all.map(a=>typeof attrDataTypeLabel==='function'?attrDataTypeLabel(a):a.type||'Text'))].sort();
+    host.innerHTML=`
+      <div class="elig-attrs-toolbar">
+        <input id="recreated-attr-search" placeholder="Search risk attributes..." oninput="filterRecreatedAttrs()">
+        <select id="recreated-attr-group" onchange="filterRecreatedAttrs()">
+          <option value="">All Groups</option>
+          ${[...new Set(all.map(a=>typeof attrGroupLabel==='function'?attrGroupLabel(a):a.questionGroup||'General'))].sort().map(g=>`<option>${htmlEsc(g)}</option>`).join('')}
+        </select>
+        <select id="recreated-attr-type" onchange="filterRecreatedAttrs()">
+          <option value="">All Data Types</option>
+          ${types.map(t=>`<option>${htmlEsc(t)}</option>`).join('')}
+        </select>
+        <span style="margin-left:auto;align-self:center;font-size:10px;color:#6f675c">Available for Eligibility</span>
+      </div>
+      <div id="recreated-attr-table"></div>`;
+    const c=document.getElementById('recreated-attrs-count');if(c)c.textContent=`${all.length} available`;
+    filterRecreatedAttrs();
+  }
+
+  window.filterRecreatedAttrs=function(){
+    const host=document.getElementById('recreated-attr-table'); if(!host)return;
+    const all=typeof eligibilityRiskAttributes==='function'?eligibilityRiskAttributes():[];
+    const q=String(document.getElementById('recreated-attr-search')?.value||'').toLowerCase().trim();
+    const g=String(document.getElementById('recreated-attr-group')?.value||'');
+    const t=String(document.getElementById('recreated-attr-type')?.value||'');
+    const rows=all.filter(a=>{
+      const name=typeof attrDisplayName==='function'?attrDisplayName(a):(a.name||a.label||a.id);
+      const group=typeof attrGroupLabel==='function'?attrGroupLabel(a):(a.questionGroup||'General');
+      const type=typeof attrDataTypeLabel==='function'?attrDataTypeLabel(a):(a.type||'Text');
+      return (!q || String(name).toLowerCase().includes(q)||String(a.id).toLowerCase().includes(q))
+        &&(!g||group===g)&&(!t||type===t);
+    });
+    host.innerHTML=`<div class="elig-available-wrap"><table><thead><tr>
+      <th>Risk Attribute</th><th>Attribute ID</th><th>Question Group</th><th>Data Type</th><th>Source</th><th>Eligibility</th><th>Action</th>
+    </tr></thead><tbody>${rows.length?rows.map(a=>{
+      const id=String(a.id), name=typeof attrDisplayName==='function'?attrDisplayName(a):(a.name||a.label||id);
+      const group=typeof attrGroupLabel==='function'?attrGroupLabel(a):(a.questionGroup||'General');
+      const type=typeof attrDataTypeLabel==='function'?attrDataTypeLabel(a):(a.type||'Text');
+      return `<tr class="elig-attr-row"><td><button type="button" class="btn btn-ghost btn-sm elig-attr-name" data-elig-configure="${htmlEsc(id)}">${htmlEsc(name)}</button></td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:10px">${htmlEsc(id)}</td><td>${htmlEsc(group)}</td><td>${htmlEsc(type)}</td>
+      <td>Questionnaire → Risk Studio</td><td><span class="badge badge-published" style="font-size:9px">Available</span></td>
+      <td><button type="button" class="btn btn-primary btn-sm" data-elig-configure="${htmlEsc(id)}">Configure Rule</button></td></tr>`;
+    }).join(''):`<tr><td colspan="7" style="text-align:center;padding:28px!important;color:#8a8175">${all.length?'No attributes match this search.':'No Risk Attributes are currently available for Eligibility.'}</td></tr>`}</tbody></table></div>`;
+    host.querySelectorAll('[data-elig-configure]').forEach(el=>el.addEventListener('click',e=>{
+      e.preventDefault();e.stopPropagation();
+      const id=el.getAttribute('data-elig-configure');
+      if(typeof configureRuleFromAttribute==='function') configureRuleFromAttribute(id);
+    }));
+  };
+
+  window.filterRecreatedRules=function(value){
+    renderRecreatedRules();
+  };
+
+  window.renderRecreatedEligibilityHome=recreatedEligibilityHome;
+
+  // Keep the existing application data/editor. Replace only the landing hub after
+  // the built-in hub has initialized.
+  function boot(){
+    setTimeout(()=>{
+      if(document.getElementById('studio-hub')) recreatedEligibilityHome();
+    },80);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+
+  // Existing functions call this when metadata changes. Refresh our home as well.
+  const oldRefresh=window.refreshEligibilityMeta;
+  if(typeof oldRefresh==='function'){
+    window.refreshEligibilityMeta=function(){
+      oldRefresh.apply(this,arguments);
+      if(document.getElementById('recreated-attrs-host')){
+        renderRecreatedRules();renderRecreatedAttrs();
+      }
+    };
+  }
+})();
+</script>
+
 </body>
 </html>

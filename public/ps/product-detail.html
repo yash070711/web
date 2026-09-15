@@ -694,6 +694,9 @@ function renderPage() {
       <button class="btn btn-secondary" onclick="openCloneVersionModal()">Clone Version</button>
       <button class="btn btn-ghost" onclick="openCompareModal()">Compare Versions</button>`;
   }
+  if (PS.auth.isLoggedIn() && PS.auth.current()?.role === 'risk-carrier') {
+    actions = `<button class="btn btn-secondary" onclick="window.location.href='mgu-assignment.html?id=${p.id}'">MGU Assignment</button>` + actions;
+  }
   actions += `
     <div class="dropdown" id="more-dd">
       <button class="btn btn-secondary" onclick="toggleDD('more-menu')" aria-label="More options">
@@ -715,8 +718,11 @@ function renderPage() {
   const dash = (pct/100)*circ;
   const ringColor = pct===100 ? 'var(--color-success)' : pct>60 ? 'var(--color-brand)' : 'var(--color-warning)';
 
-  // Checklist
-  const checklistHTML = (p.checklist || []).map(c => {
+  // Checklist (scoped to the studios visible to the current role)
+  const visibleStudioNames = new Set(visibleStudios(p).map(s => s.name));
+  const checklistHTML = (p.checklist || [])
+    .filter(c => visibleStudioNames.has(c.studio))
+    .map(c => {
     const icon = c.status==='done'
       ? `<svg class="check-icon check-done" width="16" height="16" viewBox="0 0 256 256"><path fill="currentColor" d="M173.66 98.34a8 8 0 010 11.32l-56 56a8 8 0 01-11.32 0l-24-24a8 8 0 0111.32-11.32L112 148.69l50.34-50.35a8 8 0 0111.32 0zM232 128A104 104 0 1128 128a104 104 0 01208 0zm-16 0a88 88 0 10-176 0 88 88 0 00176 0z"/></svg>`
       : c.status==='warn'
@@ -806,7 +812,9 @@ function renderPage() {
 
     <!-- Tab Bar -->
     <div class="tabs" role="tablist" id="tab-bar">
-      ${['overview','studios','simulation','versions','audit'].map(t => `
+      ${['overview','studios','simulation','versions','audit']
+        .filter(t => !(PS.auth?.isLoggedIn?.() && PS.auth.current()?.role === 'risk-carrier' && t === 'simulation'))
+        .map(t => `
       <button class="tab-btn ${activeTab===t?'active':''}" id="tab-${t}" onclick="switchTab('${t}')" role="tab" aria-selected="${activeTab===t}">${tabLabel(t)}</button>`).join('')}
     </div>
 
@@ -849,6 +857,9 @@ function switchTab(tab) {
 
 function renderTab(tab) {
   const content = document.getElementById('tab-content');
+  if (PS.auth?.isLoggedIn?.() && PS.auth.current()?.role === 'risk-carrier' && tab === 'simulation') {
+    tab = 'overview';
+  }
   if (!content) return;
   if (tab==='overview')    renderOverview(content);
   else if (tab==='studios')     renderStudios(content);
@@ -860,23 +871,85 @@ function renderTab(tab) {
 /* ──────────────────────────────────────────────────────────
    TAB 1 — OVERVIEW
 ────────────────────────────────────────────────────────── */
+function productDetailChildCovers(p, cover) {
+  if (Array.isArray(cover.childCoverages)) return cover.childCoverages;
+  if (Array.isArray(cover.children)) return cover.children;
+  if (Array.isArray(cover.insuredItems)) return cover.insuredItems.slice(1).map(i => i.name || i.type).filter(Boolean);
+  return [];
+}
+
+/* MGU read-only banner — the product definition belongs to the risk carrier. */
+function mguOwnershipBanner(p) {
+  const carrier = p.carrier || 'the risk carrier';
+  return `
+    <div class="callout callout-info mb-6">
+      <div class="callout-body">
+        <div class="callout-title">Read-only — owned by ${carrier}</div>
+        The product definition and the Coverage / Child Coverage structure below were created by the risk carrier and cannot be changed here.
+        You configure the Question, Risk, Eligibility, Underwriting, and Rating &amp; Pricing studios for this product using the Studios tab.
+      </div>
+    </div>`;
+}
+
+/* MGU read-only coverage structure view. */
+function mguCoverageCard(p) {
+  let covers = [];
+  try { covers = PS.prototypeApp.getProductBundle(p.id, activeVersion)?.covers || []; } catch (_) { covers = []; }
+  const rows = covers.map(c => {
+    const children = productDetailChildCovers(p, c);
+    const avail = String(c.availability || 'optional').toLowerCase();
+    return `
+      <div class="cover-item-row">
+        <div>
+          <span class="cover-avail ${avail}">${avail}</span>
+          <div style="font-weight:600;font-size:13px;line-height:18px">${c.name}</div>
+          <div class="mono" style="font-size:11px;color:var(--color-muted)">${c.code || c.id || ''}</div>
+        </div>
+        <div>
+          <div style="font-size:12px;line-height:18px">${c.description || ''}</div>
+          <div style="font-size:11px;color:var(--color-muted);margin-top:4px">
+            ${c.basisOfCoverage ? c.basisOfCoverage : ''}${c.basisOfCoverage && c.sumInsured ? ' · ' : ''}${c.sumInsured ? `Sum Insured ${c.sumInsured}` : ''}
+            ${c.deductibleAmount || c.deductiblePct ? ` · Excess ${c.deductibleAmount || (c.deductiblePct + '%')}` : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;max-width:220px;justify-content:flex-end">
+          ${children.length ? children.map(ch => `<span style="font-size:11px;padding:2px 8px;border-radius:6px;background:#F4F1EA;border:1px solid var(--color-border);color:#4B5563">${ch}</span>`).join('') : '<span style="font-size:11px;color:var(--color-muted)">—</span>'}
+        </div>
+      </div>`;
+  }).join('');
+  return `
+    <div class="card mb-6">
+      <div class="card-header">
+        <div class="card-title">Coverage &amp; Child Coverage</div>
+        <span class="badge" role="status" style="background:var(--color-panel);border:1px solid var(--color-border);color:var(--color-muted)">Read-only</span>
+      </div>
+      <div class="card-body">
+        ${rows || '<div style="font-size:13px;color:var(--color-muted)">No coverages defined yet.</div>'}
+      </div>
+    </div>`;
+}
+
 function renderOverview(el) {
   const p = currentProduct;
   const versions = p.versions || [];
   const isPublished = versions.find(v => v.label === activeVersion)?.status === 'published';
   const distribution = Array.isArray(p.distribution) ? p.distribution : [];
   const jurisdictions = Array.isArray(p.jurisdictions) ? p.jurisdictions : [];
+  const role = PS.auth?.current?.()?.role || '';
+  const isRC = role === 'risk-carrier';
+  const isMgU = role === 'mga';
 
   el.innerHTML = `
     ${isPublished ? `<div class="readonly-banner">
       <span>📌 Published versions are read-only. <strong>Clone this version to make edits.</strong></span>
       <button class="btn btn-primary btn-sm" onclick="openCloneVersionModal()">Clone & Edit</button>
     </div>` : ''}
+    ${isMgU ? mguOwnershipBanner(p) : ''}
     <div class="card mb-6">
       <div class="card-header">
         <div class="card-title">Product Identity</div>
         <div style="display:flex;gap:var(--space-3)">
-          ${!isPublished ? `<button class="btn btn-secondary btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">${editMode?'Cancel':'Edit Details'}</button>
+          ${(!isPublished && isRC) ? `<button class="btn btn-secondary btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">${editMode?'Cancel':'Edit Details'}</button>
           ${editMode ? `<button class="btn btn-primary btn-sm" onclick="saveOverview()">Save Changes</button>` : ''}` : ''}
         </div>
       </div>
@@ -917,12 +990,13 @@ function renderOverview(el) {
         </div>
       </div>
     </div>
+    ${isMgU ? mguCoverageCard(p) : ''}
     <div class="card">
       <div class="card-header">
         <div class="card-title">Version Notes</div>
       </div>
       <div class="card-body">
-        ${editMode && !isPublished
+        ${editMode && !isPublished && isRC
           ? `<textarea id="w-notes-edit" class="form-control" rows="4" onchange="markDirty()">${p.notes}</textarea>`
           : `<p style="font-size:14px;line-height:22px;color:var(--color-muted)">${p.notes}</p>`}
       </div>
@@ -946,12 +1020,14 @@ function detailField(label, value, isMono, id, type='text', opts=[]) {
 }
 
 function toggleEditMode() {
+  if ((PS.auth?.current?.()?.role || '') !== 'risk-carrier') return;
   editMode = !editMode;
   renderOverview(document.getElementById('tab-content'));
 }
 function cancelEdit() { editMode=false; dirtyState=false; renderOverview(document.getElementById('tab-content')); }
 function markDirty() { dirtyState=true; const b=document.getElementById('dirty-banner'); if(b) b.classList.remove('hidden'); }
 function saveOverview() {
+  if ((PS.auth?.current?.()?.role || '') !== 'risk-carrier') return;
   const name = document.getElementById('w-name-edit')?.value;
   if (name) currentProduct.name = name;
   const family = document.getElementById('w-family-edit')?.value;
@@ -972,9 +1048,21 @@ function saveOverview() {
 /* ──────────────────────────────────────────────────────────
    TAB 2 — STUDIOS
 ────────────────────────────────────────────────────────── */
+const MGU_ONLY_STUDIOS = ['coverage','questionnaire','risk','eligibility','underwriting','rating'];
+const RC_STUDIOS = ['coverage'];
+
+function visibleStudios(p) {
+  const isMgU = window.PS?.auth?.isMGA?.();
+  const isRiskCarrier = window.PS?.auth?.current?.()?.role === 'risk-carrier';
+  const order = isRiskCarrier ? RC_STUDIOS : isMgU ? MGU_ONLY_STUDIOS : p.studios.map(s => s.id);
+  const byId = new Map(p.studios.map(s => [s.id, s]));
+  return order.map(id => byId.get(id)).filter(Boolean);
+}
+
 function renderStudios(el) {
   const p = currentProduct;
   const isPublished = p.versions.find(v => v.label === activeVersion)?.status === 'published';
+  const studios = visibleStudios(p);
   el.innerHTML = `
     ${isPublished ? `<div class="callout callout-info mb-6">
       <div class="callout-body">
@@ -983,7 +1071,7 @@ function renderStudios(el) {
       </div>
     </div>` : ''}
     <div class="studio-grid">
-      ${p.studios.map(s => {
+      ${studios.map(s => {
         const badgeCls = s.status==='complete'?'studio-badge-complete':s.status==='partial'?'studio-badge-partial':'studio-badge-missing';
         const badgeLabel = s.status==='complete'?'Complete':s.status==='partial'?'Partial':'Not Started';
         return `
@@ -1003,7 +1091,46 @@ function renderStudios(el) {
           </div>
         </div>`;
       }).join('')}
+    </div>
+    ${window.PS?.auth?.current?.()?.role === 'risk-carrier' ? `
+    <div class="callout callout-info mt-6">
+      <div class="callout-body">
+        <div class="callout-title">MGU configuration scope</div>
+        After you create the product definition and its coverages, assign it to an MGU below. Questionnaire, Risk, Eligibility, Underwriting, and Rating &amp; Pricing studios are then configured by the assigned MGUs.
+      </div>
+    </div>
+    ${mguAssignmentPanel(p)}` : ''}`;
+}
+
+function mguAssignmentPanel(p) {
+  const mgas = (PS.auth.mgaOrgs() || []).map(o => {
+    const entry = (p.assignedMGAs || []).find(m => m.mgaId === o.id);
+    const assigned = entry && entry.status === 'assigned';
+    return `
+      <div class="mma-row" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-border)">
+        <div>
+          <div style="font-weight:600">${o.org.name}</div>
+          <div style="font-size:12px;color:var(--color-muted)">${assigned ? `Assigned · ${entry.assignedAt}` : 'Not assigned'}</div>
+        </div>
+        <button class="btn btn-sm ${assigned ? 'btn-secondary' : 'btn-primary'}" onclick="editMguAssignment('${p.id}','${o.id}',${assigned ? 'false' : 'true'})">${assigned ? 'Revoke' : 'Assign'}</button>
+      </div>`;
+  }).join('');
+  return `
+    <div class="card" style="margin-top:24px">
+      <div class="card-header" style="align-items:center;justify-content:space-between">
+        <div class="card-title">MGU Assignment</div>
+        <a href="mgu-assignment.html?id=${p.id}" style="font-size:12px;font-weight:500">Manage all products →</a>
+      </div>
+      <div class="card-body">${mgas || '<div style="padding:12px 0;color:var(--color-muted);font-size:13px">No MGUs available.</div>'}</div>
     </div>`;
+}
+
+function editMguAssignment(productId, mgaId, active) {
+  const res = PS.prototypeApp.assignProductToMGA(productId, mgaId, active);
+  if (!res.ok) { PS.actionResult('error', 'Could not update assignment', res.error || 'Unknown error'); return; }
+  const mga = (PS.auth.ORGS[mgaId] || {}).name || mgaId;
+  PS.actionResult(active ? 'success' : 'warning', active ? 'Product assigned to MGU' : 'MGU assignment revoked', `${currentProduct.name} — ${mga}`);
+  renderStudios(document.getElementById('tab-content'));
 }
 
 /* ──────────────────────────────────────────────────────────
@@ -1413,6 +1540,10 @@ function createNewVersion() {
 }
 
 function openCloneVersionModal() {
+  if (PS.data.currentUser.roleKind === 'mga') {
+    PS.actionResult('error', 'Cloning not available', 'MGUs configure assigned products — creating and cloning product versions is a Risk Carrier action.');
+    return;
+  }
   PS.openModal(`
     <div class="modal-header"><h2 class="modal-title">Clone Version</h2>
       <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close"><svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M205.66 194.34a8 8 0 01-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 01-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0111.32-11.32L128 116.69l66.34-66.35a8 8 0 0111.32 11.32L139.31 128z" fill="currentColor"/></svg></button>
@@ -1568,11 +1699,11 @@ function openRuntimeApiModal() {
         </div>
       </div>
       <div style="margin-top:var(--space-4);font-size:12px;color:var(--color-muted)">
-        For full interactive monitoring and logs, see <a href="integration-monitor.html" style="color:var(--color-brand);font-weight:500">Integration Monitor →</a>
+        For full monitoring and change history, see <a href="audit-log.html" style="color:var(--color-brand);font-weight:500">Audit Log →</a>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="window.location.href='integration-monitor.html'">Open Integration Monitor</button>
+      <button class="btn btn-secondary" onclick="window.location.href='audit-log.html'">Open Audit Log</button>
       <button class="btn btn-primary" onclick="PS.closeModal()">Done</button>
     </div>
   `, 'modal-lg');

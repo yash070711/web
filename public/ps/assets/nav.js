@@ -8,27 +8,49 @@ window.PS = window.PS || {};
 PS.nav = {
   items: [
     { group: 'HOME' },
-    { id: 'dashboard',      label: 'Dashboard',                href: '/dashboard',                icon: 'house' },
+    { id: 'dashboard',      label: 'Dashboard',                href: '/dashboard',                icon: 'house', roles: ['risk-carrier'] },
     { group: 'PRODUCT STUDIO' },
-    { id: 'catalogue',      label: 'Product Catalogue',        href: '/catalogue',             icon: 'book-open' },
-    { id: 'jurisdiction',   label: 'Define Jurisdiction',      href: '/jurisdiction',   icon: 'map-pin' },
-    { id: 'coverage',       label: 'Coverage Studio',          href: '/coverage-studio',       icon: 'umbrella' },
-    { id: 'questionnaire',  label: 'Questionnaire Studio',     href: '/questionnaire-studio',  icon: 'list-checks' },
-    { id: 'risk',           label: 'Risk Studio',               href: '/risk-studio',           icon: 'warning' },
-    { id: 'eligibility',    label: 'Eligibility Studio',       href: '/eligibility-studio',    icon: 'user-check' },
-    { id: 'rating',         label: 'Rating & Pricing Studio',  href: '/rating-pricing',         icon: 'calculator' },
-    { id: 'distribution',   label: 'Distribution Studio',      href: '/distribution',    icon: 'tree-structure' },
-    { id: 'document',       label: 'Document Studio',          href: '/document-studio',       icon: 'file-text' },
+    { id: 'catalogue',      label: 'Product Catalogue',        href: '/catalogue',             icon: 'book-open' , roles: ['risk-carrier'] },
+    { id: 'mgu',            label: 'Dashboard',                href: '/mgu',                   icon: 'house',          roles: ['mga'] },
+    { id: 'mgu-assigned',   label: 'Assigned Products',        href: '/mgu#assigned',          icon: 'list-checks',    roles: ['mga'] },
+    { id: 'mgu-assignment', label: 'MGU Assignment',           href: '/mgu-assignment',        icon: 'users',          roles: ['risk-carrier'] },
+    { id: 'coverage',       label: 'Coverage Studio',           href: '/coverage-studio',       icon: 'umbrella',      roles: ['risk-carrier', 'mga'] },
+    { id: 'questionnaire',  label: 'Questionnaire Studio',      href: '/questionnaire-studio',  icon: 'list-checks',   roles: ['mga'] },
+    { id: 'risk',           label: 'Risk Studio',               href: '/risk-studio',           icon: 'warning',       roles: ['mga'] },
+    { id: 'eligibility',    label: 'Eligibility Studio',        href: '/eligibility-studio',    icon: 'user-check',    roles: ['mga'] },
+    { id: 'underwriting',   label: 'Underwriting Studio',       href: '/underwriting',          icon: 'shield-check',  roles: ['mga'] },
+    { id: 'rating',         label: 'Rating & Pricing Studio',   href: '/rating-pricing',        icon: 'calculator',    roles: ['mga'] },
+    { id: 'document',       label: 'Document Studio',           href: '/document-studio',       icon: 'file-text',     roles: ['risk-carrier', 'mga'] },
+    { id: 'distribution',   label: 'Distribution Studio',       href: '/distribution',          icon: 'tree-structure', roles: ['risk-carrier', 'mga'] },
     { group: 'GOVERNANCE' },
-    { id: 'simulation',     label: 'Simulation & Testing',     href: '/simulation',     icon: 'flask' },
-    { id: 'audit',          label: 'Audit Log',                href: '/audit-log',             icon: 'clock-counter' },
+    { id: 'simulation',     label: 'Simulation & Testing',     href: '/simulation',     icon: 'flask',      roles: ['risk-carrier'] },
+    { id: 'audit',          label: 'Audit Log',                href: '/audit-log',             icon: 'clock-counter', roles: 'both' },
     { group: 'PLATFORM' },
-    { id: 'admin',          label: 'Admin Panel',              href: '/admin',           icon: 'sliders' },
-    { id: 'pricing-library',label: 'Central Pricing Library',   href: '/pricing-library',       icon: 'calculator' },
-    { id: 'integration',    label: 'Integration Monitor',      href: '/integration',   icon: 'plugs' },
-    { id: 'roles',          label: 'Roles & Access Control',   href: '/roles',          icon: 'users' },
-    { id: 'glossary',       label: 'Glossary',                 href: '/glossary',              icon: 'book' }
+    { id: 'admin',          label: 'Admin Panel',              href: '/admin',           icon: 'sliders',    roles: ['risk-carrier'] },
+    { id: 'pricing-library',label: 'Central Pricing Library',   href: '/pricing-library',       icon: 'calculator', roles: ['risk-carrier'] },
+    { id: 'integration',    label: 'Integration Monitor',      href: '/integration',   icon: 'plugs',      roles: ['risk-carrier'] },
+    { id: 'roles',          label: 'Roles & Access Control',   href: '/roles',          icon: 'users',      roles: ['risk-carrier'] },
+    { id: 'glossary',       label: 'Glossary',                 href: '/glossary',              icon: 'book',       roles: 'both' }
   ],
+
+  /* Current role (risk-carrier | mga) for filtering nav items. */
+  currentRole() {
+    return window.PS?.auth?.current()?.role || window.PS?.data?.currentUser?.roleKind || (window.PS?.auth?.isMGA() ? 'mga' : 'risk-carrier');
+  },
+
+  allowed(item) {
+    if (!item.roles) return true;
+    const role = this.currentRole();
+    const roles = Array.isArray(item.roles) ? item.roles : (item.roles === 'both' ? ['risk-carrier', 'mga'] : [item.roles]);
+    if (roles.indexOf(role) === -1) return false;
+    /* Risk Carriers define the product and its coverages, then assign the
+       product to MGUs. The other carrier-side builder tools are hidden. */
+    if (role === 'risk-carrier') {
+      const rcVisible = ['dashboard', 'catalogue', 'coverage', 'mgu-assignment', 'audit', 'glossary'];
+      return rcVisible.indexOf(item.id) !== -1;
+    }
+    return true;
+  },
 
   icons: {
     'house': `<svg width="18" height="18" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M218.83 103.77l-80-75.48a1.14 1.14 0 01-.11-.11 16 16 0 00-21.53 0l-.11.11-79.93 75.48A16 16 0 0032 115.55V208a16 16 0 0016 16h56a16 16 0 0016-16v-48h16v48a16 16 0 0016 16h56a16 16 0 0016-16v-92.45a16 16 0 00-5.17-11.78zM208 208h-56v-48a16 16 0 00-16-16h-16a16 16 0 00-16 16v48H48v-92.45l.11-.1L128 40l79.9 75.43.1.12z" fill="currentColor"/></svg>`,
@@ -75,9 +97,15 @@ PS.nav = {
      catalogue (e.g. Trucking_Auto › v2026.12) keeps Product Catalogue active. */
   sidebarActiveId(requestedId) {
     const productStudios = new Set([
-      'jurisdiction', 'coverage', 'questionnaire', 'risk',
+      'coverage', 'questionnaire', 'risk',
       'eligibility', 'rating', 'underwriting', 'distribution', 'document'
     ]);
+    /* The MGU sidebar mirrors the configuration steps: highlight the
+       current studio/step by its own nav id, and map the Product
+       Overview page (product-detail) to the Assigned Products step. */
+    if (this.currentRole() === 'mga') {
+      return requestedId === 'catalogue' ? 'mgu-assigned' : requestedId;
+    }
     if (!productStudios.has(requestedId)) return requestedId;
     const q = new URLSearchParams(location.search);
     const productId = q.get('product') || q.get('id') || '';
@@ -115,6 +143,7 @@ PS.nav = {
     }
 
     // Right side
+    const roleLabel = 'MGU';
     document.querySelector('.topbar-right').innerHTML = `
       <div class="topbar-search">
         <span class="topbar-search-icon">${this.icon('magnifying-glass', 14)}</span>
@@ -127,8 +156,8 @@ PS.nav = {
       <div class="topbar-user" id="topbar-user-btn" onclick="PS.nav.toggleUserMenu()" aria-haspopup="true">
         <div class="user-avatar ${u.avatarClass}">${u.initials}</div>
         <div class="topbar-user-info">
-          <div class="topbar-user-name">Vikram & Sons</div>
-          <div class="topbar-user-role">Carrier</div>
+          <div class="topbar-user-name">${u.org || u.carrier || u.name}</div>
+          <div class="topbar-user-role">${roleLabel}</div>
         </div>
         ${this.icon('caret-down', 12)}
       </div>
@@ -136,14 +165,19 @@ PS.nav = {
 
     // Sidenav
     const nav = document.querySelector('.sidenav');
+    const visible = this.items.filter(i => !i.group || this.items.some(j => !j.group && i.group && j.group === i.group && this.allowed(j)) || i.group);
     let html = '';
     let inGroup = false;
-    for (const item of this.items) {
+    let groupHasItems = false;
+    for (const item of visible) {
       if (item.group) {
+        groupHasItems = this.items.some(j => !j.group && j.group === item.group && this.allowed(j));
+        if (!groupHasItems) continue;
         if (inGroup) html += '</div>';
         html += `<div class="nav-group"><div class="nav-group-label">${item.group}</div>`;
         inGroup = true;
       } else {
+        if (!this.allowed(item)) continue;
         const active = item.id === navActiveId ? 'active' : '';
         html += `<a href="${item.href}" class="nav-item ${active}" id="nav-${item.id}">
           ${this.icon(item.icon)}
@@ -156,8 +190,8 @@ PS.nav = {
       <div class="flex-center gap-2 mb-4">
         <div class="user-avatar ${u.avatarClass}" style="width:28px;height:28px;font-size:11px">${u.initials}</div>
         <div>
-          <div style="font-size:12px;font-weight:500;color:var(--color-ink)">${u.name}</div>
-          <span class="role-badge" style="margin-top:2px">${u.role}</span>
+          <div style="font-size:12px;font-weight:500;color:var(--color-ink)">${u.org || u.carrier || u.name}</div>
+          <span class="role-badge" style="margin-top:2px">MGU</span>
         </div>
       </div>
       <button class="nav-collapse-btn" onclick="PS.nav.toggleCollapse()" id="nav-collapse-btn" aria-label="Collapse navigation">
@@ -169,11 +203,11 @@ PS.nav = {
 
     document.body.classList.remove('compact');
     localStorage.removeItem('ps-density');
-
-    // Restore nav collapse
-    if (localStorage.getItem('ps-nav-collapsed') === 'true') {
-      document.querySelector('.shell').classList.add('nav-collapsed');
-    }
+    /* The sidebar always loads expanded. Collapsing is a per-page choice
+       and is never restored from localStorage, so the full navigation with
+       labels stays visible on every page and for every role. */
+    document.querySelector('.shell')?.classList.remove('nav-collapsed');
+    try { localStorage.removeItem('ps-nav-collapsed'); } catch (_) {}
     if (PS.admin && typeof PS.admin.applyPage === 'function') {
       setTimeout(() => PS.admin.applyPage(), 0);
     }
@@ -194,7 +228,8 @@ PS.nav = {
   toggleCollapse() {
     const shell = document.querySelector('.shell');
     const collapsed = shell.classList.toggle('nav-collapsed');
-    localStorage.setItem('ps-nav-collapsed', collapsed);
+    /* Session-only: the collapsed state is not persisted, so the next page
+       always loads with the full navigation visible. */
     const btn = document.getElementById('nav-collapse-btn');
     if (btn) {
       btn.querySelector('svg').outerHTML; // force re-render
@@ -207,22 +242,23 @@ PS.nav = {
   toggleUserMenu() {
     const existing = document.getElementById('user-dropdown');
     if (existing) { existing.remove(); return; }
+    const u = PS.data.currentUser;
+    const roleLabel = 'MGU';
     const menu = document.createElement('div');
     menu.id = 'user-dropdown';
     menu.className = 'dropdown-menu';
     menu.style.cssText = 'position:fixed;right:24px;top:52px;z-index:999;';
     menu.innerHTML = `
       <div style="padding:10px 16px;border-bottom:1px solid var(--color-border)">
-        <div style="font-size:13px;font-weight:500">${PS.data.currentUser.name}</div>
-        <div style="font-size:12px;color:var(--color-muted)">Role: ${PS.data.currentUser.role}</div>
+        <div style="font-size:13px;font-weight:500">${u.org || u.carrier || u.name}</div>
+        <div style="font-size:12px;color:var(--color-muted)">Role: MGU</div>
+        <div style="font-size:12px;color:var(--color-muted)">${u.org || u.carrier || '—'}</div>
       </div>
       <div style="padding:8px 0;border-bottom:1px solid var(--color-border)">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--color-muted);padding:4px 16px 4px">Switch Role</div>
-        ${['Product Manager','Pricing Actuary','Underwriting Manager','Compliance Officer','Publisher','Administrator'].map(r =>
-          `<div class="dropdown-item" onclick="PS.nav.switchRole('${r}')" style="font-size:13px">${r}</div>`
-        ).join('')}
+        <div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--color-muted);padding:4px 16px 4px">Signed in as</div>
+        <div class="dropdown-item" style="font-size:13px;pointer-events:none">${roleLabel} — ${u.org || u.carrier || ''}</div>
       </div>
-      <div class="dropdown-item danger" style="font-size:13px" onclick="PS.nav.signOut()">Sign out</div>
+      <div class="dropdown-item danger" style="font-size:13px" onclick="PS.auth.logout()">Sign out</div>
     `;
     document.body.appendChild(menu);
   },
@@ -237,6 +273,7 @@ PS.nav = {
 
   signOut() {
     document.getElementById('user-dropdown')?.remove();
+    if (window.PS?.auth?.logout) { PS.auth.logout(); return; }
     PS.actionResult('success', 'Signed out', 'Reload the page to continue in this browser prototype.');
   }
 };

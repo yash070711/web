@@ -1108,6 +1108,7 @@
       margin: 0 0 16px; font-size: 13px; color: var(--color-muted); line-height: 1.45;
     }
     @media (max-width: 980px) { .vb-cards { grid-template-columns: 1fr; } .ded-pills { flex-direction: column; } .ii-bases, .ii-vb-grid, .ded-cards { grid-template-columns: 1fr; } }
+    .cs-identity-lock-note { margin:0 0 16px; padding:12px 14px; border-radius:var(--radius-md); background:var(--color-info-light, #eff6ff); color:var(--color-info-ink, #1d4ed8); font-size:13px; line-height:1.45; }
   </style>
 </head>
 <body>
@@ -2420,6 +2421,21 @@ function coversCanEdit() {
   return productStatus !== 'published' && productStatus !== 'superseded' && productStatus !== 'retired';
 }
 
+/* Role-based permissions:
+   - Risk Carrier: full coverage edition (identity + structure + everything else).
+   - MGU: the coverage structure and Cover Identity are owned by the Risk
+     Carrier, so they are locked to read-only. Every other existing section
+     (insured items, limits, deductible, valuation, rules, dependencies,
+     claims, wording) stays editable for the MGU. */
+function isMgU() {
+  const s = window?.PS?.auth?.current?.();
+  return Boolean(s && s.role === 'mga');
+}
+
+function canEditStructure() {
+  return coversCanEdit() && !isMgU();
+}
+
 function toggleMutualExclusion(name, on) {
   const c = currentCover();
   if (!c || !coversCanEdit()) return;
@@ -2496,7 +2512,7 @@ function availSelectLabel(key) {
 
 function setCoverAvailability(label) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || productStatus === 'published' || isMgU()) return;
   const key = availKeyFromLabel(label);
   c.availability = key;
   if (key === 'mandatory') c.defaultSelected = true;
@@ -2784,10 +2800,10 @@ function syncCoverMgas() {
   if (chips) {
     chips.innerHTML = selected.length
       ? selected.map(m => `<span class="ci-chip">${htmlEsc(m)}<button type="button" onclick="removeCoverMga('${ciJsStr(m)}')" aria-label="Remove ${htmlEsc(m)}">×</button></span>`).join('')
-      : '<span class="ci-empty">No MGA selected</span>';
+      : '<span class="ci-empty">No MGU selected</span>';
   }
   const label = document.getElementById('ci-mga-label');
-  if (label) label.textContent = selected.length ? `${selected.length} MGA${selected.length === 1 ? '' : 's'} selected` : 'Select MGAs…';
+  if (label) label.textContent = selected.length ? `${selected.length} MGU${selected.length === 1 ? '' : 's'} selected` : 'Select MGUs…';
 }
 
 function removeCoverMga(name) {
@@ -4173,6 +4189,7 @@ function markCoversPicked() {
 }
 
 function addCatalogCoversToProduct(items) {
+  if (isMgU()) return 0;
   const existing = new Set(COVERS.map(c => String(c.name || '').toLowerCase()));
   let added = 0;
   items.forEach(lib => {
@@ -4231,6 +4248,7 @@ function coverPickCategoryPill(c) {
 }
 
 function togglePickCover(id, checked) {
+  if (isMgU()) return;
   if (checked) pickCoverSelectedIds.add(String(id));
   else pickCoverSelectedIds.delete(String(id));
   renderCoverTable();
@@ -4238,6 +4256,7 @@ function togglePickCover(id, checked) {
 }
 
 function toggleAllPickCovers(checked) {
+  if (isMgU()) return;
   const catalog = defaultCoversCatalogForProduct();
   const q = (document.getElementById('cover-pick-filter')?.value || '').trim().toLowerCase();
   const rows = catalog.filter(c => {
@@ -4320,6 +4339,7 @@ function renderExistingCoverPicker() {
 }
 
 function useCheckedExistingCovers() {
+  if (isMgU()) return;
   const catalog = defaultCoversCatalogForProduct();
   const ids = pickCoverSelectedIds.size
     ? Array.from(pickCoverSelectedIds)
@@ -4562,6 +4582,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (customerBtn) customerBtn.href = PS.customerViewHref ? PS.customerViewHref(productId, productVersion) : `product-view.html?id=${productId}&version=${productVersion}`;
   const productBtn = document.getElementById('view-product-btn');
   if (productBtn) productBtn.href = `product-detail.html?id=${productId}&version=${productVersion}`;
+
+  /* MGU: hide structural actions that alter the Risk Carrier-owned coverage
+     identity and cover list. The MGU only configures the allowed sections. */
+  if (isMgU()) {
+    const libBtn = document.getElementById('import-lib-btn');
+    if (libBtn) libBtn.style.display = 'none';
+    const reorderBtn = document.getElementById('reorder-btn');
+    if (reorderBtn) reorderBtn.style.display = 'none';
+  }
 
   const readonlyBand = document.getElementById('readonly-band');
   if (readonlyBand) readonlyBand.style.display = 'none';
@@ -4899,7 +4928,7 @@ function removeSelectedChildCoverage(event, coverId, childName) {
   }
 
   const c = COVERS.find(x => String(x.id) === String(coverId));
-  if (!c || !childName || !coversCanEdit()) return;
+  if (!c || !childName || !coversCanEdit() || isMgU()) return;
 
   const target = String(childName).trim();
   if (Array.isArray(c.insuredItems)) {
@@ -4961,7 +4990,7 @@ function renderCoverList() {
     return;
   }
   const dupCounts = coverNameCounts();
-  const canEdit = coversCanEdit();
+  const canEdit = canEditStructure();
   list.innerHTML = sortedCoversForSidebar().map(c => {
     const nameKey = String(c.name || '').trim().toLowerCase();
     const isDup = dupCounts[nameKey] > 1;
@@ -4986,11 +5015,11 @@ function renderCoverList() {
              <div class="cover-child-row">
                <span class="cover-child-dot"></span>
                <span class="cover-child-name">${htmlEsc(child)}</span>
-               <button type="button"
+               ${canEdit ? `<button type="button"
                  class="cover-child-remove"
                  onclick="removeSelectedChildCoverage(event, '${htmlEsc(c.id)}', '${htmlEsc(child)}')"
                  aria-label="Remove ${htmlEsc(child)}"
-                 title="Remove child coverage">×</button>
+                 title="Remove child coverage">×</button>` : ''}
              </div>
            `).join('')}
          </div>`
@@ -5126,11 +5155,12 @@ function coverNameCounts() {
 
 function confirmRemoveCover(id) {
   const c = COVERS.find(x => x.id === id);
-  if (!c || !coversCanEdit()) return;
+  if (!c || !coversCanEdit() || isMgU()) return;
   removeCoverFromProduct(id);
 }
 
 function removeCoverFromProduct(id) {
+  if (isMgU()) return;
   const idx = COVERS.findIndex(c => c.id === id);
   if (idx < 0) return;
   const name = COVERS[idx].name;
@@ -5162,6 +5192,7 @@ function toggleSelectAllCovers(checked) {
 
 function renderCoverTable() {
   refreshCoverMeta();
+  const canRestructure = canEditStructure();
   const wrap = document.getElementById('covers-table-wrap');
   const footer = document.getElementById('covers-table-footer');
   if (!wrap) return;
@@ -5209,9 +5240,9 @@ function renderCoverTable() {
       <table>
         <thead>
           <tr>
-            <th style="width:40px">
+            ${canRestructure ? `<th style="width:40px">
               <input type="checkbox" class="cs-check" aria-label="Select all covers on this page" ${pageRows.length && pageRows.every(c => selectedCoverIds.has(c.id)) ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelectAllCovers(this.checked)">
-            </th>
+            </th>` : ''}
             <th style="width:48px">#</th>
             <th>Cover Name</th>
             <th>Product</th>
@@ -5228,9 +5259,9 @@ function renderCoverTable() {
             const idx = COVERS.indexOf(c);
             return `
             <tr class="cs-table-row" onclick="openCoverEditor('${c.id}')">
-              <td onclick="event.stopPropagation()">
+              ${canRestructure ? `<td onclick="event.stopPropagation()">
                 <input type="checkbox" class="cs-check" aria-label="Select ${String(c.name).replace(/"/g, '')}" ${selectedCoverIds.has(c.id) ? 'checked' : ''} onchange="toggleCoverRowSelect('${c.id}', this.checked)">
-              </td>
+              </td>` : ''}
               <td style="color:var(--color-muted)">${start + i}</td>
               <td>
                 <div class="cs-name-cell">
@@ -5259,7 +5290,7 @@ function renderCoverTable() {
                   <button class="btn btn-icon btn-sm" type="button" aria-label="Actions" onclick="toggleCoverMenu(event, '${c.id}')">⋮</button>
                   <div class="cs-kebab-menu">
                     <button type="button" onclick="openCoverEditor('${c.id}')">Configure</button>
-                    <button type="button" onclick="removeCoverFromProduct('${c.id}')">Remove from product</button>
+                    ${canRestructure ? `<button type="button" onclick="removeCoverFromProduct('${c.id}')">Remove from product</button>` : ''}
                   </div>
                 </div>
               </td>
@@ -5294,7 +5325,7 @@ function renderEmptyDetail() {
     <div class="section-card" style="padding:48px 32px;text-align:center">
       <div style="font-size:16px;font-weight:650;margin-bottom:8px">Select or add a cover</div>
       <div style="font-size:13px;color:var(--color-muted);max-width:42ch;margin:0 auto 16px">This product version has no coverage configuration yet. Add a cover to edit identity, financial terms, and wording in this panel.</div>
-      <button class="btn btn-primary" type="button" onclick="openAddCoverModal()">Add Cover</button>
+      ${isMgU() ? '<p style="font-size:13px;color:var(--color-muted)">Coverage is created and owned by the Risk Carrier. You can configure all non-identity fields for your assigned covers in the editor above.</p>' : '<button class="btn btn-primary" type="button" onclick="openAddCoverModal()">Add Cover</button>'}
     </div>`;
 }
 
@@ -5400,6 +5431,8 @@ function loadCover(id) {
 ──────────────────────────────────────────────────────── */
 function renderDetailPanel(c) {
   const ro = !coversCanEdit();
+  const mgu = isMgU();
+  const roIdentity = ro || mgu;
   const coverType = ensureCoverType(c);
   const F = (label, value, mono=false, type='text', opts=[], forceReadonly=false) => fieldRow(label, value, mono, type, opts, ro || forceReadonly);
 
@@ -5408,19 +5441,20 @@ function renderDetailPanel(c) {
     <!-- Cover name + availability header -->
     <div class="cover-head">
       <h2 style="font-size:20px;font-weight:700;color:var(--color-ink);margin:0">${c.name}</h2>
-      ${coverAvailSelectHtml(c, ro)}
-      ${ro ? '' : `<div class="cover-head-actions">
+      ${coverAvailSelectHtml(c, roIdentity)}
+      ${roIdentity ? '' : `<div class="cover-head-actions">
         <button type="button" class="btn btn-ghost btn-sm" onclick="confirmRemoveCover('${htmlEsc(c.id)}')">Remove cover</button>
       </div>`}
     </div>
-    ${buildSection('identity', '1', 'Cover Identity', coverType, `
+    ${buildSection('identity', '1', 'Cover Identity', `${coverType}${mgu ? ' · owned by Risk Carrier · read-only' : ''}`, `
+      ${mgu ? `<div class="cs-identity-lock-note">The Coverage Identity and coverage structure below are owned by the Risk Carrier and are shown for reference. Every other section in this studio remains editable.</div>` : ''}
       <div class="form-grid-2">
         ${F('Cover Name', c.name, false, 'text', [], true)}
-        ${coverTypeFieldHtml(c, ro)}
-        ${identityProductContextHtml(ro, c)}
+        ${coverTypeFieldHtml(c, roIdentity)}
+        ${identityProductContextHtml(roIdentity, c)}
         <div class="form-group span-2">
           <label class="form-label">Description</label>
-          ${ro ? `<p style="font-size:14px;line-height:22px;color:var(--color-ink)">${c.description}</p>`
+          ${roIdentity ? `<p style="font-size:14px;line-height:22px;color:var(--color-ink)">${c.description}</p>`
                : `<textarea class="form-control" rows="3">${c.description}</textarea>`}
         </div>
         ${(PS.admin ? PS.admin.extraFieldsFor('cover') : []).map(f => `
@@ -5429,7 +5463,6 @@ function renderDetailPanel(c) {
           ${PS.admin.fieldHtml(f, c[f.id], ro, `patchCoverField('${f.id}', this.value)`)}
         </div>`).join('')}
       </div>
-      ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override cities/counties', 'Allows the underwriter to change the selected cities or counties for this cover at quote time.')}
     `)}
 
   
@@ -5581,17 +5614,13 @@ function renderDetailPanel(c) {
           <div class="doc-row-code">${htmlEsc(d.code)}${d.fileName ? ` · ${htmlEsc(d.fileName)}` : ''}</div>
         </div>
         <span class="doc-row-ver">${htmlEsc(d.version)}</span>
-        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View →</a>
         ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="unlinkWordingDoc('${htmlEsc(d.code)}')" aria-label="Unlink ${htmlEsc(d.name)}">✕</button>`}
       </div>`).join('') : `
       <div class="vb-empty-state" style="margin-bottom:12px">
         <div class="vb-empty-title">No documents linked</div>
-        <p>Link a clause from Document Studio, upload a file, or add a custom reference.</p>
+        <p>Link a wording clause, upload a file, or add a custom reference.</p>
       </div>`}
       ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="openLinkDocumentModal()">+ Link Document</button>`}
-      <div style="margin-top:var(--space-4)">
-        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View in Document Studio →</a>
-      </div>
     `)}
 
     ${!ro ? `
@@ -6064,6 +6093,7 @@ function executeCreateLibraryCover() {
    ADD COVER MODAL
 ──────────────────────────────────────────────────────── */
 function openAddCoverModal() {
+  if (isMgU()) return;
   PS.openModal(`
     <div class="modal-header">
       <h2 class="modal-title">Add Cover</h2>
@@ -6162,6 +6192,7 @@ function openReorderModal() {
    COVER LIBRARY MODAL
 ──────────────────────────────────────────────────────── */
 function openLibraryModal() {
+  if (isMgU()) return;
   const catalog = catalogCoversForPicker();
   PS.openModal(`
     <div class="modal-header">

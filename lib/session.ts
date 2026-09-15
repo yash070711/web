@@ -10,6 +10,9 @@ export const GUEST_USER: SessionUser = {
   email: "studio@veridex.local",
   name: "Anika Sharma",
   role: "Product Manager",
+  roleKind: "risk-carrier",
+  org: "Veridex Insurance",
+  orgId: "RC-VERIDEX",
   productId: "PRD-015",
   version: "2026.08",
 };

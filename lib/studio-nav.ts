@@ -1,5 +1,4 @@
 export const STUDIO_NAV_CHAIN = [
-  { id: "jurisdiction", segment: "jurisdiction", title: "Define Jurisdiction" },
   { id: "coverage", segment: "coverage", title: "Coverage Studio" },
   { id: "questionnaire", segment: "questionnaire", title: "Questionnaire Studio" },
   { id: "risk", segment: "risk", title: "Risk Studio" },

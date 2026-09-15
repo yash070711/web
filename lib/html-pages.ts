@@ -1,7 +1,6 @@
 export const HTML_PAGES: Record<string, string> = {
   dashboard: "index.html",
   catalogue: "catalogue.html",
-  jurisdiction: "jurisdiction-studio.html",
   coverage: "coverage-studio.html",
   questionnaire: "questionnaire-studio.html",
   risk: "risk-studio.html",
@@ -21,10 +20,11 @@ export const HTML_PAGES: Record<string, string> = {
   glossary: "glossary.html",
   "product-detail": "product-detail.html",
   "product-view": "product-view.html",
+  mgu: "mgu.html",
+  "mgu-assignment": "mgu-assignment.html",
 };
 
 export const STUDIO_HTML: Record<string, string> = {
-  jurisdiction: "jurisdiction-studio.html",
   coverage: "coverage-studio.html",
   questionnaire: "questionnaire-studio.html",
   risk: "risk-studio.html",
@@ -75,7 +75,6 @@ export function htmlHrefToNext(href: string, fallbackProductId?: string): string
   if (file === "distribution-studio.html") return id ? `/products/${id}/distribution${suffix}` : `/distribution${suffix}`;
   if (file === "distribution-create.html") return `/distribution/create${suffix}`;
   if (file === "document-studio.html") return id ? `/products/${id}/document${suffix}` : `/document-studio${suffix}`;
-  if (file === "jurisdiction-studio.html") return id ? `/products/${id}/jurisdiction${suffix}` : `/jurisdiction${suffix}`;
   if (file === "simulation-studio.html") return `/simulation${suffix}`;
   if (file === "audit-log.html") return `/audit-log${suffix}`;
   if (file === "governance.html") return `/governance${suffix}`;
@@ -84,6 +83,8 @@ export function htmlHrefToNext(href: string, fallbackProductId?: string): string
   if (file === "integration-monitor.html") return `/integration${suffix}`;
   if (file === "roles-access.html") return `/roles${suffix}`;
   if (file === "glossary.html") return `/glossary${suffix}`;
+  if (file === "mgu.html") return `/mgu${suffix}`;
+  if (file === "mgu-assignment.html") return `/mgu-assignment${suffix}`;
   return href;
 }
 

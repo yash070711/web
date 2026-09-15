@@ -117,18 +117,6 @@ function buildHubStudios() {
 
   const rows = [
     {
-      id: 'jurisdiction',
-      title: 'Define Jurisdiction',
-      description: 'States where the product is available, admitted status, cities, and effective dates.',
-      count: (currentProduct.jurisdictions || []).length,
-      noun: ['State', 'States'],
-      expected: Math.max((currentProduct.jurisdictions || []).length, 1),
-      tone: '#12A88A',
-      iconBg: '#E4F8F2',
-      href: studioHref('jurisdiction-studio.html')
-    },
-
-    {
       id: 'coverage',
       title: 'Coverage Studio',
       description: 'Covers, limits, deductibles, exclusions and financial terms.',
@@ -292,11 +280,10 @@ function buildHubStudios() {
     const ids = PS.prototypeApp?.enabledStudioIdsFor?.(currentProduct.id);
     if (Array.isArray(ids)) {
       const set = new Set(ids);
-      set.add('jurisdiction');
       set.add('risk');
       return set;
     }
-    return new Set(['coverage', 'jurisdiction', 'questionnaire', 'risk', 'eligibility', 'rating', 'underwriting', 'distribution', 'document']);
+    return new Set(['coverage', 'questionnaire', 'risk', 'eligibility', 'rating', 'underwriting', 'distribution', 'document']);
   }
   function progressRing(pct, tone) {
     const clamped = Math.max(0, Math.min(100, Number(pct) || 0));

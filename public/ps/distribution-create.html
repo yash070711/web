@@ -7,155 +7,139 @@
   <meta name="description" content="Configure a distribution channel from carrier through state with commission and account-level factors.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
-    .dc-page { max-width: 1440px; }
-    .dc-section { margin-bottom: var(--space-8); }
-    .dc-section-head {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      gap: var(--space-4); margin-bottom: var(--space-5);
-    }
-    .dc-section-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-    .dc-section-help { font-size: 13px; color: var(--color-muted); }
+    .dc-page { max-width: 1100px; }
+    .dc-back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--color-ink); font-size: 13px; font-weight: 600; text-decoration: none; }
+    .dc-back-link:hover { color: var(--color-brand); }
 
-    .dc-flow {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr);
-      gap: var(--space-3);
-      align-items: stretch;
-    }
-    .dc-connector {
-      display: flex; align-items: center; justify-content: center;
-      color: var(--color-muted); font-size: 18px; padding-bottom: 24px;
-    }
-    .dc-card {
-      background: var(--color-panel);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-sm);
-      display: flex; flex-direction: column; min-height: 100%;
-    }
-    .dc-card-head {
-      display: flex; gap: var(--space-3); align-items: flex-start;
-      padding: var(--space-4) var(--space-5);
-      border-bottom: 1px solid var(--color-border);
-    }
-    .dc-step {
-      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      background: var(--color-brand); color: var(--color-on-brand);
-    }
-    .dc-card-title { font-size: 14px; font-weight: 600; }
+    /* ── How it works ─────────────────────────── */
+    .dc-how-it-works { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; align-items: start; padding: var(--space-4) var(--space-5); margin: 0 0 var(--space-6); border: 1px solid rgba(245,158,11,.25); border-radius: var(--radius-lg); background: linear-gradient(100deg, rgba(255,247,229,.9), rgba(255,252,243,.55)); }
+    .dc-how-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: #fff4d7; color: #df8c00; font-size: 20px; }
+    .dc-how-title { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
+    .dc-how-copy { margin: 0 0 10px; font-size: 12px; color: var(--color-muted); }
+    .dc-how-list { display: grid; gap: 6px; font-size: 12px; color: var(--color-muted); }
+    .dc-how-list span::before { content: '✓'; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: 8px; border-radius: 50%; background: #f59e0b; color: white; font-size: 10px; font-weight: 700; }
+
+    /* ── Wizard ───────────────────────────────── */
+    .dc-wizard { display: flex; flex-direction: column; gap: var(--space-5); }
+    .dc-stepper { margin: 0; }
+    .dc-wizard-panel { animation: dcStepIn .18s ease-out; }
+    @keyframes dcStepIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .dc-card { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
+    .dc-card-head { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
+    .dc-step { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: var(--color-brand); color: var(--color-on-brand); }
+    .dc-card-title { font-size: 15px; font-weight: 600; }
     .dc-card-help { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
-    .dc-card-body { padding: var(--space-5); flex: 1; }
+    .dc-card-body { padding: var(--space-5); }
 
-    .dc-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; margin-bottom: 8px; }
-    .dc-input-suffix { position: relative; }
-    .dc-input-suffix .form-control { padding-right: 36px; }
-    .dc-suffix {
-      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      font-size: 12px; color: var(--color-muted); pointer-events: none;
-    }
-    .dc-reinsurer-list {
-      display: flex; flex-direction: column; gap: 6px;
-      border: 1px solid var(--color-border); border-radius: var(--radius-md);
-      padding: 8px; max-height: 160px; overflow: auto; background: var(--color-surface);
-      margin-bottom: 10px;
-    }
-    .dc-reinsurer-pick {
-      display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 4px 6px; border-radius: 6px;
-    }
+    /* ── Step 1: Product & coverage ───────────── */
+    .dc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+    .dc-product-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: var(--space-2); }
+    .dc-chip-count { font-size: 12px; font-weight: 600; color: var(--color-muted); white-space: nowrap; }
+    .dc-linked-state { margin-top: var(--space-3); }
+    .dc-state-chip-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+    /* ── Shared selection list ─────────────────── */
+    .dc-reinsurer-list { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 8px; max-height: 200px; overflow: auto; background: var(--color-surface); margin-bottom: 8px; }
+    .dc-reinsurer-pick { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 5px 8px; border-radius: 6px; }
     .dc-reinsurer-pick:hover { background: var(--color-panel); }
-    .dc-reinsurer-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-    .dc-reinsurer-row {
-      display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
-    }
-    .dc-re-row-label { font-size: 12px; color: var(--color-muted); white-space: nowrap; }
-    .dc-re-input { width: 120px; }
-    .dc-total-row {
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 13px; padding: 6px 0; border-top: 1px solid var(--color-border);
-    }
-    .dc-total-row:first-of-type { border-top: none; }
-    .dc-valid { font-size: 12px; font-weight: 600; margin-top: 8px; padding: 8px 10px; border-radius: var(--radius-md); }
-    .dc-valid.ok { color: var(--color-success); background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25); }
-    .dc-valid.err { color: var(--color-danger); background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25); }
+    .dc-reinsurer-pick input { accent-color: #E9A11A; }
+    .dc-chip-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; margin-left: auto; opacity: .75; color: var(--color-brand); }
+    .dc-inline-actions { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+    .dc-empty { font-size: 13px; color: var(--color-muted); padding: 8px 0; }
 
-    .dc-info-panel {
-      margin-top: var(--space-4); padding: var(--space-4);
-      background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
-    }
+    /* ── Step 2: risk sharing ──────────────────── */
+    .dc-risk-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin: var(--space-5) 0 var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+    .dc-risk-header .dc-info-title { margin: 0; }
+    .dc-risk-list { display: grid; gap: var(--space-4); }
+    .dc-risk-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); background: var(--color-surface); }
+    .dc-risk-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); flex-wrap: wrap; }
+    .dc-risk-name { font-size: 13px; font-weight: 600; }
+    .dc-risk-sub { font-size: 12px; color: var(--color-muted); }
+    .dc-valid-badge { display: inline-flex; align-items: center; height: 22px; padding: 0 10px; font-size: 11px; font-weight: 600; border-radius: 100px; white-space: nowrap; }
+    .dc-valid-badge.ok { color: var(--color-success); background: rgba(74,222,128,.12); border: 1px solid rgba(74,222,128,.3); }
+    .dc-valid-badge.err { color: var(--color-danger); background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3); }
+    .dc-reinsurer-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .dc-reinsurer-row:last-child { margin-bottom: 0; }
+    .dc-re-row-label { font-size: 12px; color: var(--color-muted); white-space: normal; line-height: 1.35; }
+    .dc-input-suffix { position: relative; }
+    .dc-input-suffix .form-control { padding-right: 30px; }
+    .dc-suffix { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--color-muted); pointer-events: none; }
+    .dc-re-input { width: 96px; justify-self: end; }
+    .dc-re-input .form-control { text-align: right; }
+    .dc-total-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 0; margin-top: 8px; border-top: 1px dashed var(--color-border); font-weight: 600; }
+    .dc-product-total { margin-top: var(--space-4); padding: 12px 14px; border: 1px solid rgba(245,158,11,.3); border-radius: var(--radius-md); background: rgba(245,158,11,.08); display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+    .dc-product-total strong { font-size: 18px; color: #b96800; }
+    .dc-total-head { display: flex; flex-direction: column; margin-right: auto; }
+
+    /* ── Step 3: MGA commission ────────────────── */
+    .dc-mga-block { margin-top: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-panel); }
+    .dc-mga-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+    .dc-mga-name { font-size: 13px; font-weight: 600; }
+    .dc-mga-chip { font-size: 14px; font-weight: 700; color: var(--color-brand); }
+    .dc-mga-sub { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--color-muted); margin: var(--space-3) 0 8px; }
+    .dc-mga-row { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .dc-mga-row:last-child { margin-bottom: 0; }
+    .dc-mga-label { font-size: 12px; color: var(--color-muted); display: flex; align-items: center; gap: 6px; }
+    .dc-mga-input { width: 96px; justify-self: end; }
+    .dc-mga-input .form-control { text-align: right; }
+    .dc-mga-remove { padding: 0 5px; line-height: 18px; min-width: 22px; color: var(--color-danger); flex-shrink: 0; }
+    .dc-mga-restore { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--space-3); }
+    .dc-mga-total { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; padding-top: 8px; margin-top: 8px; border-top: 1px solid var(--color-border); }
+
+    /* ── Info panels ───────────────────────────── */
+    .dc-info-panel { margin-top: var(--space-4); padding: var(--space-4); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
     .dc-info-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--color-muted); margin-bottom: 10px; }
     .dc-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size: 13px; }
     .dc-info-label { display: block; font-size: 11px; color: var(--color-muted); margin-bottom: 2px; }
 
-    .dc-dd { position: relative; }
-    .dc-dd.is-disabled { opacity: .65; pointer-events: none; }
-    .dc-dd-menu { min-width: 100%; }
-    .dc-dd-search { padding: 0 0 6px; margin-bottom: 4px; border-bottom: 1px solid var(--color-border); }
-    .dc-dd-option {
-      display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px;
-      font-size: 13px; cursor: pointer;
-    }
-    .dc-dd-option:hover { background: var(--color-surface); }
-    .dc-dd-item {
-      display: block; width: 100%; text-align: left; border: none; background: transparent;
-      padding: 8px 10px; font-size: 13px; color: var(--color-ink); cursor: pointer; border-radius: 6px;
-    }
-    .dc-dd-item:hover { background: var(--color-surface); }
-    .dc-dd-empty, .dc-empty { font-size: 13px; color: var(--color-muted); padding: 8px 0; }
-    .dc-city-menu { min-width: 200px; }
+    /* ── Summary strip ─────────────────────────── */
+    .dc-summary-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-3); }
+    .dc-summary-item { padding: 10px 12px; background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); min-width: 0; }
+    .dc-summary-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--color-muted); margin-bottom: 2px; }
+    .dc-summary-value { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dc-summary-value.is-muted { color: var(--color-muted); font-weight: 500; }
+    .dc-summary-value.is-err { color: var(--color-danger); }
+    .dc-summary-value.is-ok { color: var(--color-success); }
 
-    .dc-state-block {
-      border: 1px solid var(--color-border); border-radius: var(--radius-md);
-      padding: var(--space-4); margin-bottom: 10px; background: var(--color-surface);
-    }
-    .dc-state-head { margin-bottom: 10px; }
-    .dc-chip-product { border: 1px solid rgba(56,189,248,.35); }
-    .dc-chip-added { border: 1px solid rgba(192,149,83,.35); }
-    .dc-chip-tag {
-      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
-      margin-left: 4px; opacity: .75;
-    }
-    .dc-city-section { margin-top: 8px; }
-    .dc-state-commission { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--color-border); }
-    .dc-comm-inline { display: grid; grid-template-columns: 1fr 140px; gap: 8px; }
+    /* ── Wizard nav ────────────────────────────── */
+    .dc-wizard-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-5); background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); position: sticky; bottom: var(--space-4); z-index: 10; }
+    .dc-wizard-nav-hint { font-size: 12px; color: var(--color-muted); text-align: center; flex: 1; min-width: 0; }
+    .dc-wizard-nav-hint strong { color: var(--color-ink); }
+    .dc-wizard-nav-hint .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--color-brand); margin: 0 6px 1px; }
+    .dc-wizard-next-wrap { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
 
-    .dc-commission-block {
-      margin-top: var(--space-5); padding-top: var(--space-5);
-      border-top: 1px solid var(--color-border);
-    }
-    .dc-comm-title { font-size: 13px; font-weight: 600; margin-bottom: var(--space-3); }
-    .dc-toggle-row {
-      display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: var(--space-4); cursor: pointer;
-    }
-    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
-    .span-2 { grid-column: 1 / -1; }
-
+    /* ── Factors ───────────────────────────────── */
     .dc-factors-card { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
     .dc-factors-card .card-header { padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
+    .dc-section { margin-top: var(--space-8); }
     .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .data-table th {
-      text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600;
-      text-transform: uppercase; color: var(--color-muted);
-      border-bottom: 1px solid var(--color-border); background: var(--color-surface);
-    }
+    .data-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--color-muted); border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
     .data-table td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
     .data-table tr:last-child td { border-bottom: none; }
     .data-table .form-control { height: 34px; font-size: 13px; }
-    .dc-factor-actions { white-space: nowrap; display: flex; gap: 4px; align-items: center; }
     .dc-empty-cell { text-align: center; color: var(--color-muted); padding: 24px !important; }
-    .dc-factors-foot {
-      padding: var(--space-4) var(--space-5); font-size: 12px; color: var(--color-muted);
-      border-top: 1px solid var(--color-border); background: var(--color-surface);
-    }
+    .dc-factors-foot { padding: var(--space-4) var(--space-5); font-size: 12px; color: var(--color-muted); border-top: 1px solid var(--color-border); background: var(--color-surface); }
+    .dc-factors-card tbody td { height: auto; padding: 8px 10px; }
 
-    @media (max-width: 1200px) {
-      .dc-flow { grid-template-columns: 1fr; }
-      .dc-connector { display: none; }
+    /* ── Share dialog (reinsurer / MGA manager) ── */
+    .dc-share-dialog { width: min(520px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: var(--radius-lg); box-shadow: 0 24px 60px rgba(15,23,42,.25); }
+    .dc-share-dialog::backdrop { background: rgba(15,23,42,.45); }
+    .dc-share-dialog-head { padding: 18px 20px; border-bottom: 1px solid var(--color-border); }
+    .dc-share-dialog-body { padding: 18px 20px; max-height: 60vh; overflow: auto; }
+    .dc-share-dialog-foot { display: flex; justify-content: flex-end; padding: 14px 20px; border-top: 1px solid var(--color-border); }
+    .dc-reinsurer-manager-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 8px; align-items: center; }
+    .dc-reinsurer-manager-actions { display: flex; gap: 4px; }
+
+    @media (max-width: 900px) {
+      .dc-grid-2, .dc-summary-strip, .dc-info-grid { grid-template-columns: 1fr; }
+      .dc-summary-strip { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 768px) {
-      .form-grid-2, .dc-info-grid, .dc-comm-inline { grid-template-columns: 1fr; }
-      .dc-reinsurer-row { grid-template-columns: 1fr; }
+      .dc-reinsurer-row, .dc-mga-row { grid-template-columns: 1fr; }
+      .dc-re-input, .dc-mga-input { width: 100%; justify-self: stretch; }
+      .dc-wizard-nav { flex-wrap: wrap; }
+      .dc-wizard-nav-hint { flex-basis: 100%; order: -1; }
       .page-header-actions { flex-wrap: wrap; }
     }
   </style>
@@ -175,7 +159,7 @@
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title">Create Distribution Channel</h1>
-          <p class="page-subtitle">Configure reinsurance, then product, MGA, and state with commission and account-level factors.</p>
+          <p class="page-subtitle">Configure licensed risk sharing by coverage, then authorize MGAs to sell the product with their commission percentages.</p>
         </div>
         <div class="page-header-actions">
           <button class="btn btn-secondary" type="button" onclick="DistCreate.cancel()">Cancel</button>
@@ -183,23 +167,71 @@
         </div>
       </div>
 
-      <section class="dc-section" aria-labelledby="dc-config-title">
-        <div class="dc-section-head">
-          <div>
-            <div class="dc-section-title" id="dc-config-title">Distribution Configuration</div>
-            <div class="dc-section-help">Reinsurance → Product & coverage → MGA → State & commission</div>
+      <div class="dc-how-it-works">
+        <div class="dc-how-icon" aria-hidden="true">ℹ</div>
+        <div>
+          <p class="dc-how-title">Distribution setup in three steps</p>
+          <p class="dc-how-copy">Build the channel step by step — product &amp; coverage, risk sharing, then MGA commission. Totals recalculate automatically as you go.</p>
+          <div class="dc-how-list">
+            <span>Select a product and the coverages it distributes</span>
+            <span>Share risk with one or more reinsurers — per coverage</span>
+            <span>Authorize MGAs with base, coverage, and jurisdiction commission</span>
           </div>
         </div>
-        <div class="dc-flow">
-          <div class="dc-card" id="dc-card-carrier"></div>
-          <div class="dc-connector" aria-hidden="true">→</div>
-          <div class="dc-card" id="dc-card-product"></div>
-          <div class="dc-connector" aria-hidden="true">→</div>
-          <div class="dc-card" id="dc-card-mga"></div>
-          <div class="dc-connector" aria-hidden="true">→</div>
-          <div class="dc-card" id="dc-card-state"></div>
+      </div>
+
+      <div class="dc-wizard" id="dc-wizard">
+        <div class="stepper dc-stepper" id="dc-stepper" aria-label="Distribution setup steps"></div>
+        <div class="dc-summary-strip" id="dc-summary-strip"></div>
+
+        <div class="wizard-step dc-wizard-panel" id="dc-step-product">
+          <div class="dc-card">
+            <div class="dc-card-head">
+              <span class="dc-step">1</span>
+              <div>
+                <div class="dc-card-title">Product &amp; Coverage</div>
+                <div class="dc-card-help">Choose a product you have already created. Its coverages load automatically and may be selected individually.</div>
+              </div>
+            </div>
+            <div class="dc-card-body" id="dc-product-body"></div>
+          </div>
         </div>
-      </section>
+
+        <div class="wizard-step dc-wizard-panel" id="dc-step-risk">
+          <div class="dc-card">
+            <div class="dc-card-head">
+              <span class="dc-step">2</span>
+              <div>
+                <div class="dc-card-title">Risk Sharing / Reinsurers</div>
+                <div class="dc-card-help">Share risk with one or more reinsurers. Each selected coverage gets its own allocation of retained and reinsured risk.</div>
+              </div>
+            </div>
+            <div class="dc-card-body" id="dc-risk-body"></div>
+          </div>
+        </div>
+
+        <div class="wizard-step dc-wizard-panel" id="dc-step-mga">
+          <div class="dc-card">
+            <div class="dc-card-head">
+              <span class="dc-step">3</span>
+              <div>
+                <div class="dc-card-title">MGA Commission</div>
+                <div class="dc-card-help">Authorize one or more MGAs. Commission is split into base, coverage, and city/state components that total automatically.</div>
+              </div>
+            </div>
+            <div class="dc-card-body" id="dc-mga-body"></div>
+          </div>
+        </div>
+
+        <div class="dc-wizard-nav">
+          <button type="button" class="btn btn-secondary" id="dc-wizard-prev" onclick="DistCreate.prevStep()">← Back</button>
+          <div class="dc-wizard-nav-hint" id="dc-wizard-hint"></div>
+          <div class="dc-wizard-next-wrap">
+            <button type="button" class="btn btn-secondary" id="dc-wizard-save" onclick="DistCreate.save()">Save Channel</button>
+            <button type="button" class="btn btn-primary" id="dc-wizard-next" onclick="DistCreate.nextStep()">Continue →</button>
+          </div>
+        </div>
+      </div>
 
       <section class="dc-section" aria-labelledby="dc-factors-title">
         <div class="dc-factors-card">

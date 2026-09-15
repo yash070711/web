@@ -341,12 +341,12 @@
     el.innerHTML = `
       <div class="dc-card-head">
         <span class="dc-step">3</span>
-        <div><div class="dc-card-title">MGA</div><div class="dc-card-help">Select one or more MGAs for this distribution channel.</div></div>
+        <div><div class="dc-card-title">MGU</div><div class="dc-card-help">Select one or more MGUs for this distribution channel.</div></div>
       </div>
       <div class="dc-card-body">
         ${multiSelectHtml({
           ddId: 'dc-mga-dd',
-          label: 'MGAs',
+          label: 'MGUs',
           hint: '(Select Multiple)',
           options: DC().mgas,
           selected: formState.mgaIds,
@@ -609,7 +609,7 @@
         code: `COMM-${id.slice(-6)}`
       },
       rules: [],
-      accessModel: selectedMgas().map(m => m.name).join(', ') || 'MGA Partners',
+      accessModel: selectedMgas().map(m => m.name).join(', ') || 'MGU Partners',
       intermediaries: selectedMgas().map(m => ({
         name: m.name,
         code: m.id,

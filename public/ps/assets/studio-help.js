@@ -21,7 +21,6 @@ window.PS = window.PS || {};
     if (/\/risk/.test(path)) return 'risk-studio.html';
     if (/\/document/.test(path)) return 'document-studio.html';
     if (/\/distribution/.test(path)) return 'distribution-studio.html';
-    if (/\/jurisdiction/.test(path)) return 'jurisdiction-studio.html';
     return p.includes('.') ? p : 'index.html';
   }
 
@@ -75,15 +74,6 @@ window.PS = window.PS || {};
       tips: [
         'This is a read-only preview driven by the current product version configuration.',
         'Changes in studios are reflected here after save.',
-      ],
-    },
-    'jurisdiction-studio.html': {
-      title: 'Define Jurisdiction',
-      description: 'Set where this product may be sold — US states, cities or counties, and territory rules that constrain rating and eligibility downstream.',
-      tips: [
-        'Select states first; optionally narrow to specific cities within a state.',
-        'Empty city selection means the entire state is in scope.',
-        'Jurisdiction feeds Eligibility and Rating studios automatically.',
       ],
     },
     'coverage-studio.html': {
@@ -150,7 +140,7 @@ window.PS = window.PS || {};
     },
     'distribution-create.html': {
       title: 'Create Distribution Channel',
-      description: 'Configure the distribution flow from reinsurance through product, MGA, and state — including coverages, LOB, cities, commission, and account-level factors.',
+      description: 'Configure the distribution flow from reinsurance through product, MGU, and state — including coverages, LOB, cities, commission, and account-level factors.',
       tips: [
         'Reinsurer risk percentages must total exactly 100%.',
         'Products come from the catalogue. Selecting a product loads its coverages and LOB.',

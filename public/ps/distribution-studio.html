@@ -297,7 +297,7 @@ const CHANNELS = [
 ];
 
 let activeChannelId = 'CHAN-B01';
-let openSections = new Set(['identity','territory','commission','rules','access','effective','api']);
+let openSections = new Set(['mgu-dist','identity','territory','commission','rules','access','effective','api']);
 
 document.addEventListener('DOMContentLoaded', () => {
   applyGeneratedChannelIds();
@@ -398,6 +398,7 @@ function loadChannel(id) {
 
 function renderDetail(c) {
   const p = document.getElementById('detail-panel');
+  const isRiskCarrier = PS.auth.isLoggedIn() && PS.auth.current()?.role === 'risk-carrier';
   
   p.innerHTML = `
     <div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-2)">
@@ -405,6 +406,8 @@ function renderDetail(c) {
       <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--color-muted);background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:2px 7px">${buildChannelId(c) || c.id}</span>
       <span class="badge badge-published" style="font-size:10px">ACTIVE</span>
     </div>
+
+    ${isRiskCarrier ? mguDistSection() : ''}
 
     ${buildSection('identity','1','Channel Identity', c.type, `
       <div class="form-grid-2">
@@ -520,6 +523,45 @@ function renderDetail(c) {
     document.getElementById(`sec-body-${sid}`)?.classList.add('open');
     document.getElementById(`sec-chev-${sid}`)?.classList.add('open');
   });
+}
+
+function mguDistSection() {
+  const params = new URLSearchParams(location.search);
+  const productId = params.get('product') || params.get('id') || PS.prototypeApp.getContext?.().productId || '';
+  const prod = productId ? PS.prototypeApp.productById(productId) : null;
+  const id = prod?.id || productId || '';
+  const name = prod?.name || 'this product';
+  if (!prod) {
+    return buildSection('mgu-dist', '0', 'MGU Distribution', 'MGUs that can offer this product', `
+      <div style="font-size:13px;color:var(--color-muted)">No product context found. Assign products to MGUs from the <a href="mgu-assignment.html">MGU Assignment</a> page.</div>`);
+  }
+  const mgas = (PS.auth.mgaOrgs() || []).map(o => {
+    const entry = (prod.assignedMGAs || []).find(m => m.mgaId === o.id);
+    const assigned = entry && entry.status === 'assigned';
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-border)">
+        <div>
+          <div style="font-size:13px;font-weight:600">${o.org.name}</div>
+          <div style="font-size:12px;color:var(--color-muted)">${assigned ? `Assigned · ${entry.assignedAt}` : 'Not assigned'}</div>
+        </div>
+        <button class="btn btn-sm ${assigned ? 'btn-secondary' : 'btn-primary'}" onclick="mguDistToggle('${id}','${o.id}',${assigned ? 'false' : 'true'})">${assigned ? 'Revoke' : 'Assign'}</button>
+      </div>`;
+  }).join('');
+  return buildSection('mgu-dist', '0', 'MGU Distribution', 'MGUs that can offer this product', `
+    <div style="margin-bottom:var(--space-3);font-size:13px;color:var(--color-muted)">
+      Assignment controls for <strong>${name}</strong> (${id}). Assigned MGUs can see and configure this product in their studios.
+      <a href="mgu-assignment.html?id=${id}" style="font-size:12px;margin-left:8px">Open full MGU Assignment →</a>
+    </div>
+    ${mgas}`);
+}
+
+function mguDistToggle(productId, mgaId, active) {
+  const res = PS.prototypeApp.assignProductToMGA(productId, mgaId, active);
+  if (!res.ok) { PS.actionResult('error', 'Could not update assignment', res.error || 'Unknown error'); return; }
+  const mga = (PS.auth.ORGS[mgaId] || {}).name || mgaId;
+  PS.actionResult(active ? 'success' : 'warning', active ? 'Product assigned to MGU' : 'MGU assignment revoked', `${mga}`);
+  const ch = CHANNELS.find(c => (buildChannelId(c) || c.id) === activeChannelId);
+  if (ch) renderDetail(ch);
 }
 
 function buildSection(id, num, title, subtitle, content) {
