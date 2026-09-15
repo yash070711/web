@@ -535,15 +535,40 @@ document.addEventListener('DOMContentLoaded', function () {
     const product = proto?.productById?.(app.productId) || {};
     const detail = proto?.ensureProductDetail?.(app.productId) || proto?.state?.productDetails?.[app.productId] || {};
     const bundle = proto?.getProductBundle?.(app.productId, app.productVersion || undefined) || {};
+    const collections = proto?.state?.collections || {};
+    const collectionCovers = [];
+
+    // IMPORTANT:
+    // In the current Class of Business Studio, the items shown under
+    // "COVERS" (for example Auto Liability, Physical Damage and
+    // Motor Truck Cargo) are the configured parent objects that this
+    // Distribution screen needs to use for authority configuration.
+    // They are persisted by the studio as the product's "covers" collection.
+    for(const [key, value] of Object.entries(collections)){
+      const k = String(key).toLowerCase();
+      const pid = String(app.productId || "").toLowerCase();
+      if(pid && k.startsWith(pid + "::") && k.endsWith("::covers") && Array.isArray(value)){
+        collectionCovers.push(value);
+      }
+    }
 
     return [
+      // Existing Class of Business sources.
       product.classOfBusiness, product.classesOfBusiness, product.businessClasses, product.classes,
       detail.classOfBusiness, detail.classesOfBusiness, detail.businessClasses, detail.classes,
       bundle.product?.classOfBusiness, bundle.product?.classesOfBusiness, bundle.product?.businessClasses, bundle.product?.classes,
       bundle.classOfBusiness, bundle.classesOfBusiness, bundle.businessClasses, bundle.classes,
       proto?.state?.classOfBusiness?.[app.productId],
       proto?.state?.classesOfBusiness?.[app.productId],
-      proto?.state?.businessClasses?.[app.productId]
+      proto?.state?.businessClasses?.[app.productId],
+
+      // Product covers are the actual configured parent/child hierarchy
+      // visible in the Class of Business Studio "COVERS" panel.
+      product.covers,
+      detail.covers,
+      bundle.covers,
+      bundle.product?.covers,
+      ...collectionCovers
     ].filter(Boolean);
   }
 
@@ -577,7 +602,39 @@ document.addEventListener('DOMContentLoaded', function () {
       if(classes) return classes;
     }
 
-    // 3. Recover any product-scoped class collection. This is important when
+    // 3. Recover the product's persisted "covers" collection.
+    // The Class of Business Studio saves its visible COVERS hierarchy as:
+    //   <productId>::<version>::covers
+    // in prototypeApp.state.collections. Some older prototype builds also
+    // expose a product-scoped localStorage value, so support both forms.
+    try{
+      const proto = window.PS?.prototypeApp;
+      const collections = proto?.state?.collections || {};
+      const pid = String(app.productId || "").toLowerCase();
+
+      for(const [key, value] of Object.entries(collections)){
+        const k = String(key).toLowerCase();
+        if(pid && k.startsWith(pid + "::") && k.endsWith("::covers")){
+          const covers = tryValue(value);
+          if(covers) return covers;
+        }
+      }
+
+      const coverKeys = [
+        `veridex-covers-${app.productId}`,
+        `covers-${app.productId}`,
+        `${app.productId}-covers`
+      ];
+
+      for(const key of coverKeys){
+        const raw = localStorage.getItem(key);
+        if(!raw) continue;
+        const covers = tryValue(JSON.parse(raw));
+        if(covers) return covers;
+      }
+    }catch{}
+
+    // 4. Recover any product-scoped class collection. This is important when
     // the Distribution page was opened without ?product=... but the upstream
     // Class of Business Studio was saved against the real product id.
     try{
@@ -716,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function classContext(){
     if(!app.classes.length) return `<div class="class-empty">
       <div><strong>No Class of Business is configured for this product yet.</strong></div>
-      <div class="muted">Classes configured in Class of Business Studio will appear here automatically.</div>
+      <div class="muted">Classes / covers configured in Class of Business Studio will appear here automatically.</div>
     </div>`;
     return `
       <div class="class-context">${app.classes.length} class${app.classes.length===1?"":"es"} of business configured
@@ -1180,7 +1237,26 @@ document.addEventListener('DOMContentLoaded', function () {
       if(g.authority==="Binding"&&!(Number(g.bindingLimit)>0)){toast(`Enter a binding limit for ${parent.name}.`);return;}
     }
 
-    toast(persist()?"Distribution channel saved in this browser.":"Browser storage unavailable; changes remain in this session.");
+    const saved = persist();
+    toast(saved ? "Distribution channel saved. Redirecting to product..." : "Browser storage unavailable; changes remain in this session.");
+
+    // After successfully saving the channel, return to the Product Detail page
+    // for the same product instead of staying on the Create Distribution page.
+    if(saved){
+      const productId = app.productId || new URLSearchParams(location.search).get("product") || new URLSearchParams(location.search).get("id") || "";
+      const version = app.productVersion || new URLSearchParams(location.search).get("version") || "";
+
+      setTimeout(() => {
+        if(productId){
+          const query = new URLSearchParams();
+          query.set("id", productId);
+          if(version) query.set("version", version);
+          location.assign(`product-detail.html?${query.toString()}`);
+        }else{
+          location.assign("product-detail.html");
+        }
+      }, 350);
+    }
   };
 
   if($("#saveDraft")) $("#saveDraft").onclick=()=>toast(persist()?"Product draft saved in this browser.":"Browser storage unavailable.");

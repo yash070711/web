@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer view — SouthLake Carrier Portal</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background: #07101c; }
+    .preview-banner {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 10px 24px; background: #C09553; color: #0E1629; font-size: 13px; font-weight: 600;
+    }
+    .preview-banner a, .preview-banner button { color: #0E1629; }
+    .storefront { max-width: 1080px; margin: 0 auto; padding: 28px 20px 80px; }
+    .store-hero {
+      display: grid; grid-template-columns: 1.4fr .9fr; gap: 24px;
+      background: var(--color-panel); border: 1px solid var(--color-border); border-radius: 16px;
+      padding: 28px; margin-bottom: 24px;
+    }
+    .store-kicker { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-brand); font-weight: 700; margin-bottom: 8px; }
+    .store-hero h1 { font-size: 32px; line-height: 1.15; margin-bottom: 10px; }
+    .store-hero p { color: var(--color-muted); max-width: 56ch; }
+    .quote-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; }
+    .quote-price { font-size: 34px; font-weight: 700; color: #fff; }
+    .quote-unit { font-size: 13px; color: var(--color-muted); }
+    .cover-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 16px 0 24px; }
+    .cover-card {
+      border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; background: var(--color-panel);
+      cursor: pointer; min-height: 132px;
+    }
+    .cover-card.on { border-color: var(--color-brand); box-shadow: 0 0 0 1px var(--color-brand); }
+    .cover-card.locked { cursor: default; }
+    .cover-name { font-weight: 650; margin-bottom: 6px; }
+    .cover-desc { font-size: 13px; color: var(--color-muted); }
+    .cover-meta { margin-top: 10px; font-size: 12px; color: var(--color-brand); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .result-box { display: none; margin-top: 16px; padding: 14px; border-radius: 10px; border: 1px solid rgba(74,222,128,.35); background: rgba(74,222,128,.08); }
+    .result-box.show { display: block; }
+    .result-box.warn { border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.1); }
+    .result-box.bad { border-color: rgba(248,113,113,.4); background: rgba(248,113,113,.1); }
+    .cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+    .doc-list { display: grid; gap: 8px; }
+    .doc-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-panel); }
+    @media (max-width: 860px) {
+      .store-hero, .cover-grid, .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-banner">
+    <div>Studio preview — this is the <strong>customer / end-user</strong> view of your product.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn btn-sm" id="exit-studio" href="product-detail.html">Exit to studio</a>
+      <a class="btn btn-sm" id="exit-catalogue" href="catalogue.html">Catalogue</a>
+    </div>
+  </div>
+  <main class="storefront" id="storefront">
+    <p style="color:var(--color-muted)">Loading customer view…</p>
+  </main>
+  <div class="toast-container" id="toast-container"></div>
+  <script src="assets/data.js"></script>
+  <script src="assets/product-seeds.js"></script>
+  <script src="assets/admin-catalog.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+  <script>
+    const esc = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const money = n => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(Number(n) || 0);
+    const query = new URLSearchParams(location.search);
+    const productId = query.get('id') || query.get('product') || 'PRD-015';
+    const version = query.get('version') || '';
+
+    function fallbackCovers(family) {
+      const motor = [
+        { id:'COV-OD', name:'Own Damage', availability:'mandatory', defaultSelected:true, description:'Accidental damage, fire and theft of the insured vehicle.', sumInsured:'Market value', deductibleAmount:'300' },
+        { id:'COV-TPL', name:'Third Party Liability', availability:'mandatory', defaultSelected:true, description:'Injury and property damage caused to others.', sumInsured:'100,000', deductibleAmount:'0' },
+        { id:'COV-PA', name:'Personal Accident', availability:'default', defaultSelected:true, description:'Fixed benefit for the named driver.', sumInsured:'15,000', deductibleAmount:'0' },
+        { id:'COV-RSA', name:'Roadside Assistance', availability:'addon', defaultSelected:false, description:'Towing and roadside help, up to 3 call-outs a year.', sumInsured:'Service', deductibleAmount:'0' }
+      ];
+      if (String(family).toLowerCase() === 'motor') return motor;
+      return [
+        { id:'COV-CORE', name:'Core cover', availability:'mandatory', defaultSelected:true, description:'Primary protection included with this product.', sumInsured:'As scheduled', deductibleAmount:'500' },
+        { id:'COV-EXT', name:'Optional extension', availability:'optional', defaultSelected:false, description:'Add extra protection if you need it.', sumInsured:'As scheduled', deductibleAmount:'250' }
+      ];
+    }
+
+    function render() {
+      const bundle = PS.prototypeApp.getProductBundle(productId, version);
+      const product = bundle.product;
+      const covers = (bundle.covers && bundle.covers.length) ? bundle.covers : fallbackCovers(product.family);
+      const docs = bundle.documents || [];
+      const base = bundle.basePremium || 350;
+      document.title = `${product.name} — Get a quote`;
+      document.getElementById('exit-studio').href = `product-detail.html?id=${encodeURIComponent(product.id)}&version=${encodeURIComponent(bundle.version || '')}`;
+
+      const coverCards = covers.map(c => {
+        const locked = c.availability === 'mandatory';
+        const on = locked || c.defaultSelected || c.availability === 'default';
+        return `<label class="cover-card ${on?'on':''} ${locked?'locked':''}" data-cover-id="${esc(c.id)}">
+          <div style="display:flex;justify-content:space-between;gap:8px">
+            <div class="cover-name">${esc(c.name)}</div>
+            <input type="checkbox" ${on?'checked':''} ${locked?'disabled':''} data-cover="${esc(c.id)}" data-addon="${c.availability==='addon'||c.availability==='optional'?'1':'0'}">
+          </div>
+          <div class="cover-desc">${esc(c.description || 'Included cover.')}</div>
+          <div class="cover-meta">${locked ? 'Included' : (on ? 'Selected' : 'Optional')} · Limit ${esc(c.sumInsured || 'As scheduled')}</div>
+        </label>`;
+      }).join('');
+
+      const questions = [];
+      (bundle.questionGroups || []).forEach(g => {
+        (g.questions || [g]).forEach(q => {
+          if (q && (q.label || q.name)) questions.push(q);
+        });
+      });
+      const questionFields = questions.length ? questions.slice(0, 16).map((q, i) => {
+        const id = `qv-${String(q.id || q.internalName || i).replace(/[^A-Za-z0-9_-]/g, '_')}`;
+        const type = /number|currency|age/i.test(q.type || '') ? 'number' : /date/i.test(q.type || '') ? 'date' : /boolean/i.test(q.type || '') ? 'checkbox' : 'text';
+        if (type === 'checkbox') {
+          return `<div class="form-group"><label class="form-label" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="${id}" data-qv="1"> ${esc(q.label || q.name)}</label></div>`;
+        }
+        return `<div class="form-group"><label class="form-label" for="${id}">${esc(q.label || q.name)}${q.required ? ' *' : ''}</label><input class="form-control" id="${id}" data-qv="1" type="${type}"></div>`;
+      }).join('') : `
+            <div class="form-group"><label class="form-label" for="q-name">Full name</label><input class="form-control" id="q-name" value="Alex Rivera"></div>
+            <div class="form-group"><label class="form-label" for="q-age">Age</label><input class="form-control" id="q-age" type="number" min="18" max="80" value="34"></div>
+            <div class="form-group"><label class="form-label" for="q-value">Sum insured / vehicle value</label><input class="form-control" id="q-value" type="number" min="1000" value="28000"></div>
+            <div class="form-group"><label class="form-label" for="q-claims">Claims in last 3 years</label><input class="form-control" id="q-claims" type="number" min="0" value="0"></div>`;
+
+      const docRows = (docs.length ? docs : [
+        { name: `${product.name} Policy Wording`, type:'Core' },
+        { name: 'Policy Schedule', type:'Core' },
+        { name: 'Certificate of Insurance', type:'Core' }
+      ]).slice(0, 6).map(d => `<div class="doc-row"><div><strong>${esc(d.name)}</strong><div style="font-size:12px;color:var(--color-muted)">${esc(d.type || 'Document')}</div></div>
+        <button class="btn btn-ghost btn-sm" type="button" onclick="downloadDoc('${esc(d.name)}')">Download</button></div>`).join('');
+
+      document.getElementById('storefront').innerHTML = `
+        <section class="store-hero">
+          <div>
+            <div class="store-kicker">${esc(product.family || 'Insurance')} · Customer view</div>
+            <h1>${esc(product.name)}</h1>
+            <p>${esc(product.description || 'Protection designed from your Product Studio configuration. Choose covers, answer a few questions, and see the price a customer would be quoted.')}</p>
+            <div style="margin-top:14px;font-size:13px;color:var(--color-muted)">Version v${esc(bundle.version || product.version || 'Draft')} · ${esc(product.id)}</div>
+          </div>
+          <aside class="quote-card">
+            <div style="font-size:12px;color:var(--color-muted);margin-bottom:6px">Indicative annual premium</div>
+            <div class="quote-price" id="quote-price">${money(base)}</div>
+            <div class="quote-unit" id="quote-unit">before extras · updates as you choose covers</div>
+            <div class="cta-row">
+              <button class="btn btn-primary" type="button" onclick="getQuote()">Get this quote</button>
+              <button class="btn btn-secondary" type="button" onclick="buyNow()">Buy now</button>
+            </div>
+          </aside>
+        </section>
+
+        <h2 style="font-size:18px;margin-bottom:8px">Choose your cover</h2>
+        <p style="color:var(--color-muted);margin-bottom:8px">Mandatory covers stay on. Optional covers change the price the way they would on a customer portal.</p>
+        <div class="cover-grid" id="cover-grid">${coverCards}</div>
+
+        <section class="quote-card" style="margin-bottom:24px">
+          <h2 style="font-size:18px;margin-bottom:12px">Tell us about the risk</h2>
+          <div class="form-grid">${questionFields}</div>
+          <div class="cta-row">
+            <button class="btn btn-primary" type="button" onclick="getQuote()">Calculate premium</button>
+            <button class="btn btn-ghost" type="button" onclick="downloadQuote()">Download quote pack</button>
+            <button class="btn btn-secondary" type="button" onclick="askAdvisor()">Talk to an advisor</button>
+          </div>
+          <div class="result-box" id="quote-result"></div>
+        </section>
+
+        <h2 style="font-size:18px;margin-bottom:10px">Policy documents the customer receives</h2>
+        <div class="doc-list">${docRows}</div>
+      `;
+
+      document.querySelectorAll('#cover-grid input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', () => {
+          input.closest('.cover-card')?.classList.toggle('on', input.checked);
+          livePrice();
+        });
+      });
+      document.querySelectorAll('[data-qv]').forEach(el => el.addEventListener('input', livePrice));
+      document.querySelectorAll('[data-qv]').forEach(el => el.addEventListener('change', livePrice));
+      window.__base = base;
+      window.__product = product;
+      window.__version = bundle.version;
+      livePrice();
+    }
+
+    function selectedAddons() {
+      return Array.from(document.querySelectorAll('#cover-grid input[data-addon="1"]:checked')).length;
+    }
+    function estimate() {
+      const age = Number(document.getElementById('q-age')?.value || 34);
+      const value = Number(document.getElementById('q-value')?.value || 28000);
+      const claims = Number(document.getElementById('q-claims')?.value || 0);
+      let prem = Number(window.__base || 350);
+      prem *= 1 + (selectedAddons() * 0.12);
+      if (age < 25) prem *= 1.35;
+      else if (age > 60) prem *= 1.1;
+      if (value > 40000) prem *= 1.18;
+      if (claims > 0) prem *= (1 + claims * 0.15);
+      const tax = prem * 0.18;
+      return { net: prem, tax, gross: prem + tax };
+    }
+    function livePrice() {
+      const e = estimate();
+      const el = document.getElementById('quote-price');
+      if (el) el.textContent = money(e.gross);
+      const unit = document.getElementById('quote-unit');
+      if (unit) unit.textContent = 'indicative annual premium including tax';
+    }
+    function getQuote() {
+      const e = estimate();
+      const box = document.getElementById('quote-result');
+      const age = Number(document.getElementById('q-age')?.value || 0);
+      const ineligible = age && age < 21;
+      box.className = 'result-box show' + (ineligible ? ' bad' : '');
+      box.innerHTML = ineligible
+        ? `<strong>Not eligible yet</strong><div>This configuration does not quote drivers under 21. That is the same hard stop a customer would see.</div>`
+        : `<strong>Quote ready — ${money(e.gross)}</strong>
+           <div>Net ${money(e.net)} + tax ${money(e.tax)}. Quote ID QTE-${Date.now().toString().slice(-8)} is stored in this browser.</div>`;
+      const quotes = JSON.parse(localStorage.getItem('ps-customer-quotes') || '[]');
+      quotes.unshift({ id:`QTE-${Date.now()}`, productId, name: window.__product?.name, premium: e.gross, at: new Date().toISOString() });
+      localStorage.setItem('ps-customer-quotes', JSON.stringify(quotes.slice(0, 20)));
+      PS.actionResult(ineligible ? 'warning' : 'success', ineligible ? 'Quote declined' : 'Quote generated', ineligible ? 'Eligibility blocked this quote.' : `${money(e.gross)} is the customer-facing price.`);
+    }
+    function buyNow() {
+      getQuote();
+      if (Number(document.getElementById('q-age')?.value || 34) < 21) return;
+      const policy = `POL-${new Date().getFullYear()}-${Math.floor(10000 + Math.random()*90000)}`;
+      const box = document.getElementById('quote-result');
+      box.className = 'result-box show';
+      box.innerHTML = `<strong>Policy issued — ${policy}</strong><div>The customer would now receive wording, schedule, and certificate by email. This prototype stored the purchase locally.</div>`;
+      PS.actionResult('success', 'Purchase complete', `Policy ${policy} created for ${window.__product?.name}.`);
+    }
+    function downloadQuote() {
+      const e = estimate();
+      const name = window.__product?.name || 'Product';
+      const body = `${name}\nCustomer quote\nPremium: ${money(e.gross)}\nGenerated: ${new Date().toLocaleString()}\n`;
+      const blob = new Blob([body], { type:'text/plain' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${productId}-customer-quote.txt`; a.click();
+      PS.actionResult('success', 'Quote pack downloaded', 'A customer quote file was generated from the current selections.');
+    }
+    function downloadDoc(name) {
+      const blob = new Blob([`${name}\nIssued for ${window.__product?.name}\nVersion ${window.__version}\n`], { type:'text/plain' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${name.replace(/\s+/g,'-')}.txt`; a.click();
+      PS.actionResult('success', 'Document downloaded', `${name} is what the customer would receive after bind.`);
+    }
+    function askAdvisor() {
+      PS.openModal(`
+        <div class="modal-header"><h2 class="modal-title">Talk to an advisor</h2><button class="btn btn-icon" onclick="PS.closeModal()">×</button></div>
+        <div class="modal-body">
+          <div class="form-group"><label class="form-label">Your name</label><input class="form-control" id="adv-name" value="${esc(document.getElementById('q-name')?.value || '')}"></div>
+          <div class="form-group"><label class="form-label">Phone or email</label><input class="form-control" id="adv-contact" placeholder="alex@example.com"></div>
+          <div class="form-group"><label class="form-label">What do you need?</label><textarea class="form-control" id="adv-note" rows="3">I would like help choosing covers for ${esc(window.__product?.name || 'this product')}.</textarea></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="submitAdvisor()">Send request</button>
+        </div>`);
+    }
+    function submitAdvisor() {
+      const contact = document.getElementById('adv-contact')?.value.trim();
+      if (!contact) { PS.actionResult('error','Missing contact','Enter a phone number or email.'); return; }
+      PS.closeModal();
+      PS.actionResult('success','Advisor request sent', 'An advisor callback was logged in this prototype. No live email was sent.');
+    }
+
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+</body>
+</html>

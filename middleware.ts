@@ -4,7 +4,7 @@ import { htmlHrefToNext } from "@/lib/html-pages";
 
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  if (pathname.startsWith("/ps/") || pathname.startsWith("/_next/")) {
+  if (pathname.startsWith("/ps/") || pathname.startsWith("/ps-southlake/") || pathname.startsWith("/_next/")) {
     return NextResponse.next();
   }
   if (pathname === "/login" || pathname === "/register" || pathname.startsWith("/login/") || pathname.startsWith("/register/")) {

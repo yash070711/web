@@ -1,3 +1,16 @@
+export type ProfileKey = "vikram" | "southlake";
+
+const PROFILE_STORAGE_KEY = "ps-profile";
+
+export function getActiveProfile(): ProfileKey {
+  if (typeof window === "undefined") return "vikram";
+  return window.localStorage.getItem(PROFILE_STORAGE_KEY) === "southlake" ? "southlake" : "vikram";
+}
+
+export function profilePrefix(): string {
+  return getActiveProfile() === "southlake" ? "/ps-southlake" : "/ps";
+}
+
 export const HTML_PAGES: Record<string, string> = {
   dashboard: "index.html",
   catalogue: "catalogue.html",
@@ -90,11 +103,12 @@ export function htmlHrefToNext(href: string, fallbackProductId?: string): string
 export function rewriteAsset(url: string): string {
   if (!url) return url;
   if (/^(https?:|data:)/i.test(url)) return url;
-  if (url.startsWith("/ps/")) return url;
+  if (url.startsWith("/ps/") || url.startsWith("/ps-southlake/")) return url;
+  const prefix = profilePrefix();
   const clean = url.replace(/^\.\//, "").replace(/^\//, "");
-  if (clean.startsWith("assets/")) return `/ps/${clean}`;
+  if (clean.startsWith("assets/")) return `${prefix}/${clean}`;
   if (clean.endsWith(".css") || clean.endsWith(".js")) {
-    const mapped = `/ps/assets/${clean.replace(/^assets\//, "")}`;
+    const mapped = `${prefix}/assets/${clean.replace(/^assets\//, "")}`;
     if (mapped.endsWith("nav.js") || mapped.endsWith("prototype-app.js")) return `${mapped}?v=next-routes`;
     return mapped;
   }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eligibility Studio — Insurance Product Studio</title>
+  <title>Eligibility Studio — SouthLake Carrier Portal</title>
   <meta name="description" content="Define eligibility conditions for insurance products — determine when a product or cover can be offered to a risk.">
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/studio-hub.css">
@@ -726,14 +726,14 @@
       </div>
 
    
-        <p style="margin-top:12px">A Risk Studio question is an input. An Eligibility Rule is the decision you configure here. Select Risk Studio questions or define conditions manually.</p>
+        <p style="margin-top:12px">A Questionnaire question is an input. An Eligibility Rule is the decision you configure here. Create rules from Questionnaire questions or define conditions manually.</p>
       </div>
       <div id="elig-main-page" class="elig-main-page">
         <section class="eligibility-hero">
           <div class="eligibility-hero-copy">
             <div class="eligibility-eyebrow">COMMERCIAL TRUCKING · ELIGIBILITY</div>
             <h2>Control which risks can enter the product</h2>
-            <p>Build eligibility decisions from Risk Studio questions, review rule outcomes, and keep every rule traceable back to its source.</p>
+            <p>Build eligibility decisions from Questionnaire questions, review rule outcomes, and keep every rule traceable back to its source.</p>
             <div class="eligibility-flow-mini">
               <span>Questionnaire</span><b>→</b><span>Risk Studio</span><b>→</b><span class="current">Eligibility Studio</span><b>→</b><span>Rating &amp; Pricing</span>
             </div>
@@ -759,10 +759,10 @@
               <div class="elig-sidebar-head">
                 <div>
                   <div class="elig-sidebar-kicker">RULE INPUTS</div>
-                  <div class="elig-sidebar-title">Selected Risk Questions</div>
+                  <div class="elig-sidebar-title">Selected Questions</div>
                   <div class="elig-sidebar-count" id="elig-selected-question-sidebar-count">0 questions</div>
                 </div>
-                <button class="btn btn-ghost btn-sm" type="button" onclick="openEligibilityRuleFromRiskQuestionPicker()">Change</button>
+                <button class="btn btn-ghost btn-sm" type="button" onclick="openEligibilityRuleFromQuestionnairePicker()">Change</button>
               </div>
               <div id="elig-selected-question-sidebar" class="elig-selected-question-list"></div>
             </div>
@@ -788,7 +788,7 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens.</div>
+<div class="responsive-warning" role="alert">SouthLake Carrier Portal is optimized for desktop screens.</div>
 
 <script src="assets/data.js"></script>
 <script src="assets/trucking-questionnaire-seed.js"></script>
@@ -2535,9 +2535,9 @@ function renderSelectedQuestionSidebar(rule) {
     host.innerHTML = `
       <div class="elig-sidebar-empty">
         <div class="elig-sidebar-empty-icon">?</div>
-        <strong>No Risk Studio questions linked</strong>
-        <span>Select Risk Questions from Risk Studio to use them as rule inputs.</span>
-        <button type="button" class="btn btn-primary btn-sm" onclick="openEligibilityRuleFromRiskQuestionPicker()">Select Questions</button>
+        <strong>No Questionnaire questions linked</strong>
+        <span>Select questions from Questionnaire Studio to use them as rule inputs.</span>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openEligibilityRuleFromQuestionnairePicker()">Select Questions</button>
       </div>`;
     return;
   }
@@ -3350,53 +3350,16 @@ function nextEligibilityRuleId() {
 /* ═══════════════════════════════════════════════
    QUESTIONNAIRE-LINKED ELIGIBILITY RULES
 ═══════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════
-   RISK-STUDIO QUESTION-LINKED ELIGIBILITY RULES
-   Uses the exact Risk Studio selection flow:
-   - Risk Studio persists selected Questionnaire question IDs
-   - Eligibility reads those IDs
-   - Questions are grouped exactly like Risk Studio
-   - Search / Select all / Clear all
-   - Selected questions are linked to the Eligibility Rule
-═══════════════════════════════════════════════ */
-
-function getRiskStudioSelectedQuestionIds() {
-  try {
-    const raw = JSON.parse(localStorage.getItem('riskStudioSelectedQuestionIds') || '[]');
-    return new Set(
-      Array.isArray(raw)
-        ? raw.map(String).filter(Boolean)
-        : []
-    );
-  } catch (_) {
-    return new Set();
-  }
-}
-
-function allRiskStudioEligibilityQuestions() {
-  const selectedIds = getRiskStudioSelectedQuestionIds();
+function allEligibilityQuestions() {
   const out = [];
   const seen = new Set();
-
   productQuestionGroups().forEach(group => {
     (group.questions || []).forEach(q => {
-      if (!q || !q.id) return;
-
-      const id = String(q.id);
-
-      // Risk Studio is the source of truth for which questions are
-      // available to this Eligibility flow.
-      const isRisk =
-        String(q.questionCategory || '').toLowerCase() === 'risk' ||
-        selectedIds.has(id);
-
-      if (!isRisk || seen.has(id)) return;
-
-      seen.add(id);
+      if (!q || !q.id || seen.has(String(q.id))) return;
+      seen.add(String(q.id));
       out.push({ q, group });
     });
   });
-
   return out;
 }
 
@@ -3408,7 +3371,6 @@ function questionFieldKey(q) {
 function conditionFromQuestion(q) {
   const c = emptyCondition();
   if (!q) return c;
-
   const type = riskDataType(null, q);
   c.sourceQuestionId = q.id;
   c.field = questionFieldKey(q);
@@ -3416,44 +3378,13 @@ function conditionFromQuestion(q) {
   return c;
 }
 
-function riskStudioQuestionPickerHtml() {
-  const search = String(
-    document.getElementById('elig-risk-q-search')?.value || ''
-  ).trim().toLowerCase();
-
-  const selected = window.__ELIG_SELECTED_RISK_QUESTION_IDS || new Set();
+function questionnaireQuestionPickerHtml() {
   const groups = new Map();
-
-  allRiskStudioEligibilityQuestions().forEach(({ q, group }) => {
-    const groupLabel = group?.label || group?.name || 'Other';
-
-    const haystack = [
-      q.label,
-      q.id,
-      q.internalName,
-      q.fieldType,
-      q.type
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-
-    if (search && !haystack.includes(search)) return;
-
-    if (!groups.has(groupLabel)) groups.set(groupLabel, []);
-    groups.get(groupLabel).push(q);
+  allEligibilityQuestions().forEach(({ q, group }) => {
+    const label = group?.label || group?.name || 'Other';
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(q);
   });
-
-  if (!groups.size) {
-    return `
-      <div class="elig-q-empty">
-        No Risk Questions are available from Risk Studio for this product/version.
-        <div style="margin-top:8px;font-size:11px;color:var(--color-muted)">
-          Select Questionnaire questions in Risk Studio first, then mark/configure
-          the question as a Risk question.
-        </div>
-      </div>`;
-  }
 
   return [...groups.entries()].map(([groupName, questions]) => `
     <section class="elig-q-group" data-question-group="${htmlEsc(groupName)}">
@@ -3462,323 +3393,150 @@ function riskStudioQuestionPickerHtml() {
           <span class="elig-q-group-title">${htmlEsc(groupName)}</span>
           <span class="elig-q-group-count">${questions.length}</span>
         </div>
-        <button
-          type="button"
-          class="btn btn-ghost btn-xs"
-          onclick="selectEligibilityRiskQuestionGroup(this)"
-        >
-          Select group
-        </button>
+        <button type="button" class="btn btn-ghost btn-xs" onclick="selectEligibilityQuestionGroup(this)">Select group</button>
       </div>
-
       <div class="elig-q-list">
-        ${questions.map(q => {
-          const checked = selected.has(String(q.id));
-
-          return `
-            <label
-              class="elig-q-card ${checked ? 'is-selected' : ''}"
-              data-question-search="${htmlEsc(
-                `${q.label || q.id} ${q.id} ${q.internalName || ''} ${q.fieldType || q.type || ''}`
-              )}"
-            >
-              <input
-                type="checkbox"
-                class="elig-risk-question-cb"
-                value="${htmlEsc(q.id)}"
-                ${checked ? 'checked' : ''}
-                onchange="toggleEligibilityRiskQuestionSelection(this)"
-              >
-              <span class="elig-q-check"></span>
-
-              <span class="elig-q-copy">
-                <span class="elig-q-label">
-                  ${htmlEsc(q.label || q.id)}
-                </span>
-                <span class="elig-q-meta">
-                  <code>${htmlEsc(q.id)}</code>
-                  <span>•</span>
-                  ${htmlEsc(q.fieldType || q.type || 'Text')}
-                </span>
-              </span>
-
-              <span class="elig-q-source">Risk Studio</span>
-            </label>`;
-        }).join('')}
+        ${questions.map(q => `
+          <label class="elig-q-card" data-question-search="${htmlEsc(`${q.label || q.id} ${q.id} ${q.fieldType || q.type || ''}`)}">
+            <input type="checkbox" class="elig-question-cb" value="${htmlEsc(q.id)}" onchange="refreshEligibilityQuestionSelection()">
+            <span class="elig-q-check"></span>
+            <span class="elig-q-copy">
+              <span class="elig-q-label">${htmlEsc(q.label || q.id)}</span>
+              <span class="elig-q-meta"><code>${htmlEsc(q.id)}</code><span>•</span>${htmlEsc(q.fieldType || q.type || 'Text')}</span>
+            </span>
+            <span class="elig-q-source">Questionnaire</span>
+          </label>
+        `).join('')}
       </div>
     </section>
-  `).join('');
+  `).join('') || `<div class="elig-q-empty">No Questionnaire questions are configured for this product.</div>`;
 }
 
-function updateEligibilityRiskQuestionSelectionCount() {
-  const selected = document.querySelectorAll(
-    '.elig-risk-question-cb:checked'
-  ).length;
-
-  const count = document.getElementById('elig-risk-selected-count');
-  if (count) count.textContent = `${selected} selected`;
-
-  const useBtn = document.getElementById('elig-use-risk-selected-btn');
-  if (useBtn) useBtn.disabled = selected === 0;
+function refreshEligibilityQuestionSelection() {
+  const count = document.querySelectorAll('.elig-question-cb:checked').length;
+  const label = document.getElementById('elig-selected-question-count');
+  if (label) label.textContent = `${count} selected`;
+  const useBtn = document.getElementById('elig-use-selected-btn');
+  if (useBtn) useBtn.disabled = count === 0;
 }
 
-function toggleEligibilityRiskQuestionSelection(input) {
-  window.__ELIG_SELECTED_RISK_QUESTION_IDS =
-    window.__ELIG_SELECTED_RISK_QUESTION_IDS || new Set();
-
-  const id = String(input.value || '');
-
-  if (input.checked) {
-    window.__ELIG_SELECTED_RISK_QUESTION_IDS.add(id);
-    input.closest('.elig-q-card')?.classList.add('is-selected');
-  } else {
-    window.__ELIG_SELECTED_RISK_QUESTION_IDS.delete(id);
-    input.closest('.elig-q-card')?.classList.remove('is-selected');
-  }
-
-  updateEligibilityRiskQuestionSelectionCount();
-}
-
-function selectAllEligibilityRiskQuestions() {
-  window.__ELIG_SELECTED_RISK_QUESTION_IDS =
-    window.__ELIG_SELECTED_RISK_QUESTION_IDS || new Set();
-
-  const search = String(
-    document.getElementById('elig-risk-q-search')?.value || ''
-  ).trim().toLowerCase();
-
-  allRiskStudioEligibilityQuestions().forEach(({ q }) => {
-    const haystack = [
-      q.label,
-      q.id,
-      q.internalName,
-      q.fieldType,
-      q.type
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-
-    if (!search || haystack.includes(search)) {
-      window.__ELIG_SELECTED_RISK_QUESTION_IDS.add(String(q.id));
-    }
-  });
-
-  const list = document.getElementById('elig-risk-question-list');
-  if (list) list.innerHTML = riskStudioQuestionPickerHtml();
-
-  updateEligibilityRiskQuestionSelectionCount();
-}
-
-function clearEligibilityRiskQuestions() {
-  window.__ELIG_SELECTED_RISK_QUESTION_IDS = new Set();
-
-  const list = document.getElementById('elig-risk-question-list');
-  if (list) list.innerHTML = riskStudioQuestionPickerHtml();
-
-  updateEligibilityRiskQuestionSelectionCount();
-}
-
-function selectEligibilityRiskQuestionGroup(button) {
-  const group = button.closest('.elig-q-group');
-  if (!group) return;
-
-  window.__ELIG_SELECTED_RISK_QUESTION_IDS =
-    window.__ELIG_SELECTED_RISK_QUESTION_IDS || new Set();
-
-  group.querySelectorAll('.elig-risk-question-cb').forEach(cb => {
-    if (cb.closest('.elig-q-card')?.style.display !== 'none') {
-      cb.checked = true;
-      window.__ELIG_SELECTED_RISK_QUESTION_IDS.add(String(cb.value));
-      cb.closest('.elig-q-card')?.classList.add('is-selected');
-    }
-  });
-
-  updateEligibilityRiskQuestionSelectionCount();
-}
-
-function filterEligibilityRiskQuestionPicker(query) {
+function filterEligibilityQuestionPicker(query) {
   const q = String(query || '').trim().toLowerCase();
-
-  document.querySelectorAll(
-    '#elig-risk-question-list .elig-q-card'
-  ).forEach(card => {
-    const hay = String(
-      card.getAttribute('data-question-search') || ''
-    ).toLowerCase();
-
+  document.querySelectorAll('.elig-q-card').forEach(card => {
+    const hay = String(card.getAttribute('data-question-search') || '').toLowerCase();
     card.style.display = !q || hay.includes(q) ? '' : 'none';
   });
-
-  document.querySelectorAll(
-    '#elig-risk-question-list .elig-q-group'
-  ).forEach(group => {
-    const visible = group.querySelectorAll(
-      '.elig-q-card:not([style*="display: none"])'
-    ).length;
-
+  document.querySelectorAll('.elig-q-group').forEach(group => {
+    const visible = group.querySelectorAll('.elig-q-card:not([style*="display: none"])').length;
     group.style.display = visible ? '' : 'none';
   });
 }
 
-function openEligibilityRuleFromRiskQuestionPicker() {
-  const currentRule = currentRule();
-  const existingIds = currentRule
-    ? (
-        Array.isArray(currentRule.linkedQuestionIds)
-          ? currentRule.linkedQuestionIds
-          : (currentRule.conditions || [])
-              .map(c => c.sourceQuestionId)
-              .filter(Boolean)
-      )
-    : [];
+function selectAllEligibilityQuestions() {
+  document.querySelectorAll('.elig-q-card').forEach(card => {
+    if (card.style.display !== 'none') {
+      const cb = card.querySelector('.elig-question-cb');
+      if (cb) cb.checked = true;
+    }
+  });
+  refreshEligibilityQuestionSelection();
+}
 
-  window.__ELIG_SELECTED_RISK_QUESTION_IDS = new Set(
-    existingIds.map(String)
-  );
+function clearEligibilityQuestions() {
+  document.querySelectorAll('.elig-question-cb').forEach(cb => cb.checked = false);
+  refreshEligibilityQuestionSelection();
+}
 
+function selectEligibilityQuestionGroup(button) {
+  const group = button.closest('.elig-q-group');
+  if (!group) return;
+  group.querySelectorAll('.elig-q-card').forEach(card => {
+    if (card.style.display !== 'none') {
+      const cb = card.querySelector('.elig-question-cb');
+      if (cb) cb.checked = true;
+    }
+  });
+  refreshEligibilityQuestionSelection();
+}
+
+function openEligibilityRuleFromQuestionnairePicker() {
   PS.closeModal();
-
   setTimeout(() => {
     PS.openModal(`
       <div class="elig-question-picker-modal">
         <div class="modal-header elig-picker-header">
           <div>
-            <div class="elig-modal-kicker">RISK STUDIO SOURCE</div>
-            <h2 class="modal-title">Select Risk Questions</h2>
-            <p class="elig-modal-subtitle">
-              Select one or more Risk questions configured in Risk Studio.
-              This uses the same question-selection flow as Risk Studio.
-            </p>
+            <div class="elig-modal-kicker">QUESTIONNAIRE SOURCE</div>
+            <h2 class="modal-title">Select questions for eligibility</h2>
+            <p class="elig-modal-subtitle">Only questions configured in this product's Questionnaire Studio are shown here. Select one or more.</p>
           </div>
-
-          <button
-            class="btn btn-icon"
-            onclick="PS.closeModal()"
-            aria-label="Close"
-          >×</button>
+          <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
         </div>
 
         <div class="elig-picker-toolbar">
           <div class="elig-picker-search">
             <span>⌕</span>
-            <input
-              id="elig-risk-q-search"
-              type="search"
-              class="form-control"
-              placeholder="Search questions…"
-              oninput="
-                document.getElementById('elig-risk-question-list').innerHTML =
-                  riskStudioQuestionPickerHtml();
-                updateEligibilityRiskQuestionSelectionCount();
-              "
-            >
+            <input type="search" class="form-control" placeholder="Search questions or Question ID…" oninput="filterEligibilityQuestionPicker(this.value)">
           </div>
-
-          <button
-            type="button"
-            class="btn btn-ghost btn-sm"
-            onclick="selectAllEligibilityRiskQuestions()"
-          >Select all</button>
-
-          <button
-            type="button"
-            class="btn btn-ghost btn-sm"
-            onclick="clearEligibilityRiskQuestions()"
-          >Clear all</button>
-
-          <span
-            class="elig-selected-count"
-            id="elig-risk-selected-count"
-          >0 selected</span>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="selectAllEligibilityQuestions()">Select visible</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="clearEligibilityQuestions()">Clear</button>
+          <span class="elig-selected-count" id="elig-selected-question-count">0 selected</span>
         </div>
 
         <div class="modal-body elig-picker-body">
           <div class="elig-picker-info">
             <span class="elig-info-icon">i</span>
-            <span>
-              Questions are sourced from Risk Studio. Their label, ID,
-              group and data type remain managed upstream.
-            </span>
+            <span>These questions become linked inputs for the new eligibility rule. Their label, ID, and data type remain managed by Questionnaire Studio.</span>
           </div>
-
-          <div
-            class="elig-q-groups"
-            id="elig-risk-question-list"
-          >${riskStudioQuestionPickerHtml()}</div>
+          <div class="elig-q-groups">${questionnaireQuestionPickerHtml()}</div>
         </div>
 
         <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="openAddRuleModal()">← Back</button>
           <span class="risk-footer-spacer"></span>
-
-          <button
-            class="btn btn-secondary"
-            onclick="PS.closeModal()"
-          >Cancel</button>
-
-          <button
-            class="btn btn-primary"
-            id="elig-use-risk-selected-btn"
-            disabled
-            onclick="createEligibilityRuleFromRiskQuestions()"
-          >Use Selected Questions</button>
+          <span class="elig-footer-selection" id="elig-footer-selection">Questions will be linked to this rule</span>
+          <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+          <button class="btn btn-primary" id="elig-use-selected-btn" disabled onclick="createEligibilityRuleFromQuestions()">Use Selected Questions</button>
         </div>
       </div>
     `, 'modal-lg');
-
-    updateEligibilityRiskQuestionSelectionCount();
+    refreshEligibilityQuestionSelection();
   }, 0);
 }
 
-function createEligibilityRuleFromRiskQuestions() {
-  const ids = [
-    ...new Set(
-      Array.from(
-        document.querySelectorAll('.elig-risk-question-cb:checked')
-      )
-        .map(el => String(el.value || ''))
-        .filter(Boolean)
-    )
-  ];
+function createEligibilityRuleFromQuestions() {
+  const ids = [...new Set(
+    Array.from(document.querySelectorAll('.elig-question-cb:checked'))
+      .map(el => String(el.value))
+      .filter(Boolean)
+  )];
 
   if (!ids.length) {
-    notifyElig(
-      'No questions selected',
-      'Select at least one Risk Studio question.',
-      'error'
-    );
+    notifyElig('No questions selected', 'Select at least one Questionnaire question.', 'error');
     return;
   }
 
-  const questions = ids
-    .map(id => findQuestionById(id)?.q)
-    .filter(Boolean);
-
+  const questions = ids.map(id => findQuestionById(id)?.q).filter(Boolean);
   if (questions.length !== ids.length) {
-    notifyElig(
-      'Cannot create rule',
-      'One or more selected Risk Studio questions are no longer available.',
-      'error'
-    );
+    notifyElig('Cannot create rule', 'One or more selected Questionnaire questions are no longer available.', 'error');
     return;
   }
 
+  // All selected Questionnaire questions belong to ONE eligibility rule.
+  // They are direct Questionnaire inputs and are represented as configurable conditions.
   const id = nextEligibilityRuleId();
   const firstQuestion = questions[0];
-
+  // Selected Questionnaire questions are linked inputs, not automatically
+  // configured eligibility conditions. Keep them available in the rule and
+  // start each corresponding condition unconfigured.
   const conditions = questions.map(q => {
     const c = conditionFromQuestion(q);
-
-    // The question is linked first. Operator/value are configured
-    // explicitly in Eligibility Studio.
     c.op = '';
     c.value = '';
     c.value2 = '';
     c.attributeId = '';
-
     return c;
   });
-
   const rule = normalizeEligibilityRule({
     id,
     name: `${firstQuestion.label || firstQuestion.id} Eligibility`,
@@ -3788,7 +3546,7 @@ function createEligibilityRuleFromRiskQuestions() {
     priority: 10,
     status: 'active',
     description: '',
-    source: 'Risk Studio',
+    source: 'Questionnaire',
     sourceQuestionId: firstQuestion.id,
     linkedQuestionIds: ids,
     conditions,
@@ -3796,8 +3554,7 @@ function createEligibilityRuleFromRiskQuestions() {
     outcomeType: 'hard',
     logic: 'and',
     reasonCode: id,
-    customerMsg:
-      'This risk does not meet eligibility requirements for this product.',
+    customerMsg: 'This risk does not meet eligibility requirements for this product.',
     internalMsg: 'Eligibility rule triggered.',
     logAudit: true,
     effectiveFrom: defaultEffectiveDates().from,
@@ -3812,57 +3569,14 @@ function createEligibilityRuleFromRiskQuestions() {
   });
 
   RULES.push(rule);
-
   activeQuestionId = ids[0] || '';
-  activeRuleId = id;
-
   persistRules();
-
-  window.__ELIG_SELECTED_RISK_QUESTION_IDS = new Set();
-
   PS.closeModal();
+  activeRuleId = id;
   refreshEligibilityMeta();
   PS.studioHub?.paint?.();
   PS.studioHub?.open?.(id);
-
-  notifyElig(
-    'Eligibility rule created',
-    `${questions.length} Risk Studio question${questions.length === 1 ? '' : 's'} linked to ${rule.name}.`,
-    'success'
-  );
-}
-
-// Backward-compatible aliases for existing callers.
-function questionnaireQuestionPickerHtml() {
-  return riskStudioQuestionPickerHtml();
-}
-
-function refreshEligibilityQuestionSelection() {
-  updateEligibilityRiskQuestionSelectionCount();
-}
-
-function filterEligibilityQuestionPicker(query) {
-  filterEligibilityRiskQuestionPicker(query);
-}
-
-function selectAllEligibilityQuestions() {
-  selectAllEligibilityRiskQuestions();
-}
-
-function clearEligibilityQuestions() {
-  clearEligibilityRiskQuestions();
-}
-
-function selectEligibilityQuestionGroup(button) {
-  selectEligibilityRiskQuestionGroup(button);
-}
-
-function openEligibilityRuleFromQuestionnairePicker() {
-  openEligibilityRuleFromRiskQuestionPicker();
-}
-
-function createEligibilityRuleFromQuestions() {
-  createEligibilityRuleFromRiskQuestions();
+  notifyElig('Eligibility rule created', `${questions.length} Questionnaire question${questions.length === 1 ? '' : 's'} linked to ${rule.name}.`, 'success');
 }
 
 function updateQuestionnaireQueueSaveButton() {
@@ -3897,11 +3611,11 @@ function openAddRuleModal(opts) {
       </div>
       <div class="modal-body">
         <div class="elig-create-choice-list">
-          <button type="button" class="elig-create-choice" onclick="openEligibilityRuleFromRiskQuestionPicker()">
+          <button type="button" class="elig-create-choice" onclick="openEligibilityRuleFromQuestionnairePicker()">
             <span class="elig-create-choice-radio">○</span>
             <span>
-              <strong>From Risk Studio Questions</strong>
-              <small>Select one or more Risk questions configured in Risk Studio</small>
+              <strong>From Questionnaire</strong>
+              <small>Select one or more questions configured in Questionnaire Studio</small>
             </span>
           </button>
           <button type="button" class="elig-create-choice" onclick="openManualEligibilityRuleModal()">

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Studio — SouthLake Carrier Portal</title>
+  <meta name="description" content="Manage all policy documents, endorsements, and notices associated with this product version.">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studio-hub.css">
+  <style>
+    /* ── Two-panel layout ──────────────────────── */
+    .studio-layout { display: grid; grid-template-columns: 320px 1fr; gap: var(--space-5); align-items: start; }
+
+    /* ── Document list sidebar ─────────────────── */
+    .doc-sidebar { position: sticky; top: calc(56px + var(--space-6)); }
+    .doc-list { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2); }
+    .doc-section { margin-bottom: var(--space-2); }
+    .doc-section-header { padding: var(--space-2) var(--space-3); }
+    .doc-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--color-muted); }
+    
+    .doc-item {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      padding: 10px var(--space-4);
+      border-radius: var(--radius-md); cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .1s, border-color .1s;
+    }
+    .doc-item:hover { background: var(--color-surface); }
+    .doc-item.active { background: var(--color-brand-light); border-left-color: var(--color-brand); }
+    
+    .doc-icon { flex-shrink: 0; font-size: 16px; margin-top: 2px; }
+    .doc-item-body { flex: 1; min-width: 0; }
+    .doc-item-name { font-size: 13px; font-weight: 500; color: var(--color-ink); }
+    .doc-item.active .doc-item-name { color: var(--color-brand); }
+    .doc-item-meta { font-size: 11px; color: var(--color-muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+    
+    .doc-badge {
+      display: inline-flex; height: 16px; padding: 0 4px; border-radius: 3px;
+      font-size: 9px; font-weight: 700; align-items: center; text-transform: uppercase;
+      background: var(--color-surface); color: var(--color-muted); border: 1px solid var(--color-border);
+    }
+    
+    .doc-status-icon { flex-shrink: 0; font-size: 12px; margin-top: 2px; }
+    .status-approved { color: var(--color-success); }
+    .status-pending  { color: var(--color-warning); }
+    .status-flagged  { color: var(--color-danger); }
+
+    /* ── Section card ──────────────────────────── */
+    .section-card { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .section-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); cursor: pointer; user-select: none; transition: background .1s; }
+    .section-header:hover { background: var(--color-surface); }
+    .section-header-left { display: flex; align-items: center; gap: var(--space-3); }
+    .section-number { width: 24px; height: 24px; border-radius: 50%; background: var(--color-brand-light); color: var(--color-brand); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .section-title { font-size: 14px; font-weight: 600; }
+    .section-subtitle { font-size: 12px; color: var(--color-muted); margin-top: 1px; }
+    .section-chevron { color: var(--color-muted); transition: transform .2s; }
+    .section-chevron.open { transform: rotate(90deg); }
+    .section-body { border-top: 1px solid var(--color-border); max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+    .section-body.open { max-height: 2000px; overflow: visible; }
+    .section-inner { padding: var(--space-5) var(--space-6); }
+
+    /* ── Form grids ────────────────────────────── */
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-6); }
+    .span-2 { grid-column: 1 / -1; }
+
+    /* ── Data Tables ───────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--color-muted); border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+    .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border); }
+    .data-table tr:last-child td { border-bottom: none; }
+    
+    .table-actions { display: flex; gap: var(--space-3); margin-top: var(--space-4); }
+
+    /* ── Condition builder (from Eligibility) ──── */
+    .condition-builder { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+    .cb-header {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--color-surface); border-bottom: 1px solid var(--color-border);
+    }
+    .cb-dir-btn {
+      padding: 4px 12px; border: 1px solid var(--color-brand); border-radius: var(--radius-md); font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .3px; background: var(--color-brand-light); color: var(--color-brand);
+    }
+    .cb-group { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); }
+    .cb-group:last-child { border-bottom: none; }
+    .cb-row { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
+    .cb-row select, .cb-row input { height: 32px; font-size: 13px; }
+
+    /* ── Context bar ───────────────────────────── */
+    .studio-context-bar {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); margin-bottom: var(--space-5); font-size: 13px;
+    }
+    .studio-context-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; background: var(--color-panel);
+      border: 1px solid var(--color-border); border-radius: 100px;
+      font-size: 12px; font-weight: 500;
+    }
+
+    /* ── Modal specific ────────────────────────── */
+    .doc-lib-filters { display: flex; gap: var(--space-3); margin-bottom: var(--space-4); padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); }
+    .doc-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-4); }
+    .doc-preview-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; background: var(--color-panel); }
+    .doc-preview-thumb { height: 180px; background: #E2E8F0; display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid var(--color-border); }
+    .doc-preview-thumb::after { content: 'DRAFT PREVIEW'; position: absolute; transform: rotate(-30deg); font-size: 24px; font-weight: 800; color: rgba(0,0,0,0.1); white-space: nowrap; }
+    .doc-preview-info { padding: var(--space-3); }
+
+    .doc-stage-badge {
+      display: inline-flex; height: 22px; padding: 0 10px; border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: .35px; align-items: center;
+    }
+    .doc-stage-pre_bind { background: rgba(139,92,246,.18); color: #A78BFA; }
+    .doc-stage-post_bind { background: rgba(56,189,248,.15); color: #38BDF8; }
+    .doc-req-badge {
+      display: inline-flex; height: 20px; padding: 0 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; letter-spacing: .3px; align-items: center;
+    }
+    .doc-req-badge.required { background: rgba(192,149,83,.22); color: var(--color-brand); }
+    .doc-req-badge.optional { background: rgba(71,85,105,.35); color: #94A3B8; }
+    .doc-source-badge {
+      display: inline-flex; height: 20px; padding: 0 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 700; background: rgba(71,85,105,.35); color: #CBD5E1;
+    }
+    .doc-stage-section td { background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 14px 16px !important; }
+    .doc-stage-section-label { font-size: 11px; font-weight: 700; letter-spacing: .6px; color: var(--color-brand); }
+    .doc-stage-section-sub { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+
+    #doc-drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 400; opacity: 0; pointer-events: none; transition: opacity .2s; }
+    #doc-drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    #doc-detail-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100vw);
+      background: var(--color-panel); border-left: 1px solid var(--color-border);
+      box-shadow: -8px 0 32px rgba(0,0,0,.25); z-index: 401; display: flex; flex-direction: column;
+      transform: translateX(100%); transition: transform .25s cubic-bezier(.16,1,.3,1);
+    }
+    #doc-detail-drawer.open { transform: translateX(0); }
+    .doc-drawer-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--color-muted); margin-bottom: 4px; }
+    .doc-drawer-field { margin-bottom: 14px; }
+    .doc-drawer-field div { font-size: 14px; color: var(--color-ink); }
+    .doc-drawer-field .mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+  <main class="main-content" id="main-content">
+    <div class="page-inner">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title" id="studio-title">Document Studio</h1>
+          <p class="page-subtitle" id="studio-subtitle">Loading…</p>
+        </div>
+        <div class="page-header-actions" id="product-studio-actions">
+          <a class="btn btn-ghost" id="customer-view-btn" href="product-view.html">Customer view</a>
+          <a class="btn btn-secondary" id="view-product-btn" href="product-detail.html">View Product</a>
+          <button class="btn btn-ghost" onclick="openPreviewModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M216 40H40a16 16 0 00-16 16v144a16 16 0 0016 16h176a16 16 0 0016-16V56a16 16 0 00-16-16zM40 56h176v144H40zM128 176a32 32 0 10-32-32 32 32 0 0032 32z" fill="currentColor"/></svg>
+            Preview Pack
+          </button>
+          <button class="btn btn-ghost" onclick="openLibraryModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M208 40H48a16 16 0 00-16 16v144a16 16 0 0016 16h160a16 16 0 0016-16V56a16 16 0 00-16-16zm-8 160H56V56h144zM88 104h80v16H88zm0 40h80v16H88z" fill="currentColor"/></svg>
+            Document Library
+          </button>
+          <button class="btn btn-primary" onclick="openLibraryModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
+            Associate Document
+          </button>
+        </div>
+      </div>
+
+      <div id="studio-library-root" class="hidden"></div>
+      <div id="studio-product-workspace">
+      <div class="studio-context-bar">
+        <span id="ctx-count"></span>
+        <div style="margin-left:auto"><a id="ctx-back-link" href="product-detail.html" class="btn btn-ghost btn-sm">← Back to Product</a></div>
+      </div>
+
+      <div class="readonly-band" id="readonly-band" style="display:none">
+        <span>📌 This version is <strong>Published</strong> — document associations are read-only.</span>
+        <button class="btn btn-primary btn-sm" onclick="PS.actionResult('info','Clone','Clone this version from Product Detail.')">Clone Version to Edit</button>
+      </div>
+
+      <div id="studio-hub"></div>
+      <div id="studio-editor" class="studio-hub-editor hidden">
+        <div class="cs-back">
+          <button class="btn btn-ghost btn-sm" type="button" onclick="PS.studioHub.back()">← Back to documents</button>
+        </div>
+      <div class="studio-layout">
+        <!-- LEFT: Document List -->
+        <div class="doc-sidebar">
+          <div class="card">
+            <div class="card-header" style="padding:var(--space-4) var(--space-5)">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted)">Documents</div>
+            </div>
+            <div class="doc-list" id="doc-list"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Detail Panel -->
+        <div id="detail-panel" style="display:flex;flex-direction:column;gap:var(--space-4)"></div>
+      </div>
+      </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div id="doc-drawer-overlay" onclick="closeDocDrawer()"></div>
+<aside id="doc-detail-drawer" aria-label="Document details">
+  <div class="uw-drawer-header" style="padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--color-border)">
+    <button class="btn btn-icon" type="button" onclick="closeDocDrawer()" aria-label="Close" style="float:right">×</button>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--color-muted)">Document</div>
+    <h2 style="font-size:18px;font-weight:700;margin:8px 0 4px" id="doc-drawer-name">—</h2>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--color-muted)" id="doc-drawer-id">—</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:var(--space-5) var(--space-6)" id="doc-drawer-body"></div>
+  <div style="padding:var(--space-4) var(--space-6);border-top:1px solid var(--color-border);display:flex;gap:12px;flex-wrap:wrap" id="doc-drawer-footer"></div>
+</aside>
+<script src="assets/data.js"></script>
+<script src="assets/trucking-documents-seed.js"></script>
+<script src="assets/product-seeds.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/studio-hub.js"></script>
+<script src="assets/document-studio-page.js"></script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+</body>
+</html>

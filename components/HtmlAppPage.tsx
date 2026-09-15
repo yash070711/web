@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { htmlHrefToNext, rewriteAsset } from "@/lib/html-pages";
+import { htmlHrefToNext, profilePrefix, rewriteAsset } from "@/lib/html-pages";
 
 function patchReady(code: string) {
   return code
@@ -38,7 +38,7 @@ export function HtmlAppPage({
 
     (async () => {
       try {
-        const res = await fetch(`/ps/${file}`);
+        const res = await fetch(`${profilePrefix()}/${file}`);
         if (!res.ok) throw new Error(`Could not load ${file}`);
         const html = await res.text();
         if (cancelled) return;
@@ -88,7 +88,7 @@ export function HtmlAppPage({
           const href = a.getAttribute("href") || a.href || "";
           if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
           if (/^(mailto:|tel:)/i.test(href)) return;
-          if (href.includes("/ps/assets/")) return;
+          if (href.includes("/ps/assets/") || href.includes("/ps-southlake/assets/")) return;
           const next = htmlHrefToNext(href, productId);
           if (!next || next === href) {
             if (!/\.html(\?|#|$)/i.test(href) && !href.endsWith(".html")) return;
@@ -104,7 +104,7 @@ export function HtmlAppPage({
           document.querySelectorAll("a[href]").forEach((a) => {
             const href = a.getAttribute("href") || "";
             if (!href || href.startsWith("#") || href.startsWith("javascript:") || href.startsWith("mailto:")) return;
-            if (href.startsWith("assets/") || href.includes("/ps/assets/")) return;
+            if (href.startsWith("assets/") || href.includes("/ps/assets/") || href.includes("/ps-southlake/assets/")) return;
             const next = htmlHrefToNext(href, productId);
             if (next && next !== href) a.setAttribute("href", next);
           });

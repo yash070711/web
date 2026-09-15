@@ -88,7 +88,7 @@ function buildWizardHTML() {
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="w-lob">Line of Business <span class="required">*</span></label>
+          <label class="form-label" for="w-lob">Coverage <span class="required">*</span></label>
           <select id="w-lob" class="form-control">
             <option value="" data-keep>Select a product family first…</option>
           </select>
@@ -100,7 +100,7 @@ function buildWizardHTML() {
           <select id="w-owner" class="form-control" data-admin-key="productOwners">
   ${adminList('productOwners', ['Anuj', 'Vikram', 'Ayushi', 'Dev'])
     .map(o => `<option>${o}</option>`).join('')}
-</select> 
+</select>
         </div>
         <div class="form-group">
           <label class="form-label" for="w-business-type">Business Type <span class="required">*</span></label>
@@ -120,8 +120,13 @@ function buildWizardHTML() {
         </div>
         ${PS.admin ? PS.admin.extraFieldsHtml('product') : ''}
         <div class="form-group" style="grid-column:1/-1">
-          <label class="form-label" for="w-jur-filter">Jurisdictions — US states <span class="required">*</span></label>
-          <div class="jur-picker">
+          <label class="form-label">Jurisdictions — US states <span class="required">*</span></label>
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none" aria-hidden="true"><path d="M173.66 98.34a8 8 0 010 11.32l-56 56a8 8 0 01-11.32 0l-24-24a8 8 0 0111.32-11.32L112 148.69l50.34-50.35a8 8 0 0111.32 0zM232 128A104 104 0 1128 128a104 104 0 01208 0zm-16 0a88 88 0 10-176 0 88 88 0 00176 0z" fill="var(--color-brand)"/></svg>
+            <span style="font-size:14px;font-weight:500">All ${US_STATES.length} states selected</span>
+          </div>
+          <span class="form-help">This product is available in every US jurisdiction by default.</span>
+          <div class="jur-picker hidden">
             <div class="jur-picker-toolbar">
               <div class="jur-picker-search">
                 <svg class="jur-picker-search-icon" width="14" height="14" viewBox="0 0 256 256" fill="none" aria-hidden="true"><path d="M229.66 218.34l-50.07-50.07a88 88 0 10-11.31 11.31l50.06 50.07a8 8 0 0011.32-11.31zM40 112a72 72 0 1172 72 72.08 72.08 0 01-72-72z" fill="currentColor"/></svg>
@@ -138,7 +143,7 @@ function buildWizardHTML() {
             <div class="jur-picker-grid" id="w-jur-grid">
               ${US_STATES.map(j => `
               <label class="jur-tile" data-name="${j.name}" data-abbr="${j.abbr}" title="${j.name}" aria-label="${j.abbr} — ${j.name}">
-                <input type="checkbox" class="w-jurisdiction" value="${j.abbr}" onchange="syncSelectedStates()">
+                <input type="checkbox" class="w-jurisdiction" value="${j.abbr}" checked onchange="syncSelectedStates()">
                 <span class="jur-tile-abbr">${j.abbr}</span>
               </label>`).join('')}
               <div class="jur-picker-empty" id="w-jur-empty" hidden>No matching states</div>
@@ -315,7 +320,7 @@ const studios = ['s-coverage', 's-quest', 's-risk', 's-eligibility', 's-rating',
     <div style="grid-column:1/-1">
       <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted);margin-bottom:var(--space-3)">Product Identity</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
-        ${[['Product Name', name], ['Product Family', fam], ['Line of Business', lob], ['Product Owner', owner], ['Business Type', businessType],['Insurance Carrier', carrier],
+        ${[['Product Name', name], ['Product Family', fam], ['Coverage', lob], ['Product Owner', owner], ['Business Type', businessType],['Insurance Carrier', carrier],
 ['Carrier Status', carrierStatus]].map(([l, v]) => `
         <div><div style="font-size:12px;color:var(--color-muted)">${l}</div><div style="font-size:14px;font-weight:500;margin-top:2px">${v}</div></div>`).join('')}
       </div>
@@ -329,7 +334,7 @@ const studios = ['s-coverage', 's-quest', 's-risk', 's-eligibility', 's-rating',
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:12px">
         <div><div style="font-size:12px;color:var(--color-muted)">Clone source</div><div style="font-size:14px;font-weight:500;margin-top:2px">${cloneLabel}</div></div>
-        <div><div style="font-size:12px;color:var(--color-muted)">Jurisdictions</div><div style="font-size:14px;font-weight:500;margin-top:2px">${jurisdictions.length ? jurisdictions.join(', ') : 'None selected'}</div></div>
+        <div><div style="font-size:12px;color:var(--color-muted)">Jurisdictions</div><div style="font-size:14px;font-weight:500;margin-top:2px">${jurisdictions.length === US_STATES.length ? `All ${US_STATES.length} states selected` : jurisdictions.length ? jurisdictions.join(', ') : 'None selected'}</div></div>
       </div>
     </div>
     <div style="grid-column:1/-1;border-top:1px solid var(--color-border);padding-top:var(--space-4);margin-top:var(--space-2)">

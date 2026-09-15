@@ -203,7 +203,7 @@ export function NewProductWizard({
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Line of Business <span className="required">*</span></label>
+                  <label className="form-label">Coverage <span className="required">*</span></label>
                   <select
                     className="form-control"
                     value={lineOfBusiness}

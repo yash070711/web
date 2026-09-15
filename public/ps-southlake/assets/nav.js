@@ -97,17 +97,17 @@ PS.nav = {
     const navActiveId = this.sidebarActiveId(activeId);
 
     document.querySelector('.topbar-logo').innerHTML = `
-      <div class="topbar-logo-mark" aria-hidden="true">v</div>
+      <div class="topbar-logo-mark" aria-hidden="true" style="font-size:14px;padding-bottom:0">SL</div>
       <span class="topbar-logo-wordmark">
-        <span class="topbar-logo-text">Veridex</span>
-        <span class="topbar-logo-sub">Product Studio</span>
+        <span class="topbar-logo-text">SouthLake Carrier</span>
+        <span class="topbar-logo-sub">Carrier Portal</span>
       </span>
     `;
 
     // Breadcrumb
     const bcEl = document.querySelector('.topbar-breadcrumb');
     if (bcEl) {
-      const crumbs = [{ label: 'Studio', href: '/dashboard' }, ...breadcrumbs];
+      const crumbs = [{ label: 'Carrier Portal', href: '/dashboard' }, ...breadcrumbs];
       bcEl.innerHTML = crumbs.map((c, i) => {
         const isLast = i === crumbs.length - 1;
         return (i > 0 ? `<span class="sep">›</span>` : '') +
@@ -128,8 +128,8 @@ PS.nav = {
       <div class="topbar-user" id="topbar-user-btn" onclick="event.stopPropagation();PS.nav.toggleUserMenu()" aria-haspopup="true">
         <div class="user-avatar ${u.avatarClass}">${u.initials}</div>
         <div class="topbar-user-info">
-          <div class="topbar-user-name">Vikram & Sons</div>
-          <div class="topbar-user-role">Carrier</div>
+          <div class="topbar-user-name">SouthLake Carrier</div>
+          <div class="topbar-user-role">Admin</div>
         </div>
         ${this.icon('caret-down', 12)}
       </div>
