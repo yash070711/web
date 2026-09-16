@@ -715,7 +715,7 @@
       if (!this.cfg) return;
       const band = document.getElementById('readonly-band');
       if (band) {
-        const locked = this.productStatus === 'published' || this.productStatus === 'superseded' || this.productStatus === 'retired';
+        const locked = (this.productStatus === 'published' || this.productStatus === 'superseded' || this.productStatus === 'retired') && !window.PS?.auth?.isMGA?.();
         band.style.display = locked ? '' : 'none';
       }
       if (PS.nav?.render) {

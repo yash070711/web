@@ -306,7 +306,14 @@
     return productById(productId)?.status || 'published';
   }
 
+  function isMgUUser() {
+    let s = null;
+    try { s = PS.auth?.current?.(); } catch (_) {}
+    return Boolean(s && s.role === 'mga');
+  }
+
   function canEditVersion() {
+    if (isMgUUser()) return true;
     const ctx = context();
     return /DRAFT/i.test(ctx.version || '') || versionStatus(ctx.productId, ctx.version) === 'draft';
   }
@@ -915,6 +922,7 @@ const STUDIO_NAV_CHAIN = [
   { id: 'risk', file: 'risk-studio.html', title: 'Risk Studio' },
   { id: 'eligibility', file: 'eligibility-studio.html', title: 'Eligibility Studio' },
   { id: 'rating', file: 'rating-studio.html', title: 'Rating & Pricing Studio' },
+  { id: 'underwriting', file: 'underwriting-studio.html', title: 'Underwriting Studio' },
   { id: 'distribution', file: 'distribution-studio.html', title: 'Distribution Studio' },
   { id: 'document', file: 'document-studio.html', title: 'Document Studio' }
 ];  
@@ -1317,7 +1325,7 @@ function coverValidationIssues(cover) {
     const studioReady = typeof calculateStudioCompletion === 'function'
       ? calculateStudioCompletion(studioId, ctx.productId, ctx.version).pct >= 100
       : count > 0;
-    const next = studioReady ? nextStudioInChain(ctx.productId, studioId) : null;
+    const next = (studioReady || isMgUUser()) ? nextStudioInChain(ctx.productId, studioId) : null;
     const href = next ? studioNavHref(ctx.productId, ctx.version, next) : '';
     const containers = [];
     const ctxWrap = ensureContextNavActions();
@@ -1418,7 +1426,7 @@ function coverValidationIssues(cover) {
     const product = productById(productId) || state.productDetails[productId];
     if (!product) return null;
     const status = String(product.status || 'draft').toLowerCase();
-    if (status !== 'draft') return null;
+    if (status !== 'draft' && !(status === 'published' && isMgUUser())) return null;
     const bundle = getProductBundle(productId, version || product.version) || {};
     const enabled = new Set(enabledStudioIdsFor(productId) || []);
     const qCount = (bundle.questionGroups || []).reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 1), 0);
@@ -2177,7 +2185,7 @@ function coverValidationIssues(cover) {
     const ver = (detail?.versions || product.versions || []).find(v => v.label === versionLabel)
       || { status: product.status || 'draft' };
     const status = String(ver.status || product.status || 'draft').toLowerCase();
-    if (status !== 'draft' && status !== 'review') {
+    if (status !== 'draft' && status !== 'review' && !(status === 'published' && isMgUUser())) {
       document.getElementById('topbar-product-status')?.remove();
       return;
     }
@@ -2188,13 +2196,13 @@ function coverValidationIssues(cover) {
       el.className = 'topbar-product-status';
       topbarRight.insertBefore(el, topbarRight.firstChild);
     }
-    const stage = status === 'draft' ? productBuildStage(ctx.productId, versionLabel) : null;
+    const stage = (status === 'draft' || (status === 'published' && isMgUUser())) ? productBuildStage(ctx.productId, versionLabel) : null;
     const stageHtml = stage?.pending && stage.id !== 'ready'
       ? `<a class="topbar-draft-stage" href="${stage.href}" title="${stage.done} of ${stage.total} studios configured">Next: ${escapeHtml(stage.label)} ›</a>`
       : '';
     el.innerHTML = `
       <span class="badge badge-${status}" role="status">${PS.statusLabel(status)}</span>
-      <span class="topbar-draft-note">${status === 'draft' ? 'Product configuration in progress' : 'Awaiting governance review'}</span>
+      <span class="topbar-draft-note">${status === 'draft' ? 'Product configuration in progress' : status === 'published' ? 'MGU configuration in progress' : 'Awaiting governance review'}</span>
       ${stageHtml}`;
   }
 

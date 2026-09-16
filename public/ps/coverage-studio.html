@@ -2247,7 +2247,7 @@ function refreshFinancialPanel() {
 
 function selectValuationBasis(id) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   c.basisOfCoverage = vbMeta(id).name;
   const rows = ensureValuationRows(c);
   if (!rows.some(r => r.id === id)) {
@@ -2259,7 +2259,7 @@ function selectValuationBasis(id) {
 
 function setConfigureByBasis(on) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   c.configureByBasis = Boolean(on);
   if (c.configureByBasis) ensureValuationRows(c);
   refreshFinancialPanel();
@@ -2267,7 +2267,7 @@ function setConfigureByBasis(on) {
 
 function setValRow(id, key, value, skipRender) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   const row = ensureValuationRows(c).find(r => r.id === id);
   if (!row) return;
   row[key] = value;
@@ -2285,7 +2285,7 @@ function toggleValRowPick(id, on) {
 
 function addValuationBasisRow() {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   const rows = ensureValuationRows(c);
   const missing = VALUATION_BASES.find(b => !rows.some(r => r.id === b.id));
   if (!missing) {
@@ -2298,7 +2298,7 @@ function addValuationBasisRow() {
 
 function removePickedValuationRows() {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   const picked = Array.from(document.querySelectorAll('#vb-table .vb-pick:checked')).map(el => el.value);
   if (!picked.length) {
     PS.actionResult('info', 'Nothing selected', 'Tick one or more valuation rows to remove.');
@@ -2351,14 +2351,14 @@ function filterSubLimits() {
 
 function addSubLimitRow() {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   ensureSubLimits(c).push({ id: `sl-${Date.now()}`, target: '', limitMode: 'amount', limit: '', of: 'Insured Value' });
   refreshFinancialPanel();
 }
 
 function patchSubLimit(id, key, value, skipRender) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   const row = ensureSubLimits(c).find(r => r.id === id);
   if (!row) return;
   row[key] = value;
@@ -2367,7 +2367,7 @@ function patchSubLimit(id, key, value, skipRender) {
 
 function removeSubLimit(id) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   c.subLimits = ensureSubLimits(c).filter(r => r.id !== id);
   refreshFinancialPanel();
 }
@@ -2417,6 +2417,7 @@ function syncDeductibleAmountAuto(value) {
   try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
 }
 function coversCanEdit() {
+  if (isMgU()) return true;
   if (window.PS?.prototypeApp?.canEditVersion) return window.PS.prototypeApp.canEditVersion();
   return productStatus !== 'published' && productStatus !== 'superseded' && productStatus !== 'retired';
 }
@@ -2434,6 +2435,10 @@ function isMgU() {
 
 function canEditStructure() {
   return coversCanEdit() && !isMgU();
+}
+
+function sectionsLocked() {
+  return productStatus === 'published' && !isMgU();
 }
 
 function toggleMutualExclusion(name, on) {
@@ -3034,7 +3039,7 @@ function wordingLibrary() {
 
 function setDepCondition(index, value) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
 
   const row = (c.dependencies || [])[index];
   if (!row) return;
@@ -3062,7 +3067,7 @@ function dependencyPreviewText(c) {
 
 function addDep() {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   ensureValuationRows(c);
   if (!Array.isArray(c.dependencies)) c.dependencies = [];
   const names = otherCoverNames(c.id);
@@ -3072,7 +3077,7 @@ function addDep() {
 
 function patchDep(index, key, value) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   const row = (c.dependencies || [])[index];
   if (!row) return;
   row[key] = value;
@@ -3081,21 +3086,21 @@ function patchDep(index, key, value) {
 
 function removeDep(index) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   c.dependencies = (c.dependencies || []).filter((_, i) => i !== index);
   persistAndRefreshCover();
 }
 
 function unlinkWordingDoc(code) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   c.wordingDocs = (c.wordingDocs || []).filter(d => d.code !== code);
   persistAndRefreshCover();
 }
 
 function linkWordingDoc(code) {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   if (!Array.isArray(c.wordingDocs)) c.wordingDocs = [];
   if (c.wordingDocs.some(d => d.code === code)) {
     PS.closeModal();
@@ -3110,7 +3115,7 @@ function linkWordingDoc(code) {
 
 function linkCustomWordingDoc() {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   const name = document.getElementById('wd-custom-name')?.value.trim();
   const code = document.getElementById('wd-custom-code')?.value.trim();
   const version = document.getElementById('wd-custom-ver')?.value.trim() || 'v2026.04';
@@ -3163,7 +3168,7 @@ function syncWordingUploadPreview() {
 
 function uploadWordingDoc() {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   const file = document.getElementById('wd-upload-file')?.files?.[0];
   if (!file) {
     PS.actionResult('error', 'No file selected', 'Choose a document to upload.');
@@ -3200,7 +3205,7 @@ function uploadWordingDoc() {
 
 function openLinkDocumentModal() {
   const c = currentCover();
-  if (!c || productStatus === 'published') return;
+  if (!c || sectionsLocked()) return;
   if (!Array.isArray(c.wordingDocs)) c.wordingDocs = [];
   const linked = new Set(c.wordingDocs.map(d => d.code));
   const available = wordingLibrary().filter(d => !linked.has(d.code));
@@ -3905,7 +3910,7 @@ function applyProductCovers(covers) {
 function paintStudio() {
   const readonlyBand = document.getElementById('readonly-band');
   if (readonlyBand) {
-    readonlyBand.style.display = (productStatus === 'published' || productStatus === 'superseded' || productStatus === 'retired') ? '' : 'none';
+    readonlyBand.style.display = (productStatus === 'published' || productStatus === 'superseded' || productStatus === 'retired') && !isMgU() ? '' : 'none';
   }
   if (!COVERS.length && productNeedsCoverSelection()) {
     maybeAutoApplyDefaultCovers();
@@ -5460,7 +5465,7 @@ function renderDetailPanel(c) {
         ${(PS.admin ? PS.admin.extraFieldsFor('cover') : []).map(f => `
         <div class="form-group">
           <label class="form-label">${htmlEsc(f.label)}</label>
-          ${PS.admin.fieldHtml(f, c[f.id], ro, `patchCoverField('${f.id}', this.value)`)}
+          ${PS.admin.fieldHtml(f, c[f.id], roIdentity, `patchCoverField('${f.id}', this.value)`)}
         </div>`).join('')}
       </div>
     `)}

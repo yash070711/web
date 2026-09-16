@@ -441,7 +441,7 @@ function renderAllProducts() {
       <td class="mono" style="font-size:12px">${entry.assignedAt || '—'}</td>
       <td class="mono" style="font-size:12px">${p.effectiveFrom || '—'}</td>
       <td class="mono" style="font-size:12px">${p.lastModified || '—'}</td>
-      <td><a href="${viewHref(p)}" class="btn btn-primary btn-sm" style="white-space:nowrap">View / Configure →</a></td>
+      <td><a href="product-detail.html?id=${p.id}#studios" class="btn btn-primary btn-sm" style="white-space:nowrap">View / Configure →</a></td>
     </tr>`;
   }).join('');
 }

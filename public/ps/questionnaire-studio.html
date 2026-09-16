@@ -1682,7 +1682,7 @@ function applyProductGroups(groups) {
 function paintStudio() {
   const readonlyBand = document.getElementById('readonly-band');
   if (readonlyBand) {
-    readonlyBand.style.display = (productStatus === 'published' || productStatus === 'superseded' || productStatus === 'retired') ? '' : 'none';
+    readonlyBand.style.display = (productStatus === 'published' || productStatus === 'superseded' || productStatus === 'retired') && !isMgU() ? '' : 'none';
   }
   PS.nav.render('questionnaire', [
     { label: 'Product Catalogue', href: 'catalogue.html' },
@@ -2942,7 +2942,13 @@ document.addEventListener('click', (e) => {
   });
 });
 
+function isMgU() {
+  const s = window?.PS?.auth?.current?.();
+  return Boolean(s && s.role === 'mga');
+}
+
 function questionsCanEdit() {
+  if (isMgU()) return true;
   if (productStatus === 'published' || productStatus === 'superseded' || productStatus === 'retired') return false;
   if (window.PS?.prototypeApp?.canEditVersion) return window.PS.prototypeApp.canEditVersion();
   return true;
