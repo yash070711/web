@@ -643,7 +643,7 @@ function openAddChannelModal() {
   const params = new URLSearchParams(location.search);
   const product = params.get('product') || params.get('id') || '';
   const qs = product ? `?product=${encodeURIComponent(product)}` : '';
-  window.location.href = `distribution-create.html${qs}`;
+  window.location.href = `/distribution/create${qs}`;
 }
 </script>
 <script src="assets/studio-help.js"></script>

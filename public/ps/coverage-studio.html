@@ -1066,7 +1066,6 @@
     .ii-inline-toggle-label { font-size: 13px; font-weight: 600; color: var(--color-ink); }
     .ii-inline-toggle-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .ii-inline-toggle-state { font-size: 12px; font-weight: 650; color: var(--color-brand); }
-    .ii-add-item { margin-top: 4px; }
     .ii-vb-tile.ii-vb-tile-na { min-height: 72px; padding-top: 14px; }
     .ii-vb-tile.ii-vb-tile-na .ii-vb-icon { display: none; }
     .ii-bases { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
@@ -1109,6 +1108,12 @@
     }
     @media (max-width: 980px) { .vb-cards { grid-template-columns: 1fr; } .ded-pills { flex-direction: column; } .ii-bases, .ii-vb-grid, .ded-cards { grid-template-columns: 1fr; } }
     .cs-identity-lock-note { margin:0 0 16px; padding:12px 14px; border-radius:var(--radius-md); background:var(--color-info-light, #eff6ff); color:var(--color-info-ink, #1d4ed8); font-size:13px; line-height:1.45; }
+    .identity-section-divider { height: 1px; margin: 22px 0 20px; background: var(--color-border); }
+    .identity-ii-block { display: flex; flex-direction: column; gap: 12px; }
+    .ii-block-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 2px; }
+    .ii-block-head .ii-sub-head { margin-bottom: 0; }
+    .ii-block-help { font-size: 12.5px; line-height: 1.5; color: var(--color-muted); max-width: 720px; }
+    .ii-child-card-anchor { scroll-margin-top: 16px; }
   </style>
 </head>
 <body>
@@ -1401,7 +1406,7 @@ const AVAIL_CSS = {
    STATE
 ──────────────────────────────────────────────────────── */
 let activeCoverId = '';
-let openSections  = new Set(['identity','insuredItems','deductible','sublimits','overrides','dependencies','claims','wording']);
+let openSections  = new Set(['identity','childCoverage','deductible','sublimits','overrides','dependencies','claims','wording']);
 let productStatus = 'draft';
 let productId, productVersion, productName;
 let productLastModified = '';
@@ -1478,7 +1483,8 @@ let DEP_TYPES = ['Requires', 'Excludes', 'Bundles with'];
 let CONSTRAINT_FIELDS = ['Vehicle Age', 'Vehicle Type', 'Insured Value', 'Vehicle Registration', 'Driver Age', 'Usage', 'Sum Insured', 'NCD'];
 let CONSTRAINT_OPS = ['≤', '≥', '=', 'is', 'is one of', 'is not'];
 let WAITING_PERIODS = ['None', '30 days', '60 days', '90 days'];
-let DEDUCTIBLE_PCT_OF = ['Claim Amount', 'Item Limit', 'Loss Amount'];
+let DEDUCTIBLE_PCT_OF = ['Insured Value', 'Coverage Limit', 'Claim Amount', 'Declared Value', 'Shipment Value'];
+let DEDUCTIBLE_APPLIES_PER = ['Claim', 'Occurrence', 'Vehicle', 'Shipment'];
 let COVER_TYPES = [
   'First Party — Property Damage',
   'Third Party — Liability',
@@ -2176,15 +2182,6 @@ function toggleInsuredBasis(id, basisId, on) {
   ensureItemValConfig(item, c);
   persistInsuredItems(false);
 }
-function addInsuredItem() {
-  const c = currentCover();
-  if (!c || !coversCanEdit()) return;
-  const items = ensureInsuredItems(c);
-  const newItem = defaultInsuredItem(c, items.length);
-  newItem.id = `ii-${Date.now()}`;
-  items.push(newItem);
-  persistInsuredItems(false);
-}
 
 function removeInsuredItem(id) {
   const c = currentCover();
@@ -2201,34 +2198,34 @@ function removeInsuredItem(id) {
 function scrollCoverSection(targetId) {
   const sectionMap = {
     identity: 'identity',
-    'ii-item': 'insuredItems',
-    'ii-val': 'insuredItems',
-    'ii-limit': 'insuredItems',
-    'ii-limit-amt': 'insuredItems',
+    'ii-item': 'identity',
+    'ii-val': 'identity',
+    'ii-limit': 'identity',
+    'ii-limit-amt': 'identity',
+    childCoverage: 'childCoverage',
     'ded-block': 'deductible'
   };
   const sectionId = sectionMap[targetId] || (targetId === 'identity' ? 'identity' : targetId.replace(/^sec-body-/, ''));
   const body = document.getElementById(`sec-body-${sectionId}`);
   if (body && !body.classList.contains('open')) toggleSection(sectionId);
-  const el = document.getElementById(targetId === 'identity' ? 'sec-body-identity' : targetId);
+  const el = document.getElementById(targetId === 'identity' ? 'sec-body-identity' : targetId === 'childCoverage' ? 'sec-body-childCoverage' : targetId);
   if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 40);
 }
 
 function iiTabsHtml(active) {
   const tabs = [
     ['identity', 'Coverage'],
-    ['ii-item', 'Insured item'],
     ['ii-val', 'Valuation basis'],
     ['ii-limit', 'Limit basis'],
     ['ii-limit-amt', 'Limit']
   ];
-  return `<nav class="ii-tabs" aria-label="Insured item steps">${tabs.map(([id, label]) =>
+  return `<nav class="ii-tabs" aria-label="Valuation and limits steps">${tabs.map(([id, label]) =>
     `<button type="button" class="${active === id ? 'on' : ''}" onclick="scrollCoverSection('${id}')">${label}</button>`
   ).join('')}</nav>`;
 }
 
 function coverEditorCrumbHtml() {
-  return iiTabsHtml('ii-item');
+  return iiTabsHtml('ii-val');
 }
 
 function currentCover() {
@@ -3390,16 +3387,16 @@ function buildInsuredItemCard(it, index, ro, c) {
   const limitBasisValue = it.limitBasis || (limitMode === 'percent' ? 'Percentage of SI' : 'Fixed Amount');
 
   return `
-    <div class="ii-item" ${index === 0 ? 'id="ii-item"' : ''}>
-      <div class="ii-item-head">
-        <strong>${index === 0 ? 'Insured Item' : `Child Coverage Class ${index}`}</strong>
-        ${ro || index === 0 ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="removeInsuredItem('${idAttr}')">Remove</button>`}
-      </div>
+    <div class="ii-item${index === 0 ? '' : ' ii-child-card-anchor'}" ${index === 0 ? 'id="ii-item"' : `id="ii-child-${index}" data-child-card="1"`}>
+      ${index > 0 ? `<div class="ii-item-head">
+        <strong>Child Coverage ${index}</strong>
+        ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="removeInsuredItem('${idAttr}')">Remove</button>`}
+      </div>` : ''}
       <div class="form-grid-2 ii-item-grid">
         ${index > 0 ? `
         <div class="form-group">
           <label class="form-label">Insured item type</label>
-          <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','type',this.value,false)">
+          <select class="form-control" ${ro||isMgU()?'disabled':''} onchange="patchInsuredItem('${idAttr}','type',this.value,false)">
             ${typeOpts.map(t => `<option value="${htmlEsc(t)}" ${itemType===t?'selected':''}>${htmlEsc(t)}</option>`).join('')}
           </select>
         </div>` : ''}
@@ -3425,57 +3422,11 @@ function buildInsuredItemCard(it, index, ro, c) {
             ${quoteOpts.map(o => `<option ${it.quoteChoice===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group span-2">
-          <div class="ii-toggle-row">
-            <div>
-              <strong>Underwriter can override valuation</strong>
-              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="ii-en">${it.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
-              <label class="toggle-switch">
-                <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
-                <div class="toggle-slider"></div><div class="toggle-dot"></div>
-              </label>
-            </div>
-          </div>
-          <div class="uw-auth-card-fields">
-            <div class="form-group">
-              <label class="form-label">Maximum variation (%)</label>
-              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Referral requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
-                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Reason requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
-                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-        </div>
         <div class="form-group">
           <label class="form-label">Limit Basis</label>
           <select class="form-control" ${ro?'disabled':''} onchange="setItemLimitBasisSelect('${idAttr}', this.value)">
             ${(isServiceCover(c) ? ['Not Applicable'] : LIMIT_BASIS_OPTS).map(o => `<option ${limitBasisValue===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
           </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Underwriter Limit Override</label>
-          <div class="ii-inline-toggle">
-            <span class="ii-inline-toggle-label">Allowed</span>
-            <div class="ii-inline-toggle-right">
-              <span class="ii-inline-toggle-state">${it.uwLimitOverride ? 'On' : 'Off'}</span>
-              <label class="toggle-switch">
-                <input type="checkbox" ${it.uwLimitOverride?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwLimitOverride',this.checked,false)" aria-label="Underwriter limit override">
-                <div class="toggle-slider"></div><div class="toggle-dot"></div>
-              </label>
-            </div>
-          </div>
         </div>
         ${isServiceCover(c) ? `
         <div class="form-group">
@@ -3531,10 +3482,9 @@ function buildInsuredItemCard(it, index, ro, c) {
           <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
         </div>` : ''}
       
-      </div>
+</div>
     </div>`;
 }
-
 function formatInsuredItemsSummary(c) {
   ensureInsuredItems(c);
   const n = c.insuredItems.length;
@@ -3545,7 +3495,7 @@ function formatInsuredItemsSummary(c) {
 
 function formatDeductibleSummary(c) {
   if (c.deductibleType === 'none') return 'No deductible';
-  if (c.deductibleType === 'fixed') return `$${c.deductibleAmount || '0'} fixed`;
+  if (c.deductibleType === 'fixed') return `$${c.deductibleAmount || '0'} fixed · per ${c.deductibleAppliesPer || 'Claim'}`;
   return `${c.deductiblePct || '0'}% of ${c.deductiblePctOf || 'Claim Amount'}`;
 }
 
@@ -3560,7 +3510,7 @@ function formatApplicableDeductible(c) {
     const amount = String(c?.deductibleAmount ?? '').trim();
 
     return amount
-      ? `$${amount} (Fixed)`
+      ? `$${amount} (Fixed · per ${c?.deductibleAppliesPer || 'Claim'})`
       : 'Not configured';
   }
 
@@ -3650,6 +3600,21 @@ function buildDeductibleSection(c, ro) {
       </div>
 
       <div class="form-group">
+        <label class="form-label">Deductible Applies Per</label>
+        <select
+          class="form-control"
+          data-validation-field="deductibleAppliesPer"
+          ${roDis}
+          onchange="${patch('deductibleAppliesPer')}"
+        >
+          ${DEDUCTIBLE_APPLIES_PER.map(o =>
+            `<option ${(c.deductibleAppliesPer || 'Claim') === o ? 'selected' : ''}>${htmlEsc(o)}</option>`
+          ).join('')}
+        </select>
+        <span class="form-help">The basis the fixed deductible applies to for each claim.</span>
+      </div>
+
+      <div class="form-group">
         <label class="form-label">Minimum Deductible ($)</label>
         <input
           type="text"
@@ -3697,7 +3662,7 @@ function buildDeductibleSection(c, ro) {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Percentage Of</label>
+        <label class="form-label">Deductible Basis</label>
         <select
           class="form-control"
           data-validation-field="deductiblePctOf"
@@ -3756,26 +3721,105 @@ function buildDeductibleSection(c, ro) {
             )
       }
 
-      
-
-    ${uwValuationOverrideToggleHtml(c, ro)}
+      ${
+        c.deductibleType !== 'none' ? `
+        <div class="ii-sub" style="margin-top:14px">
+          <div class="ii-sub-head">Underwriter Override</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:13px">
+            <input type="checkbox"
+              ${c.deductibleUwOverride ? 'checked' : ''}
+              ${roDis}
+              onchange="currentCover().deductibleUwOverride=this.checked; persistAndRefreshCover()"
+              id="ded-uw-override-${c.id}"
+              style="width:16px;height:16px;accent-color:var(--color-brand)"
+            >
+            <label for="ded-uw-override-${c.id}" style="font-weight:650;cursor:pointer">Allow Underwriter Override</label>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Maximum Override (%)</label>
+              <div class="pct-wrap" style="max-width:120px">
+                <input
+                  type="text"
+                  class="form-control"
+                  data-validation-field="deductibleUwMaxOverride"
+                  value="${htmlEsc(c.deductibleUwMaxOverride == null ? '20' : c.deductibleUwMaxOverride)}"
+                  ${roDis}
+                  ${!c.deductibleUwOverride ? 'disabled' : ''}
+                  oninput="${patch('deductibleUwMaxOverride')}"
+                >
+                <span class="pct-suffix">%</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Allow Override For</label>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                  <input
+                    type="checkbox"
+                    ${c.deductibleUwOverrideAmount !== false ? 'checked' : ''}
+                    ${roDis}
+                    ${!c.deductibleUwOverride ? 'disabled' : ''}
+                    onchange="currentCover().deductibleUwOverrideAmount=this.checked; persistAndRefreshCover()"
+                    style="width:16px;height:16px;accent-color:var(--color-brand)"
+                  > Deductible Amount / Percentage
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                  <input
+                    type="checkbox"
+                    ${c.deductibleUwOverrideBasis ? 'checked' : ''}
+                    ${roDis}
+                    ${!c.deductibleUwOverride ? 'disabled' : ''}
+                    onchange="currentCover().deductibleUwOverrideBasis=this.checked; persistAndRefreshCover()"
+                    style="width:16px;height:16px;accent-color:var(--color-brand)"
+                  > Deductible Basis
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                  <input
+                    type="checkbox"
+                    ${c.deductibleUwOverrideAppliesPer ? 'checked' : ''}
+                    ${roDis}
+                    ${!c.deductibleUwOverride ? 'disabled' : ''}
+                    onchange="currentCover().deductibleUwOverrideAppliesPer=this.checked; persistAndRefreshCover()"
+                    style="width:16px;height:16px;accent-color:var(--color-brand)"
+                  > Deductible Applies Per
+                </label>
+              </div>
+            </div>
+          </div>
+          <p class="ii-val-foot" style="margin-top:12px">Maximum allowed change: ±${c.deductibleUwMaxOverride == null ? '20' : c.deductibleUwMaxOverride}%</p>
+        </div>
+        ` : ''
+      }
 
     </div>`;
 }
 function buildInsuredItemsSection(c, ro) {
   ensureInsuredItems(c);
-  // Keep the default/base insured item visible as the parent.
-  // Additional insured items are rendered as explicit child coverage classes.
+  // The primary insured item with its valuation & limits lives inside the
+  // Cover Identity section. Every additional insured item is a child
+  // coverage class and is configured in its own "Child Coverage" section.
   const parentItem = c.insuredItems[0];
-  const childItems = c.insuredItems.slice(1);
   return `
-      <div class="ii-info-callout">
-        <div class="ii-info-callout-body">Valuation and limit are separate. Valuation determines how the loss value is calculated. Limit determines the maximum amount payable.</div>
+      <div class="identity-ii-block">
+        <div class="ii-block-head">
+          <div class="ii-sub-head"><span class="ii-sub-num">A</span> Valuation &amp; Limits</div>
+        </div>
+        ${parentItem ? buildInsuredItemCard(parentItem, 0, ro, c) : ''}
+        ${uwValuationOverrideToggleHtml(c, ro)}
+      </div>`;
+}
+
+function buildChildCoverageSection(c, ro) {
+  ensureInsuredItems(c);
+  const childItems = c.insuredItems.slice(1);
+  if (!childItems.length) return '';
+  return buildSection('childCoverage', '2', 'Child Coverage', `${childItems.length} child coverage${childItems.length === 1 ? '' : 's'} — each with its own valuation & limit`, `
+      <div class="callout callout-info" style="margin-bottom:14px">
+        <div class="callout-body" style="font-size:13px">Each child coverage is a separately configured extension under the parent cover. Configure its insured item, valuation basis and limits here; the parent cover configuration stays in Cover Identity above.</div>
       </div>
-      ${parentItem ? buildInsuredItemCard(parentItem, 0, ro, c) : ''}
-      ${childItems.map((it, i) => buildInsuredItemCard(it, i + 1, ro, c)).join('')}
-      ${!childItems.length ? `<div style="padding:14px 0;font-size:12px;color:var(--color-muted)">No child coverage class added.</div>` : ''}
-      ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm ii-add-item" onclick="addInsuredItem()">+ Add child class</button>`}`;
+      ${childItems.map((it, i) => buildInsuredItemCard(it, i + 1, ro, c) + uwValuationOverrideToggleHtml(c, ro)).join('')}
+    `);
 }
 
 function buildSubLimitsSection(c, ro) {
@@ -3875,10 +3919,16 @@ function normalizeCover(cover, index) {
   c.deductiblePct = c.deductiblePct ?? '';
   c.deductiblePctOf = c.deductiblePctOf || 'Claim Amount';
   if (!DEDUCTIBLE_PCT_OF.includes(c.deductiblePctOf)) {
-    const legacyPctOf = { 'Sum Insured': 'Item Limit', 'Insured Value': 'Item Limit' };
+    const legacyPctOf = { 'Sum Insured': 'Insured Value', 'Item Limit': 'Coverage Limit', 'Loss Amount': 'Claim Amount' };
     c.deductiblePctOf = legacyPctOf[c.deductiblePctOf] || 'Claim Amount';
   }
   c.minDeductible = c.minDeductible ?? '';
+  c.deductibleAppliesPer = c.deductibleAppliesPer || 'Claim';
+  c.deductibleUwOverride = Boolean(c.deductibleUwOverride);
+  c.deductibleUwMaxOverride = c.deductibleUwMaxOverride ?? '20';
+  c.deductibleUwOverrideAmount = c.deductibleUwOverrideAmount !== false;
+  c.deductibleUwOverrideBasis = Boolean(c.deductibleUwOverrideBasis);
+  c.deductibleUwOverrideAppliesPer = Boolean(c.deductibleUwOverrideAppliesPer);
   c.maxDeductible = c.maxDeductible ?? '';
   c.copay = c.copay ?? '0';
   c.waitingPeriod = c.waitingPeriod || 'None';
@@ -4194,7 +4244,6 @@ function markCoversPicked() {
 }
 
 function addCatalogCoversToProduct(items) {
-  if (isMgU()) return 0;
   const existing = new Set(COVERS.map(c => String(c.name || '').toLowerCase()));
   let added = 0;
   items.forEach(lib => {
@@ -4253,7 +4302,6 @@ function coverPickCategoryPill(c) {
 }
 
 function togglePickCover(id, checked) {
-  if (isMgU()) return;
   if (checked) pickCoverSelectedIds.add(String(id));
   else pickCoverSelectedIds.delete(String(id));
   renderCoverTable();
@@ -4261,7 +4309,6 @@ function togglePickCover(id, checked) {
 }
 
 function toggleAllPickCovers(checked) {
-  if (isMgU()) return;
   const catalog = defaultCoversCatalogForProduct();
   const q = (document.getElementById('cover-pick-filter')?.value || '').trim().toLowerCase();
   const rows = catalog.filter(c => {
@@ -4344,7 +4391,6 @@ function renderExistingCoverPicker() {
 }
 
 function useCheckedExistingCovers() {
-  if (isMgU()) return;
   const catalog = defaultCoversCatalogForProduct();
   const ids = pickCoverSelectedIds.size
     ? Array.from(pickCoverSelectedIds)
@@ -4588,11 +4634,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const productBtn = document.getElementById('view-product-btn');
   if (productBtn) productBtn.href = `product-detail.html?id=${productId}&version=${productVersion}`;
 
-  /* MGU: hide structural actions that alter the Risk Carrier-owned coverage
-     identity and cover list. The MGU only configures the allowed sections. */
+  /* MGU: hide structural actions that reorder the Risk Carrier-owned
+     cover list. The MGU uses the Cover Library (above) to add existing
+     covers or create new ones, then configures them. */
   if (isMgU()) {
-    const libBtn = document.getElementById('import-lib-btn');
-    if (libBtn) libBtn.style.display = 'none';
     const reorderBtn = document.getElementById('reorder-btn');
     if (reorderBtn) reorderBtn.style.display = 'none';
   }
@@ -5330,7 +5375,13 @@ function renderEmptyDetail() {
     <div class="section-card" style="padding:48px 32px;text-align:center">
       <div style="font-size:16px;font-weight:650;margin-bottom:8px">Select or add a cover</div>
       <div style="font-size:13px;color:var(--color-muted);max-width:42ch;margin:0 auto 16px">This product version has no coverage configuration yet. Add a cover to edit identity, financial terms, and wording in this panel.</div>
-      ${isMgU() ? '<p style="font-size:13px;color:var(--color-muted)">Coverage is created and owned by the Risk Carrier. You can configure all non-identity fields for your assigned covers in the editor above.</p>' : '<button class="btn btn-primary" type="button" onclick="openAddCoverModal()">Add Cover</button>'}
+      ${isMgU()
+        ? `<p style="font-size:13px;color:var(--color-muted);max-width:52ch;margin:0 auto 16px">Coverage identity and ownership are managed by the Risk Carrier. Add covers from the existing Cover Library or create a new one, then configure all non-identity fields in this panel.</p>
+           <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+             <button type="button" class="btn btn-primary" onclick="openLibraryModal()">Use existing covers</button>
+             <button type="button" class="btn btn-secondary" onclick="openAddCoverModal()">+ Create new cover</button>
+           </div>`
+        : '<button class="btn btn-primary" type="button" onclick="openAddCoverModal()">Add Cover</button>'}
     </div>`;
 }
 
@@ -5451,8 +5502,8 @@ function renderDetailPanel(c) {
         <button type="button" class="btn btn-ghost btn-sm" onclick="confirmRemoveCover('${htmlEsc(c.id)}')">Remove cover</button>
       </div>`}
     </div>
-    ${buildSection('identity', '1', 'Cover Identity', `${coverType}${mgu ? ' · owned by Risk Carrier · read-only' : ''}`, `
-      ${mgu ? `<div class="cs-identity-lock-note">The Coverage Identity and coverage structure below are owned by the Risk Carrier and are shown for reference. Every other section in this studio remains editable.</div>` : ''}
+    ${buildSection('identity', '1', 'Cover Identity', `${coverType}${mgu ? ' · identity owned by Risk Carrier' : ''} — ${formatInsuredItemsSummary(c)}`, `
+      ${mgu ? `<div class="cs-identity-lock-note">The Cover Identity fields (name, type, availability, product context) are owned by the Risk Carrier and are read-only. The Valuation &amp; Limits configuration inside this section remains editable.</div>` : ''}
       <div class="form-grid-2">
         ${F('Cover Name', c.name, false, 'text', [], true)}
         ${coverTypeFieldHtml(c, roIdentity)}
@@ -5468,14 +5519,15 @@ function renderDetailPanel(c) {
           ${PS.admin.fieldHtml(f, c[f.id], roIdentity, `patchCoverField('${f.id}', this.value)`)}
         </div>`).join('')}
       </div>
+      <div class="identity-section-divider"></div>
+      ${buildInsuredItemsSection(c, ro)}
     `)}
 
-  
-    ${buildSection('insuredItems', '3', 'Insured Items, Valuation & Limits', formatInsuredItemsSummary(c), buildInsuredItemsSection(c, ro))}
+    ${buildChildCoverageSection(c, ro)}
 
-    ${buildSection('deductible', '4', 'Deductible & Co-pay', formatDeductibleSummary(c), buildDeductibleSection(c, ro))}
+    ${buildSection('deductible', '3', 'Deductible & Co-pay', formatDeductibleSummary(c), buildDeductibleSection(c, ro))}
 
-    ${buildSection('dependencies', '6', 'Dependencies',
+    ${buildSection('dependencies', '4', 'Dependencies',
       c.dependencies.length ? `${c.dependencies.length} rule${c.dependencies.length>1?'s':''} configured` : 'Optional',
       `
       <div class="dep-hero">
@@ -5587,7 +5639,7 @@ function renderDetailPanel(c) {
       </div>
     `)}
 
-    ${buildSection('claims', '7', 'Claims Behaviour', `${c.lossBasis} · ${c.benefitBasis}`, `
+    ${buildSection('claims', '5', 'Claims Behaviour', `${c.lossBasis} · ${c.benefitBasis}`, `
       <div class="form-grid-2">
         ${F('Loss Basis', c.lossBasis, false, 'select', LOSS_BASIS)}
         ${F('Reinstatement', c.reinstatement, false, 'select', REINSTATEMENT)}
@@ -5610,7 +5662,7 @@ function renderDetailPanel(c) {
       ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override claims behavior', 'Allows the underwriter to change the claims behaviour for this cover at quote time.')}
     `)}
 
-    ${buildSection('wording', '8', 'Wording Reference', `${c.wordingDocs.length} document${c.wordingDocs.length!==1?'s':''} linked`, `
+    ${buildSection('wording', '6', 'Wording Reference', `${c.wordingDocs.length} document${c.wordingDocs.length!==1?'s':''} linked`, `
       ${c.wordingDocs.length ? c.wordingDocs.map(d => `
       <div class="doc-row">
         <svg class="doc-row-icon" width="18" height="18" viewBox="0 0 256 256" fill="none"><path d="M213.66 82.34l-56-56A8 8 0 00152 24H56a16 16 0 00-16 16v176a16 16 0 0016 16h144a16 16 0 0016-16V88a8 8 0 00-2.34-5.66zM160 51.31L188.69 80H160zM200 216H56V40h88v48a8 8 0 008 8h48v120z" fill="currentColor"/></svg>
@@ -6098,7 +6150,6 @@ function executeCreateLibraryCover() {
    ADD COVER MODAL
 ──────────────────────────────────────────────────────── */
 function openAddCoverModal() {
-  if (isMgU()) return;
   PS.openModal(`
     <div class="modal-header">
       <h2 class="modal-title">Add Cover</h2>
@@ -6197,7 +6248,6 @@ function openReorderModal() {
    COVER LIBRARY MODAL
 ──────────────────────────────────────────────────────── */
 function openLibraryModal() {
-  if (isMgU()) return;
   const catalog = catalogCoversForPicker();
   PS.openModal(`
     <div class="modal-header">

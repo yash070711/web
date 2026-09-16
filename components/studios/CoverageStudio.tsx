@@ -437,8 +437,8 @@ function insuredItemsSummary(cover: Row) {
 function deductibleSummary(cover: Row) {
   const dtype = str(cover, "deductibleType", "none");
   if (dtype === "none") return "No deductible";
-  if (dtype === "fixed") return `${money(str(cover, "deductibleAmount") || "0")} fixed`;
-  return `${str(cover, "deductiblePct") || "0"}% of claim`;
+  if (dtype === "fixed") return `${money(str(cover, "deductibleAmount") || "0")} fixed · per ${str(cover, "deductibleAppliesPer", "Claim")}`;
+  return `${str(cover, "deductiblePct") || "0"}% of ${str(cover, "deductiblePctOf", "Claim Amount")}`;
 }
 
 function financialSummary(cover: Row) {
@@ -447,10 +447,10 @@ function financialSummary(cover: Row) {
   const limit = money(first?.limitAmount || str(cover, "sumInsured"));
   const dtype = str(cover, "deductibleType");
   const ded = dtype === "percentage"
-    ? `${str(cover, "deductiblePct") || "0"}% deductible`
+    ? `${str(cover, "deductiblePct") || "0"}% of ${str(cover, "deductiblePctOf", "Claim Amount")}`
     : dtype === "none"
       ? "No deductible"
-      : `${money(str(cover, "deductibleAmount") || "0")} deductible`;
+      : `${money(str(cover, "deductibleAmount") || "0")} deductible · per ${str(cover, "deductibleAppliesPer", "Claim")}`;
   const n = `${items.length} item${items.length === 1 ? "" : "s"}`;
   const basisId = first?.defaultBasis && first.defaultBasis !== "NA" ? basisMeta(first.defaultBasis).id : basisMeta(str(cover, "basisOfCoverage")).id;
   return `${n} · ${limit} · ${ded} · ${basisId}`;
@@ -534,10 +534,10 @@ function InsuredItemCard({
   const valRows = (it.valuationConfig || []).filter((r) => allowed.includes(r.id) && r.id !== "NA");
 
   return (
-    <div className="ii-item" id={index === 0 ? "ii-item" : undefined}>
+    <div className={`ii-item${index === 0 ? "" : " ii-child-card-anchor"}`} id={index === 0 ? "ii-item" : `ii-child-${index}`}>
       {index > 0 ? (
         <div className="ii-item-head">
-          <strong>Insured item {index + 1}</strong>
+          <strong>Child Coverage {index}</strong>
           {!readOnly ? (
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => onRemove(it.id)}>Remove</button>
           ) : null}
@@ -547,11 +547,13 @@ function InsuredItemCard({
         <section className="ii-sub">
           <div className="ii-sub-head"><span className="ii-sub-num">1</span> Insured Item Details</div>
           <div className="form-grid-2">
+            {index > 0 ? (
             <Field label="Insured item type">
               <select className="form-control" disabled={readOnly} value={it.type} onChange={(e) => onPatch(it.id, { type: e.target.value, name: e.target.value })}>
                 {types.map((t) => <option key={t}>{t}</option>)}
               </select>
             </Field>
+            ) : null}
             <div className="form-group span-2">
               <label className="form-label">Description <span className="form-hint">(optional)</span></label>
               <textarea className="form-control" rows={2} placeholder="Describe this insured item…" disabled={readOnly} value={it.description} onChange={(e) => onPatch(it.id, { description: e.target.value })} />
@@ -585,21 +587,6 @@ function InsuredItemCard({
                 {quoteOpts.map((o) => <option key={o}>{o}</option>)}
               </select>
             </Field>
-            <div className="form-group span-2">
-              <div className="ii-toggle-row">
-                <div>
-                  <strong>Underwriter can override valuation</strong>
-                  <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span className="ii-en">{it.uwOverrideValuation ? "Enabled" : "Disabled"}</span>
-                  <label className="toggle-switch">
-                    <input type="checkbox" disabled={readOnly} checked={it.uwOverrideValuation} onChange={(e) => onPatch(it.id, { uwOverrideValuation: e.target.checked })} aria-label="Underwriter can override valuation" />
-                    <div className="toggle-slider" /><div className="toggle-dot" />
-                  </label>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -687,42 +674,7 @@ function InsuredItemCard({
         </section>
 
         <section className="ii-sub">
-          <div className="ii-sub-head" style={{ justifyContent: "space-between" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 10 }}><span className="ii-sub-num">4</span> Underwriter Limit Override</span>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="ii-en">{it.uwLimitOverride ? "Enabled" : "Disabled"}</span>
-              <label className="toggle-switch">
-                <input type="checkbox" disabled={readOnly} checked={it.uwLimitOverride} onChange={(e) => onPatch(it.id, { uwLimitOverride: e.target.checked })} aria-label="Underwriter limit override" />
-                <div className="toggle-slider" /><div className="toggle-dot" />
-              </label>
-            </div>
-          </div>
-          {it.uwLimitOverride ? (
-            <div className="form-grid-2">
-              <div className="form-group span-2">
-                <label className="form-label">Override Type</label>
-                <div className="ii-radio-row" role="radiogroup" aria-label="Override type">
-                  {OVERRIDE_TYPES.map((o) => (
-                    <label key={o.id} className={`ii-radio-opt ${it.overrideType === o.id ? "on" : ""}`}>
-                      <input type="radio" name={`ov-${it.id}`} value={o.id} disabled={readOnly} checked={it.overrideType === o.id} onChange={() => onPatch(it.id, { overrideType: o.id })} /> {o.label}
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <Field label="Maximum Override">
-                <div className="currency-wrap">
-                  <span className="currency-prefix">$</span>
-                  <input className="form-control currency-input" disabled={readOnly} value={it.maxOverride || ""} onChange={(e) => onPatch(it.id, { maxOverride: e.target.value })} />
-                </div>
-              </Field>
-            </div>
-          ) : (
-            <p className="ft-help" style={{ margin: 0 }}>Underwriters cannot change the limit for this item.</p>
-          )}
-        </section>
-
-        <section className="ii-sub">
-          <div className="ii-sub-head"><span className="ii-sub-num">5</span> Additional Controls</div>
+          <div className="ii-sub-head"><span className="ii-sub-num">4</span> Additional Controls</div>
           <div className="form-grid-3">
             <Field label="Co-pay (%)">
               <div className="pct-wrap">
@@ -769,7 +721,7 @@ export function CoverageStudio({
     return linked.length ? cover : { ...cover, wordingDocs: defaultLinkedWordingDocs() };
   }));
   const [active, setActive] = useState(0);
-  const [open, setOpen] = useState({ identity: true, insuredItems: true, deductible: true, sublimits: true, overrides: true, dependencies: true, constraints: true, claims: true, wording: true });
+  const [open, setOpen] = useState({ identity: true, childCoverage: true, deductible: true, sublimits: true, overrides: true, dependencies: true, constraints: true, claims: true, wording: true });
   const [tab, setTab] = useState<Tab>("attached");
   const [mode, setMode] = useState<"hub" | "edit">("hub");
   const [addOpen, setAddOpen] = useState(false);
@@ -813,10 +765,10 @@ export function CoverageStudio({
   }
 
   function scrollInsuredSection(targetId: string) {
-    if (targetId === "identity") {
+    if (targetId === "identity" || targetId === "ii-item" || targetId === "ii-val" || targetId === "ii-limit" || targetId === "ii-limit-amt") {
       setOpen((s) => ({ ...s, identity: true }));
     } else {
-      setOpen((s) => ({ ...s, insuredItems: true }));
+      setOpen((s) => ({ ...s, childCoverage: true }));
     }
     window.setTimeout(() => scrollCoverSection(targetId), 40);
   }
@@ -878,17 +830,6 @@ export function CoverageStudio({
       limitBasisMode: mode,
       limitBasis: mode === "percent" ? "Percentage of SI" : "Fixed Amount",
     });
-  }
-
-  function addInsuredItem() {
-    if (!cover || readOnly) return;
-    const items = insuredItemsOf(cover);
-    setInsuredItems([...items, {
-      ...defaultInsuredItem(cover, items.length),
-      id: `ii-${Date.now()}`,
-      name: `Insured item ${items.length + 1}`,
-      limitAmount: str(cover, "sumInsured"),
-    }]);
   }
 
   function removeInsuredItem(id: string) {
@@ -1060,7 +1001,7 @@ export function CoverageStudio({
             </div>
 
             <div id="sec-body-identity">
-            <Accordion n={1} title="Cover Identity" subtitle={str(cover, "type")} open={open.identity} onToggle={() => setOpen((s) => ({ ...s, identity: !s.identity }))}>
+            <Accordion n={1} title="Cover Identity" subtitle={`${str(cover, "type")} — ${insuredItemsSummary(cover)}`} open={open.identity} onToggle={() => setOpen((s) => ({ ...s, identity: !s.identity }))}>
               <div className="form-grid-2">
                 <Field label="Cover Name">
                   <input className="form-control" disabled={readOnly} value={str(cover, "name")} onChange={(e) => update("name", e.target.value)} />
@@ -1093,41 +1034,134 @@ export function CoverageStudio({
                   <textarea className="form-control" rows={3} disabled={readOnly} value={str(cover, "description")} onChange={(e) => update("description", e.target.value)} />
                 </Field>
               </div>
+              <div className="identity-section-divider" />
+              <div className="identity-ii-block">
+                <div className="ii-block-head">
+                  <div className="ii-sub-head"><span className="ii-sub-num">A</span> Valuation &amp; Limits</div>
+                </div>
+                <nav className="ii-tabs" aria-label="Valuation and limits steps">
+                  {([
+                    ["identity", "Coverage"],
+                    ["ii-val", "Valuation basis"],
+                    ["ii-limit", "Limit basis"],
+                    ["ii-limit-amt", "Limit"],
+                  ] as const).map(([id, label]) => (
+                    <button key={id} type="button" className={id === "ii-val" ? "on" : ""} onClick={() => scrollInsuredSection(id)}>{label}</button>
+                  ))}
+                </nav>
+                {insuredItemsOf(cover).slice(0, 1).map((it, index) => (
+                  <InsuredItemCard
+                    key={it.id}
+                    it={it}
+                    index={index}
+                    readOnly={readOnly}
+                    onPatch={patchInsured}
+                    onToggleBasis={toggleInsuredBasis}
+                    onPatchValConfig={patchValConfig}
+                    onSetLimitBasisMode={setItemLimitBasisMode}
+                    onRemove={removeInsuredItem}
+                  />
+                ))}
+                <div className="identity-section-divider" />
+                {(() => {
+                  const primary = insuredItemsOf(cover)[0];
+                  if (!primary) return null;
+                  return (
+                    <section className="ii-sub">
+                      <div className="ii-sub-head"><span className="ii-sub-num">5</span> Underwriting Controls</div>
+                      <div className="form-grid-3">
+                        <div className="form-group span-3">
+                          <div className="ii-toggle-row">
+                            <div>
+                              <strong>Underwriter can override valuation</strong>
+                              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span className="ii-en">{primary.uwOverrideValuation ? "Enabled" : "Disabled"}</span>
+                              <label className="toggle-switch">
+                                <input type="checkbox" disabled={readOnly} checked={primary.uwOverrideValuation} onChange={(e) => patchInsured(primary.id, { uwOverrideValuation: e.target.checked })} aria-label="Underwriter can override valuation" />
+                                <div className="toggle-slider" /><div className="toggle-dot" />
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <Field label="Maximum variation (%)">
+                          <input className="form-control" disabled={readOnly} value={str(cover, "uwMaxVariation", "20")} onChange={(e) => update("uwMaxVariation", e.target.value)} />
+                        </Field>
+                        <Field label="Referral requirement">
+                          <select className="form-control" disabled={readOnly} value={str(cover, "uwReferral", "Referral required")} onChange={(e) => update("uwReferral", e.target.value)}>
+                            {["Referral required", "No referral", "Referral above max variation"].map((o) => <option key={o}>{o}</option>)}
+                          </select>
+                        </Field>
+                        <Field label="Reason requirement">
+                          <select className="form-control" disabled={readOnly} value={str(cover, "uwReason", "Reason required")} onChange={(e) => update("uwReason", e.target.value)}>
+                            {["Reason required", "Reason optional", "No reason"].map((o) => <option key={o}>{o}</option>)}
+                          </select>
+                        </Field>
+                      </div>
+                    </section>
+                  );
+                })()}
+              </div>
             </Accordion>
             </div>
 
-            <Accordion n={2} title="Insured Items, Valuation & Limits" subtitle={insuredItemsSummary(cover)} open={open.insuredItems} onToggle={() => setOpen((s) => ({ ...s, insuredItems: !s.insuredItems }))}>
-              <nav className="ii-tabs" aria-label="Insured item steps">
-                {([
-                  ["identity", "Coverage"],
-                  ["ii-item", "Insured item"],
-                  ["ii-val", "Valuation basis"],
-                  ["ii-limit", "Limit basis"],
-                  ["ii-limit-amt", "Limit"],
-                ] as const).map(([id, label]) => (
-                  <button key={id} type="button" className={id === "ii-item" ? "on" : ""} onClick={() => scrollInsuredSection(id)}>{label}</button>
-                ))}
-              </nav>
+            {insuredItemsOf(cover).length > 1 && (
+            <div id="sec-body-childCoverage">
+            <Accordion n={2} title="Child Coverage" subtitle={`${insuredItemsOf(cover).length - 1} child coverage${insuredItemsOf(cover).length - 1 === 1 ? "" : "s"} — each with its own valuation & limit`} open={open.childCoverage} onToggle={() => setOpen((s) => ({ ...s, childCoverage: !s.childCoverage }))}>
               <div className="callout callout-info" style={{ marginBottom: 14 }}>
-                <div className="callout-body" style={{ fontSize: 13 }}>Valuation and limit are separate. Valuation determines how the loss value is calculated. Limit determines the maximum amount payable.</div>
+                <div className="callout-body" style={{ fontSize: 13 }}>Each child coverage is a separately configured extension under the parent cover. Configure its insured item, valuation basis, and limits here; the parent cover configuration stays in Cover Identity above.</div>
               </div>
-              {insuredItemsOf(cover).map((it, index) => (
-                <InsuredItemCard
-                  key={it.id}
-                  it={it}
-                  index={index}
-                  readOnly={readOnly}
-                  onPatch={patchInsured}
-                  onToggleBasis={toggleInsuredBasis}
-                  onPatchValConfig={patchValConfig}
-                  onSetLimitBasisMode={setItemLimitBasisMode}
-                  onRemove={removeInsuredItem}
-                />
+              {insuredItemsOf(cover).slice(1).map((it, i) => (
+                <div key={it.id}>
+                  <InsuredItemCard
+                    it={it}
+                    index={i + 1}
+                    readOnly={readOnly}
+                    onPatch={patchInsured}
+                    onToggleBasis={toggleInsuredBasis}
+                    onPatchValConfig={patchValConfig}
+                    onSetLimitBasisMode={setItemLimitBasisMode}
+                    onRemove={removeInsuredItem}
+                  />
+                  <section className="ii-sub">
+                    <div className="ii-sub-head"><span className="ii-sub-num">5</span> Underwriting Controls</div>
+                    <div className="form-grid-3">
+                      <div className="form-group span-3">
+                        <div className="ii-toggle-row">
+                          <div>
+                            <strong>Underwriter can override valuation</strong>
+                            <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span className="ii-en">{it.uwOverrideValuation ? "Enabled" : "Disabled"}</span>
+                            <label className="toggle-switch">
+                              <input type="checkbox" disabled={readOnly} checked={it.uwOverrideValuation} onChange={(e) => patchInsured(it.id, { uwOverrideValuation: e.target.checked })} aria-label="Underwriter can override valuation" />
+                              <div className="toggle-slider" /><div className="toggle-dot" />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <Field label="Maximum variation (%)">
+                        <input className="form-control" disabled={readOnly} value={str(cover, "uwMaxVariation", "20")} onChange={(e) => update("uwMaxVariation", e.target.value)} />
+                      </Field>
+                      <Field label="Referral requirement">
+                        <select className="form-control" disabled={readOnly} value={str(cover, "uwReferral", "Referral required")} onChange={(e) => update("uwReferral", e.target.value)}>
+                          {["Referral required", "No referral", "Referral above max variation"].map((o) => <option key={o}>{o}</option>)}
+                        </select>
+                      </Field>
+                      <Field label="Reason requirement">
+                        <select className="form-control" disabled={readOnly} value={str(cover, "uwReason", "Reason required")} onChange={(e) => update("uwReason", e.target.value)}>
+                          {["Reason required", "Reason optional", "No reason"].map((o) => <option key={o}>{o}</option>)}
+                        </select>
+                      </Field>
+                    </div>
+                  </section>
+                </div>
               ))}
-              {!readOnly && (
-                <button type="button" className="btn btn-ghost btn-sm" onClick={addInsuredItem}>+ Add Another Insured Item</button>
-              )}
             </Accordion>
+            </div>
+            )}
 
             <Accordion n={3} title="Deductible & Co-pay" subtitle={deductibleSummary(cover)} open={open.deductible} onToggle={() => setOpen((s) => ({ ...s, deductible: !s.deductible }))}>
               {(() => {
@@ -1149,14 +1183,36 @@ export function CoverageStudio({
                     {dedType === "none" ? (
                       <p className="ft-help" style={{ margin: "0 0 12px" }}>No deductible applies to this cover.</p>
                     ) : (
-                      <div className={dedType === "percentage" ? "form-grid-3" : "form-grid-2"}>
+                      <div className="form-grid-2">
                         {dedType === "percentage" ? (
-                          <Field label="Deductible (%)">
-                            <div className="pct-wrap">
-                              <input className="form-control" disabled={readOnly} value={str(cover, "deductiblePct")} onChange={(e) => update("deductiblePct", e.target.value.replace("%", ""))} />
-                              <span className="pct-suffix">%</span>
-                            </div>
-                          </Field>
+                          <>
+                            <Field label="Deductible (%)">
+                              <div className="pct-wrap">
+                                <input className="form-control" disabled={readOnly} value={str(cover, "deductiblePct")} onChange={(e) => update("deductiblePct", e.target.value.replace("%", ""))} />
+                                <span className="pct-suffix">%</span>
+                              </div>
+                            </Field>
+                            <Field label="Deductible Basis">
+                              <select className="form-control" disabled={readOnly} value={str(cover, "deductiblePctOf", "Claim Amount")} onChange={(e) => update("deductiblePctOf", e.target.value)}>
+                                {["Insured Value", "Coverage Limit", "Claim Amount", "Declared Value", "Shipment Value"].map((o) => <option key={o}>{o}</option>)}
+                              </select>
+                            </Field>
+                          </>
+                        ) : null}
+                        {dedType === "fixed" ? (
+                          <>
+                            <Field label="Deductible Amount ($)">
+                              <div className="currency-wrap">
+                                <span className="currency-prefix">$</span>
+                                <input className="form-control currency-input" disabled={readOnly} value={str(cover, "deductibleAmount")} onChange={(e) => update("deductibleAmount", e.target.value.replace(/[^0-9.,]/g, ""))} />
+                              </div>
+                            </Field>
+                            <Field label="Deductible Applies Per">
+                              <select className="form-control" disabled={readOnly} value={str(cover, "deductibleAppliesPer", "Claim")} onChange={(e) => update("deductibleAppliesPer", e.target.value)}>
+                                {["Claim", "Occurrence", "Vehicle", "Shipment"].map((o) => <option key={o}>{o}</option>)}
+                              </select>
+                            </Field>
+                          </>
                         ) : null}
                         <Field label="Minimum Deductible ($)">
                           <div className="currency-wrap">
@@ -1170,6 +1226,40 @@ export function CoverageStudio({
                             <input className="form-control currency-input" disabled={readOnly} value={str(cover, "maxDeductible")} onChange={(e) => update("maxDeductible", e.target.value)} />
                           </div>
                         </Field>
+                      </div>
+                    )}
+                    {dedType !== "none" && (
+                      <div className="ii-sub" style={{ marginTop: 0 }}>
+                        <div className="ii-sub-head">Underwriter Override</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, fontSize: 13 }}>
+                          <input type="checkbox" disabled={readOnly} checked={Boolean(cover.deductibleUwOverride)} onChange={(e) => update("deductibleUwOverride", e.target.checked)} style={{ width: 16, height: 16, accentColor: "var(--color-brand)" }} id="ded-uw-override" />
+                          <label htmlFor="ded-uw-override" style={{ fontWeight: 650, cursor: "pointer" }}>Allow Underwriter Override</label>
+                        </div>
+                        <div className="form-grid-2">
+                          <div className="form-group">
+                            <label className="form-label">Maximum Override (%)</label>
+                            <div className="pct-wrap" style={{ maxWidth: 120 }}>
+                              <input className="form-control" disabled={readOnly || !cover.deductibleUwOverride} value={str(cover, "deductibleUwMaxOverride", "20")} onChange={(e) => update("deductibleUwMaxOverride", e.target.value.replace(/[^0-9.]/g, ""))} />
+                              <span className="pct-suffix">%</span>
+                            </div>
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Allow Override For</label>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 6 }}>
+                              {([
+                                ["deductibleUwOverrideAmount", "Deductible Amount / Percentage", true],
+                                ["deductibleUwOverrideBasis", "Deductible Basis", false],
+                                ["deductibleUwOverrideAppliesPer", "Deductible Applies Per", false],
+                              ] as [string, string, boolean][]).map(([key, lbl, def]) => (
+                                <label key={key} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer" }}>
+                                  <input type="checkbox" disabled={readOnly || !cover.deductibleUwOverride} checked={Boolean(cover[key] ?? def)} onChange={(e) => update(key, e.target.checked)} style={{ width: 16, height: 16, accentColor: "var(--color-brand)" }} />
+                                  {lbl}
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="ii-val-foot" style={{ marginTop: 12 }}>Maximum allowed change: ±{str(cover, "deductibleUwMaxOverride", "20")}%</p>
                       </div>
                     )}
                     <div className="form-grid-2">
@@ -1312,21 +1402,6 @@ export function CoverageStudio({
                   update("uwOverrides", [...uwOverridesOf(cover), { id: `uw-${Date.now()}`, title: "New override", description: "Allow the underwriter to change this term with audit reason.", enabled: true, custom: true }]);
                 }}>+ Add override permission</button>
               )}
-              <div className="uw-auth-fields">
-                <Field label="Maximum variation (%)">
-                  <input className="form-control" disabled={readOnly} value={str(cover, "uwMaxVariation", "20")} onChange={(e) => update("uwMaxVariation", e.target.value)} />
-                </Field>
-                <Field label="Referral requirement">
-                  <select className="form-control" disabled={readOnly} value={str(cover, "uwReferral", "Referral required")} onChange={(e) => update("uwReferral", e.target.value)}>
-                    {["Referral required", "No referral", "Referral above max variation"].map((o) => <option key={o}>{o}</option>)}
-                  </select>
-                </Field>
-                <Field label="Reason requirement">
-                  <select className="form-control" disabled={readOnly} value={str(cover, "uwReason", "Reason required")} onChange={(e) => update("uwReason", e.target.value)}>
-                    {["Reason required", "Reason optional", "No reason"].map((o) => <option key={o}>{o}</option>)}
-                  </select>
-                </Field>
-              </div>
               <p className="uw-auth-foot">Valuation and item-limit override permissions can also be toggled above. Availability of this cover is set in the cover header.</p>
             </Accordion>
 
@@ -1477,7 +1552,7 @@ export function CoverageStudio({
               </div>
             </Accordion>
 
-            <Accordion n={10} title="Wording Reference" subtitle={wordingDocsOf(cover).length ? `${wordingDocsOf(cover).length} document${wordingDocsOf(cover).length === 1 ? "" : "s"} linked` : "0 documents linked"} open={open.wording} onToggle={() => setOpen((s) => ({ ...s, wording: !s.wording }))}>
+            <Accordion n={9} title="Wording Reference" subtitle={wordingDocsOf(cover).length ? `${wordingDocsOf(cover).length} document${wordingDocsOf(cover).length === 1 ? "" : "s"} linked` : "0 documents linked"} open={open.wording} onToggle={() => setOpen((s) => ({ ...s, wording: !s.wording }))}>
               {wordingDocsOf(cover).length ? (
                 wordingDocsOf(cover).map((d) => (
                   <div className="doc-row" key={str(d, "code", str(d, "name"))}>

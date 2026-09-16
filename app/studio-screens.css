@@ -138,6 +138,7 @@
 .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-6); }
 .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4) var(--space-5); }
 .span-2 { grid-column: 1 / -1; }
+.span-3 { grid-column: 1 / -1; }
 
 .radio-group { display: flex; flex-direction: column; gap: var(--space-2); }
 .radio-option {
@@ -330,6 +331,19 @@
   background: var(--color-brand-light); color: var(--color-brand);
   font-size: 11px; font-weight: 700;
 }
+.identity-section-divider { height: 1px; margin: 22px 0 20px; background: var(--color-border); }
+.identity-ii-block { display: flex; flex-direction: column; gap: 12px; }
+.ii-block-head { display: flex; flex-direction: column; gap: 6px; margin-bottom: 2px; }
+.ii-block-head .ii-sub-head { margin-bottom: 0; }
+.ii-block-help { font-size: 12.5px; line-height: 1.5; color: var(--color-muted); max-width: 720px; }
+.ii-add-child-coverage {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 14px; margin-top: 4px;
+  border: 1px dashed var(--color-brand); border-radius: 10px;
+  background: var(--color-brand-light, #eef6ff);
+}
+.ii-add-child-hint { font-size: 12px; color: var(--color-muted); line-height: 1.4; }
+.ii-child-card-anchor { scroll-margin-top: 16px; }
 .ii-vb-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .ii-vb-tile {
   position: relative; display: block; text-align: left; cursor: pointer;

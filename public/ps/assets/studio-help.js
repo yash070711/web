@@ -266,7 +266,7 @@ window.PS = window.PS || {};
     'limit amount ($)': 'Maximum payable amount for this item when basis is a fixed amount.',
     'limit percentage': 'Percentage of the reference sum insured used to calculate the limit.',
     'maximum limit': 'Cap applied when limit is calculated as a percentage.',
-    'percentage of': 'Reference amount the limit percentage applies to (e.g. Sum Insured, Item value).',
+    'deductible basis': 'Reference amount the deductible percentage applies to (e.g. Insured Value, Coverage Limit).',
     'underwriter limit override': 'Allows an underwriter to change this limit within configured bounds.',
     'payment rule': 'How partial losses reduce the remaining limit (e.g. each loss, aggregate).',
 
