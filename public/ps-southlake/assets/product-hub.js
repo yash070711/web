@@ -265,9 +265,7 @@ function buildHubStudios() {
   function enabledStudioSet() {
     const ids = PS.prototypeApp?.enabledStudioIdsFor?.(currentProduct.id);
     if (Array.isArray(ids)) {
-      const set = new Set(ids);
-      set.add('risk');
-      return set;
+      return new Set(ids);
     }
     return new Set(['coverage', 'questionnaire', 'risk', 'eligibility', 'rating', 'distribution', 'document']);
   }

@@ -87,7 +87,7 @@ window.PS = window.PS || {};
       ],
     },
     'coverage-studio.html': {
-      title: 'Coverage Studio',
+      title: 'Class of Business',
       description: 'Define covers (benefits), financial terms, deductibles, sub-limits, dependencies, and claims behaviour for this product version.',
       tips: [
         'Import from the Cover Library to start from a standard template.',

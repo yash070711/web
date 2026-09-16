@@ -327,7 +327,7 @@ body{background:#faf8f4}
 
       <div class="title">
         <h1>Create Distribution Channel</h1>
-        <div class="muted">Configure reinsurance, product & coverage, MGA, state, commission, and account-level factors.</div>
+        <div class="muted">Configure reinsurance, product & coverage, MGA, state, and commission.</div>
       </div>
 
       <div class="product">
@@ -360,35 +360,6 @@ body{background:#faf8f4}
 
       <section id="dependenciesSection" aria-label="Dependencies"></section>
 
-      <section class="section" id="factorsSection" style="margin-top:22px">
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h2>Account Level Factors</h2>
-              <div class="muted">Define account-level factors that apply to this distribution channel.</div>
-            </div>
-            <button id="addFactor" class="btn primary">+ Add Factor</button>
-          </div>
-          <div style="overflow:auto">
-            <table class="data-table" style="width:100%">
-              <thead>
-                <tr>
-                  <th>Factor Name</th>
-                  <th>Factor Type</th>
-                  <th>Value</th>
-                  <th>Applies To</th>
-                  <th>Description</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="factorsBody"></tbody>
-            </table>
-          </div>
-          <div style="padding:12px 16px;border-top:1px solid var(--line);background:var(--surface,#f7f3ec);color:var(--muted);font-size:12px">
-            ⓘ Factors are applied in the order listed above.
-          </div>
-        </div>
-      </section>
     
       </div>
     </div>
@@ -519,13 +490,14 @@ document.addEventListener('DOMContentLoaded', function () {
       id:item.id || item.code || `class-${i}`,
       name:item.name || item.label || item.title || item.className || `Class of Business ${i+1}`,
       code:item.code || `CLASS-${String(i+1).padStart(3,"0")}`,
-      insuredItems:(Array.isArray(item.insuredItems) ? item.insuredItems :
+      // Class of Business stores the parent at index 0; only subsequent rows are children.
+      insuredItems:(Array.isArray(item.insuredItems) ? item.insuredItems.slice(1) :
         Array.isArray(item.children) ? item.children :
         Array.isArray(item.childClasses) ? item.childClasses :
         Array.isArray(item.childBusinessClasses) ? item.childBusinessClasses : [])
         .filter(Boolean).map((child,j)=>({
           id:child.id || child.code || `${item.id || `class-${i}`}-child-${j}`,
-          name:child.name || child.label || child.title || child.className || child.type || `Child Class ${j+1}`
+          name:child.type || child.name || child.label || child.title || child.className || `Child Class ${j+1}`
         }))
     }));
   }
@@ -686,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function () {
         grants:[{
           id:Date.now(),
           parent:parent?.id || "",
-          children:childrenFor(parent).map(x=>x.name),
+          children:[],
           authority:"Brokerage",
           bindingLimit:"",
           states:[],
@@ -796,9 +768,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="grant-head">
           <div class="field" style="width:100%">
             <label>Parent Class of Business</label>
-            <select data-parent="${g.id}">
-              ${app.classes.map(c=>`<option value="${esc(c.id)}" ${c.id===g.parent?"selected":""}>${esc(c.name)}</option>`).join("")}
-            </select>
+            <div class="coverage-context">${esc(parent.name)}</div>
           </div>
           <button class="btn danger" data-delete="${g.id}">Remove</button>
         </div>
@@ -946,14 +916,34 @@ document.addEventListener('DOMContentLoaded', function () {
           ${classContext()}
         </div>
 
+        <div class="scope" style="margin-top:12px">
+          <div class="scope-title">Select Classes of Business</div>
+          <div class="muted">Select one or more parent classes, then choose any children to include below.</div>
+          <div class="check-grid">
+            ${app.classes.map(p=>`<label><input type="checkbox" data-parent-choice value="${esc(p.id)}" ${c.grants.some(g=>g.parent===p.id)?"checked":""}>${esc(p.name)}</label>`).join("")}
+          </div>
+        </div>
         <div id="grants">${c.grants.map(renderGrant).join("")}</div>
-        <button id="addGrant" class="btn" style="margin-top:12px">＋ Add Authority Grant</button>
       </div>
 
       <button id="addAnotherChannel" class="btn" style="margin-top:22px">＋ Add Another Channel</button>
     `;
 
     wireChannel();
+  }
+
+  function selectGrantParent(parentId, selected){
+    const config=currentConfig();
+    const parent=app.classes.find(p=>String(p.id)===String(parentId));
+    if(!parent)return;
+    if(!selected){
+      config.grants=config.grants.filter(g=>g.parent!==parent.id);
+      return;
+    }
+    if(config.grants.some(g=>g.parent===parent.id))return;
+    let id=Date.now();
+    while(config.grants.some(g=>String(g.id)===String(id)))id++;
+    config.grants.push({id,parent:parent.id,children:[],authority:"Brokerage",bindingLimit:"",states:[],territory:{}});
   }
 
   function wireChannel(){
@@ -975,16 +965,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if($("#commission")) $("#commission").oninput=e=>{currentConfig().commission=Number(e.target.value||0);};
     if($("#commissionBasis")) $("#commissionBasis").onchange=e=>{currentConfig().commissionBasis=e.target.value;};
 
-    if($("#addGrant")) $("#addGrant").onclick=()=>{
-      if(!app.classes.length){toast("No Class of Business is available.");return;}
-      const p=app.classes[0];
-      currentConfig().grants.push({
-        id:Date.now()+Math.floor(Math.random()*1000),
-        parent:p.id, children:childrenFor(p).map(x=>x.name),
-        authority:"Brokerage",bindingLimit:"",states:[],territory:{}
-      });
+    $$("[data-parent-choice]").forEach(el=>el.onchange=()=>{
+      selectGrantParent(el.value, el.checked);
       render();
-    };
+    });
 
     if($("#addAnotherChannel")) $("#addAnotherChannel").onclick=()=>{
       const choices=Object.entries(DIRECTORY).flatMap(([type,names])=>names.map(name=>({type,name})))
@@ -993,14 +977,6 @@ document.addEventListener('DOMContentLoaded', function () {
       app.assigned.push(choices[0]); app.activeIndex=app.assigned.length-1; render();
       toast(`Channel added: ${choices[0].name}`);
     };
-
-    $$("[data-parent]").forEach(el=>el.onchange=()=>{
-      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.parent));
-      if(!g)return;
-      const p=app.classes.find(x=>x.id===el.value);
-      g.parent=el.value; g.children=p?childrenFor(p).map(x=>x.name):[];
-      g.bindingLimit=""; render();
-    });
 
     $$("[data-child]").forEach(el=>el.onchange=()=>{
       const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.child));
@@ -1022,22 +998,18 @@ document.addEventListener('DOMContentLoaded', function () {
     $$("[data-delete]").forEach(el=>el.onclick=()=>{
       const c=currentConfig();
       c.grants=c.grants.filter(x=>String(x.id)!==String(el.dataset.delete));
-      if(!c.grants.length&&app.classes.length){
-        const p=app.classes[0];
-        c.grants.push({id:Date.now(),parent:p.id,children:childrenFor(p).map(x=>x.name),authority:"Brokerage",bindingLimit:"",states:[],territory:{}});
-      }
       render();
     });
 
     $$("[data-state]").forEach(el=>el.onchange=()=>{
-      const g=activeGrant(); if(!g)return;
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.state)); if(!g)return;
       if(el.checked&&!g.states.includes(el.value))g.states.push(el.value);
       if(!el.checked){g.states=g.states.filter(x=>x!==el.value);delete g.territory[el.value];}
       render();
     });
 
     $$("[data-all-states]").forEach(el=>el.onchange=()=>{
-      const g=activeGrant(); if(!g)return;
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.allStates)); if(!g)return;
       g.states=el.checked?STATE_LIST.map(x=>x.code):[];
       if(!el.checked)g.territory={};
       render();
@@ -1070,7 +1042,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     ["cities","counties"].forEach(kind=>{
       $$(`[data-${kind}]`).forEach(el=>el.oninput=()=>{
-        const g=currentConfig().grants[0]; if(!g)return;
+        const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset[kind])); if(!g)return;
         const code=el.dataset.code;
         g.territory[code]=g.territory[code]||{mode:"state",cities:"",counties:""};
         g.territory[code][kind]=el.value;
@@ -1232,7 +1204,6 @@ document.addEventListener('DOMContentLoaded', function () {
     for(const g of c.grants){
       const parent=app.classes.find(x=>x.id===g.parent);
       if(!parent){toast("Select a valid Class of Business.");return;}
-      if(!g.children.length){toast(`Select at least one child class for ${parent.name}.`);return;}
       if(!g.states.length){toast(`Select at least one state for ${parent.name}.`);return;}
       if(g.authority==="Binding"&&!(Number(g.bindingLimit)>0)){toast(`Enter a binding limit for ${parent.name}.`);return;}
     }

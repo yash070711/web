@@ -145,61 +145,25 @@ function ensureDefaultRiskRatingFactors(record) {
     ? record.riskRatingFactors
     : [];
 
+  // Every Risk Studio attribute automatically gets a Risk Rating Factor to
+  // configure — no hardcoded attribute names, no dependency on specific
+  // coverage names existing. Coverage assignment is left for the user to
+  // set via Edit, since not every attribute maps to a single coverage.
   const attrs = getRiskAttributeOptions();
-  const covers = getCoverageOptions();
 
-  const auto = covers.find(c => c.name === 'Auto Liability');
-  const pd = covers.find(c => c.name === 'Physical Damage');
-
-  if (!auto || !pd) return record;
-
-  const attrMap = {};
-  attrs.forEach(a => {
-    attrMap[a.name] = a;
-  });
-
-  const defaults = [
-    {
-      name: 'Years in Business Factor',
-      coverage: auto,
-      attr: attrMap['Years in Business']
-    },
-    {
-      name: 'Operating Radius Factor',
-      coverage: auto,
-      attr: attrMap['Operating Radius']
-    },
-    {
-      name: 'Hazardous Materials Factor',
-      coverage: auto,
-      attr: attrMap['Hazardous Materials']
-    },
-    {
-      name: 'Fleet Size Factor',
-      coverage: pd,
-      attr: attrMap['Fleet Size']
-    }
-  ];
-
-  defaults.forEach(item => {
-    if (!item.attr) return;
-
-    const exists = record.riskRatingFactors.some(f =>
-      f.coverageId === item.coverage.id &&
-      f.riskAttributeId === item.attr.id
-    );
-
+  attrs.forEach(attr => {
+    const exists = record.riskRatingFactors.some(f => String(f.riskAttributeId) === String(attr.id));
     if (exists) return;
 
     record.riskRatingFactors.push({
       id: generateFactorId(record),
-      name: item.name,
+      name: `${attr.name} Factor`,
       type: 'factor',
       status: 'draft',
-      coverage: item.coverage.name,
-      coverageId: item.coverage.id,
-      riskAttribute: item.attr.name,
-      riskAttributeId: item.attr.id,
+      coverage: '',
+      coverageId: '',
+      riskAttribute: attr.name,
+      riskAttributeId: attr.id,
       ratingMethod: 'table',
       amount: 1,
       table: {
@@ -737,11 +701,12 @@ function customRuleCard(rule, edit) {
     </article>
   `;
 }
-function riskRatingFactorCard(factor, edit) {
+function riskRatingFactorCard(factor, edit, validIds) {
   const methodLabel = factor.ratingMethod === 'fixed' ? 'Fixed Factor' : 'Table';
   const amountLabel = (factor.amount === null || factor.amount === undefined || factor.amount === '')
     ? 'Not set'
     : Number(factor.amount).toFixed(2);
+  const orphaned = !!(validIds && factor.riskAttributeId && !validIds.has(String(factor.riskAttributeId)));
 
   return `
     <article class="rule-card">
@@ -760,6 +725,7 @@ function riskRatingFactorCard(factor, edit) {
             : ''
         }
       </div>
+      ${orphaned ? `<div class="callout callout-warning" style="margin-bottom:10px"><div class="callout-body" style="font-size:12px">⚠ Risk no longer available in Risk Studio</div></div>` : ''}
       <div class="impact-list">
         <div class="impact-row"><span>Risk Attribute</span><strong>${esc(factor.riskAttribute || 'Not set')}</strong></div>
         <div class="impact-row"><span>Method</span><strong>${esc(methodLabel)}</strong></div>
@@ -774,10 +740,12 @@ function riskRatingFactorCard(factor, edit) {
 }
 
 function renderRiskRatingFactorsSection(edit) {
+  ensureDefaultRiskRatingFactors(record);
   const factors = record.riskRatingFactors || [];
+  const validIds = new Set(getRiskAttributeOptions().map(a => String(a.id)));
   const body = factors.length
-    ? `<div class="rule-grid">${factors.map(factor => riskRatingFactorCard(factor, edit)).join('')}</div>`
-    : `<div class="callout callout-info"><div class="callout-body">No Risk Rating Factors have been configured yet. Add one to connect a Risk Studio attribute to the rating engine.</div></div>`;
+    ? `<div class="rule-grid">${factors.map(factor => riskRatingFactorCard(factor, edit, validIds)).join('')}</div>`
+    : `<div class="callout callout-info"><div class="callout-body">No Risk Rating Factors have been configured yet. Add a Risk in Risk Studio to configure how it affects rating.</div></div>`;
   const action = edit ? '<button class="btn btn-primary btn-sm" type="button" data-rating-action="add-risk-factor">＋ Add Risk Rating Factor</button>' : '';
   return panelShell(
     'Risk Rating Factors',
@@ -787,52 +755,10 @@ function renderRiskRatingFactorsSection(edit) {
   );
 }
 function renderRisk(edit) {
-  const cards = `
-    <div class="rule-grid">
-
-      ${ruleCard(
-        'driver',
-        '👤',
-        'Driver age',
-        'Use familiar age groups and select their price effect.',
-        record.bands.driver,
-        edit
-      )}
-
-      ${ruleCard(
-        'vehicle',
-        '🚗',
-        'Vehicle age',
-        'Older vehicles can carry a different level of risk.',
-        record.bands.vehicle,
-        edit
-      )}
-
-      ${ruleCard(
-        'location',
-        '📍',
-        'Where the vehicle is kept',
-        'Use simple location categories rather than codes.',
-        record.bands.location,
-        edit
-      )}
-
-      ${ruleCard(
-        'use',
-        '🧭',
-        'How the vehicle is used',
-        'Separate personal, commuting, and business use.',
-        record.bands.use,
-        edit
-      )}
-
-      ${record.customRules
-        .filter(rule => rule.enabled !== false)
-        .map(rule => customRuleCard(rule, edit))
-        .join('')}
-
-    </div>
-  `;
+  const enabledCustomRules = record.customRules.filter(rule => rule.enabled !== false);
+  const cards = enabledCustomRules.length
+    ? `<div class="rule-grid">${enabledCustomRules.map(rule => customRuleCard(rule, edit)).join('')}</div>`
+    : `<div class="callout callout-info"><div class="callout-body">No custom pricing rules have been added yet.</div></div>`;
 
   const action = edit
     ? '<button class="btn btn-primary btn-sm" data-rating-action="add-rule">＋ Add pricing rule</button>'
@@ -840,7 +766,7 @@ function renderRisk(edit) {
 
   return panelShell(
     '2. Risk adjustments',
-    'Each card says exactly who it applies to and what happens to their price. Select Edit choices to change the bands through guided controls.',
+    'Custom pricing rules for this product. Select Edit choices to change the bands through guided controls.',
     action,
     cards
   ) + renderRiskRatingFactorsSection(edit);

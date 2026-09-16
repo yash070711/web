@@ -691,7 +691,7 @@
         { gate:'Ops/Tech', approver:'—', action:'Pending', date:'—', comment:'—' }
       ],
       studios: source.studios || [
-        { id:'coverage', name:'Coverage Studio', icon:'umbrella', status:'partial', summary:'Draft configuration', href:'coverage-studio.html' },
+        { id:'coverage', name:'Class of Business', icon:'umbrella', status:'partial', summary:'Draft configuration', href:'coverage-studio.html' },
         { id:'questionnaire', name:'Questionnaire Studio', icon:'list-checks', status:'partial', summary:'Draft configuration', href:'questionnaire-studio.html' },
         { id:'eligibility', name:'Eligibility Studio', icon:'user-check', status:'partial', summary:'Draft configuration', href:'eligibility-studio.html' },
         { id:'rating', name:'Rating & Pricing Studio', icon:'calculator', status:'missing', summary:'Not configured', href:'rating-studio.html' },
@@ -700,7 +700,7 @@
         { id:'document', name:'Document Studio', icon:'file-text', status:'missing', summary:'Not configured', href:'document-studio.html' }
       ],
       checklist: source.checklist || [
-        { studio:'Coverage Studio', status:'warn', note:'Review required' },
+        { studio:'Class of Business', status:'warn', note:'Review required' },
         { studio:'Questionnaire Studio', status:'warn', note:'Review required' },
         { studio:'Eligibility Studio', status:'warn', note:'Review required' },
         { studio:'Rating & Pricing Studio', status:'empty', note:'Not configured' },
@@ -848,8 +848,7 @@
     documents: 'document'
   };
 const STUDIO_NAV_CHAIN = [
-  { id: 'jurisdiction', file: 'jurisdiction-studio.html', title: 'Define Jurisdiction' },
-  { id: 'coverage', file: 'coverage-studio.html', title: 'Coverage Studio' },
+  { id: 'coverage', file: 'coverage-studio.html', title: 'Class of Business' },
   { id: 'questionnaire', file: 'questionnaire-studio.html', title: 'Questionnaire Studio' },
   { id: 'risk', file: 'risk-studio.html', title: 'Risk Studio' },
   { id: 'eligibility', file: 'eligibility-studio.html', title: 'Eligibility Studio' },
@@ -1245,7 +1244,6 @@ function coverValidationIssues(cover) {
 
   function enabledStudioChain(productId) {
     const enabled = new Set(enabledStudioIdsFor(productId));
-    enabled.add('jurisdiction');
     enabled.add('risk');
     return STUDIO_NAV_CHAIN.filter(row => enabled.has(row.id));
   }
@@ -1354,7 +1352,7 @@ function coverValidationIssues(cover) {
     const product = productById(productId);
     const detail = state.productDetails[productId];
     const ids = normalizeEnabledStudios(product, detail);
-    if (ids) return ids;
+    if (ids) return ids.filter(id => id !== 'jurisdiction');
     return ALL_CONFIG_STUDIO_IDS.slice();
   }
 
@@ -1420,7 +1418,6 @@ function coverValidationIssues(cover) {
     if (status !== 'draft') return null;
     const bundle = getProductBundle(productId, version || product.version) || {};
     const enabled = new Set(enabledStudioIdsFor(productId) || []);
-    enabled.add('jurisdiction');
     const qCount = (bundle.questionGroups || []).reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 1), 0);
     const ratingCount = (bundle.rating || []).reduce((n, g) => n + (Array.isArray(g.items) ? g.items.length : 1), 0);
     const studioHref = (file) => `${file}?product=${encodeURIComponent(productId)}&id=${encodeURIComponent(productId)}&version=${encodeURIComponent(version || product.version || '')}`;
@@ -1428,10 +1425,6 @@ function coverValidationIssues(cover) {
       {
         id: 'coverage', label: 'Coverages', href: studioHref('coverage-studio.html'),
         done: product.coversNeedPick && product.coversPicked !== true ? false : calculateCoverageCompletion(bundle.covers || []).pct >= 100
-      },
-      {
-        id: 'jurisdiction', label: 'Jurisdiction', href: studioHref('jurisdiction-studio.html'),
-        done: calculateJurisdictionCompletion(jurisdictionSetupFor(productId) || []).pct >= 100
       },
       {
         id: 'questionnaire', label: 'Questions', href: studioHref('questionnaire-studio.html'),
@@ -1607,7 +1600,7 @@ function coverValidationIssues(cover) {
       };
     };
     const studios = [
-      mark('coverage', 'Coverage Studio', 'umbrella', 'coverage-studio.html', (bundle.covers || []).length, 'covers'),
+      mark('coverage', 'Class of Business', 'umbrella', 'coverage-studio.html', (bundle.covers || []).length, 'covers'),
       mark('questionnaire', 'Questionnaire Studio', 'list-checks', 'questionnaire-studio.html', qCount, 'questions'),
       mark('risk', 'Risk Studio', 'warning', 'risk-studio.html', (bundle.risk || []).length, 'risk attributes'),
       mark('eligibility', 'Eligibility Studio', 'user-check', 'eligibility-studio.html', (bundle.eligibility || []).length, 'eligibility rules'),
@@ -2148,37 +2141,9 @@ function coverValidationIssues(cover) {
   }
 
   function refreshTopbarProductStatus() {
-    const ctx = context();
-    const product = ctx.productId ? productById(ctx.productId) : null;
-    const topbarRight = document.querySelector('.topbar-right');
-    if (!product || !topbarRight) {
-      document.getElementById('topbar-product-status')?.remove();
-      return;
-    }
-    const detail = state.productDetails[ctx.productId];
-    const versionLabel = ctx.version || product.version || '';
-    const ver = (detail?.versions || product.versions || []).find(v => v.label === versionLabel)
-      || { status: product.status || 'draft' };
-    const status = String(ver.status || product.status || 'draft').toLowerCase();
-    if (status !== 'draft' && status !== 'review') {
-      document.getElementById('topbar-product-status')?.remove();
-      return;
-    }
-    let el = document.getElementById('topbar-product-status');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'topbar-product-status';
-      el.className = 'topbar-product-status';
-      topbarRight.insertBefore(el, topbarRight.firstChild);
-    }
-    const stage = status === 'draft' ? productBuildStage(ctx.productId, versionLabel) : null;
-    const stageHtml = stage?.pending && stage.id !== 'ready'
-      ? `<a class="topbar-draft-stage" href="${stage.href}" title="${stage.done} of ${stage.total} studios configured">Next: ${escapeHtml(stage.label)} ›</a>`
-      : '';
-    el.innerHTML = `
-      <span class="badge badge-${status}" role="status">${PS.statusLabel(status)}</span>
-      <span class="topbar-draft-note">${status === 'draft' ? 'Product configuration in progress' : 'Awaiting governance review'}</span>
-      ${stageHtml}`;
+    // The DRAFT/"Product configuration in progress"/"Next: ..." banner has
+    // been removed from the header. Only ever tear down a stale element.
+    document.getElementById('topbar-product-status')?.remove();
   }
 
   function applyProductIdentity() {
@@ -2302,7 +2267,8 @@ function coverValidationIssues(cover) {
     if (PS.data?.currentUser && state.currentRole) {
       PS.data.currentUser.role = state.currentRole;
       document.querySelectorAll('.topbar-user-role, .role-badge').forEach(el => {
-        if (el.closest('.topbar-user') || el.closest('.nav-footer')) el.textContent = state.currentRole;
+        if (el.closest('.topbar-user')) el.textContent = 'MGU';
+        else if (el.closest('.nav-footer')) el.textContent = state.currentRole;
       });
     }
 
@@ -2561,7 +2527,7 @@ function coverValidationIssues(cover) {
         }
         if (typeof COVERS === 'undefined') {
           PS.closeModal();
-          return showResult('Cover not added', 'Coverage Studio did not finish loading. Refresh and try again.', { type:'error' });
+          return showResult('Cover not added', 'Class of Business did not finish loading. Refresh and try again.', { type:'error' });
         }
         const availability = document.getElementById('ac-avail')?.value || 'optional';
         const token = String(type || name).replace(/[^A-Za-z]/g, '').slice(0, 5).toUpperCase() || 'COV';
@@ -3095,7 +3061,7 @@ function coverValidationIssues(cover) {
         state.simulationRuns.unshift({ id:`RUN-${Date.now()}`, type:'single-test', testId:test.id, status:'passed', at:now(), context:context() }); saveState();
         showResult('Test completed', `${test.name} passed and its row was updated.`);
       }
-    } else if (page !== 'questionnaire-studio.html' && /\+ Add Constraint|\+ Add Jurisdiction|\+ Add Rule Override|\+ Add Intermediary|\+ Add Condition|\+ Add OR Group/i.test(text)) {
+    } else if (page !== 'questionnaire-studio.html' && page !== 'eligibility-studio.html' && /\+ Add Constraint|\+ Add Jurisdiction|\+ Add Rule Override|\+ Add Intermediary|\+ Add Condition|\+ Add OR Group/i.test(text)) {
       consume();
       const section = target.closest('.card, .detail-section, .section-card, .condition-builder') || target.parentElement;
       const row = document.createElement('div'); row.className = 'ps-added-row'; row.style.cssText = 'display:flex;gap:8px;margin-top:8px;padding:10px;border:1px solid var(--color-border);border-radius:6px;background:var(--color-panel)';

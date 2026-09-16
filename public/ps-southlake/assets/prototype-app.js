@@ -1258,7 +1258,6 @@ function coverValidationIssues(cover) {
 
   function enabledStudioChain(productId) {
     const enabled = new Set(enabledStudioIdsFor(productId));
-    enabled.add('risk');
     return STUDIO_NAV_CHAIN.filter(row => enabled.has(row.id));
   }
 
@@ -2246,18 +2245,9 @@ function coverValidationIssues(cover) {
     let el = document.getElementById('topbar-product-status');
     if (!el) {
       el = document.createElement('div');
-      el.id = 'topbar-product-status';
-      el.className = 'topbar-product-status';
       topbarRight.insertBefore(el, topbarRight.firstChild);
     }
-    const stage = status === 'draft' ? productBuildStage(ctx.productId, versionLabel) : null;
-    const stageHtml = stage?.pending && stage.id !== 'ready'
-      ? `<a class="topbar-draft-stage" href="${stage.href}" title="${stage.done} of ${stage.total} studios configured">Next: ${escapeHtml(stage.label)} ›</a>`
-      : '';
-    el.innerHTML = `
-      <span class="badge badge-${status}" role="status">${PS.statusLabel(status)}</span>
-      <span class="topbar-draft-note">${status === 'draft' ? 'Product configuration in progress' : 'Awaiting governance review'}</span>
-      ${stageHtml}`;
+      
   }
 
   function applyProductIdentity() {
@@ -2381,7 +2371,8 @@ function coverValidationIssues(cover) {
     if (PS.data?.currentUser && state.currentRole) {
       PS.data.currentUser.role = state.currentRole;
       document.querySelectorAll('.topbar-user-role, .role-badge').forEach(el => {
-        if (el.closest('.topbar-user') || el.closest('.nav-footer')) el.textContent = state.currentRole;
+        if (el.closest('.topbar-user')) el.textContent = 'Carrier';
+        else if (el.closest('.nav-footer')) el.textContent = state.currentRole;
       });
     }
 

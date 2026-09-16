@@ -88,7 +88,7 @@ function buildWizardHTML() {
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="w-lob">Line of Business <span class="required">*</span></label>
+          <label class="form-label" for="w-lob">Coverage <span class="required">*</span></label>
           <select id="w-lob" class="form-control">
             <option value="" data-keep>Select a product family first…</option>
           </select>
@@ -186,7 +186,7 @@ function buildWizardHTML() {
       <p style="font-size:14px;color:var(--color-muted);margin-bottom:var(--space-5)">Select which studios to configure during setup. You can access any studio later from the product detail page.</p>
       <div style="display:flex;flex-direction:column;gap:var(--space-3)">
         ${[
-          { id: 's-coverage', label: 'Coverage Studio', desc: 'Define what is covered, limits, deductibles, and exclusions.', checked: true },
+          { id: 's-coverage', label: 'Class of Business', desc: 'Define what is covered, limits, deductibles, and exclusions.', checked: true },
           { id: 's-quest', label: 'Questionnaire Studio', desc: 'Build the questions asked at quote, application, and renewal.', checked: true },
           { id: 's-risk', label: 'Risk Studio', desc: 'Trucking risk data: business type, fleet, radius, commodities, DOT/MC.', checked: true },
           { id: 's-eligibility', label: 'Eligibility Studio', desc: 'Set rules for who can buy this product.', checked: true },
@@ -315,7 +315,7 @@ const studios = ['s-coverage', 's-quest', 's-risk', 's-eligibility', 's-rating',
     <div style="grid-column:1/-1">
       <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted);margin-bottom:var(--space-3)">Product Identity</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
-        ${[['Product Name', name], ['Product Family', fam], ['Line of Business', lob], ['Product Owner', owner], ['Business Type', businessType],['Insurance Carrier', carrier],
+        ${[['Product Name', name], ['Product Family', fam], ['Coverage', lob], ['Product Owner', owner], ['Business Type', businessType],['Insurance Carrier', carrier],
 ['Carrier Status', carrierStatus]].map(([l, v]) => `
         <div><div style="font-size:12px;color:var(--color-muted)">${l}</div><div style="font-size:14px;font-weight:500;margin-top:2px">${v}</div></div>`).join('')}
       </div>

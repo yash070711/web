@@ -129,7 +129,7 @@ PS.nav = {
         <div class="user-avatar ${u.avatarClass}">${u.initials}</div>
         <div class="topbar-user-info">
           <div class="topbar-user-name">SouthLake Carrier</div>
-          <div class="topbar-user-role">Admin</div>
+          <div class="topbar-user-role">Carrier</div>
         </div>
         ${this.icon('caret-down', 12)}
       </div>
@@ -206,7 +206,7 @@ PS.nav = {
   },
 
   profiles: [
-    { key: 'vikram',    label: 'Vikram & Sons',    href: '/ps/index.html' },
+    { key: 'vikram',    label: 'Futuristic',    href: '/ps/index.html' },
     { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/index.html' }
   ],
 

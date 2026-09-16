@@ -11,8 +11,7 @@ PS.nav = {
     { id: 'dashboard',      label: 'Dashboard',                href: '/dashboard',                icon: 'house' },
     { group: 'PRODUCT STUDIO' },
     { id: 'catalogue',      label: 'Product Catalogue',        href: '/catalogue',             icon: 'book-open' },
-    { id: 'jurisdiction',   label: 'Define Jurisdiction',      href: '/jurisdiction',   icon: 'map-pin' },
-    { id: 'coverage',       label: 'Coverage Studio',          href: '/coverage-studio',       icon: 'umbrella' },
+    { id: 'coverage',       label: 'Class of Business',          href: '/coverage-studio',       icon: 'umbrella' },
     { id: 'questionnaire',  label: 'Questionnaire Studio',     href: '/questionnaire-studio',  icon: 'list-checks' },
     { id: 'risk',           label: 'Risk Studio',               href: '/risk-studio',           icon: 'warning' },
     { id: 'eligibility',    label: 'Eligibility Studio',       href: '/eligibility-studio',    icon: 'user-check' },
@@ -128,8 +127,8 @@ PS.nav = {
       <div class="topbar-user" id="topbar-user-btn" onclick="event.stopPropagation();PS.nav.toggleUserMenu()" aria-haspopup="true">
         <div class="user-avatar ${u.avatarClass}">${u.initials}</div>
         <div class="topbar-user-info">
-          <div class="topbar-user-name">Vikram & Sons</div>
-          <div class="topbar-user-role">Carrier</div>
+          <div class="topbar-user-name">Futuristic</div>
+          <div class="topbar-user-role">MGU</div>
         </div>
         ${this.icon('caret-down', 12)}
       </div>
@@ -206,7 +205,7 @@ PS.nav = {
   },
 
   profiles: [
-    { key: 'vikram',    label: 'Vikram & Sons',    href: '/ps/index.html' },
+    { key: 'vikram',    label: 'Futuristic',    href: '/ps/index.html' },
     { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/index.html' }
   ],
 

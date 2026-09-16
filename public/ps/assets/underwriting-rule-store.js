@@ -10,7 +10,7 @@ window.PS = window.PS || {};
     COLLECTION,
 
     STUDIOS: {
-      COVERAGE: 'Coverage Studio',
+      COVERAGE: 'Class of Business',
       RISK: 'Risk Studio',
       QUESTIONS: 'Questions Studio',
       PRODUCT: 'Product Studio',
@@ -117,14 +117,14 @@ window.PS = window.PS || {};
       }
       const pid = productId || '';
       const map = {
-        'Coverage Studio': `coverage-studio.html?product=${encodeURIComponent(pid)}`,
+        'Class of Business': `coverage-studio.html?product=${encodeURIComponent(pid)}`,
         'Eligibility Studio': `eligibility-studio.html?product=${encodeURIComponent(pid)}&rule=${encodeURIComponent(rule?.id || '')}`,
         'Questions Studio': `questionnaire-studio.html?product=${encodeURIComponent(pid)}`,
         'Risk Studio': `risk-studio.html?product=${encodeURIComponent(pid)}`,
         'Product Studio': `product-detail.html?id=${encodeURIComponent(pid)}`,
         'Distribution Studio': `distribution-studio.html?product=${encodeURIComponent(pid)}`
       };
-      return map[rule?.sourceStudio] || `underwriting-studio.html?product=${encodeURIComponent(pid)}&rule=${encodeURIComponent(rule?.id || '')}`;
+      return map[rule?.sourceStudio === 'Coverage Studio' ? 'Class of Business' : rule?.sourceStudio] || `underwriting-studio.html?product=${encodeURIComponent(pid)}&rule=${encodeURIComponent(rule?.id || '')}`;
     },
 
     mergeRule(existing, incoming) {

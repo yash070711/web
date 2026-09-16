@@ -484,7 +484,7 @@
       </div>
       <div class="card" id="rs-about" style="margin-bottom:var(--space-5);padding:14px 18px">
         <div style="font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D;margin-bottom:6px">ABOUT RISK STUDIO</div>
-        <p style="margin:0;font-size:13px;color:#171717;line-height:1.5">Risk Studio contains Risk Attributes derived from Questionnaire Studio Risk questions or created manually. These attributes can have one or more coverage-specific Rating Factors used by Rating & Pricing and eligibility workflows.</p>
+        <p style="margin:0;font-size:13px;color:#171717;line-height:1.5">Risk Studio contains Risk Attributes derived from Questionnaire Studio Risk questions or created manually. These attributes can have one or more class-of-business-specific Rating Factors used by Rating & Pricing and eligibility workflows.</p>
       </div>
       <div class="risk-hub-layout" id="risk-hub-layout">
         <aside class="risk-group-sidebar">
@@ -1633,7 +1633,7 @@ function getRiskFactorCoverageOptions() {
       isChild: false
     }];
 
-    // Coverage Studio stores child coverage classes primarily as additional
+    // Class of Business stores child coverage classes primarily as additional
     // insuredItems on the parent cover. Also support any explicit child array
     // shape when available. The first insured item is the default parent item.
     const insuredItems = Array.isArray(item?.insuredItems) ? item.insuredItems : [];
@@ -1812,7 +1812,7 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
 
   const coverageName = selectedCoverageNames.length
     ? selectedCoverageNames.join(', ')
-    : (factor?.coverage || 'Coverage not selected');
+    : (factor?.coverage || 'Class of Business not selected');
 
   return `
     <div class="rating-factor-card" data-rating-factor-card="${factorIndex}">
@@ -1864,7 +1864,7 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
 
      <div class="form-group">
   <label class="form-label">
-    Coverage <span class="required">*</span>
+    Class of Business <span class="required">*</span>
   </label>
 
  <div class="rating-coverage-picker rating-coverage-dropdown" id="rating-factor-coverage-${factorIndex}">
@@ -1888,8 +1888,8 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
     );
 
     const selectedLabel = selectedItems.length
-      ? `${selectedItems.length} coverage${selectedItems.length > 1 ? 's' : ''} selected`
-      : 'Select coverage(s)...';
+      ? `${selectedItems.length} ${selectedItems.length > 1 ? 'classes' : 'class'} of business selected`
+      : 'Select Class of Business...';
 
     return `
       <button
@@ -1928,7 +1928,7 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
       >
 
         <div class="rating-coverage-menu-header">
-          <span>Select Coverage(s)</span>
+          <span>Select Class of Business</span>
           <span class="rating-coverage-count">
             ${selectedItems.length} selected
           </span>
@@ -2017,7 +2017,7 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
     `;
   })()}
 </div>
-  <span class="form-help">Select one or more coverages. Child coverage classes are shown under their parent.</span>
+  <span class="form-help">Select one or more classes of business. Child classes are shown under their parent.</span>
 </div>
 
           <div class="form-group">
@@ -2310,7 +2310,7 @@ function refreshRatingCoverageDropdown(index) {
 
   if (selectedHost) {
     if (!selectedItems.length) {
-      selectedHost.innerHTML = '<span class="rating-coverage-placeholder">Select coverage(s)...</span>';
+      selectedHost.innerHTML = '<span class="rating-coverage-placeholder">Select Class of Business...</span>';
     } else {
       const esc = v => String(v ?? '')
         .replace(/&/g, '&amp;')
@@ -2373,7 +2373,7 @@ function saveRatingFactorsFromPanel(r) {
 
     if (!coverageIds.length) {
       const picker = document.getElementById(`rating-factor-coverage-${i}`);
-      markPanelValidation(picker, 'Select at least one coverage.');
+      markPanelValidation(picker, 'Select at least one class of business.');
       valid = false;
     }
 
@@ -2611,7 +2611,7 @@ function loadRisk(id) {
           <div>
             <div class="rating-factors-title">RATING FACTORS</div>
             <div class="rating-factors-subtitle">
-              Define one or more coverage-specific rating factors for this Risk Attribute.
+              Define one or more class-of-business-specific rating factors for this Risk Attribute.
             </div>
           </div>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coverage Studio — Insurance Product Studio</title>
+  <title>Class of Business — Insurance Product Studio</title>
   <meta name="description" content="Configure covers, limits, deductibles, exclusions and financial terms for a product version.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
@@ -504,7 +504,7 @@
     .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4) var(--space-5); }
     .span-2 { grid-column: 1 / -1; }
 
-    /* Validation state used by Coverage Studio save validation */
+    /* Validation state used by Class of Business save validation */
     .form-control.validation-error {
       border-color: #DC2626 !important;
       box-shadow: 0 0 0 2px rgba(220,38,38,.12) !important;
@@ -1160,7 +1160,7 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="studio-title">Coverage Studio</h1>
+          <h1 class="page-title" id="studio-title">Class of Business</h1>
           <p class="page-subtitle" id="studio-subtitle">Loading…</p>
         </div>
         <div class="page-header-actions" id="product-studio-actions">
@@ -1261,6 +1261,7 @@
 <script src="assets/us-places.js"></script>
 <script src="assets/admin-catalog.js"></script>
 <script src="assets/nav.js"></script>
+<script src="assets/distribution-territory.js"></script>
 <script>
 /* ────────────────────────────────────────────────────────
    DATA
@@ -2664,7 +2665,9 @@ function productStateCodes(scope) {
 function alignCoverRowsToProductStates(cover, scope) {
   if (!cover) return [];
   const key = ciCoverKey(scope);
-  const states = productStateCodes(scope);
+  const states = ciNormScope(scope) === 'in'
+    ? (PS.distributionTerritoryForCover?.(productId, cover) || []).map(row => row.state)
+    : productStateCodes(scope);
   const byState = {};
   if (Array.isArray(cover[key])) cover[key].forEach(r => { if (r?.state) byState[r.state] = r; });
   cover[key] = states.map(state => byState[state] || emptyStateRow(state));
@@ -2729,6 +2732,19 @@ function ciPinSvg() {
 
 function ciJurisdictionPanelHtml(ro, cover, scope) {
   const sc = ciNormScope(scope);
+  if (sc === 'in') {
+    const rows = PS.distributionTerritoryForCover?.(productId, coverForJurisdiction(cover)) || [];
+    ensureCoverJurisdictions(cover, sc);
+    return `<div class="ci-jurisdiction" id="ci-distribution-territory">
+      <div class="ci-jurisdiction-head"><div class="ci-jurisdiction-title">${ciPinSvg()}
+        <div><strong>States / Counties</strong><span class="ci-jurisdiction-help">Permitted territory for this coverage from SouthLake distribution channels.</span></div>
+      </div></div>
+      ${rows.length ? `<div class="ci-city-rows">${rows.map(row => {
+        const meta = ciStateMeta(row.state);
+        return `<div class="ci-city-row"><div class="ci-city-state"><span class="ci-abbr">${htmlEsc(meta.abbr)}</span><div><strong>${htmlEsc(meta.name)}</strong></div></div><div>${row.rules.map(rule => `<div class="ci-city-label">${htmlEsc(rule)}</div>`).join('<div class="ci-empty">or</div>')}</div></div>`;
+      }).join('')}</div>` : '<p class="ci-empty">No permitted states configured for this coverage in SouthLake distribution.</p>'}
+    </div>`;
+  }
   const ctx = productCoverContext(cover, sc);
   const exclusive = sc === 'ex';
   const title = exclusive ? 'Exclusive States / Counties' : 'States / Counties';
@@ -2762,6 +2778,18 @@ function ciJurisdictionPanelHtml(ro, cover, scope) {
       ${ctx.states.length ? `<div class="ci-summary"><span aria-hidden="true">ⓘ</span><span id="${summaryId}"><strong>${ctx.states.length} ${word}${ctx.states.length === 1 ? '' : 's'} auto-selected</strong></span></div>` : ''}
     </div>`;
 }
+
+// Re-read saved carrier grants when returning from SouthLake or saving in another tab.
+function refreshDistributionTerritory() {
+  const cover = typeof activeCoverId !== 'undefined' && COVERS.find(row => row.id === activeCoverId);
+  if (!cover) return;
+  const panel = document.getElementById('ci-distribution-territory');
+  if (panel) panel.outerHTML = ciJurisdictionPanelHtml(productStatus === 'published', cover, 'in');
+}
+window.addEventListener('focus', refreshDistributionTerritory);
+window.addEventListener('storage', event => {
+  if (event.key === null || event.key.startsWith('veridex-distribution-')) refreshDistributionTerritory();
+});
 
 function identityProductContextHtml(ro, cover) {
   return ciJurisdictionPanelHtml(ro, cover, 'in');
@@ -3981,7 +4009,7 @@ function paintStudio() {
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
     { label: `v${productVersion}`, href: `product-detail.html?id=${productId}&version=${productVersion}` },
-    { label: 'Coverage Studio', href: '#' }
+    { label: 'Class of Business', href: '#' }
   ]);
   refreshCoverMeta();
   renderCoverTable();
@@ -4482,8 +4510,8 @@ function collectProductCoverUsage() {
 }
 
 function renderCoverageLibraryDashboard() {
-  PS.nav.render('coverage', [{ label: 'Coverage Studio', href: '#' }]);
-  document.getElementById('studio-title').textContent = 'Coverage Studio';
+  PS.nav.render('coverage', [{ label: 'Class of Business', href: '#' }]);
+  document.getElementById('studio-title').textContent = 'Class of Business';
   const rows = collectProductCoverUsage();
   const used = rows.filter(r => r.productCount > 0).length;
   const productTotal = new Set(rows.flatMap(r => r.products.map(p => p.id))).size;
@@ -4639,10 +4667,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
     { label: `v${productVersion}`, href: `product-detail.html?id=${productId}&version=${productVersion}` },
-    { label: 'Coverage Studio', href: '#' }
+    { label: 'Class of Business', href: '#' }
   ]);
 
-  document.getElementById('studio-title').textContent = 'Coverage Studio';
+  document.getElementById('studio-title').textContent = 'Class of Business';
   document.getElementById('ctx-back-link').href = `product-detail.html?id=${productId}`;
   const customerBtn = document.getElementById('customer-view-btn');
   if (customerBtn) customerBtn.href = PS.customerViewHref ? PS.customerViewHref(productId, productVersion) : `product-view.html?id=${productId}&version=${productVersion}`;
@@ -5771,7 +5799,7 @@ function showCoverSaveNotice(type, message) {
 function saveCover(event, options = {}) {
   console.log(1)
   if (event) event.preventDefault();
-  console.log('[Coverage Studio] SAVE CLICKED');
+  console.log('[Class of Business] SAVE CLICKED');
   const panel = document.getElementById('detail-panel');
 
   if (!panel) {
@@ -5787,7 +5815,7 @@ function saveCover(event, options = {}) {
   if (cover && typeof snapshotControls === 'function') {
     try { snapshotControls(activeCoverId); } catch (_) {}
   }
-  console.log('[Coverage Studio] VALIDATION START');
+  console.log('[Class of Business] VALIDATION START');
 const selectedDed = panel.querySelector('input[name="ded-' + cover.id + '"]:checked');
 if (selectedDed) cover.deductibleType = selectedDed.value;
 
@@ -5893,7 +5921,7 @@ panel.querySelectorAll('[data-required="true"]:not([readonly]):not([disabled])')
     }
   });
 
-  console.log('[Coverage Studio] VALIDATION RESULT:', invalidFields.length);
+  console.log('[Class of Business] VALIDATION RESULT:', invalidFields.length);
   if (invalidFields.length) {
     const firstInvalid = invalidFields[0];
 

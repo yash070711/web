@@ -117,20 +117,8 @@ function buildHubStudios() {
 
   const rows = [
     {
-      id: 'jurisdiction',
-      title: 'Define Jurisdiction',
-      description: 'States where the product is available, admitted status, cities, and effective dates.',
-      count: (currentProduct.jurisdictions || []).length,
-      noun: ['State', 'States'],
-      expected: Math.max((currentProduct.jurisdictions || []).length, 1),
-      tone: '#12A88A',
-      iconBg: '#E4F8F2',
-      href: studioHref('jurisdiction-studio.html')
-    },
-
-    {
       id: 'coverage',
-      title: 'Coverage Studio',
+      title: 'Class of Business',
       description: 'Covers, limits, deductibles, exclusions and financial terms.',
       count: liveOrDetailCount(
         'coverage',
@@ -277,11 +265,11 @@ function buildHubStudios() {
     const ids = PS.prototypeApp?.enabledStudioIdsFor?.(currentProduct.id);
     if (Array.isArray(ids)) {
       const set = new Set(ids);
-      set.add('jurisdiction');
+      set.delete('jurisdiction');
       set.add('risk');
       return set;
     }
-    return new Set(['coverage', 'jurisdiction', 'questionnaire', 'risk', 'eligibility', 'rating', 'distribution', 'document']);
+    return new Set(['coverage', 'questionnaire', 'risk', 'eligibility', 'rating', 'distribution', 'document']);
   }
   function progressRing(pct, tone) {
     const clamped = Math.max(0, Math.min(100, Number(pct) || 0));
@@ -685,7 +673,7 @@ function buildHubStudios() {
           <button class="btn btn-secondary" type="button" onclick="viewFullProductJson()">View JSON</button>
           <button class="btn btn-secondary" type="button" onclick="downloadFullProductJson()">Download JSON</button>
           <a class="btn btn-primary" href="${esc(firstOpen?.href || studioHref('coverage-studio.html'))}">
-            Open ${esc(firstOpen?.title || 'Coverage Studio')}
+            Open ${esc(firstOpen?.title || 'Class of Business')}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden><path d="M7 17 17 7M8 7h9v9"/></svg>
           </a>
         </div>
@@ -707,7 +695,7 @@ function buildHubStudios() {
                 <div class="card-title">Product Studio</div>
                 <div class="card-subtitle">Design and configure every aspect of your product.</div>
               </div>
-              <a class="btn btn-primary btn-sm ph-configure-all" href="${esc(firstOpen?.href || studioHref('coverage-studio.html'))}">
+              <a class="btn btn-primary btn-sm ph-configure-all" href="${esc(studioHref('coverage-studio.html'))}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
                 ${selected.length ? 'Configure All' : 'Add studios'}
               </a>

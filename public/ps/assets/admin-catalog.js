@@ -22,7 +22,7 @@
       ]
     },
     {
-      group: 'Coverage Studio',
+      group: 'Class of Business',
       lists: [
         { key: 'coverTypes', label: 'Cover types', items: ['First Party — Property Damage', 'Third Party Liability', 'Commercial Auto Liability', 'Benefit — Personal Accident', 'Benefit — Life', 'Service Benefit', 'First Party — Glass', 'Business Interruption', 'First Party — Cargo', 'First Party — Crime', 'First Party — Working Risk'] },
         { key: 'coverAvailability', label: 'Availability', items: ['Mandatory', 'Optional', 'Default-Selected', 'Optional Add-on'] },
