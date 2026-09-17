@@ -363,16 +363,8 @@
       display: flex; align-items: center; justify-content: flex-end; gap: 8px;
       flex-wrap: wrap; flex: 0 0 auto;
     }
-    .cover-pick-select {
-      min-width: 154px; height: 34px; padding: 0 30px 0 10px;
-      border: 1px solid var(--color-border); border-radius: 8px;
-      background: var(--color-surface); color: var(--color-ink);
-      font-size: 12px; font-weight: 600; cursor: pointer;
-    }
-    .cover-pick-select:focus {
-      outline: none; border-color: var(--color-brand);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 12%, transparent);
-    }
+    
+    
     .cover-pick-expand {
       width: 34px; height: 34px; padding: 0;
       border: 1px solid var(--color-border); border-radius: 8px;
@@ -425,7 +417,7 @@
     @media (max-width: 760px) {
       .cover-pick-card-head { align-items: flex-start; flex-wrap: wrap; }
       .cover-pick-card-actions { width: 100%; justify-content: flex-start; padding-left: 68px; }
-      .cover-pick-select { min-width: 170px; }
+      
       .cover-pick-children { padding-left: 18px; }
       .cover-pick-footer { align-items: stretch; flex-direction: column; }
       .cover-pick-footer > div { width: 100%; }
@@ -1035,6 +1027,12 @@
       display: inline-flex; align-items: center; justify-content: center;
       background: var(--color-brand-light); color: var(--color-brand);
       font-size: 11px; font-weight: 700;
+    }
+    .ii-vb-label-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .ii-vb-bulk-actions { display: inline-flex; gap: 12px; }
+    .ii-vb-bulk-actions .btn-link {
+      background: none; border: none; padding: 0; cursor: pointer;
+      color: var(--color-brand); font-size: 12px; font-weight: 600; text-decoration: underline;
     }
     .ii-vb-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
     .ii-vb-tile {
@@ -2064,12 +2062,11 @@ function patchItemValConfig(itemId, basisId, key, value, skipRender) {
 }
 
 function defaultInsuredItem(c, index) {
-  const primary = isNonValuationCover(c) ? 'NA' : vbMeta(c.basisOfCoverage).id;
   const rows = Array.isArray(c.valuationRows) ? c.valuationRows : [];
   const included = rows.filter(r => r.included !== false).map(r => r.id);
   const allowed = isNonValuationCover(c)
     ? ['NA']
-    : (included.length ? included : [primary, 'AV', 'MV', 'RC']).filter((id, i, a) => id && a.indexOf(id) === i);
+    : included.filter((id, i, a) => id && a.indexOf(id) === i);
   const itemName = defaultInsuredItemName(c, index);
   const itemType = defaultInsuredItemType(c, index);
   const item = {
@@ -2077,17 +2074,17 @@ function defaultInsuredItem(c, index) {
     name: itemType,
     type: itemType,
     description: '',
-    allowedBases: allowed.length ? allowed : [primary],
-    defaultBasis: primary,
+    allowedBases: allowed,
+    defaultBasis: allowed.length ? allowed[0] : '',
     quoteChoice: 'Customer / agent may choose',
     uwOverrideValuation: c.uwOverrideValuation !== false,
-    uwMaxVariation: c.uwMaxVariation == null || c.uwMaxVariation === '' ? '20' : c.uwMaxVariation,
+    uwMaxVariation: '',
     uwReferral: c.uwReferral || 'Referral required',
     uwReason: c.uwReason || 'Reason required',
     limitBasisMode: 'fixed',
     limitBasis: isServiceCover(c) ? 'Not Applicable' : 'Fixed Amount',
     uwLimitOverride: true,
-    limitPct: '50',
+    limitPct: '',
     limitPctOf: 'Sum Insured',
     limitAmount: '',
     maxLimit: isServiceCover(c) ? 'N/A' : '',
@@ -2149,39 +2146,37 @@ function ensureInsuredItems(c) {
       }
     } else {
       // Asset/property covers may allow AV, MV, RC and NA.
-      // Do not overwrite the user's valuation selection while rendering.
-      if (!Array.isArray(it.allowedBases) || !it.allowedBases.length) {
-        const primary = vbMeta(it.defaultBasis || c.basisOfCoverage).id;
-        it.allowedBases = [primary === 'NA' ? 'AV' : primary];
-      }
+      // Do not overwrite the user's valuation selection while rendering,
+      // and do not force a selection when none has been made — an empty
+      // allowedBases (nothing checked) is a valid, deliberate state.
+      if (!Array.isArray(it.allowedBases)) it.allowedBases = [];
       it.allowedBases = [...new Set(
         it.allowedBases.filter(id => ['AV', 'MV', 'RC', 'NA'].includes(id))
       )];
-      if (!it.allowedBases.length) it.allowedBases = ['AV'];
-      if (!it.defaultBasis || !it.allowedBases.includes(it.defaultBasis)) {
-        it.defaultBasis = it.allowedBases[0];
+      if (it.defaultBasis && !it.allowedBases.includes(it.defaultBasis)) {
+        it.defaultBasis = it.allowedBases[0] || '';
       }
     }
-    if (!it.defaultBasis || (it.defaultBasis !== 'NA' && !it.allowedBases.includes(it.defaultBasis))) {
-      it.defaultBasis = it.allowedBases[0];
+    if (it.defaultBasis && it.defaultBasis !== 'NA' && !it.allowedBases.includes(it.defaultBasis)) {
+      it.defaultBasis = it.allowedBases[0] || '';
     }
     if (!it.quoteChoice) it.quoteChoice = 'Customer / agent may choose';
     if (it.uwOverrideValuation == null) it.uwOverrideValuation = c.uwOverrideValuation !== false;
-    if (it.uwMaxVariation == null || it.uwMaxVariation === '') it.uwMaxVariation = c.uwMaxVariation == null || c.uwMaxVariation === '' ? '20' : c.uwMaxVariation;
+    if (it.uwMaxVariation == null) it.uwMaxVariation = '';
     if (!it.uwReferral) it.uwReferral = c.uwReferral || 'Referral required';
     if (!it.uwReason) it.uwReason = c.uwReason || 'Reason required';
     if (!it.limitBasis || it.limitBasis === 'Sum Insured' || it.limitBasis === 'Not Applicable') it.limitBasis = 'Fixed Amount';
     if (it.uwLimitOverride == null) it.uwLimitOverride = true;
-    if (it.limitAmount == null) it.limitAmount = c.sumInsured || '';
+    if (it.limitAmount == null) it.limitAmount = '';
     if (!it.paymentRule) it.paymentRule = 'Maximum payable for this insured item';
     if (!it.description) it.description = '';
     if (!it.limitBasisMode) it.limitBasisMode = /percent/i.test(it.limitBasis) ? 'percent' : 'fixed';
-    if (!it.limitPct) it.limitPct = '50';
+    if (it.limitPct == null) it.limitPct = '';
     if (!it.limitPctOf) it.limitPctOf = 'Sum Insured';
     if (!it.maxLimit) it.maxLimit = '';
     if (!it.overrideType) it.overrideType = 'both';
-    if (!it.maxOverride) it.maxOverride = '100,000';
-    if (it.itemCopay == null) it.itemCopay = c.copay ?? '0';
+    if (it.maxOverride == null) it.maxOverride = '';
+    if (it.itemCopay == null) it.itemCopay = '';
     if (!it.itemWaitingPeriod) it.itemWaitingPeriod = c.waitingPeriod || 'None';
     if (it.itemAnnualAggregate == null) it.itemAnnualAggregate = Boolean(c.annualAggregate);
     if (it.itemAggregateLimit == null) it.itemAggregateLimit = c.aggregateLimit || '';
@@ -2252,11 +2247,10 @@ function toggleInsuredBasis(id, basisId, on) {
       allowed = ['NA'];
       item.defaultBasis = 'NA';
     } else {
-      // May explicitly unselect Not Applicable.
-      const fallback = vbMeta(c.basisOfCoverage).id;
-      const realFallback = ['AV', 'MV', 'RC'].includes(fallback) ? fallback : 'AV';
-      allowed = [realFallback];
-      item.defaultBasis = realFallback;
+      // May explicitly unselect Not Applicable. No forced fallback — the
+      // item may end up with nothing checked, which is a valid state.
+      allowed = allowed.filter(x => x !== 'NA');
+      if (!allowed.includes(item.defaultBasis)) item.defaultBasis = allowed[0] || '';
     }
   } else if (on) {
     // Selecting an actual valuation method removes Not Applicable.
@@ -2267,17 +2261,34 @@ function toggleInsuredBasis(id, basisId, on) {
       item.defaultBasis = basisId;
     }
   } else {
+    // Unchecking a valuation method. No forced fallback — the user may
+    // uncheck every tile, leaving allowedBases empty by design.
     allowed = allowed.filter(x => x !== basisId);
-
-    // Never allow an empty valuation selection — fall back to NA if
-    // this is a non-valuation (liability/service) cover, or AV otherwise.
-    if (!allowed.length || allowed.every(x => x === 'NA')) {
-      allowed = isNonValuationCover(c) ? ['NA'] : ['AV'];
-    }
-    if (!allowed.includes(item.defaultBasis)) item.defaultBasis = allowed[0];
+    if (!allowed.includes(item.defaultBasis)) item.defaultBasis = allowed[0] || '';
   }
 
   item.allowedBases = [...new Set(allowed)];
+  ensureItemValConfig(item, c);
+  persistInsuredItems(false);
+}
+function selectAllInsuredBasis(id) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  const item = ensureInsuredItems(c).find(it => it.id === id);
+  if (!item) return;
+  const allowed = isNonValuationCover(c) ? ['NA'] : ['AV', 'MV', 'RC'];
+  item.allowedBases = allowed;
+  item.defaultBasis = allowed[0];
+  ensureItemValConfig(item, c);
+  persistInsuredItems(false);
+}
+function unselectAllInsuredBasis(id) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  const item = ensureInsuredItems(c).find(it => it.id === id);
+  if (!item) return;
+  item.allowedBases = [];
+  item.defaultBasis = '';
   ensureItemValConfig(item, c);
   persistInsuredItems(false);
 }
@@ -3526,7 +3537,13 @@ function buildInsuredItemCard(it, index, ro, c) {
           </select>
         </div>` : ''}
         <div class="form-group span-2">
-          <label class="form-label">Allowed Valuation Basis</label>
+          <label class="form-label ii-vb-label-row">
+            <span>Allowed Valuation Basis</span>
+            ${ro ? '' : `<span class="ii-vb-bulk-actions">
+              <button type="button" class="btn-link" onclick="selectAllInsuredBasis('${idAttr}')">Select All</button>
+              <button type="button" class="btn-link" onclick="unselectAllInsuredBasis('${idAttr}')">Unselect All</button>
+            </span>`}
+          </label>
           <div class="ii-vb-grid">
             ${tiles.map(b => {
               const on = allowed.includes(b.id);
@@ -4562,26 +4579,15 @@ function savePickTree() {
   localStorage.setItem(coverPickTreeKey,JSON.stringify(coverPickTree));
 }
 function changePickTree(id,childId,on) {
-  const state=coverPickTree[id];
-  if(!state)return;
-  if(childId){
-    state.selected=on ? [...new Set([...state.selected,childId])] : state.selected.filter(x=>x!==childId);
-    // Selecting any child also selects the parent cover.
-    state.parentSelected=true;
-  } else {
-    // Parent checkbox toggles the whole parent + all children.
-    state.parentSelected=!!on;
-    state.selected=on ? state.children.map(x=>x.id) : [];
-  }
-  if(state.children.length && state.selected.length===state.children.length) state.parentSelected=true;
-  if(!state.children.length) state.parentSelected=!!on;
-  savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
+  const state=coverPickTree[id];if(!state)return;
+  if(childId)state.selected=on ? [...new Set([...state.selected,childId])] : state.selected.filter(x=>x!==childId);
+  else state.parentSelected=!!on;
+  savePickTree();renderCoverTable();renderCoverList();
 }
 function selectAllPickTreeChildren(id) {
   const state=coverPickTree[id];
   if(!state)return;
   state.selected=state.children.map(x=>x.id);
-  state.parentSelected=true;
   savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
 }
 function unselectAllPickTreeChildren(id) {
@@ -4589,14 +4595,7 @@ function unselectAllPickTreeChildren(id) {
   if(!state)return;
   // "Unselect all" means unselect all children but keep the parent cover selected.
   state.selected=[];
-  state.parentSelected=true;
   savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
-}
-function setPickTreeSelectionMode(id,value) {
-  if(value==='all') selectAllPickTreeChildren(id);
-  else if(value==='none') unselectAllPickTreeChildren(id);
-  const select=document.querySelector('.cover-pick-select[data-parent="'+CSS.escape(String(id))+'"]');
-  if(select) select.value='';
 }
 function expandPickTree(id) {
   coverPickTree[id].expanded=!coverPickTree[id].expanded;savePickTree();renderCoverTable();
@@ -4636,17 +4635,10 @@ function pickTreeRowHtml(c,child,expanded) {
     </div>`;
   }
   const partial=state.selected.length>0 && !allChildrenSelected;
-  const parentControls =
-      `<select class="cover-pick-select" ${attrs} data-parent="${htmlEsc(c.id)}" aria-label="Child selection for ${htmlEsc(c.name)}" onchange="setPickTreeSelectionMode(this.dataset.parent,this.value)">
-        <option value="">Select children...</option>
-        <option value="all">Select all children</option>
-        <option value="none">Unselect all children</option>
-      </select>`
-    + `<button type="button" class="cover-pick-expand" ${attrs} onclick="expandPickTree(this.dataset.parent)" aria-label="${expanded?'Hide':'Show'} children" title="${expanded?'Hide':'Show'} children">${expanded?'⌃':'⌄'}</button>`
-    + `<button type="button" class="btn btn-secondary btn-sm" ${attrs} onclick="openPickTreeChild(this.dataset.parent)">+ Add Child</button>`;
+  const parentControls = '<button type="button" class="btn btn-ghost btn-sm" '+attrs+' onclick="expandPickTree(this.dataset.parent)" aria-expanded="'+expanded+'">'+(expanded?'Hide Children &#9652;':'Show Children &#9662;')+'</button><button type="button" class="btn btn-secondary btn-sm" '+attrs+' onclick="openPickTreeChild(this.dataset.parent)">+ Add Child</button>';
   return `<div class="cover-pick-card">
     <div class="cover-pick-card-head">
-      <input type="checkbox" class="cs-check cover-pick-check" ${attrs} data-tree-parent ${checked?'checked':''} ${partial?'data-indeterminate="true"':''} aria-label="Select ${htmlEsc(c.name)}" onchange="changePickTree(this.dataset.parent,null,this.checked)">
+      <input type="checkbox" class="cs-check cover-pick-check" ${attrs} data-tree-parent ${checked?'checked':''}  aria-label="Select ${htmlEsc(c.name)}" onchange="changePickTree(this.dataset.parent,null,this.checked)">
       <span class="cover-pick-card-icon">${coverCatalogIconHtml(c)}</span>
       <div class="cover-pick-card-main">
         <div class="cover-pick-card-title">${htmlEsc(c.name)}</div>
@@ -4654,12 +4646,12 @@ function pickTreeRowHtml(c,child,expanded) {
           <span>${htmlEsc(c.coverType || c.type || '')}</span>
           ${coverPickCategoryPill(c)}
           <span class="cs-pill cs-pill-active">Active</span>
-          <span>${state.parentSelected && !state.selected.length ? 'Parent only' : `${state.selected.length} of ${state.children.length} children selected`}</span>
+          <span>${state.selected.length} of ${state.children.length} children selected</span>
         </div>
       </div>
       <div class="cover-pick-card-actions">${parentControls}</div>
     </div>
-    ${expanded && state.children.length ? `<div class="cover-pick-children">${state.children.map(child=>pickTreeRowHtml(c,child,false)).join('')}</div>` : ''}
+    ${expanded && state.children.length ? `<div class="cover-pick-children"><label class="cover-pick-child"><input type="checkbox" class="cs-check cover-pick-check" ${attrs} ${allChildrenSelected?'checked':''} onchange="this.checked ? selectAllPickTreeChildren(this.dataset.parent) : unselectAllPickTreeChildren(this.dataset.parent)"> Select all children</label>${(pickTreeRows([c])[0]?.children || []).map(child=>pickTreeRowHtml(c,child,false)).join('')}</div>` : ''}
   </div>`;
 }
 
@@ -4670,7 +4662,7 @@ function syncPickTreeCheckboxStates() {
     const all=state.children.length>0 && state.selected.length===state.children.length;
     const partial=state.selected.length>0 && !all;
     cb.checked=!!state.parentSelected;
-    cb.indeterminate=partial;
+    cb.indeterminate=false;
   });
 }
 
@@ -4709,7 +4701,6 @@ function togglePickCover(id, checked) {
 function toggleAllPickCovers(checked) {
   pickTreeRows(defaultCoversCatalogForProduct()).forEach(({c,children})=>{
     const state=coverPickTree[c.id];
-    children.forEach(child=>{state.selected=state.selected.filter(x=>x!==child.id);if(checked)state.selected.push(child.id);});
     state.parentSelected=checked;
     if(!state.children.length){if(checked)pickCoverSelectedIds.add(String(c.id));else pickCoverSelectedIds.delete(String(c.id));}
   });savePickTree();renderCoverTable();renderCoverList();
@@ -5627,7 +5618,7 @@ function renderCoverTable() {
       const partial=state.selected.length>0 && !all;
       // Parent-only mode remains checked; partial child selection uses native indeterminate.
       el.checked=!!state.parentSelected;
-      el.indeterminate=partial;
+      el.indeterminate=false;
     });
     const filter=document.getElementById('cover-filter');
     if(filter && !filter.querySelector('[value="selected"]')){filter.options[0].text='All covers';filter.add(new Option('Selected covers','selected'));}
@@ -6141,153 +6132,17 @@ function showCoverSaveNotice(type, message) {
 }
 
 function saveCover(event, options = {}) {
-  console.log(1)
-  if (event) event.preventDefault();
-  console.log('[Coverage Guide] SAVE CLICKED');
-  const panel = document.getElementById('detail-panel');
-
-  if (!panel) {
-    PS.actionResult('error', 'Validation failed', 'Cover form could not be found.');
-    return;
-  }
-
-  panel.querySelectorAll('.validation-error').forEach(el => el.classList.remove('validation-error'));
-  panel.querySelectorAll('.validation-error-message').forEach(el => el.remove());
-
-  const invalidFields = [];
-  const cover = currentCover();
-  if (cover && typeof snapshotControls === 'function') {
-    try { snapshotControls(activeCoverId); } catch (_) {}
-  }
-  console.log('[Coverage Guide] VALIDATION START');
-const selectedDed = panel.querySelector('input[name="ded-' + cover.id + '"]:checked');
-if (selectedDed) cover.deductibleType = selectedDed.value;
-
-const syncDedField = (selector, key) => {
-  const field = panel.querySelector(selector);
-  if (field) cover[key] = String(field.value ?? '').trim();
-};
-
-syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
-syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
-syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
-syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
-syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
-syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
-syncDedField('[data-validation-field="copay"]', 'copay');
-  // Generic required validation is only applied to fields explicitly marked as required.
-panel.querySelectorAll('[data-required="true"]:not([readonly]):not([disabled])').forEach(field => {
-  const value = String(field.value ?? '').trim();
-  if (!value) {
-    const messages = {
-      deductibleAmount: 'Deductible Amount is required when Fixed Amount is selected.',
-      deductiblePct: 'Deductible Percentage is required when Percentage is selected.'
-    };
-    const message = messages[field.dataset.validationField] || 'This field is required.';
-    addCoverValidationError(field, message, invalidFields);
-  }
-});
-
-  if (!cover) {
-    PS.actionResult('error', 'Validation failed', 'Cover could not be found.');
-    showCoverSaveNotice('error', 'Cover could not be found.');
-    return false;
-  }
-
-  // Sync visible deductible controls into the active cover before validation.
-  // This makes Save deterministic even if an input event did not fire.
-
-
-  syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
-  syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
-  syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
-  syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
-  syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
-  syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
-  syncDedField('[data-validation-field="copay"]', 'copay');
-
-  // Deductible configuration
-  // Fixed amount requires a positive amount; percentage requires a valid 0-100 value.
-  // Minimum/maximum deductible fields remain optional as defined by the UI.
-  validateDeductibleConfiguration(cover, panel, invalidFields);
-
-  // Cover identity
-  if (!String(cover.name || '').trim()) {
-    const nameField = panel.querySelector('[data-cover-name]');
-    addCoverValidationError(nameField, 'Cover Name is required.', invalidFields);
-  }
-  if (!String(cover.type || '').trim()) {
-    const typeField = panel.querySelector('[data-cover-type]');
-    addCoverValidationError(typeField, 'Cover Type is required.', invalidFields);
-  }
-
-  // Insured items
-  const items = Array.isArray(cover.insuredItems) ? cover.insuredItems : [];
-  if (!items.length) {
-    invalidFields.push({ focus: () => scrollCoverSection('ii-item') });
-  }
-
-  items.forEach((item, index) => {
-    if (!String(item.name || '').trim()) {
-      invalidFields.push({ focus: () => scrollCoverSection('ii-item') });
-    }
-
-    // Monetary limit is mandatory for non-service insured items when the
-    // item's limit basis is a fixed amount.
-    if (!isServiceCover(cover)) {
-      const limitBasis = String(item.limitBasis || 'Fixed Amount').trim();
-      if (limitBasis === 'Fixed Amount') {
-        const limitField = panel.querySelector(
-          `[data-insured-item-limit="${CSS.escape(String(item.id || ''))}"]`
-        );
-        const rawLimit = String(item.limitAmount ?? '').replace(/[$,\s]/g, '').trim();
-        const numericLimit = rawLimit === '' ? NaN : Number(rawLimit);
-
-        if (!rawLimit) {
-          addCoverValidationError(
-            limitField,
-            `Limit Amount is required for insured item ${index + 1}.`,
-            invalidFields,
-            () => scrollCoverSection('ii-item')
-          );
-        } else if (!Number.isFinite(numericLimit) || numericLimit <= 0) {
-          addCoverValidationError(
-            limitField,
-            `Limit Amount for insured item ${index + 1} must be greater than 0.`,
-            invalidFields,
-            () => scrollCoverSection('ii-item')
-          );
-        }
-      }
-    }
-
-    if (item.itemAnnualAggregate && !String(item.itemAggregateLimit || '').trim() && !isServiceCover(cover)) {
-      invalidFields.push({ focus: () => scrollCoverSection('ii-item') });
-      PS.actionResult('error', 'Validation failed', `Insured item ${index + 1} requires an Aggregate Limit when Annual Aggregate is enabled.`);
-    }
+  event?.preventDefault();
+  const panel=document.getElementById('detail-panel'),cover=currentCover();
+  if(!panel || !cover){PS.actionResult('error','Save failed','Cover form or cover could not be found.');return false;}
+  panel.querySelectorAll('.validation-error').forEach(el=>el.classList.remove('validation-error'));
+  panel.querySelectorAll('.validation-error-message').forEach(el=>el.remove());
+  if(typeof snapshotControls==='function')snapshotControls(activeCoverId);
+  const selectedDed=panel.querySelector('input[name="ded-'+cover.id+'"]:checked');
+  if(selectedDed)cover.deductibleType=selectedDed.value;
+  ['deductibleAmount','deductiblePct','deductiblePctOf','minDeductible','maxDeductible','copay'].forEach(key=>{
+    const field=panel.querySelector('[data-validation-field="'+key+'"]');if(field)cover[key]=String(field.value ?? '').trim();
   });
-
-  console.log('[Coverage Guide] VALIDATION RESULT:', invalidFields.length);
-  if (invalidFields.length) {
-    const firstInvalid = invalidFields[0];
-
-    if (typeof firstInvalid.focus === 'function') {
-      firstInvalid.focus();
-    } else {
-      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => firstInvalid.focus(), 300);
-    }
-
-    const validationMessage = `${invalidFields.length} field${invalidFields.length > 1 ? 's' : ''} require${invalidFields.length === 1 ? 's' : ''} attention.`;
-    PS.actionResult(
-      'error',
-      'Validation failed',
-      validationMessage
-    );
-    showCoverSaveNotice('error', validationMessage);
-    return false;
-  }
-
   try {
     cover.coverVersion = coverVersionLabel();
     cover.complete = true;

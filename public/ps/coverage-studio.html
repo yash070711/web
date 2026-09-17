@@ -2245,11 +2245,15 @@ function addInsuredItem() {
   const items = ensureInsuredItems(c);
   const newItem = defaultInsuredItem(c, items.length);
   newItem.id = `ii-${Date.now()}`;
+  newItem.createdIn = 'futuristic';
   items.push(newItem);
   persistInsuredItems(false);
 }
 
+function canRemoveFuturisticCover(item) { return coversCanEdit() && item?.createdIn === 'futuristic'; }
 function removeInsuredItem(id) {
+  const target=currentCover()?.insuredItems?.find(it=>it.id===id);
+  if(!canRemoveFuturisticCover(target))return false;
   const c = currentCover();
   if (!c || !coversCanEdit()) return;
   const items = ensureInsuredItems(c);
@@ -3630,7 +3634,7 @@ function buildInsuredItemCard(it, index, ro, c) {
     <div class="ii-item" ${index === 0 ? 'id="ii-item"' : ''}>
       <div class="ii-item-head">
         <strong>${index === 0 ? htmlEsc(c.name) : `Child Coverage Class ${index}`}</strong>
-        ${ro || index === 0 ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="removeInsuredItem('${idAttr}')">Remove</button>`}
+        ${ro || index === 0 || !canRemoveFuturisticCover(it) ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="removeInsuredItem('${idAttr}')">Remove</button>`}
       </div>
       <div class="form-grid-2 ii-item-grid">
         ${index > 0 ? `
@@ -4511,6 +4515,7 @@ function coverFromCatalogItem(lib) {
   }, src, {
     id: `COV-${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 6)}`,
     name: lib.name,
+    createdIn: lib.createdIn || src.createdIn || '',
     code: lib.code || src.code || '',
     icon: lib.icon || src.icon,
     iconBg: lib.iconBg || src.iconBg,
@@ -5267,6 +5272,9 @@ function toggleChildCoverageExpansion(event, coverId) {
 }
 
 function removeSelectedChildCoverage(event, coverId, childName) {
+  const parent=COVERS.find(c=>String(c.id)===String(coverId));
+  const matching=(parent?.insuredItems || []).slice(1).filter(it=>(it.type || it.name)===childName);
+  if(!matching.length || !matching.every(canRemoveFuturisticCover))return false;
   if (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -5360,11 +5368,11 @@ function renderCoverList() {
              <div class="cover-child-row">
                <span class="cover-child-dot"></span>
                <span class="cover-child-name">${htmlEsc(child)}</span>
-               <button type="button"
+               ${(c.insuredItems || []).slice(1).filter(it=>(it.type || it.name)===child).length && (c.insuredItems || []).slice(1).filter(it=>(it.type || it.name)===child).every(canRemoveFuturisticCover) ? `<button type="button"
                  class="cover-child-remove"
                  onclick="removeSelectedChildCoverage(event, '${htmlEsc(c.id)}', '${htmlEsc(child)}')"
                  aria-label="Remove ${htmlEsc(child)}"
-                 title="Remove child coverage">×</button>
+                 title="Remove child coverage">×</button>` : ''}
              </div>
            `).join('')}
          </div>`
@@ -5378,7 +5386,7 @@ function renderCoverList() {
           <span class="cover-item-name" title="${htmlEsc(c.name)}">${htmlEsc(c.name)}</span>
           
           ${childSummary}
-          ${canEdit ? `<button type="button" class="cover-item-remove" onclick="event.stopPropagation(); confirmRemoveCover('${htmlEsc(c.id)}')" aria-label="Remove ${htmlEsc(c.name)}" title="Remove cover">×</button>` : ''}
+          ${canEdit && canRemoveFuturisticCover(c) ? `<button type="button" class="cover-item-remove" onclick="event.stopPropagation(); confirmRemoveCover('${htmlEsc(c.id)}')" aria-label="Remove ${htmlEsc(c.name)}" title="Remove cover">×</button>` : ''}
         </div>
       </div>
       ${childList}
@@ -5499,12 +5507,14 @@ function coverNameCounts() {
 }
 
 function confirmRemoveCover(id) {
+  if(!canRemoveFuturisticCover(COVERS.find(c=>c.id===id)))return false;
   const c = COVERS.find(x => x.id === id);
   if (!c || !coversCanEdit()) return;
   removeCoverFromProduct(id);
 }
 
 function removeCoverFromProduct(id) {
+  if(!canRemoveFuturisticCover(COVERS.find(c=>c.id===id)))return false;
   const idx = COVERS.findIndex(c => c.id === id);
   if (idx < 0) return;
   const name = COVERS[idx].name;
@@ -5633,7 +5643,7 @@ function renderCoverTable() {
                   <button class="btn btn-icon btn-sm" type="button" aria-label="Actions" onclick="toggleCoverMenu(event, '${c.id}')">⋮</button>
                   <div class="cs-kebab-menu">
                     <button type="button" onclick="openCoverEditor('${c.id}')">Configure</button>
-                    <button type="button" onclick="removeCoverFromProduct('${c.id}')">Remove from product</button>
+                    ${canRemoveFuturisticCover(c) ? `<button type="button" onclick="removeCoverFromProduct('${c.id}')">Remove from product</button>` : ''}
                   </div>
                 </div>
               </td>
@@ -5784,7 +5794,7 @@ function renderDetailPanel(c) {
       <h2 style="font-size:20px;font-weight:700;color:var(--color-ink);margin:0">${c.name}</h2>
       ${coverAvailSelectHtml(c, ro)}
       ${ro ? '' : `<div class="cover-head-actions">
-        <button type="button" class="btn btn-ghost btn-sm" onclick="confirmRemoveCover('${htmlEsc(c.id)}')">Remove cover</button>
+        ${canRemoveFuturisticCover(c) ? `<button type="button" class="btn btn-ghost btn-sm" onclick="confirmRemoveCover('${htmlEsc(c.id)}')">Remove cover</button>` : ''}
       </div>`}
     </div>
     ${buildSection('identity', '1', 'Cover Identity', coverType, `
@@ -6317,7 +6327,7 @@ function executeCreateLibraryCover() {
   let n = 2;
   const used = new Set(catalog.map(c => String(c.code).toLowerCase()));
   while (used.has(code.toLowerCase())) code = `COV-${core}-${n++}`;
-  PS.prototypeApp?.addLibraryExtra?.('coverage', { id: `LIB-${core}`, name, code, type, family });
+  PS.prototypeApp?.addLibraryExtra?.('coverage', { id: `LIB-${core}`, name, code, type, family, createdIn: 'futuristic' });
   PS.closeModal();
   PS.actionResult?.('success', 'Cover created', `${name} is now in the predefined cover catalogue.`);
   renderCoverageLibraryDashboard();

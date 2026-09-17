@@ -61,6 +61,7 @@
           <input type="file" accept="application/json" hidden onchange="importCatalog(event)">
         </label>
         <button class="btn btn-ghost" type="button" onclick="resetAll()">Restore defaults</button>
+        <button class="btn btn-danger" type="button" onclick="clearAllProducts()">Clear All Product Data</button>
       </div>
     </div>
     <div style="padding:0 var(--space-5) var(--space-6)">
@@ -232,6 +233,13 @@ function resetAll() {
   if (!confirm('Restore every dropdown and custom field to the original defaults?')) return;
   PS.admin.resetAll();
   renderAdmin();
+}
+
+function clearAllProducts() {
+  if (!confirm('This permanently deletes every product, cover, and related data from this browser (local storage, session storage, and cookies). This cannot be undone. Continue?')) return;
+  PS.prototypeApp?.clearAllProductData?.();
+  PS.actionResult?.('success', 'Product data cleared', 'All products have been removed. Reloading the Product Catalogue.');
+  setTimeout(() => { location.href = 'catalogue.html'; }, 600);
 }
 
 function esc(v) { return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
