@@ -2521,7 +2521,7 @@ function coverValidationIssues(cover) {
         let id = `COV-${Date.now().toString(36)}`;
         while (COVERS.some(c => c.id === id)) id = `COV-${Date.now().toString(36)}${n++}`;
         const cover = {
-          id, name, code, type, availability,
+          id, name, code, type, availability, createdIn: 'futuristic',
           description: document.getElementById('ac-desc')?.value || '',
           status: 'incomplete', complete: false,
           defaultSelected: availability === 'mandatory' || availability === 'default',

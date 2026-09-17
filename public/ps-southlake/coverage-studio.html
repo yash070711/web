@@ -363,16 +363,8 @@
       display: flex; align-items: center; justify-content: flex-end; gap: 8px;
       flex-wrap: wrap; flex: 0 0 auto;
     }
-    .cover-pick-select {
-      min-width: 154px; height: 34px; padding: 0 30px 0 10px;
-      border: 1px solid var(--color-border); border-radius: 8px;
-      background: var(--color-surface); color: var(--color-ink);
-      font-size: 12px; font-weight: 600; cursor: pointer;
-    }
-    .cover-pick-select:focus {
-      outline: none; border-color: var(--color-brand);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 12%, transparent);
-    }
+    
+    
     .cover-pick-expand {
       width: 34px; height: 34px; padding: 0;
       border: 1px solid var(--color-border); border-radius: 8px;
@@ -425,7 +417,7 @@
     @media (max-width: 760px) {
       .cover-pick-card-head { align-items: flex-start; flex-wrap: wrap; }
       .cover-pick-card-actions { width: 100%; justify-content: flex-start; padding-left: 68px; }
-      .cover-pick-select { min-width: 170px; }
+      
       .cover-pick-children { padding-left: 18px; }
       .cover-pick-footer { align-items: stretch; flex-direction: column; }
       .cover-pick-footer > div { width: 100%; }
@@ -4587,26 +4579,15 @@ function savePickTree() {
   localStorage.setItem(coverPickTreeKey,JSON.stringify(coverPickTree));
 }
 function changePickTree(id,childId,on) {
-  const state=coverPickTree[id];
-  if(!state)return;
-  if(childId){
-    state.selected=on ? [...new Set([...state.selected,childId])] : state.selected.filter(x=>x!==childId);
-    // Selecting any child also selects the parent cover.
-    state.parentSelected=true;
-  } else {
-    // Parent checkbox toggles the whole parent + all children.
-    state.parentSelected=!!on;
-    state.selected=on ? state.children.map(x=>x.id) : [];
-  }
-  if(state.children.length && state.selected.length===state.children.length) state.parentSelected=true;
-  if(!state.children.length) state.parentSelected=!!on;
-  savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
+  const state=coverPickTree[id];if(!state)return;
+  if(childId)state.selected=on ? [...new Set([...state.selected,childId])] : state.selected.filter(x=>x!==childId);
+  else state.parentSelected=!!on;
+  savePickTree();renderCoverTable();renderCoverList();
 }
 function selectAllPickTreeChildren(id) {
   const state=coverPickTree[id];
   if(!state)return;
   state.selected=state.children.map(x=>x.id);
-  state.parentSelected=true;
   savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
 }
 function unselectAllPickTreeChildren(id) {
@@ -4614,14 +4595,7 @@ function unselectAllPickTreeChildren(id) {
   if(!state)return;
   // "Unselect all" means unselect all children but keep the parent cover selected.
   state.selected=[];
-  state.parentSelected=true;
   savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
-}
-function setPickTreeSelectionMode(id,value) {
-  if(value==='all') selectAllPickTreeChildren(id);
-  else if(value==='none') unselectAllPickTreeChildren(id);
-  const select=document.querySelector('.cover-pick-select[data-parent="'+CSS.escape(String(id))+'"]');
-  if(select) select.value='';
 }
 function expandPickTree(id) {
   coverPickTree[id].expanded=!coverPickTree[id].expanded;savePickTree();renderCoverTable();
@@ -4661,17 +4635,10 @@ function pickTreeRowHtml(c,child,expanded) {
     </div>`;
   }
   const partial=state.selected.length>0 && !allChildrenSelected;
-  const parentControls =
-      `<select class="cover-pick-select" ${attrs} data-parent="${htmlEsc(c.id)}" aria-label="Child selection for ${htmlEsc(c.name)}" onchange="setPickTreeSelectionMode(this.dataset.parent,this.value)">
-        <option value="">Select children...</option>
-        <option value="all">Select all children</option>
-        <option value="none">Unselect all children</option>
-      </select>`
-    + `<button type="button" class="cover-pick-expand" ${attrs} onclick="expandPickTree(this.dataset.parent)" aria-label="${expanded?'Hide':'Show'} children" title="${expanded?'Hide':'Show'} children">${expanded?'⌃':'⌄'}</button>`
-    + `<button type="button" class="btn btn-secondary btn-sm" ${attrs} onclick="openPickTreeChild(this.dataset.parent)">+ Add Child</button>`;
+  const parentControls = '<button type="button" class="btn btn-ghost btn-sm" '+attrs+' onclick="expandPickTree(this.dataset.parent)" aria-expanded="'+expanded+'">'+(expanded?'Hide Children &#9652;':'Show Children &#9662;')+'</button><button type="button" class="btn btn-secondary btn-sm" '+attrs+' onclick="openPickTreeChild(this.dataset.parent)">+ Add Child</button>';
   return `<div class="cover-pick-card">
     <div class="cover-pick-card-head">
-      <input type="checkbox" class="cs-check cover-pick-check" ${attrs} data-tree-parent ${checked?'checked':''} ${partial?'data-indeterminate="true"':''} aria-label="Select ${htmlEsc(c.name)}" onchange="changePickTree(this.dataset.parent,null,this.checked)">
+      <input type="checkbox" class="cs-check cover-pick-check" ${attrs} data-tree-parent ${checked?'checked':''}  aria-label="Select ${htmlEsc(c.name)}" onchange="changePickTree(this.dataset.parent,null,this.checked)">
       <span class="cover-pick-card-icon">${coverCatalogIconHtml(c)}</span>
       <div class="cover-pick-card-main">
         <div class="cover-pick-card-title">${htmlEsc(c.name)}</div>
@@ -4679,12 +4646,12 @@ function pickTreeRowHtml(c,child,expanded) {
           <span>${htmlEsc(c.coverType || c.type || '')}</span>
           ${coverPickCategoryPill(c)}
           <span class="cs-pill cs-pill-active">Active</span>
-          <span>${state.parentSelected && !state.selected.length ? 'Parent only' : `${state.selected.length} of ${state.children.length} children selected`}</span>
+          <span>${state.selected.length} of ${state.children.length} children selected</span>
         </div>
       </div>
       <div class="cover-pick-card-actions">${parentControls}</div>
     </div>
-    ${expanded && state.children.length ? `<div class="cover-pick-children">${state.children.map(child=>pickTreeRowHtml(c,child,false)).join('')}</div>` : ''}
+    ${expanded && state.children.length ? `<div class="cover-pick-children"><label class="cover-pick-child"><input type="checkbox" class="cs-check cover-pick-check" ${attrs} ${allChildrenSelected?'checked':''} onchange="this.checked ? selectAllPickTreeChildren(this.dataset.parent) : unselectAllPickTreeChildren(this.dataset.parent)"> Select all children</label>${(pickTreeRows([c])[0]?.children || []).map(child=>pickTreeRowHtml(c,child,false)).join('')}</div>` : ''}
   </div>`;
 }
 
@@ -4695,7 +4662,7 @@ function syncPickTreeCheckboxStates() {
     const all=state.children.length>0 && state.selected.length===state.children.length;
     const partial=state.selected.length>0 && !all;
     cb.checked=!!state.parentSelected;
-    cb.indeterminate=partial;
+    cb.indeterminate=false;
   });
 }
 
@@ -4734,7 +4701,6 @@ function togglePickCover(id, checked) {
 function toggleAllPickCovers(checked) {
   pickTreeRows(defaultCoversCatalogForProduct()).forEach(({c,children})=>{
     const state=coverPickTree[c.id];
-    children.forEach(child=>{state.selected=state.selected.filter(x=>x!==child.id);if(checked)state.selected.push(child.id);});
     state.parentSelected=checked;
     if(!state.children.length){if(checked)pickCoverSelectedIds.add(String(c.id));else pickCoverSelectedIds.delete(String(c.id));}
   });savePickTree();renderCoverTable();renderCoverList();
@@ -5652,7 +5618,7 @@ function renderCoverTable() {
       const partial=state.selected.length>0 && !all;
       // Parent-only mode remains checked; partial child selection uses native indeterminate.
       el.checked=!!state.parentSelected;
-      el.indeterminate=partial;
+      el.indeterminate=false;
     });
     const filter=document.getElementById('cover-filter');
     if(filter && !filter.querySelector('[value="selected"]')){filter.options[0].text='All covers';filter.add(new Option('Selected covers','selected'));}
@@ -6166,153 +6132,17 @@ function showCoverSaveNotice(type, message) {
 }
 
 function saveCover(event, options = {}) {
-  console.log(1)
-  if (event) event.preventDefault();
-  console.log('[Coverage Guide] SAVE CLICKED');
-  const panel = document.getElementById('detail-panel');
-
-  if (!panel) {
-    PS.actionResult('error', 'Validation failed', 'Cover form could not be found.');
-    return;
-  }
-
-  panel.querySelectorAll('.validation-error').forEach(el => el.classList.remove('validation-error'));
-  panel.querySelectorAll('.validation-error-message').forEach(el => el.remove());
-
-  const invalidFields = [];
-  const cover = currentCover();
-  if (cover && typeof snapshotControls === 'function') {
-    try { snapshotControls(activeCoverId); } catch (_) {}
-  }
-  console.log('[Coverage Guide] VALIDATION START');
-const selectedDed = panel.querySelector('input[name="ded-' + cover.id + '"]:checked');
-if (selectedDed) cover.deductibleType = selectedDed.value;
-
-const syncDedField = (selector, key) => {
-  const field = panel.querySelector(selector);
-  if (field) cover[key] = String(field.value ?? '').trim();
-};
-
-syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
-syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
-syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
-syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
-syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
-syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
-syncDedField('[data-validation-field="copay"]', 'copay');
-  // Generic required validation is only applied to fields explicitly marked as required.
-panel.querySelectorAll('[data-required="true"]:not([readonly]):not([disabled])').forEach(field => {
-  const value = String(field.value ?? '').trim();
-  if (!value) {
-    const messages = {
-      deductibleAmount: 'Deductible Amount is required when Fixed Amount is selected.',
-      deductiblePct: 'Deductible Percentage is required when Percentage is selected.'
-    };
-    const message = messages[field.dataset.validationField] || 'This field is required.';
-    addCoverValidationError(field, message, invalidFields);
-  }
-});
-
-  if (!cover) {
-    PS.actionResult('error', 'Validation failed', 'Cover could not be found.');
-    showCoverSaveNotice('error', 'Cover could not be found.');
-    return false;
-  }
-
-  // Sync visible deductible controls into the active cover before validation.
-  // This makes Save deterministic even if an input event did not fire.
-
-
-  syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
-  syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
-  syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
-  syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
-  syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
-  syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
-  syncDedField('[data-validation-field="copay"]', 'copay');
-
-  // Deductible configuration
-  // Fixed amount requires a positive amount; percentage requires a valid 0-100 value.
-  // Minimum/maximum deductible fields remain optional as defined by the UI.
-  validateDeductibleConfiguration(cover, panel, invalidFields);
-
-  // Cover identity
-  if (!String(cover.name || '').trim()) {
-    const nameField = panel.querySelector('[data-cover-name]');
-    addCoverValidationError(nameField, 'Cover Name is required.', invalidFields);
-  }
-  if (!String(cover.type || '').trim()) {
-    const typeField = panel.querySelector('[data-cover-type]');
-    addCoverValidationError(typeField, 'Cover Type is required.', invalidFields);
-  }
-
-  // Insured items
-  const items = Array.isArray(cover.insuredItems) ? cover.insuredItems : [];
-  if (!items.length) {
-    invalidFields.push({ focus: () => scrollCoverSection('ii-item') });
-  }
-
-  items.forEach((item, index) => {
-    if (!String(item.name || '').trim()) {
-      invalidFields.push({ focus: () => scrollCoverSection('ii-item') });
-    }
-
-    // Monetary limit is mandatory for non-service insured items when the
-    // item's limit basis is a fixed amount.
-    if (!isServiceCover(cover)) {
-      const limitBasis = String(item.limitBasis || 'Fixed Amount').trim();
-      if (limitBasis === 'Fixed Amount') {
-        const limitField = panel.querySelector(
-          `[data-insured-item-limit="${CSS.escape(String(item.id || ''))}"]`
-        );
-        const rawLimit = String(item.limitAmount ?? '').replace(/[$,\s]/g, '').trim();
-        const numericLimit = rawLimit === '' ? NaN : Number(rawLimit);
-
-        if (!rawLimit) {
-          addCoverValidationError(
-            limitField,
-            `Limit Amount is required for insured item ${index + 1}.`,
-            invalidFields,
-            () => scrollCoverSection('ii-item')
-          );
-        } else if (!Number.isFinite(numericLimit) || numericLimit <= 0) {
-          addCoverValidationError(
-            limitField,
-            `Limit Amount for insured item ${index + 1} must be greater than 0.`,
-            invalidFields,
-            () => scrollCoverSection('ii-item')
-          );
-        }
-      }
-    }
-
-    if (item.itemAnnualAggregate && !String(item.itemAggregateLimit || '').trim() && !isServiceCover(cover)) {
-      invalidFields.push({ focus: () => scrollCoverSection('ii-item') });
-      PS.actionResult('error', 'Validation failed', `Insured item ${index + 1} requires an Aggregate Limit when Annual Aggregate is enabled.`);
-    }
+  event?.preventDefault();
+  const panel=document.getElementById('detail-panel'),cover=currentCover();
+  if(!panel || !cover){PS.actionResult('error','Save failed','Cover form or cover could not be found.');return false;}
+  panel.querySelectorAll('.validation-error').forEach(el=>el.classList.remove('validation-error'));
+  panel.querySelectorAll('.validation-error-message').forEach(el=>el.remove());
+  if(typeof snapshotControls==='function')snapshotControls(activeCoverId);
+  const selectedDed=panel.querySelector('input[name="ded-'+cover.id+'"]:checked');
+  if(selectedDed)cover.deductibleType=selectedDed.value;
+  ['deductibleAmount','deductiblePct','deductiblePctOf','minDeductible','maxDeductible','copay'].forEach(key=>{
+    const field=panel.querySelector('[data-validation-field="'+key+'"]');if(field)cover[key]=String(field.value ?? '').trim();
   });
-
-  console.log('[Coverage Guide] VALIDATION RESULT:', invalidFields.length);
-  if (invalidFields.length) {
-    const firstInvalid = invalidFields[0];
-
-    if (typeof firstInvalid.focus === 'function') {
-      firstInvalid.focus();
-    } else {
-      firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => firstInvalid.focus(), 300);
-    }
-
-    const validationMessage = `${invalidFields.length} field${invalidFields.length > 1 ? 's' : ''} require${invalidFields.length === 1 ? 's' : ''} attention.`;
-    PS.actionResult(
-      'error',
-      'Validation failed',
-      validationMessage
-    );
-    showCoverSaveNotice('error', validationMessage);
-    return false;
-  }
-
   try {
     cover.coverVersion = coverVersionLabel();
     cover.complete = true;
