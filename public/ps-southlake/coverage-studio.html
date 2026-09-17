@@ -1036,6 +1036,12 @@
       background: var(--color-brand-light); color: var(--color-brand);
       font-size: 11px; font-weight: 700;
     }
+    .ii-vb-label-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .ii-vb-bulk-actions { display: inline-flex; gap: 12px; }
+    .ii-vb-bulk-actions .btn-link {
+      background: none; border: none; padding: 0; cursor: pointer;
+      color: var(--color-brand); font-size: 12px; font-weight: 600; text-decoration: underline;
+    }
     .ii-vb-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
     .ii-vb-tile {
       position: relative; display: block; text-align: left; cursor: pointer;
@@ -2063,12 +2069,11 @@ function patchItemValConfig(itemId, basisId, key, value, skipRender) {
 }
 
 function defaultInsuredItem(c, index) {
-  const primary = isNonValuationCover(c) ? 'NA' : vbMeta(c.basisOfCoverage).id;
   const rows = Array.isArray(c.valuationRows) ? c.valuationRows : [];
   const included = rows.filter(r => r.included !== false).map(r => r.id);
   const allowed = isNonValuationCover(c)
     ? ['NA']
-    : (included.length ? included : [primary, 'AV', 'MV', 'RC']).filter((id, i, a) => id && a.indexOf(id) === i);
+    : included.filter((id, i, a) => id && a.indexOf(id) === i);
   const itemName = defaultInsuredItemName(c, index);
   const itemType = defaultInsuredItemType(c, index);
   const item = {
@@ -2076,17 +2081,17 @@ function defaultInsuredItem(c, index) {
     name: itemType,
     type: itemType,
     description: '',
-    allowedBases: allowed.length ? allowed : [primary],
-    defaultBasis: primary,
+    allowedBases: allowed,
+    defaultBasis: allowed.length ? allowed[0] : '',
     quoteChoice: 'Customer / agent may choose',
     uwOverrideValuation: c.uwOverrideValuation !== false,
-    uwMaxVariation: c.uwMaxVariation == null || c.uwMaxVariation === '' ? '20' : c.uwMaxVariation,
+    uwMaxVariation: '',
     uwReferral: c.uwReferral || 'Referral required',
     uwReason: c.uwReason || 'Reason required',
     limitBasisMode: 'fixed',
     limitBasis: isServiceCover(c) ? 'Not Applicable' : 'Fixed Amount',
     uwLimitOverride: true,
-    limitPct: '50',
+    limitPct: '',
     limitPctOf: 'Sum Insured',
     limitAmount: '',
     maxLimit: isServiceCover(c) ? 'N/A' : '',
@@ -2148,39 +2153,37 @@ function ensureInsuredItems(c) {
       }
     } else {
       // Asset/property covers may allow AV, MV, RC and NA.
-      // Do not overwrite the user's valuation selection while rendering.
-      if (!Array.isArray(it.allowedBases) || !it.allowedBases.length) {
-        const primary = vbMeta(it.defaultBasis || c.basisOfCoverage).id;
-        it.allowedBases = [primary === 'NA' ? 'AV' : primary];
-      }
+      // Do not overwrite the user's valuation selection while rendering,
+      // and do not force a selection when none has been made — an empty
+      // allowedBases (nothing checked) is a valid, deliberate state.
+      if (!Array.isArray(it.allowedBases)) it.allowedBases = [];
       it.allowedBases = [...new Set(
         it.allowedBases.filter(id => ['AV', 'MV', 'RC', 'NA'].includes(id))
       )];
-      if (!it.allowedBases.length) it.allowedBases = ['AV'];
-      if (!it.defaultBasis || !it.allowedBases.includes(it.defaultBasis)) {
-        it.defaultBasis = it.allowedBases[0];
+      if (it.defaultBasis && !it.allowedBases.includes(it.defaultBasis)) {
+        it.defaultBasis = it.allowedBases[0] || '';
       }
     }
-    if (!it.defaultBasis || (it.defaultBasis !== 'NA' && !it.allowedBases.includes(it.defaultBasis))) {
-      it.defaultBasis = it.allowedBases[0];
+    if (it.defaultBasis && it.defaultBasis !== 'NA' && !it.allowedBases.includes(it.defaultBasis)) {
+      it.defaultBasis = it.allowedBases[0] || '';
     }
     if (!it.quoteChoice) it.quoteChoice = 'Customer / agent may choose';
     if (it.uwOverrideValuation == null) it.uwOverrideValuation = c.uwOverrideValuation !== false;
-    if (it.uwMaxVariation == null || it.uwMaxVariation === '') it.uwMaxVariation = c.uwMaxVariation == null || c.uwMaxVariation === '' ? '20' : c.uwMaxVariation;
+    if (it.uwMaxVariation == null) it.uwMaxVariation = '';
     if (!it.uwReferral) it.uwReferral = c.uwReferral || 'Referral required';
     if (!it.uwReason) it.uwReason = c.uwReason || 'Reason required';
     if (!it.limitBasis || it.limitBasis === 'Sum Insured' || it.limitBasis === 'Not Applicable') it.limitBasis = 'Fixed Amount';
     if (it.uwLimitOverride == null) it.uwLimitOverride = true;
-    if (it.limitAmount == null) it.limitAmount = c.sumInsured || '';
+    if (it.limitAmount == null) it.limitAmount = '';
     if (!it.paymentRule) it.paymentRule = 'Maximum payable for this insured item';
     if (!it.description) it.description = '';
     if (!it.limitBasisMode) it.limitBasisMode = /percent/i.test(it.limitBasis) ? 'percent' : 'fixed';
-    if (!it.limitPct) it.limitPct = '50';
+    if (it.limitPct == null) it.limitPct = '';
     if (!it.limitPctOf) it.limitPctOf = 'Sum Insured';
     if (!it.maxLimit) it.maxLimit = '';
     if (!it.overrideType) it.overrideType = 'both';
-    if (!it.maxOverride) it.maxOverride = '100,000';
-    if (it.itemCopay == null) it.itemCopay = c.copay ?? '0';
+    if (it.maxOverride == null) it.maxOverride = '';
+    if (it.itemCopay == null) it.itemCopay = '';
     if (!it.itemWaitingPeriod) it.itemWaitingPeriod = c.waitingPeriod || 'None';
     if (it.itemAnnualAggregate == null) it.itemAnnualAggregate = Boolean(c.annualAggregate);
     if (it.itemAggregateLimit == null) it.itemAggregateLimit = c.aggregateLimit || '';
@@ -2251,11 +2254,10 @@ function toggleInsuredBasis(id, basisId, on) {
       allowed = ['NA'];
       item.defaultBasis = 'NA';
     } else {
-      // May explicitly unselect Not Applicable.
-      const fallback = vbMeta(c.basisOfCoverage).id;
-      const realFallback = ['AV', 'MV', 'RC'].includes(fallback) ? fallback : 'AV';
-      allowed = [realFallback];
-      item.defaultBasis = realFallback;
+      // May explicitly unselect Not Applicable. No forced fallback — the
+      // item may end up with nothing checked, which is a valid state.
+      allowed = allowed.filter(x => x !== 'NA');
+      if (!allowed.includes(item.defaultBasis)) item.defaultBasis = allowed[0] || '';
     }
   } else if (on) {
     // Selecting an actual valuation method removes Not Applicable.
@@ -2266,17 +2268,34 @@ function toggleInsuredBasis(id, basisId, on) {
       item.defaultBasis = basisId;
     }
   } else {
+    // Unchecking a valuation method. No forced fallback — the user may
+    // uncheck every tile, leaving allowedBases empty by design.
     allowed = allowed.filter(x => x !== basisId);
-
-    // Never allow an empty valuation selection — fall back to NA if
-    // this is a non-valuation (liability/service) cover, or AV otherwise.
-    if (!allowed.length || allowed.every(x => x === 'NA')) {
-      allowed = isNonValuationCover(c) ? ['NA'] : ['AV'];
-    }
-    if (!allowed.includes(item.defaultBasis)) item.defaultBasis = allowed[0];
+    if (!allowed.includes(item.defaultBasis)) item.defaultBasis = allowed[0] || '';
   }
 
   item.allowedBases = [...new Set(allowed)];
+  ensureItemValConfig(item, c);
+  persistInsuredItems(false);
+}
+function selectAllInsuredBasis(id) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  const item = ensureInsuredItems(c).find(it => it.id === id);
+  if (!item) return;
+  const allowed = isNonValuationCover(c) ? ['NA'] : ['AV', 'MV', 'RC'];
+  item.allowedBases = allowed;
+  item.defaultBasis = allowed[0];
+  ensureItemValConfig(item, c);
+  persistInsuredItems(false);
+}
+function unselectAllInsuredBasis(id) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  const item = ensureInsuredItems(c).find(it => it.id === id);
+  if (!item) return;
+  item.allowedBases = [];
+  item.defaultBasis = '';
   ensureItemValConfig(item, c);
   persistInsuredItems(false);
 }
@@ -3552,7 +3571,13 @@ function buildInsuredItemCard(it, index, ro, c) {
           </select>
         </div>` : ''}
         <div class="form-group span-2">
-          <label class="form-label">Allowed Valuation Basis</label>
+          <label class="form-label ii-vb-label-row">
+            <span>Allowed Valuation Basis</span>
+            ${ro ? '' : `<span class="ii-vb-bulk-actions">
+              <button type="button" class="btn-link" onclick="selectAllInsuredBasis('${idAttr}')">Select All</button>
+              <button type="button" class="btn-link" onclick="unselectAllInsuredBasis('${idAttr}')">Unselect All</button>
+            </span>`}
+          </label>
           <div class="ii-vb-grid">
             ${tiles.map(b => {
               const on = allowed.includes(b.id);

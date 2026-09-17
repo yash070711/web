@@ -2003,9 +2003,52 @@ function coverValidationIssues(cover) {
     canLeaveCurrentStudio,
     riskAttributeFieldKey,
     refreshTopbarProductStatus,
+    clearAllProductData() {
+      // Collect every product id we know about (user-created plus the
+      // built-in demo seed products) so the catalogue stays blank after
+      // reload instead of being re-seeded with the default demo data.
+      const allIds = new Set(state.deletedProductIds || []);
+      (state.products || []).forEach(p => { if (p?.id) allIds.add(p.id); });
+      (PS.data?.products || []).forEach(p => { if (p?.id) allIds.add(p.id); });
+      try {
+        const index = JSON.parse(localStorage.getItem(FULL_PRODUCT_INDEX_KEY) || '{}');
+        Object.keys(index).forEach(productId => {
+          allIds.add(productId);
+          const entry = index[productId];
+          (entry?.versions || []).forEach(ver => {
+            try { localStorage.removeItem(fullProductStorageKey(productId, ver)); } catch (_) {}
+          });
+          try { localStorage.removeItem(fullProductStorageKey(productId, 'active')); } catch (_) {}
+          if (entry?.storageKey) { try { localStorage.removeItem(entry.storageKey); } catch (_) {} }
+        });
+      } catch (_) {}
+      [
+        STORAGE_KEY,
+        CONTEXT_KEY,
+        LIBRARY_EXTRAS_KEY,
+        FULL_PRODUCT_INDEX_KEY,
+        'ps-current-role-southlake',
+        'riskAttributes',
+        'riskStudioQuestionSelection',
+        'riskStudioSelectedQuestionIds',
+        'ps-customer-quotes'
+      ].forEach(key => { try { localStorage.removeItem(key); } catch (_) {} });
+      try { sessionStorage.clear(); } catch (_) {}
+      try {
+        document.cookie.split(';').forEach(c => {
+          const name = c.split('=')[0].trim();
+          if (name) document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+        });
+      } catch (_) {}
+      // Persist a fresh, empty state with every known product id
+      // blacklisted so the built-in demo seed data does not come back.
+      try {
+        const blank = Object.assign(initialState(), { products: [], deletedProductIds: [...allIds] });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(blank));
+      } catch (_) {}
+    },
     reset() {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem('ps-current-role-southlake');
+      PS.prototypeApp.clearAllProductData();
       location.reload();
     }
   };
