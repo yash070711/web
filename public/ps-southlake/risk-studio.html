@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Risk Studio — SouthLake Carrier Portal</title>
+  <title>Risk Guide — SouthLake Carrier Portal</title>
   <meta name="description" content="Define the risk attributes captured at quote for commercial auto and trucking products.">
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/studio-hub.css">
@@ -454,7 +454,7 @@
     <div class="page-inner">
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="studio-title">Risk Studio</h1>
+          <h1 class="page-title" id="studio-title">Risk Guide</h1>
           <p class="page-subtitle" id="studio-subtitle">Loading…</p>
         </div>
         <div class="page-header-actions" id="product-studio-actions">
@@ -477,14 +477,14 @@
         <div class="rs-metric"><div class="rs-metric-value" id="rs-m-attrs">0</div><div class="rs-metric-label">Risk Attributes</div></div>
         <div class="rs-metric"><div class="rs-metric-value" id="rs-m-questions">0</div><div class="rs-metric-label">Linked Questions</div></div>
         <div class="rs-metric"><div class="rs-metric-value" id="rs-m-groups">0</div><div class="rs-metric-label">Groups</div></div>
-        <div class="rs-metric"><div class="rs-metric-value" id="rs-m-studios">0</div><div class="rs-metric-label">Used by Studios</div></div>
+        <div class="rs-metric"><div class="rs-metric-value" id="rs-m-studios">0</div><div class="rs-metric-label">Used by Guides</div></div>
       </div>
       <div class="readonly-band" id="readonly-band" style="display:none">
         <span>This version is published — risk attributes are read-only.</span>
       </div>
       <div class="card" id="rs-about" style="margin-bottom:var(--space-5);padding:14px 18px">
-        <div style="font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D;margin-bottom:6px">ABOUT RISK STUDIO</div>
-        <p style="margin:0;font-size:13px;color:#171717;line-height:1.5">Risk Studio contains Risk Attributes derived from Questionnaire Studio Risk questions or created manually. These attributes can have one or more coverage-specific Rating Factors used by Rating & Pricing and eligibility workflows.</p>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D;margin-bottom:6px">ABOUT RISK GUIDE</div>
+        <p style="margin:0;font-size:13px;color:#171717;line-height:1.5">Risk Guide contains Risk Attributes derived from Questionnaire Guide Risk questions or created manually. These attributes can have one or more coverage-specific Rating Factors used by Rating & Pricing and eligibility workflows.</p>
       </div>
       <div class="risk-hub-layout" id="risk-hub-layout">
         <aside class="risk-group-sidebar">
@@ -702,7 +702,7 @@ function riskEmptyStateHtml() {
     <p>This group has no Risk Attributes for the current product/version.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
       <button class="btn btn-primary" type="button" onclick="openAddRiskModal()">+ Add Risk Attribute</button>
-      <a class="btn btn-secondary" href="${questionnaireHref()}">Go to Questionnaire Studio</a>
+      <a class="btn btn-secondary" href="${questionnaireHref()}">Go to Questionnaire Guide</a>
     </div>
   </div>`;
 }
@@ -914,7 +914,7 @@ function removeRiskAttributeFromProduct(id) {
 
   if (!window.confirm(`Remove "${String(label).replace(/\"/g, '\\"')}" from this product?`)) return;
 
-  // If this Risk Attribute came from Questionnaire Studio, remove the
+  // If this Risk Attribute came from Questionnaire Guide, remove the
   // explicit Risk selection and return the source question to General so
   // the auto-sync does not recreate the Risk Attribute on the next paint.
   if (questionId) {
@@ -1104,7 +1104,7 @@ function selectedQuestionSummary(questionId, questionLabel) {
 function groupQuestionRadiosHtml(name, groupLabel, selectedId, onchange) {
   const questions = questionsForGroup(groupLabel, true);
   if (!questions.length) {
-    return `<div style="font-size:13px;color:var(--color-muted);padding:8px 4px">No Risk-category questions in this group. Mark questions as Risk in Questionnaire Studio.</div>`;
+    return `<div style="font-size:13px;color:var(--color-muted);padding:8px 4px">No Risk-category questions in this group. Mark questions as Risk in Questionnaire Guide.</div>`;
   }
   return questions.map((q) => {
     const linked = RISKS.find(r => (r.questionId || r.sourceQuestionId) === q.id);
@@ -1317,7 +1317,7 @@ function openRiskQuestionModal() {
 
       <div class="modal-body">
         <p style="font-size:13px;color:#6F685D;margin:0 0 12px">
-          Select one or multiple questions that already exist in Questionnaire Studio. Selected questions will be added to Risk Studio together.
+          Select one or multiple questions that already exist in Questionnaire Guide. Selected questions will be added to Risk Guide together.
         </p>
 
         <div class="form-group">
@@ -1483,7 +1483,7 @@ function createRiskAttributesFromSelectedQuestions() {
     PS.actionResult?.(
       'error',
       'Select at least one question',
-      'Choose one or more Questionnaire questions to add to Risk Studio.'
+      'Choose one or more Questionnaire questions to add to Risk Guide.'
     );
     return;
   }
@@ -1569,7 +1569,7 @@ function createRiskAttributesFromSelectedQuestions() {
 
   PS.actionResult?.(
     'success',
-    'Questions added to Risk Studio',
+    'Questions added to Risk Guide',
     message + '.'
   );
 }
@@ -1633,7 +1633,7 @@ function getRiskFactorCoverageOptions() {
       isChild: false
     }];
 
-    // Coverage Studio stores child coverage classes primarily as additional
+    // Coverage Guide stores child coverage classes primarily as additional
     // insuredItems on the parent cover. Also support any explicit child array
     // shape when available. The first insured item is the default parent item.
     const insuredItems = Array.isArray(item?.insuredItems) ? item.insuredItems : [];
@@ -2017,7 +2017,6 @@ function ratingFactorCardHtml(factor, factorIndex, coverages) {
     `;
   })()}
 </div>
-  <span class="form-help">Select one or more coverages. Child coverage classes are shown under their parent.</span>
 </div>
 
           <div class="form-group">
@@ -2845,7 +2844,7 @@ function saveRiskDetail() {
   questionGroupOptions().forEach(g => { riskGroupOpen[g.id] = false; });
   PS.studioHub.mount({
     navId: 'risk',
-    studioLabel: 'Risk Studio',
+    studioLabel: 'Risk Guide',
     collection: 'risk',
     apiField: 'risk',
     persist: 'riskAttributes',

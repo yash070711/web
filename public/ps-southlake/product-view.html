@@ -50,9 +50,9 @@
 </head>
 <body>
   <div class="preview-banner">
-    <div>Studio preview — this is the <strong>customer / end-user</strong> view of your product.</div>
+    <div>Guide preview — this is the <strong>customer / end-user</strong> view of your product.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a class="btn btn-sm" id="exit-studio" href="product-detail.html">Exit to studio</a>
+      <a class="btn btn-sm" id="exit-studio" href="product-detail.html">Exit to guide</a>
       <a class="btn btn-sm" id="exit-catalogue" href="catalogue.html">Catalogue</a>
     </div>
   </div>
@@ -140,7 +140,7 @@
           <div>
             <div class="store-kicker">${esc(product.family || 'Insurance')} · Customer view</div>
             <h1>${esc(product.name)}</h1>
-            <p>${esc(product.description || 'Protection designed from your Product Studio configuration. Choose covers, answer a few questions, and see the price a customer would be quoted.')}</p>
+            <p>${esc(product.description || 'Protection designed from your Product Guide configuration. Choose covers, answer a few questions, and see the price a customer would be quoted.')}</p>
             <div style="margin-top:14px;font-size:13px;color:var(--color-muted)">Version v${esc(bundle.version || product.version || 'Draft')} · ${esc(product.id)}</div>
           </div>
           <aside class="quote-card">

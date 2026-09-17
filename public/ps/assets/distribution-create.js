@@ -218,10 +218,10 @@
     const qId = `${ddId}-q`;
     return `
       <div class="form-group">
-        <label class="form-label">${label}${hint ? `<span class="form-help-inline">${hint}</span>` : ''}</label>
+        <label class="form-label">${label}</label>
         <div id="${ddId}-chips" class="dc-chips">${selectedItems.length
           ? selectedItems.map(o => `<span class="ms-chip">${esc(o.name)}<span class="ms-chip-remove" role="button" tabindex="0" onclick="${onPick}('${o.id}',false)" title="Remove">×</span></span>`).join('')
-          : `<span class="form-help">${disabled ? 'Select a product first.' : 'None selected'}</span>`}</div>
+          : `<span>${disabled ? 'Select a product first.' : 'None selected'}</span>`}</div>
         <div class="dc-dd mga-dd ${disabled ? 'is-disabled' : ''}" id="${ddId}">
           <button type="button" class="form-control mga-dd-btn dc-dd-btn" ${disabled ? 'disabled' : ''} onclick="DistCreate.toggleDropdown('${ddId}', event)">
             <span>${selectedItems.length ? `${selectedItems.length} selected` : 'Select…'}</span>
@@ -251,7 +251,7 @@
       </div>
       <div class="dc-card-body">
         <div class="form-group">
-          <label class="form-label">Reinsured By <span class="form-help-inline">(Select Multiple)</span></label>
+          <label class="form-label">Reinsured By</label>
           <div class="dc-reinsurer-list">
             ${DC().reinsurers.map(r => {
               const sel = formState.reinsurers.find(x => x.reinsurerId === r.id);
@@ -301,7 +301,7 @@
       </div>
       <div class="dc-card-body">
         <div class="form-group">
-          <label class="form-label" for="dc-product">Product <span class="required">*</span><span class="form-help-inline">(Catalogue)</span></label>
+          <label class="form-label" for="dc-product">Product <span class="required">*</span></label>
           <select id="dc-product" class="form-control" onchange="DistCreate.setProduct(this.value)">
             <option value="">Select product…</option>
             ${DC().buildProductCatalog().map(pr => `<option value="${pr.id}" ${formState.productId === pr.id ? 'selected' : ''}>${esc(pr.name)} (${esc(pr.id)})</option>`).join('')}
@@ -368,7 +368,7 @@
       </div>
       <div class="dc-card-body">
         <div class="form-group">
-          <label class="form-label">States <span class="form-help-inline">(Linked with Product)</span></label>
+          <label class="form-label">States</label>
           ${formState.states.length ? formState.states.map(s => {
             const st = DC().findState(s.stateId);
             if (!st) return '';
@@ -380,10 +380,10 @@
                 <span class="ms-chip ${badge}">${esc(st.name)} (${st.code})<span class="dc-chip-tag">${badgeLabel}</span><span class="ms-chip-remove" onclick="DistCreate.removeState('${s.stateId}')">×</span></span>
               </div>
               <div class="dc-city-section">
-                <label class="form-label">City <span class="form-help-inline">(Optional)</span></label>
+                <label class="form-label">City</label>
                 ${s.cities.length
                   ? `<div class="dc-chips">${s.cities.map(c => `<span class="jur-chip">${esc(c)}<span class="jur-chip-remove" onclick="DistCreate.toggleCity('${s.stateId}','${jsQuote(c)}')">×</span></span>`).join('')}</div>`
-                  : '<span class="form-help">All cities within this state</span>'}
+                  : '<span>All cities within this state</span>'}
                 <div class="dc-dd mga-dd" id="dc-city-dd-${s.stateId}">
                   <button type="button" class="btn btn-ghost btn-sm" onclick="DistCreate.toggleDropdown('dc-city-dd-${s.stateId}', event)">+ Add City</button>
                   <div class="mga-dd-menu dc-dd-menu dc-city-menu">

@@ -45,7 +45,7 @@ export function RiskStudio({
   return (
     <div className="page-inner">
       <StudioHeader
-        title="Risk Studio"
+        title="Risk Guide"
         subtitle="Define the risk attributes captured at quote for commercial auto and trucking products."
         productId={productId}
         moduleId="risk"

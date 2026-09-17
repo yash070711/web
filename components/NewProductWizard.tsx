@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { createProductAction } from "@/app/actions/products";
 import { nextVersionLabel } from "@/lib/format";
 
-const STEPS = ["Product Identity", "Version Setup", "Initial Studios", "Review & Create"];
+const STEPS = ["Product Identity", "Version Setup", "Initial Guides", "Review & Create"];
 const PRODUCT_TYPE_LOB: Record<string, string[]> = {
   Transportation: ["Commercial Auto", "Personal Auto", "Inland Marine"],
   Property: ["Commercial Property", "Homeowners"],
@@ -15,14 +15,14 @@ const PRODUCT_FAMILIES = Object.keys(PRODUCT_TYPE_LOB).filter(
 const DEFAULT_FAMILY = PRODUCT_FAMILIES[0] || "Transportation";
 const DEFAULT_LOB = PRODUCT_TYPE_LOB[DEFAULT_FAMILY]?.[0] || "Commercial Auto";
 const STUDIOS = [
-  { id: "coverage", label: "Coverage Studio", desc: "Define what is covered, limits, deductibles, and exclusions.", checked: true },
-  { id: "questionnaire", label: "Questionnaire Studio", desc: "Build the questions asked at quote, application, and renewal.", checked: true },
-  { id: "risk", label: "Risk Studio", desc: "Trucking risk data: business type, fleet, radius, commodities, DOT/MC.", checked: true },
-  { id: "eligibility", label: "Eligibility Studio", desc: "Set rules for who can buy this product.", checked: true },
-  { id: "rating", label: "Rating & Pricing Studio", desc: "Configure base rates, factors, and premium calculation rules.", checked: true },
-  { id: "underwriting", label: "Underwriting Rules Studio", desc: "Define accept/decline/refer rules and loading logic.", checked: true },
-  { id: "distribution", label: "Distribution Studio", desc: "Configure channels, broker agreements, and commission structures.", checked: false },
-  { id: "document", label: "Document Studio", desc: "Set up policy documents, endorsements, and certificate templates.", checked: false },
+  { id: "coverage", label: "Coverage Guide", desc: "Define what is covered, limits, deductibles, and exclusions.", checked: true },
+  { id: "questionnaire", label: "Questionnaire Guide", desc: "Build the questions asked at quote, application, and renewal.", checked: true },
+  { id: "risk", label: "Risk Guide", desc: "Trucking risk data: business type, fleet, radius, commodities, DOT/MC.", checked: true },
+  { id: "eligibility", label: "Eligibility Guide", desc: "Set rules for who can buy this product.", checked: true },
+  { id: "rating", label: "Rating & Pricing Guide", desc: "Configure base rates, factors, and premium calculation rules.", checked: true },
+  { id: "underwriting", label: "Underwriting Rules Guide", desc: "Define accept/decline/refer rules and loading logic.", checked: true },
+  { id: "distribution", label: "Distribution Guide", desc: "Configure channels, broker agreements, and commission structures.", checked: false },
+  { id: "document", label: "Document Guide", desc: "Set up policy documents, endorsements, and certificate templates.", checked: false },
 ];
 
 type Source = { id: string; name: string; version: string; status: string };
@@ -349,7 +349,7 @@ export function NewProductWizard({
                     <div className="fw-500" style={{ marginTop: 2 }}>{to || "Open-ended"}</div>
                   </div>
                 </div>
-                <div className="review-kicker">Studios to Configure</div>
+                <div className="review-kicker">Guides to Configure</div>
                 <div className="flex gap-2" style={{ flexWrap: "wrap" }}>
                   {selectedStudios.map((s) => <span key={s.id} className="role-badge">{s.label}</span>)}
                 </div>

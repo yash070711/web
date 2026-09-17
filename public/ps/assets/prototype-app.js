@@ -1,5 +1,5 @@
 /* ============================================================
-   Insurance Product Studio — browser-only application layer
+   Insurance Product Guide — browser-only application layer
    Shared persistence, cross-page commands, downloads and fixes.
    ============================================================ */
 (function () {
@@ -585,7 +585,7 @@
         <button class="btn btn-icon" type="button" onclick="PS.closeModal()" aria-label="Close">×</button>
       </div>
       <div class="modal-body">
-        <p style="font-size:13px;color:var(--color-muted);margin-bottom:12px">${escapeHtml(pack.identity?.name || pack.productId)} · ${escapeHtml(pack.productId)} · v${escapeHtml(pack.version)} — complete studios, pricing, and governance (not counts).</p>
+        <p style="font-size:13px;color:var(--color-muted);margin-bottom:12px">${escapeHtml(pack.identity?.name || pack.productId)} · ${escapeHtml(pack.productId)} · v${escapeHtml(pack.version)} — complete guides, pricing, and governance (not counts).</p>
         <pre id="ps-json-view" class="ps-json-view">${escapeHtml(json)}</pre>
       </div>
       <div class="modal-footer">
@@ -692,21 +692,21 @@
       ],
       studios: source.studios || [
         { id:'coverage', name:'Class of Business', icon:'umbrella', status:'partial', summary:'Draft configuration', href:'coverage-studio.html' },
-        { id:'questionnaire', name:'Questionnaire Studio', icon:'list-checks', status:'partial', summary:'Draft configuration', href:'questionnaire-studio.html' },
-        { id:'eligibility', name:'Eligibility Studio', icon:'user-check', status:'partial', summary:'Draft configuration', href:'eligibility-studio.html' },
-        { id:'rating', name:'Rating & Pricing Studio', icon:'calculator', status:'missing', summary:'Not configured', href:'rating-studio.html' },
-        { id:'underwriting', name:'Underwriting Rules Studio', icon:'shield-check', status:'missing', summary:'Not configured', href:'underwriting-studio.html' },
-        { id:'distribution', name:'Distribution Studio', icon:'tree-structure', status:'missing', summary:'Not configured', href:'distribution-studio.html' },
-        { id:'document', name:'Document Studio', icon:'file-text', status:'missing', summary:'Not configured', href:'document-studio.html' }
+        { id:'questionnaire', name:'Questionnaire Guide', icon:'list-checks', status:'partial', summary:'Draft configuration', href:'questionnaire-studio.html' },
+        { id:'eligibility', name:'Eligibility Guide', icon:'user-check', status:'partial', summary:'Draft configuration', href:'eligibility-studio.html' },
+        { id:'rating', name:'Rating & Pricing Guide', icon:'calculator', status:'missing', summary:'Not configured', href:'rating-studio.html' },
+        { id:'underwriting', name:'Underwriting Rules Guide', icon:'shield-check', status:'missing', summary:'Not configured', href:'underwriting-studio.html' },
+        { id:'distribution', name:'Distribution Guide', icon:'tree-structure', status:'missing', summary:'Not configured', href:'distribution-studio.html' },
+        { id:'document', name:'Document Guide', icon:'file-text', status:'missing', summary:'Not configured', href:'document-studio.html' }
       ],
       checklist: source.checklist || [
         { studio:'Class of Business', status:'warn', note:'Review required' },
-        { studio:'Questionnaire Studio', status:'warn', note:'Review required' },
-        { studio:'Eligibility Studio', status:'warn', note:'Review required' },
-        { studio:'Rating & Pricing Studio', status:'empty', note:'Not configured' },
-        { studio:'Underwriting Rules Studio', status:'empty', note:'Not configured' },
-        { studio:'Distribution Studio', status:'empty', note:'Not configured' },
-        { studio:'Document Studio', status:'empty', note:'Not configured' }
+        { studio:'Questionnaire Guide', status:'warn', note:'Review required' },
+        { studio:'Eligibility Guide', status:'warn', note:'Review required' },
+        { studio:'Rating & Pricing Guide', status:'empty', note:'Not configured' },
+        { studio:'Underwriting Rules Guide', status:'empty', note:'Not configured' },
+        { studio:'Distribution Guide', status:'empty', note:'Not configured' },
+        { studio:'Document Guide', status:'empty', note:'Not configured' }
       ],
       completion: source.completion || 0,
       lastSim:null,
@@ -849,12 +849,12 @@
   };
 const STUDIO_NAV_CHAIN = [
   { id: 'coverage', file: 'coverage-studio.html', title: 'Class of Business' },
-  { id: 'questionnaire', file: 'questionnaire-studio.html', title: 'Questionnaire Studio' },
-  { id: 'eligibility', file: 'eligibility-studio.html', title: 'Eligibility Studio' },
-  { id: 'risk', file: 'risk-studio.html', title: 'Risk Studio' },
-  { id: 'rating', file: 'rating-studio.html', title: 'Rating & Pricing Studio' },
-  { id: 'distribution', file: 'distribution-studio.html', title: 'Distribution Studio' },
-  { id: 'document', file: 'document-studio.html', title: 'Document Studio' }
+  { id: 'questionnaire', file: 'questionnaire-studio.html', title: 'Questionnaire Guide' },
+  { id: 'eligibility', file: 'eligibility-studio.html', title: 'Eligibility Guide' },
+  { id: 'risk', file: 'risk-studio.html', title: 'Risk Guide' },
+  { id: 'rating', file: 'rating-studio.html', title: 'Rating & Pricing Guide' },
+  { id: 'distribution', file: 'distribution-studio.html', title: 'Distribution Guide' },
+  { id: 'document', file: 'document-studio.html', title: 'Document Guide' }
 ];  
   const PAGE_TO_STUDIO_ID = {
     'coverage-studio.html': 'coverage',
@@ -1407,7 +1407,7 @@ function coverValidationIssues(cover) {
     if (product) product.enabledStudios = next;
     if (detail) detail.enabledStudios = next;
     persistProduct(product || { id: productId }, detail);
-    addAudit('MODIFIED', `Enabled ${studioId} studio`, { productId, studio: studioId });
+    addAudit('MODIFIED', `Enabled ${studioId} guide`, { productId, studio: studioId });
     return next;
   }
 
@@ -1601,13 +1601,13 @@ function coverValidationIssues(cover) {
     };
     const studios = [
       mark('coverage', 'Class of Business', 'umbrella', 'coverage-studio.html', (bundle.covers || []).length, 'covers'),
-      mark('questionnaire', 'Questionnaire Studio', 'list-checks', 'questionnaire-studio.html', qCount, 'questions'),
-      mark('eligibility', 'Eligibility Studio', 'user-check', 'eligibility-studio.html', (bundle.eligibility || []).length, 'eligibility rules'),
-      mark('risk', 'Risk Studio', 'warning', 'risk-studio.html', (bundle.risk || []).length, 'risk attributes'),
-      mark('rating', 'Rating & Pricing Studio', 'calculator', 'rating-studio.html', ratingCount, 'rating items'),
-      mark('underwriting', 'Underwriting Rules Studio', 'shield-check', 'underwriting-studio.html', (bundle.underwriting || []).length, 'UW rules'),
-      mark('distribution', 'Distribution Studio', 'tree-structure', 'distribution-studio.html', (bundle.channels || []).length, 'channels'),
-      mark('document', 'Document Studio', 'file-text', 'document-studio.html', (bundle.documents || []).length, 'documents')
+      mark('questionnaire', 'Questionnaire Guide', 'list-checks', 'questionnaire-studio.html', qCount, 'questions'),
+      mark('eligibility', 'Eligibility Guide', 'user-check', 'eligibility-studio.html', (bundle.eligibility || []).length, 'eligibility rules'),
+      mark('risk', 'Risk Guide', 'warning', 'risk-studio.html', (bundle.risk || []).length, 'risk attributes'),
+      mark('rating', 'Rating & Pricing Guide', 'calculator', 'rating-studio.html', ratingCount, 'rating items'),
+      mark('underwriting', 'Underwriting Rules Guide', 'shield-check', 'underwriting-studio.html', (bundle.underwriting || []).length, 'UW rules'),
+      mark('distribution', 'Distribution Guide', 'tree-structure', 'distribution-studio.html', (bundle.channels || []).length, 'channels'),
+      mark('document', 'Document Guide', 'file-text', 'document-studio.html', (bundle.documents || []).length, 'documents')
     ];
     const detail = state.productDetails[productId];
     if (!detail) return studios;
@@ -2172,12 +2172,12 @@ function coverValidationIssues(cover) {
     if (/^(coverage|questionnaire|eligibility|rating|underwriting|distribution|document|jurisdiction)-studio\.html$/.test(page) && !pageHasProductContext()) return;
 
     if (isStudio) {
-      const studioTitle = document.querySelector('.page-title')?.textContent?.trim() || 'Studio';
+      const studioTitle = document.querySelector('.page-title')?.textContent?.trim() || 'Guide';
       const detailHref = `product-detail.html?id=${encodeURIComponent(product.id)}&version=${encodeURIComponent(version)}`;
       const bcEl = document.querySelector('.topbar-breadcrumb');
       if (bcEl) {
         bcEl.innerHTML = [
-          `<a href="index.html">Studio</a>`,
+          `<a href="index.html">Guide</a>`,
           `<span class="sep">›</span><a href="catalogue.html">Product Catalogue</a>`,
           `<span class="sep">›</span><a href="${detailHref}">${escapeHtml(product.name)}</a>`,
           version ? `<span class="sep">›</span><a href="${detailHref}">v${escapeHtml(version)}</a>` : '',
@@ -2245,9 +2245,6 @@ function coverValidationIssues(cover) {
   }
 
   function wireShell() {
-    PS.studioHelp?.mountAll?.();
-    PS.studioHelp?.observeDynamicContent?.();
-
     if (PS.data?.currentUser && state.currentRole) {
       PS.data.currentUser.role = state.currentRole;
       document.querySelectorAll('.topbar-user-role, .role-badge').forEach(el => {
@@ -2486,7 +2483,7 @@ function coverValidationIssues(cover) {
     };
   }
 
-  /* Studio persistence and create actions */
+  /* Guide persistence and create actions */
   function installEditableRof() {
     if (!canEditVersion() || typeof rof === 'undefined') return;
     window.rof = function (label, value, mono) {
@@ -2927,7 +2924,7 @@ function coverValidationIssues(cover) {
     };
   }
 
-  /* Generic persistent Studio save bar and form restore. */
+  /* Generic persistent Guide save bar and form restore. */
   function studioEntityId() {
     if (typeof activeCoverId !== 'undefined') return activeCoverId;
     if (typeof activeQId !== 'undefined') return activeQId;
@@ -2968,7 +2965,7 @@ function coverValidationIssues(cover) {
       if (typeof CHANNELS !== 'undefined') persistCollection('channels', CHANNELS);
       if (typeof DOCUMENTS !== 'undefined') persistCollection('documents', DOCUMENTS);
       if (typeof RULES !== 'undefined') persistCollection(page.includes('eligibility') ? 'eligibilityRules' : 'underwritingRules', RULES);
-      showResult('Studio changes saved', `Visible field values were persisted for ${context().productId} v${context().version}.`);
+      showResult('Guide changes saved', `Visible field values were persisted for ${context().productId} v${context().version}.`);
     };
     document.getElementById('ps-discard-studio').onclick = () => location.reload();
     if (page !== 'questionnaire-studio.html') {
@@ -2984,7 +2981,7 @@ function coverValidationIssues(cover) {
     const text = target.textContent.replace(/\s+/g, ' ').trim();
     const page = routeName();
     const consume = () => { event.preventDefault(); event.stopImmediatePropagation(); };
-    /* Questionnaire Studio owns its detail-panel Add/Remove handlers. */
+    /* Questionnaire Guide owns its detail-panel Add/Remove handlers. */
     if (target.hasAttribute('data-q-add') || (page === 'questionnaire-studio.html' && (target.hasAttribute('onclick') || target.closest('#detail-panel')))) return;
     if (target.closest('a[href*="pricing-library"]') || target.closest('[data-rating-link="library"]')) return;
     if ((page === 'rating-studio.html' || page === 'rating-studio') && target.hasAttribute('data-rating-action')) return;
@@ -3004,7 +3001,7 @@ function coverValidationIssues(cover) {
       download(`${page.replace('.html','')}-${today()}.csv`, csv, 'text/csv;charset=utf-8');
     } else if (/Export PDF|Download Report|Download Full Trace|Download All as ZIP/i.test(text)) {
       consume();
-      download(`${page.replace('.html','')}-${Date.now()}.txt`, `Insurance Product Studio generated artifact\nPage: ${page}\nContext: ${JSON.stringify(context(), null, 2)}\nGenerated: ${now()}\n\n${document.querySelector('main')?.innerText || ''}`);
+      download(`${page.replace('.html','')}-${Date.now()}.txt`, `Insurance Product Guide generated artifact\nPage: ${page}\nContext: ${JSON.stringify(context(), null, 2)}\nGenerated: ${now()}\n\n${document.querySelector('main')?.innerText || ''}`);
     } else if (text === 'Generate Previews') {
       consume();
       const out = document.createElement('div');
@@ -3103,7 +3100,7 @@ function coverValidationIssues(cover) {
       showResult('Questionnaire updated', `${text} was applied and stored for this version.`);
     } else if (page === 'integration-monitor.html' && /API Documentation/i.test(text)) {
       consume();
-      download('runtime-api-reference.html', `<!doctype html><title>Runtime API Reference</title><h1>Insurance Product Studio Runtime API</h1><p>Browser-only prototype documentation.</p><ul><li>GET /products</li><li>POST /eligibility</li><li>POST /rating</li><li>POST /documents</li></ul>`, 'text/html;charset=utf-8');
+      download('runtime-api-reference.html', `<!doctype html><title>Runtime API Reference</title><h1>Insurance Product Guide Runtime API</h1><p>Browser-only prototype documentation.</p><ul><li>GET /products</li><li>POST /eligibility</li><li>POST /rating</li><li>POST /documents</li></ul>`, 'text/html;charset=utf-8');
     } else if (page === 'roles-access.html' && /Save Settings|Request Permission Change|Reset Pwd|Reset MFA|Revoke All|Send Reset Email/i.test(text)) {
       consume();
       state.settings[`roles:${text}`] = { at:now(), values:Array.from(document.querySelectorAll('#tab-settings input,#tab-settings select')).map(el => ({ value:el.value, checked:el.checked })) };
@@ -3247,7 +3244,7 @@ function coverValidationIssues(cover) {
       if (prev && here !== prev.id) {
         e.preventDefault();
         e.stopPropagation();
-        showResult('Please complete the previous studio first', `Finish ${prev.title} before opening this studio.`, { type: 'error' });
+        showResult('Please complete the previous guide first', `Finish ${prev.title} before opening this guide.`, { type: 'error' });
         return;
       }
     }
@@ -3258,7 +3255,7 @@ function coverValidationIssues(cover) {
     if (typeof window.revealStudioValidation === 'function') {
       window.revealStudioValidation();
     } else {
-      showResult('Please complete all required fields before continuing.', 'Complete the current Studio configuration before moving to the next Studio.', { type: 'error' });
+      showResult('Please complete all required fields before continuing.', 'Complete the current Guide configuration before moving to the next Guide.', { type: 'error' });
     }
   }, true);
 

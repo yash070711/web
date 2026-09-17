@@ -49,7 +49,7 @@ export function DistributionStudio({
   return (
     <>
       <StudioHeader
-        title="Distribution Studio"
+        title="Distribution Guide"
         subtitle={`${productName} · v${version} — channels, intermediaries, territories, commissions and bind authority`}
         productId={productId}
         moduleId="distribution"

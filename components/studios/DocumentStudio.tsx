@@ -51,7 +51,7 @@ export function DocumentStudio({
   return (
     <>
       <StudioHeader
-        title="Document Studio"
+        title="Document Guide"
         subtitle={`${productName} · v${version} — schedules, certificates, wordings, notices and conditional clauses`}
         productId={productId}
         moduleId="document"

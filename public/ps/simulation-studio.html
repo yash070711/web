@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulation & Testing — Insurance Product Studio</title>
+  <title>Simulation & Testing — Insurance Product Guide</title>
   <meta name="description" content="Validate the complete product configuration against representative risk scenarios before publication.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
@@ -274,7 +274,7 @@
 /* ─────────────────────────────────────────────────────────────
    Dynamic Simulation & Testing
    Uses the same browser/localStorage rating configuration that
-   Rating & Pricing Studio writes to:
+   Rating & Pricing Guide writes to:
    insurance-product-studio-rating-gui-v1
    ───────────────────────────────────────────────────────────── */
 
@@ -671,7 +671,7 @@ Rules Triggered:         ${result ? result.underwriting.triggered.length : '—'
 UW Decision:             <span style="color:${result?.underwriting.decision === 'Accept' ? 'var(--color-success)' : 'var(--color-danger)'}">${esc(result?.underwriting.decision || 'Not run')}</span>
 
 Premium:                 <span style="color:var(--color-success)">${premium ? formatMoney(premium.total) : 'N/A'}</span>
-Engine:                  ${premium?.liveConfig ? 'Live Rating Studio configuration' : 'Fallback configuration'}
+Engine:                  ${premium?.liveConfig ? 'Live Rating Guide configuration' : 'Fallback configuration'}
         </div>
       </div>
       <div class="drawer-box">
@@ -857,7 +857,7 @@ function renderIndividualResult(result,expected,raw) {
     <div class="rule-trace">${buildTrace(result)}</div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-4)">
-      <span style="font-size:11px;color:var(--color-muted)">${result.premium?.liveConfig ? 'Using live Rating Studio configuration' : 'Using fallback rating configuration'}</span>
+      <span style="font-size:11px;color:var(--color-muted)">${result.premium?.liveConfig ? 'Using live Rating Guide configuration' : 'Using fallback rating configuration'}</span>
       <button class="btn btn-secondary" onclick='saveCurrentIndividualAsTest(${JSON.stringify(raw).replace(/'/g,"&#39;")})'>Save as Test Case</button>
     </div>
   `;

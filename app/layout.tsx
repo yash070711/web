@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "Veridex Product Studio",
+  title: "Veridex Product Guide",
   description: "Insurance product configuration SaaS — design, govern, and publish products.",
 };
 

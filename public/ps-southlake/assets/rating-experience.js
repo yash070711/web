@@ -1,4 +1,4 @@
-/* Rating Studio — guided, browser-only pricing experience for non-technical users. */
+/* Rating Guide — guided, browser-only pricing experience for non-technical users. */
 (function () {
   'use strict';
 
@@ -264,7 +264,7 @@ return loaded;
 
   function saveRecord(message) {
     // Keep the selected CPL template as the authoritative pricing reference.
-    // Product Studio can consume this from the persisted rating record.
+    // Product Guide can consume this from the persisted rating record.
     const selectedTemplate = template();
     if (selectedTemplate?.id) record.templateId = selectedTemplate.id;
     record.lastSaved = new Date().toISOString();
@@ -574,7 +574,7 @@ function syncRatingFormulas() {
     root.innerHTML = `<div class="rating-page">
       <div class="page-header rating-page-header">
         <div class="page-header-left">
-          <h1 class="page-title">Rating &amp; Pricing Studio</h1>
+          <h1 class="page-title">Rating &amp; Pricing Guide</h1>
           <p class="page-subtitle">Build customer pricing with guided choices. No technical setup required.</p>
         </div>
         <div class="page-header-actions rating-page-actions">
@@ -777,11 +777,11 @@ function renderRiskRatingFactorsSection(edit) {
   const factors = record.riskRatingFactors || [];
   const body = factors.length
     ? `<div class="rule-grid">${factors.map(factor => riskRatingFactorCard(factor, edit)).join('')}</div>`
-    : `<div class="callout callout-info"><div class="callout-body">No Risk Rating Factors have been configured yet. Add one to connect a Risk Studio attribute to the rating engine.</div></div>`;
+    : `<div class="callout callout-info"><div class="callout-body">No Risk Rating Factors have been configured yet. Add one to connect a Risk Guide attribute to the rating engine.</div></div>`;
   const action = edit ? '<button class="btn btn-primary btn-sm" type="button" data-rating-action="add-risk-factor">＋ Add Risk Rating Factor</button>' : '';
   return panelShell(
     'Risk Rating Factors',
-    'Configure how Risk Studio attributes affect the premium for each coverage, ready for the rating engine.',
+    'Configure how Risk Guide attributes affect the premium for each coverage, ready for the rating engine.',
     action,
     body
   );
@@ -1223,7 +1223,7 @@ function removeRatingBand(kind, index) {
   //
   // Structured rating-engine configuration, separate from the simple
   // "Risk adjustments" business cards above. Each factor connects a
-  // Risk Studio attribute to a coverage and a rating method (table or
+  // Risk Guide attribute to a coverage and a rating method (table or
   // fixed factor) in the shape the rating engine/export layer expects.
   // ------------------------------------------------------------------
 
@@ -1250,7 +1250,7 @@ function removeRatingBand(kind, index) {
 
   return id;
 }
-  // Risk Attributes must come from Risk Studio via existing Product Studio
+  // Risk Attributes must come from Risk Guide via existing Product Guide
   // application/state rather than a second independent database. The exact
   // integration point was not present in the existing code, so this reads
   // from the most likely existing locations and falls back to an empty
@@ -1275,7 +1275,7 @@ function removeRatingBand(kind, index) {
 function getRiskAttributeOptions() {
   const app = window.PS?.prototypeApp;
 
-  // Risk Studio attributes are stored in the product bundle as `risk`.
+  // Risk Guide attributes are stored in the product bundle as `risk`.
   const bundle = app?.getProductBundle?.(context.productId, context.version);
   const source = Array.isArray(bundle?.risk) ? bundle.risk : [];
 
@@ -1299,14 +1299,14 @@ function getRiskAttributeOptions() {
     .filter(item => item.id && item.name);
 }
 
-  // Coverage must come from the existing Product Studio Coverage collection.
+  // Coverage must come from the existing Product Guide Coverage collection.
   // As with Risk Attributes, the exact field was not present in the existing
   // code, so this checks the most likely existing locations and otherwise
   // shows a clear empty-state message instead of hard-coding coverage names.
 function getCoverageOptions() {
   const app = window.PS?.prototypeApp;
 
-  // Product Studio coverages are available from the product bundle as `covers`.
+  // Product Guide coverages are available from the product bundle as `covers`.
   const bundle = app?.getProductBundle?.(context.productId, context.version);
   const source = Array.isArray(bundle?.covers) ? bundle.covers : [];
 
@@ -1396,8 +1396,8 @@ function getCoverageOptions() {
     : `
       <div class="callout callout-info">
         <div class="callout-body">
-          No Risk Attributes are available from Risk Studio yet.
-          Add attributes in Risk Studio before creating a rating factor.
+          No Risk Attributes are available from Risk Guide yet.
+          Add attributes in Risk Guide before creating a rating factor.
         </div>
       </div>
     `;
@@ -1420,7 +1420,7 @@ function getCoverageOptions() {
     : `
       <div class="callout callout-info">
         <div class="callout-body">
-          No Coverages are available from Product Studio yet.
+          No Coverages are available from Product Guide yet.
           Add coverages before creating a rating factor.
         </div>
       </div>
@@ -1559,7 +1559,7 @@ function getCoverageOptions() {
         </h2>
 
         <div class="rating-panel-copy">
-          Connect a Risk Studio attribute to a rating table or fixed factor
+          Connect a Risk Guide attribute to a rating table or fixed factor
           for the rating engine.
         </div>
       </div>
@@ -1907,7 +1907,7 @@ if (action === 'remove-band') {
 
   window.PS.closeModal();
 
-  // Refresh the Rating Studio so the updated card is visible immediately.
+  // Refresh the Rating Guide so the updated card is visible immediately.
   render();
 
   setResult(
@@ -1983,14 +1983,14 @@ if (action === 'remove-band') {
   if (!attrSelect) {
     return modalError(
       'No Risk Attributes available',
-      'Add attributes in Risk Studio before creating a rating factor.'
+      'Add attributes in Risk Guide before creating a rating factor.'
     );
   }
 
   if (!coverageSelect) {
     return modalError(
       'No Coverages available',
-      'Add coverages in Product Studio before creating a rating factor.'
+      'Add coverages in Product Guide before creating a rating factor.'
     );
   }
 
@@ -2183,7 +2183,7 @@ function handleChange(event) {
   }
 
   /*
-   * When a Risk Studio Risk Attribute is selected,
+   * When a Risk Guide Risk Attribute is selected,
    * automatically populate:
    * - Factor Name
    * - Table ID
@@ -2286,7 +2286,7 @@ function handleChange(event) {
       syncRatingBundle();
     }
 
-    document.title = `Rating & Pricing Studio · ${product.name}`;
+    document.title = `Rating & Pricing Guide · ${product.name}`;
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.content = 'Configure customer pricing with visual business rules, automatic portfolio starting prices, discounts, fees, taxes, and plain-language price previews.';
 
@@ -2295,7 +2295,7 @@ function handleChange(event) {
         { label: 'Product Catalogue', href: 'catalogue.html' },
         { label: product.name || context.productId, href: `product-detail.html?id=${encodeURIComponent(context.productId)}` },
         { label: `v${context.version}`, href: `product-detail.html?id=${encodeURIComponent(context.productId)}&version=${encodeURIComponent(context.version)}` },
-        { label: 'Rating & Pricing Studio', href: '#' }
+        { label: 'Rating & Pricing Guide', href: '#' }
       ]);
     }
 

@@ -1,5 +1,5 @@
 /* ============================================================
-   Insurance Product Studio — Centralized Help Text
+   Insurance Product Guide — Centralized Help Text
    studio-help.js
    ============================================================ */
 
@@ -62,9 +62,9 @@ window.PS = window.PS || {};
     },
     'product-detail.html': {
       title: 'Product Detail',
-      description: 'The product hub for a single product version — overview, studio progress, version history, governance actions, and links to every configuration studio.',
+      description: 'The product hub for a single product version — overview, guide progress, version history, governance actions, and links to every configuration guide.',
       tips: [
-        'Each studio must be completed in order. Later studios stay locked until the previous studio is 100%.',
+        'Each guide must be completed in order. Later guides stay locked until the previous guide is 100%.',
         'Use Clone Version to edit a Published version without affecting live business.',
         'Compare versions side-by-side before approving a release.',
       ],
@@ -74,7 +74,7 @@ window.PS = window.PS || {};
       description: 'Preview how the configured product appears to brokers or policyholders — covers, questionnaire flow, and key terms as they would be presented at quote time.',
       tips: [
         'This is a read-only preview driven by the current product version configuration.',
-        'Changes in studios are reflected here after save.',
+        'Changes in guides are reflected here after save.',
       ],
     },
     'jurisdiction-studio.html': {
@@ -83,7 +83,7 @@ window.PS = window.PS || {};
       tips: [
         'Select states first; optionally narrow to specific cities within a state.',
         'Empty city selection means the entire state is in scope.',
-        'Jurisdiction feeds Eligibility and Rating studios automatically.',
+        'Jurisdiction feeds Eligibility and Rating guides automatically.',
       ],
     },
     'coverage-studio.html': {
@@ -96,7 +96,7 @@ window.PS = window.PS || {};
       ],
     },
     'questionnaire-studio.html': {
-      title: 'Questionnaire Studio',
+      title: 'Questionnaire Guide',
       description: 'Build the data capture flow for quoting and underwriting — question groups, field types, validation, evidence triggers, and channel visibility.',
       tips: [
         'Link questions to specific covers so they appear only when relevant.',
@@ -105,25 +105,25 @@ window.PS = window.PS || {};
       ],
     },
     'risk-studio.html': {
-      title: 'Risk Studio',
-      description: 'Risk Studio contains only questions from Questionary Studio where the Question Category is set to "Risk". These attributes are used to evaluate risk, build rating factors, and drive underwriting decisions.',
+      title: 'Risk Guide',
+      description: 'Risk Guide contains only questions from Questionary Guide where the Question Category is set to "Risk". These attributes are used to evaluate risk, build rating factors, and drive underwriting decisions.',
       tips: [
-        'General and Eligibility questions never appear here — change Question Category to Risk in Questionary Studio to include them.',
-        'Configure risk weight, tier, and interpretation here; question wording and options stay in Questionary Studio.',
+        'General and Eligibility questions never appear here — change Question Category to Risk in Questionary Guide to include them.',
+        'Configure risk weight, tier, and interpretation here; question wording and options stay in Questionary Guide.',
         'Attributes here become available as conditions in Eligibility, Rating, and Underwriting Rules.',
       ],
     },
     'eligibility-studio.html': {
-      title: 'Eligibility Studio',
-      description: 'Eligibility decides who can be quoted. Rules use Risk Attributes from Risk Studio (themselves sourced from Questionnaire questions). Do not recreate questionnaire fields here.',
+      title: 'Eligibility Guide',
+      description: 'Eligibility decides who can be quoted. Rules use Risk Attributes from Risk Guide (themselves sourced from Questionnaire questions). Do not recreate questionnaire fields here.',
       tips: [
-        'Condition attributes come from Risk Studio — grouped by Question Group.',
+        'Condition attributes come from Risk Guide — grouped by Question Group.',
         'Hard Block prevents quotation; Soft Warning allows a quote with a warning; Refer sends the case to underwriting.',
         'If a source attribute is removed, the rule stays with a warning until you relink it.',
       ],
     },
     'rating-studio.html': {
-      title: 'Rating & Pricing Studio',
+      title: 'Rating & Pricing Guide',
       description: 'Configure premium calculation — base rates, loadings, discounts, taxes, and rating components tied to covers and risk attributes.',
       tips: [
         'Each component can target a specific cover or apply policy-wide.',
@@ -132,16 +132,16 @@ window.PS = window.PS || {};
       ],
     },
     'underwriting-studio.html': {
-      title: 'Underwriting Rules Studio',
+      title: 'Underwriting Rules Guide',
       description: 'Configure eligibility and underwriting rules for this product. Rules evaluate risk attributes captured from underwriting questions and determine whether a submission is accepted, referred, declined, or assigned to an authorized underwriter.',
       tips: [
-        'Rules created in Coverage, Eligibility, Questions, or Product studios sync here automatically — one rule ID, one central record.',
-        'Edit rule conditions in the originating studio; configure assignment and escalation here.',
+        'Rules created in Coverage, Eligibility, Questions, or Product guides sync here automatically — one rule ID, one central record.',
+        'Edit rule conditions in the originating guide; configure assignment and escalation here.',
         'Deleted source rules appear as INACTIVE to preserve references.',
       ],
     },
     'distribution-studio.html': {
-      title: 'Distribution Studio',
+      title: 'Distribution Guide',
       description: 'Configure how this product is sold — channels, broker access, commission structures, and binding authority by segment.',
       tips: [
         'Channel settings control which questionnaire variants and documents apply.',
@@ -158,7 +158,7 @@ window.PS = window.PS || {};
       ],
     },
     'document-studio.html': {
-      title: 'Document Studio',
+      title: 'Document Guide',
       description: 'Manage pre-bind and post-bind documents for Commercial Trucking — applications, schedules, policy wording, certificates, and notices. Stage controls grouping, packs, and lifecycle triggers.',
       tips: [
         'PRE-BIND documents are collected or generated before bind; POST-BIND documents are issued after the policy is bound.',
@@ -192,7 +192,7 @@ window.PS = window.PS || {};
     },
     'glossary.html': {
       title: 'Glossary',
-      description: 'Standard definitions for insurance and platform terms used across Product Studio screens and documentation.',
+      description: 'Standard definitions for insurance and platform terms used across Product Guide screens and documentation.',
       tips: [
         'Search from the global topbar jumps here with your query pre-filled.',
       ],
@@ -239,7 +239,7 @@ window.PS = window.PS || {};
     'product owner': 'Person accountable for this product\'s configuration, approvals, and lifecycle.',
     'product description': 'Internal summary of the product intent, target market, and key features.',
     'product code': 'Unique internal identifier used in integrations and reporting. Auto-suggested from the product name.',
-    'jurisdictions — us states': 'States where this product may be quoted or bound. Required before other studios activate.',
+    'jurisdictions — us states': 'States where this product may be quoted or bound. Required before other guides activate.',
     'effective proposed date from': 'Earliest date this product version is intended to go live. Must be approved before publication.',
     'effective proposed date to': 'Optional end date. Leave blank for open-ended availability. Must be on or after the From date.',
     'effective from': 'Date this version becomes valid for new business.',
@@ -318,7 +318,7 @@ window.PS = window.PS || {};
     'channel visibility': 'Restricts the question to specific sales channels (broker, direct, etc.).',
 
     'attribute name': 'Risk field name used in rules and rating (e.g. driver_age).',
-    'group': 'Organises attributes in Risk Studio and rule builders.',
+    'group': 'Organises attributes in Risk Guide and rule builders.',
     'sample values / options': 'Example or enumerated values for dropdowns and testing.',
     'name': 'Display or system name for the entity being created.',
     'type': 'Classification or data type depending on context.',
@@ -338,7 +338,7 @@ window.PS = window.PS || {};
 
     'email address': 'Login email for the platform user.',
     'full name': 'Display name shown in audit entries and assignments.',
-    'system role': 'Permission set controlling studio access and governance actions.',
+    'system role': 'Permission set controlling guide access and governance actions.',
     'product family restriction': 'Optional limit to products within selected families only.',
     'welcome message': 'Included in the invitation email for new users.',
     'phone (optional)': 'Contact number for the user profile.',

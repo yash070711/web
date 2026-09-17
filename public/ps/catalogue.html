@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Catalogue â€” Insurance Product Studio</title>
+  <title>Product Catalogue â€” Insurance Product Guide</title>
   <meta name="description" content="Browse and manage all insurance products â€” search, filter, and navigate to any product version.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
@@ -461,7 +461,7 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens (1280px and wider).</div>
+<div class="responsive-warning" role="alert">Insurance Product Guide is optimized for desktop screens (1280px and wider).</div>
 
 <script src="assets/data.js"></script>
 <script src="assets/trucking-questionnaire-seed.js"></script>
@@ -684,7 +684,7 @@ function statusCellHtml(p) {
   try { stage = PS.prototypeApp.productBuildStage(p.id, p.version); } catch (_) {}
   if (!stage) return `<div class="cat-status">${badge}</div>`;
   const cls = stage.pending ? 'cat-stage' : 'cat-stage is-ready';
-  const tip = `${stage.done} of ${stage.total} studios configured`;
+  const tip = `${stage.done} of ${stage.total} guides configured`;
   return `<div class="cat-status">${badge}<a class="${cls}" href="${stage.href}" onclick="event.stopPropagation()" title="${tip}">${stage.text}</a></div>`;
 }
 
@@ -882,7 +882,6 @@ function openCloneModal(id) {
       <div class="form-group">
         <label class="form-label" for="clone-version">New Version Label</label>
         <input type="text" id="clone-version" class="form-control" value="${PS.nextVersionLabel ? PS.nextVersionLabel([]) : ''}" readonly style="font-family:'IBM Plex Mono',monospace">
-        <span class="form-help">Generated automatically so it does not match an existing version.</span>
       </div>
       <div class="form-group">
         <label class="form-label" for="clone-owner">Assign Owner</label>

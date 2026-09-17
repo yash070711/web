@@ -90,7 +90,7 @@
     questionnaire: {
       file: 'questionnaire-studio.html',
       navId: 'questionnaire',
-      title: 'Questionnaire Studio',
+      title: 'Questionnaire Guide',
       cardTitle: 'Predefined questions',
       cardSubtitle: 'Shared question templates and how many products currently use each one. Open a product to configure its questionnaire.',
       noun: 'questions',
@@ -124,7 +124,7 @@
     risk: {
       file: 'risk-studio.html',
       navId: 'risk',
-      title: 'Risk Studio',
+      title: 'Risk Guide',
       cardTitle: 'Predefined risk attributes',
       cardSubtitle: 'Shared trucking and commercial auto risk data captured at quote, and how many products currently use each one.',
       noun: 'risk attributes',
@@ -145,7 +145,7 @@
     eligibility: {
       file: 'eligibility-studio.html',
       navId: 'eligibility',
-      title: 'Eligibility Studio',
+      title: 'Eligibility Guide',
       cardTitle: 'Predefined eligibility rules',
       cardSubtitle: 'Shared eligibility templates and how many products currently use each one.',
       noun: 'rules',
@@ -173,7 +173,7 @@
     rating: {
       file: 'rating-studio.html',
       navId: 'rating',
-      title: 'Rating & Pricing Studio',
+      title: 'Rating & Pricing Guide',
       cardTitle: 'Predefined rating components',
       cardSubtitle: 'Shared rating templates and how many products currently use each one.',
       noun: 'components',
@@ -204,7 +204,7 @@
     underwriting: {
       file: 'underwriting-studio.html',
       navId: 'underwriting',
-      title: 'Underwriting Studio',
+      title: 'Underwriting Guide',
       cardTitle: 'Predefined underwriting rules',
       cardSubtitle: 'Shared underwriting templates and how many products currently use each one.',
       noun: 'rules',
@@ -225,7 +225,7 @@
     distribution: {
       file: 'distribution-studio.html',
       navId: 'distribution',
-      title: 'Distribution Studio',
+      title: 'Distribution Guide',
       cardTitle: 'Predefined channels',
       cardSubtitle: 'Shared distribution channels and how many products currently use each one.',
       noun: 'channels',
@@ -252,7 +252,7 @@
     document: {
       file: 'document-studio.html',
       navId: 'document',
-      title: 'Document Studio',
+      title: 'Document Guide',
       cardTitle: 'Predefined documents',
       cardSubtitle: 'Shared document templates and how many products currently use each one.',
       noun: 'documents',
@@ -307,7 +307,7 @@
       type: (r.type || 'refer').charAt(0).toUpperCase() + (r.type || 'refer').slice(1),
       extra: r.questionGroup || r.cat || '',
       source: r.source || 'Risk',
-      sourceStudio: r.sourceStudio || 'Underwriting Studio',
+      sourceStudio: r.sourceStudio || 'Underwriting Guide',
       questionGroup: r.questionGroup,
       riskAttribute: r.riskAttribute,
       riskAttributeId: r.riskAttributeId,

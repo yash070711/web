@@ -1,4 +1,4 @@
-/* Commercial Trucking risk attributes — Risk Studio */
+/* Commercial Trucking risk attributes — Risk Guide */
 window.PS = window.PS || {};
 
 (function () {

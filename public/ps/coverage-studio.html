@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Class of Business — Insurance Product Studio</title>
+  <title>Class of Business — Insurance Product Guide</title>
   <meta name="description" content="Configure covers, limits, deductibles, exclusions and financial terms for a product version.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
-    /* ── Studio two-panel shell ────────────────────────── */
+    /* ── Guide two-panel shell ────────────────────────── */
     .studio-layout {
       display: grid;
       grid-template-columns: 340px minmax(0, 1fr);
@@ -761,7 +761,7 @@
       font-size: 12px; color: var(--color-brand); font-weight: 600;
     }
 
-    /* ── Studio context bar ──────────────────────────────── */
+    /* ── Guide context bar ──────────────────────────────── */
     .studio-context-bar {
       display: flex; align-items: center; gap: var(--space-4);
       padding: var(--space-3) var(--space-5);
@@ -1281,7 +1281,7 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens.</div>
+<div class="responsive-warning" role="alert">Insurance Product Guide is optimized for desktop screens.</div>
 
 <script src="assets/data.js"></script>
 <script src="assets/product-seeds.js"></script>
@@ -1404,7 +1404,7 @@ const COVERS = [
     id: 'COV-005', name: 'Roadside Assistance', code: 'COV-RSA-001',
     availability: 'addon', complete: true,
     type: 'Assistance / Service Cover',
-    description: 'Provides up to 3 roadside assistance call-outs per year, with towing up to 50km. Fixed-fee add-on linked to Rating Studio as flat premium.',
+    description: 'Provides up to 3 roadside assistance call-outs per year, with towing up to 50km. Fixed-fee add-on linked to Rating Guide as flat premium.',
     basisOfCoverage: 'Agreed Value',
     sumInsured: '', maxSingleLimit: 'N/A (Service)', subLimit: '',
     deductibleType: 'none', deductibleAmount: '',
@@ -3700,7 +3700,6 @@ function buildInsuredItemCard(it, index, ro, c) {
                    ${ro?'readonly':''}
                    oninput="patchInsuredItem('${idAttr}','limitAmount',this.value,true)">
           </div>
-          <span class="form-help">Required. Enter the maximum amount payable for this insured item.</span>
         </div>
         <div class="form-group">
   <label class="form-label">Fully Earned</label>
@@ -3745,7 +3744,14 @@ function buildInsuredItemCard(it, index, ro, c) {
             <input type="text" class="form-control" value="${htmlEsc(it.serviceUsageLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','serviceUsageLimit',this.value.replace(/[^0-9]/g,''),true)" aria-label="Service usage limit">
             <input type="text" class="form-control" value="${htmlEsc(it.serviceUsageUnit || 'call-outs per year')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','serviceUsageUnit',this.value,true)" aria-label="Service usage unit">
           </div>
-          <span class="form-help">No monetary valuation is applied to service covers.</span>
+        </div>` : ''}
+        </div>
+        ${it.itemAnnualAggregate ? `
+        <div class="form-group">
+          <label class="form-label">Aggregate Limit ($)</label>
+          <div class="currency-wrap"><span class="currency-prefix">$</span>
+            <input type="text" class="form-control currency-input" value="${htmlEsc(it.itemAggregateLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','itemAggregateLimit',this.value.replace(/[^0-9.,]/g,''),true)">
+          </div>
         </div>` : ''}
         <div class="form-group span-2 uw-override-combined-card">
           <div class="ii-toggle-row">
@@ -3766,34 +3772,21 @@ function buildInsuredItemCard(it, index, ro, c) {
             <div class="form-group">
               <label class="form-label">Maximum variation (%)</label>
               <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
-              <span class="form-help">Maximum percent an underwriter may move a value from the configured default.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Referral requirement</label>
               <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
                 ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
               </select>
-              <span class="form-help">Whether changing this field requires referral to a senior underwriter.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Reason requirement</label>
               <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
                 ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
               </select>
-              <span class="form-help">Whether a free-text audit reason is mandatory for overrides.</span>
             </div>
           </div>` : ''}
         </div>
-      
-        </div>
-        ${it.itemAnnualAggregate ? `
-        <div class="form-group">
-          <label class="form-label">Aggregate Limit ($)</label>
-          <div class="currency-wrap"><span class="currency-prefix">$</span>
-            <input type="text" class="form-control currency-input" value="${htmlEsc(it.itemAggregateLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','itemAggregateLimit',this.value.replace(/[^0-9.,]/g,''),true)">
-          </div>
-          <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
-        </div>` : ''}
       
       </div>
     </div>`;
@@ -3910,7 +3903,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="syncDeductibleAmountAuto(this.value)"
         >
-        <span class="form-help">Primary fixed deductible amount applied to the claim.</span>
       </div>
 
       <div class="form-group">
@@ -3923,7 +3915,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="${patch('minDeductible')}"
         >
-        <span class="form-help">Optional floor for the deductible.</span>
       </div>
 
       <div class="form-group">
@@ -3936,7 +3927,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="${patch('maxDeductible')}"
         >
-        <span class="form-help">Optional ceiling for the deductible.</span>
       </div>
 
       <div class="form-group">
@@ -3972,7 +3962,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="currentCover().deductiblePct=this.value.replace(/[^0-9.]/g,'')"
         >
-        <span class="form-help">Percentage of the claim or sum insured applied as excess.</span>
       </div>
 
       <div class="form-group">
@@ -5814,7 +5803,6 @@ function renderDetailPanel(c) {
           ${PS.admin.fieldHtml(f, c[f.id], ro, `patchCoverField('${f.id}', this.value)`)}
         </div>`).join('')}
       </div>
-      ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override cities/counties', 'Allows the underwriter to change the selected cities or counties for this cover at quote time.')}
     `)}
 
   
@@ -5841,7 +5829,6 @@ function renderDetailPanel(c) {
         <div class="form-group">
           <label class="form-label">Applicable Deductible</label>
           <input type="text" class="form-control" value="${htmlEsc(formatApplicableDeductible(c))}" readonly style="background:var(--color-surface);color:var(--color-muted)">
-          <span class="form-help">Auto-linked from Deductible & Co-pay</span>
         </div>
       </div>
       ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override claims behavior', 'Allows the underwriter to change the claims behaviour for this cover at quote time.')}
@@ -5861,11 +5848,11 @@ function renderDetailPanel(c) {
       </div>`).join('') : `
       <div class="vb-empty-state" style="margin-bottom:12px">
         <div class="vb-empty-title">No documents linked</div>
-        <p>Link a clause from Document Studio, upload a file, or add a custom reference.</p>
+        <p>Link a clause from Document Guide, upload a file, or add a custom reference.</p>
       </div>`}
       ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="openLinkDocumentModal()">+ Link Document</button>`}
       <div style="margin-top:var(--space-4)">
-        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View in Document Studio →</a>
+        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View in Document Guide →</a>
       </div>
     `)}
 
@@ -6266,7 +6253,6 @@ function openCreateLibraryCover() {
         <div class="form-group">
           <label class="form-label" for="lib-cover-code">Cover Code</label>
           <input type="text" id="lib-cover-code" class="form-control" placeholder="Auto-generated if blank" style="font-family:'IBM Plex Mono',monospace;font-size:13px" oninput="this.dataset.userEdited='1'">
-          <span class="form-help">Suggested from the cover name — you can override before creating.</span>
         </div>
         <div class="form-group">
           <label class="form-label" for="lib-cover-type">Cover Type <span class="required">*</span></label>

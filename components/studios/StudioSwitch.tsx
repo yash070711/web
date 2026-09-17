@@ -53,5 +53,5 @@ export function StudioSwitch({
   if (studio === "document") return <DocumentStudio {...props} items={collections.documents || []} />;
   if (studio === "risk") return <RiskStudio {...props} items={collections.riskAttributes || []} />;
   if (studio === "jurisdiction") return <JurisdictionStudio product={product} />;
-  return <div className="page-inner"><p className="text-muted">Unknown studio.</p></div>;
+  return <div className="page-inner"><p className="text-muted">Unknown guide.</p></div>;
 }

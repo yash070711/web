@@ -966,7 +966,7 @@ export function CoverageStudio({
   return (
     <>
       <StudioHeader
-        title="Coverage Studio"
+        title="Coverage Guide"
         subtitle={`${productName} · v${version} — ${counts.all} covers configured · ${counts.mandatory} mandatory · ${counts.optional} optional add-ons`}
         productId={productId}
         moduleId="coverage"
@@ -1344,7 +1344,7 @@ export function CoverageStudio({
                   setDeps([...dependenciesOf(cover), { type: "Requires", dependsOn: names[0] || "", condition: "Always" }]);
                 }}>+ Add Dependency Rule</button>
               )}
-              <p className="ft-help" style={{ marginTop: 12 }}>Dependencies control how this cover interacts with others at quote time. Use Eligibility Studio for risk-level rules.</p>
+              <p className="ft-help" style={{ marginTop: 12 }}>Dependencies control how this cover interacts with others at quote time. Use Eligibility Guide for risk-level rules.</p>
             </Accordion>
 
             <Accordion n={7} title="Eligibility Constraints" subtitle={`${constraintsOf(cover).length} constraint${constraintsOf(cover).length === 1 ? "" : "s"} configured`} open={open.constraints} onToggle={() => setOpen((s) => ({ ...s, constraints: !s.constraints }))}>
@@ -1386,7 +1386,7 @@ export function CoverageStudio({
               {!readOnly && (
                 <button type="button" className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => setConstraints([...constraintsOf(cover), { field: "Vehicle Age", operator: "≤", value: "" }])}>+ Add eligibility filter</button>
               )}
-              <p className="ft-help" style={{ marginTop: 12 }}>Full eligibility logic is managed in Eligibility Studio. These constraints are cover-level pre-filters applied before eligibility rules.</p>
+              <p className="ft-help" style={{ marginTop: 12 }}>Full eligibility logic is managed in Eligibility Guide. These constraints are cover-level pre-filters applied before eligibility rules.</p>
             </Accordion>
 
             <Accordion n={8} title="Claims behaviour" subtitle={`${str(cover, "lossBasis", "Per Occurrence")} · ${str(cover, "benefitBasis", "Indemnity")}`} open={open.claims} onToggle={() => setOpen((s) => ({ ...s, claims: !s.claims }))}>
@@ -1439,7 +1439,7 @@ export function CoverageStudio({
                 </div>
               )}
               <div style={{ marginTop: "var(--space-4)" }}>
-                <a href={`/products/${productId}/document`} className="btn btn-ghost btn-sm">View in Document Studio →</a>
+                <a href={`/products/${productId}/document`} className="btn btn-ghost btn-sm">View in Document Guide →</a>
               </div>
             </Accordion>
 

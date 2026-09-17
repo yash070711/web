@@ -96,7 +96,7 @@ export function RatingStudio({
   return (
     <>
       <StudioHeader
-        title="Rating & Pricing Studio"
+        title="Rating & Pricing Guide"
         subtitle={`${productName} · v${version} — ${rows.length} rating components · 1 premium formula · $${quote.payable.toLocaleString("en-US")} est. annual premium`}
         productId={productId}
         moduleId="rating"

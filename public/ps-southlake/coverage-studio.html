@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Class of Business Studio — SouthLake Carrier Portal</title>
+  <title>Class of Business Guide — SouthLake Carrier Portal</title>
   <meta name="description" content="Configure covers, limits, deductibles, exclusions and financial terms for a product version.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
-    /* ── Studio two-panel shell ────────────────────────── */
+    /* ── Guide two-panel shell ────────────────────────── */
     .studio-layout {
       display: grid;
       grid-template-columns: 340px minmax(0, 1fr);
@@ -327,53 +327,108 @@
       border-bottom: 1px solid var(--color-border);
     }
     .cover-pick-title { font-size: 16px; font-weight: 650; margin-bottom: 4px; }
-    .cover-pick-sub { font-size: 13px; color: var(--color-muted); max-width: 56ch; }
+    .cover-pick-sub { font-size: 13px; color: var(--color-muted); max-width: 64ch; line-height: 1.5; }
     .cover-pick-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .cover-pick-table { width: 100%; border-collapse: collapse; }
-    .cover-pick-table th {
-      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
-      color: var(--color-muted); padding: 10px 16px; text-align: left;
-      border-bottom: 1px solid var(--color-border); background: var(--color-surface);
+    .cover-pick-list {
+      display: flex; flex-direction: column; gap: 12px;
+      padding: 16px; max-height: calc(100vh - 360px); overflow: auto;
+      background: var(--color-bg, transparent);
     }
-    .cover-pick-table td {
-      padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--color-border); vertical-align: middle;
+    .cover-pick-card {
+      border: 1px solid var(--color-border); border-radius: 12px;
+      background: var(--color-surface); overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+      transition: border-color .16s ease, box-shadow .16s ease;
     }
-    .cover-pick-table tbody tr:hover td { background: rgba(255,255,255,.02); }
-    .cover-pick-name { display: flex; align-items: center; gap: 8px; font-weight: 500; }
-    .cover-pick-info {
-      width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--color-border);
-      color: var(--color-muted); font-size: 10px; font-weight: 700;
-      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
-      margin-left: auto;
+    .cover-pick-card:hover {
+      border-color: color-mix(in srgb, var(--color-brand) 28%, var(--color-border));
+      box-shadow: 0 4px 14px rgba(0,0,0,.06);
     }
-    .cover-pick-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    .cover-pick-card-head {
+      display: flex; align-items: center; gap: 12px; padding: 15px 16px; min-height: 72px;
     }
-    .cover-pick-icon svg { width: 16px; height: 16px; display: block; }
-    .cover-pick-label { flex: 1; min-width: 0; }
-    .cover-pick-row {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
-      align-items: center; gap: 10px;
-      padding: 10px 12px; cursor: pointer;
-      border: 1px solid transparent; border-radius: 8px;
-      transition: background .12s, border-color .12s;
+    .cover-pick-check { width: 18px; height: 18px; flex: 0 0 auto; }
+    .cover-pick-card-icon {
+      width: 38px; height: 38px; border-radius: 10px; flex: 0 0 auto;
+      display: inline-flex; align-items: center; justify-content: center;
     }
-    .cover-pick-row:hover { background: rgba(255, 255, 255, .03); }
-    .cover-pick-row.selected {
-      background: rgba(255, 255, 255, .04);
-      border-color: rgba(255, 255, 255, .32);
+    .cover-pick-card-icon svg { width: 18px; height: 18px; display: block; }
+    .cover-pick-card-main { min-width: 0; flex: 1; }
+    .cover-pick-card-title { font-size: 14px; font-weight: 650; color: var(--color-ink); }
+    .cover-pick-card-meta {
+      display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+      margin-top: 5px; font-size: 12px; color: var(--color-muted);
     }
-    .cover-sidebar-icon {
-      width: 28px; height: 28px; border-radius: 7px;
-      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    .cover-pick-card-actions {
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+      flex-wrap: wrap; flex: 0 0 auto;
     }
-    .cover-sidebar-icon svg { width: 14px; height: 14px; display: block; }
+    .cover-pick-select {
+      min-width: 154px; height: 34px; padding: 0 30px 0 10px;
+      border: 1px solid var(--color-border); border-radius: 8px;
+      background: var(--color-surface); color: var(--color-ink);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .cover-pick-select:focus {
+      outline: none; border-color: var(--color-brand);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 12%, transparent);
+    }
+    .cover-pick-expand {
+      width: 34px; height: 34px; padding: 0;
+      border: 1px solid var(--color-border); border-radius: 8px;
+      background: var(--color-surface); color: var(--color-muted);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; line-height: 1;
+    }
+    .cover-pick-expand:hover {
+      color: var(--color-brand); border-color: color-mix(in srgb, var(--color-brand) 28%, var(--color-border));
+      background: color-mix(in srgb, var(--color-brand) 5%, var(--color-surface));
+    }
+    .cover-pick-children {
+      border-top: 1px solid var(--color-border);
+      padding: 8px 12px 12px 58px; background: rgba(127,127,127,.035);
+      max-height: 260px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(127,127,127,.35) transparent;
+    }
+    .cover-pick-children::-webkit-scrollbar { width: 7px; }
+    .cover-pick-children::-webkit-scrollbar-track { background: transparent; }
+    .cover-pick-children::-webkit-scrollbar-thumb {
+      background: rgba(127,127,127,.35);
+      border-radius: 999px;
+    }
+    .cover-pick-children::-webkit-scrollbar-thumb:hover {
+      background: rgba(127,127,127,.55);
+    }
+    .cover-pick-child {
+      display: flex; align-items: center; gap: 10px; padding: 11px 10px;
+      border-radius: 8px; min-height: 48px;
+    }
+    .cover-pick-child + .cover-pick-child { border-top: 1px solid rgba(127,127,127,.10); border-radius: 0; }
+    .cover-pick-child:hover { background: rgba(127,127,127,.055); }
+    .cover-pick-child-main { min-width: 0; flex: 1; }
+    .cover-pick-child-name { font-size: 13px; font-weight: 550; color: var(--color-ink); }
+    .cover-pick-child-meta {
+      display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+      margin-top: 3px; font-size: 11px; color: var(--color-muted);
+    }
+    .cover-pick-empty {
+      padding: 28px 18px; text-align: center; color: var(--color-muted);
+      border: 1px dashed var(--color-border); border-radius: 10px;
+    }
     .cover-pick-footer {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: var(--space-4) var(--space-5); border-top: 1px solid var(--color-border);
-      background: var(--color-surface);
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:12px 16px; border-top:1px solid var(--color-border); background:var(--color-surface);
+    }
+    @media (max-width: 760px) {
+      .cover-pick-card-head { align-items: flex-start; flex-wrap: wrap; }
+      .cover-pick-card-actions { width: 100%; justify-content: flex-start; padding-left: 68px; }
+      .cover-pick-select { min-width: 170px; }
+      .cover-pick-children { padding-left: 18px; }
+      .cover-pick-footer { align-items: stretch; flex-direction: column; }
+      .cover-pick-footer > div { width: 100%; }
     }
     .cs-cover-icon {
       width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
@@ -504,7 +559,7 @@
     .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4) var(--space-5); }
     .span-2 { grid-column: 1 / -1; }
 
-    /* Validation state used by Coverage Studio save validation */
+    /* Validation state used by Coverage Guide save validation */
     .form-control.validation-error {
       border-color: #DC2626 !important;
       box-shadow: 0 0 0 2px rgba(220,38,38,.12) !important;
@@ -761,7 +816,7 @@
       font-size: 12px; color: var(--color-brand); font-weight: 600;
     }
 
-    /* ── Studio context bar ──────────────────────────────── */
+    /* ── Guide context bar ──────────────────────────────── */
     .studio-context-bar {
       display: flex; align-items: center; gap: var(--space-4);
       padding: var(--space-3) var(--space-5);
@@ -1175,7 +1230,7 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="studio-title">Class of Business Studio</h1>
+          <h1 class="page-title" id="studio-title">Class of Business Guide</h1>
           <p class="page-subtitle" id="studio-subtitle">Loading…</p>
         </div>
         <div class="page-header-actions" id="product-studio-actions">
@@ -1391,7 +1446,7 @@ const COVERS = [
     id: 'COV-005', name: 'Roadside Assistance', code: 'COV-RSA-001',
     availability: 'addon', complete: true,
     type: 'Assistance / Service Cover',
-    description: 'Provides up to 3 roadside assistance call-outs per year, with towing up to 50km. Fixed-fee add-on linked to Rating Studio as flat premium.',
+    description: 'Provides up to 3 roadside assistance call-outs per year, with towing up to 50km. Fixed-fee add-on linked to Rating Guide as flat premium.',
     basisOfCoverage: 'Agreed Value',
     sumInsured: '', maxSingleLimit: 'N/A (Service)', subLimit: '',
     deductibleType: 'none', deductibleAmount: '',
@@ -1794,8 +1849,8 @@ function vbIcon(kind, color) {
 }
 
 function defaultValuationRows(c) {
-  const si = c.sumInsured && !/n\/a|service/i.test(String(c.sumInsured)) ? c.sumInsured : '1,000,000';
-  const max = c.maxSingleLimit && !/n\/a|service/i.test(String(c.maxSingleLimit)) ? c.maxSingleLimit : '500,000';
+  const si = c.sumInsured && !/n\/a|service/i.test(String(c.sumInsured)) ? c.sumInsured : '';
+  const max = c.maxSingleLimit && !/n\/a|service/i.test(String(c.maxSingleLimit)) ? c.maxSingleLimit : '';
   const primary = vbMeta(c.basisOfCoverage).id;
   return VALUATION_BASES.map(b => ({
     id: b.id,
@@ -1976,12 +2031,12 @@ function defaultValConfigRow(id, c) {
   return {
     id,
     valueMode: cr?.limitMode || (id === 'MV' ? 'percent' : 'amount'),
-    value: cr?.limit || (id === 'MV' ? '80' : (c.sumInsured || '1,000,000')),
+    value: cr?.limit || '',
     valueOf: cr?.limitOf || 'Sum Insured',
     minMode: 'amount',
     min: '',
     maxMode: cr?.maxMode || 'amount',
-    max: cr?.max || (c.maxSingleLimit || '500,000'),
+    max: cr?.max || '',
     maxOf: cr?.maxOf || 'Sum Insured'
   };
 }
@@ -2034,14 +2089,14 @@ function defaultInsuredItem(c, index) {
     uwLimitOverride: true,
     limitPct: '50',
     limitPctOf: 'Sum Insured',
-    limitAmount: isServiceCover(c) ? '' : (c.sumInsured || '50,000'),
-    maxLimit: isServiceCover(c) ? 'N/A' : (c.maxSingleLimit || '500,000'),
+    limitAmount: '',
+    maxLimit: isServiceCover(c) ? 'N/A' : '',
     serviceUsageLimit: isServiceCover(c) ? '3' : '',
     serviceUsageUnit: isServiceCover(c) ? 'call-outs per year' : '',
     paymentRule: 'Maximum payable for this insured item',
     overrideType: 'both',
-    maxOverride: '100,000',
-    itemCopay: c.copay ?? '0',
+    maxOverride: '',
+    itemCopay: '',
     itemWaitingPeriod: c.waitingPeriod || 'None',
     itemAnnualAggregate: Boolean(c.annualAggregate),
     itemAggregateLimit: ''
@@ -2123,7 +2178,7 @@ function ensureInsuredItems(c) {
     if (!it.limitBasisMode) it.limitBasisMode = /percent/i.test(it.limitBasis) ? 'percent' : 'fixed';
     if (!it.limitPct) it.limitPct = '50';
     if (!it.limitPctOf) it.limitPctOf = 'Sum Insured';
-    if (!it.maxLimit) it.maxLimit = c.maxSingleLimit || '500,000';
+    if (!it.maxLimit) it.maxLimit = '';
     if (!it.overrideType) it.overrideType = 'both';
     if (!it.maxOverride) it.maxOverride = '100,000';
     if (it.itemCopay == null) it.itemCopay = c.copay ?? '0';
@@ -2323,8 +2378,8 @@ function setValRow(id, key, value, skipRender) {
   row[key] = value;
   if (key === 'limitMode' && value === 'percent' && /[,$\s]/.test(String(row.limit || ''))) row.limit = '80';
   if (key === 'maxMode' && value === 'percent' && /[,$\s]/.test(String(row.max || ''))) row.max = '40';
-  if (key === 'limitMode' && value === 'amount' && String(row.limit).length <= 3) row.limit = c.sumInsured || '1,000,000';
-  if (key === 'maxMode' && value === 'amount' && String(row.max).length <= 3) row.max = c.maxSingleLimit || '500,000';
+  if (key === 'limitMode' && value === 'amount' && String(row.limit).length <= 3) row.limit = '';
+  if (key === 'maxMode' && value === 'amount' && String(row.max).length <= 3) row.max = '';
   if (!skipRender) refreshFinancialPanel();
 }
 
@@ -3492,43 +3547,6 @@ function buildInsuredItemCard(it, index, ro, c) {
             ${quoteOpts.map(o => `<option ${it.quoteChoice===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group span-2 uw-override-combined-card">
-          <div class="ii-toggle-row">
-            <div>
-              <strong>Underwriter can override valuation</strong>
-              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="ii-en">${it.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
-              <label class="toggle-switch">
-                <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
-                <div class="toggle-slider"></div><div class="toggle-dot"></div>
-              </label>
-            </div>
-          </div>
-          ${it.uwOverrideValuation ? `
-          <div class="uw-override-fields">
-            <div class="form-group">
-              <label class="form-label">Maximum variation (%)</label>
-              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
-              <span class="form-help">Maximum percent an underwriter may move a value from the configured default.</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Referral requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
-                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-              <span class="form-help">Whether changing this field requires referral to a senior underwriter.</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Reason requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
-                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-              <span class="form-help">Whether a free-text audit reason is mandatory for overrides.</span>
-            </div>
-          </div>` : ''}
-        </div>
         <div class="form-group">
           <label class="form-label">Limit Basis</label>
           <select class="form-control" ${ro?'disabled':''} onchange="setItemLimitBasisSelect('${idAttr}', this.value)">
@@ -3567,7 +3585,6 @@ function buildInsuredItemCard(it, index, ro, c) {
                    ${ro?'readonly':''}
                    oninput="patchInsuredItem('${idAttr}','limitAmount',this.value,true)">
           </div>
-          <span class="form-help">Required. Enter the maximum amount payable for this insured item.</span>
         </div>
         <div class="form-group">
   <label class="form-label">Fully Earned</label>
@@ -3612,7 +3629,6 @@ function buildInsuredItemCard(it, index, ro, c) {
             <input type="text" class="form-control" value="${htmlEsc(it.serviceUsageLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','serviceUsageLimit',this.value.replace(/[^0-9]/g,''),true)" aria-label="Service usage limit">
             <input type="text" class="form-control" value="${htmlEsc(it.serviceUsageUnit || 'call-outs per year')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','serviceUsageUnit',this.value,true)" aria-label="Service usage unit">
           </div>
-          <span class="form-help">No monetary valuation is applied to service covers.</span>
         </div>` : ''}
       
         </div>
@@ -3622,8 +3638,41 @@ function buildInsuredItemCard(it, index, ro, c) {
           <div class="currency-wrap"><span class="currency-prefix">$</span>
             <input type="text" class="form-control currency-input" value="${htmlEsc(it.itemAggregateLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','itemAggregateLimit',this.value.replace(/[^0-9.,]/g,''),true)">
           </div>
-          <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
         </div>` : ''}
+        <div class="form-group span-2 uw-override-combined-card">
+          <div class="ii-toggle-row">
+            <div>
+              <strong>Underwriter can override valuation</strong>
+              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="ii-en">${it.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
+              <label class="toggle-switch">
+                <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
+                <div class="toggle-slider"></div><div class="toggle-dot"></div>
+              </label>
+            </div>
+          </div>
+          ${it.uwOverrideValuation ? `
+          <div class="uw-override-fields">
+            <div class="form-group">
+              <label class="form-label">Maximum variation (%)</label>
+              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Referral requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
+                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reason requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
+                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
+            </div>
+          </div>` : ''}
+        </div>
       
       </div>
     </div>`;
@@ -3740,7 +3789,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="syncDeductibleAmountAuto(this.value)"
         >
-        <span class="form-help">Primary fixed deductible amount applied to the claim.</span>
       </div>
 
       <div class="form-group">
@@ -3753,7 +3801,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="${patch('minDeductible')}"
         >
-        <span class="form-help">Optional floor for the deductible.</span>
       </div>
 
       <div class="form-group">
@@ -3766,7 +3813,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="${patch('maxDeductible')}"
         >
-        <span class="form-help">Optional ceiling for the deductible.</span>
       </div>
 
       <div class="form-group">
@@ -3802,7 +3848,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="currentCover().deductiblePct=this.value.replace(/[^0-9.]/g,'')"
         >
-        <span class="form-help">Percentage of the claim or sum insured applied as excess.</span>
       </div>
 
       <div class="form-group">
@@ -4105,7 +4150,7 @@ function paintStudio() {
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
     { label: `v${productVersion}`, href: `product-detail.html?id=${productId}&version=${productVersion}` },
-    { label: 'Class of Business Studio', href: '#' }
+    { label: 'Class of Business Guide', href: '#' }
   ]);
   refreshCoverMeta();
   renderCoverTable();
@@ -4338,9 +4383,52 @@ function catalogCoversForPicker() {
   return lib.concat(fromProducts).filter(c => !/goods in transit/i.test(c.name || '')).filter(isCommercialTruckingCover);
 }
 
+function blankSouthLakeNewCoverConfiguration(c) {
+  // SouthLake-only normalization for NEW covers. Do not mutate shared catalog/seed data.
+  c.defaultSelected = false;
+  c.sumInsured = '';
+  c.maxSingleLimit = '';
+  c.subLimit = '';
+  c.aggregateLimit = '';
+  c.deductibleAmount = '';
+  c.deductiblePct = '';
+  c.minDeductible = '';
+  c.maxDeductible = '';
+  c.copay = '';
+  c.annualAggregate = false;
+  c.insuredItems = [blankSouthLakeNewInsuredItem(c, 0)];
+  return c;
+}
+
+function blankSouthLakeNewInsuredItem(c, index) {
+  const item = defaultInsuredItem(c, index);
+  item.limitAmount = '';
+  item.maxLimit = '';
+  item.limitPct = '';
+  item.maxOverride = '';
+  item.itemCopay = '';
+  item.itemAggregateLimit = '';
+  item.itemAnnualAggregate = false;
+  item.uwMaxVariation = '';
+  item.uwReferral = '';
+  item.uwReason = '';
+  item.valuationConfig = (item.allowedBases || []).filter(id => id !== 'NA').map(id => ({
+    id,
+    valueMode: id === 'MV' ? 'percent' : 'amount',
+    value: '',
+    valueOf: 'Sum Insured',
+    minMode: 'amount',
+    min: '',
+    maxMode: 'amount',
+    max: '',
+    maxOf: 'Sum Insured'
+  }));
+  return item;
+}
+
 function coverFromCatalogItem(lib) {
   const src = lib.template ? JSON.parse(JSON.stringify(lib.template)) : {};
-  return normalizeCover(Object.assign({
+  const created = normalizeCover(Object.assign({
     availability: lib.availability || 'optional',
     complete: false,
     status: lib.status || 'incomplete',
@@ -4359,6 +4447,7 @@ function coverFromCatalogItem(lib) {
     complete: false,
     status: 'incomplete'
   }), COVERS.length);
+  return blankSouthLakeNewCoverConfiguration(created);
 }
 
 function markCoversPicked() {
@@ -4425,9 +4514,185 @@ function defaultCoversCatalogForProduct() {
   return catalogCoversForPicker();
 }
 
+// Selection-page hierarchy; children remain insured items on their parent cover.
+let coverPickTree = null;
+let coverPickTreeKey = '';
+function pickTreeChildren(c) {
+  const src = c.template || c;
+  const types = TRUCKING_INSURED_ITEM_TYPES_BY_COVERAGE[c.name] || [];
+  const existing = (src.insuredItems || []).slice(1).map(x => ({...x, name:x.type || x.name}));
+  const aliases = {'Bodily Injury':'Bodily Injury Liability','Property Damage':'Property Damage Liability','Specified Perils':'Specified Causes of Loss','Cargo Physical Damage':'Cargo Loss / Damage','Debris Removal / Cleanup':'Debris Removal','Earned Freight / Freight Charges':'Earned Freight'};
+  const names = [...new Set([...types, ...existing.map(x=>x.name)])];
+  return names.map((name,i) => ({...(existing.find(x=>x.name===name) || {}), id:existing.find(x=>x.name===name)?.id || String(c.id)+':child:'+i, parentCoverId:String(c.id), type:name, name:aliases[name] || name}));
+}
+function ensurePickTree(catalog) {
+  const key = 'southlake-cover-selection:'+productId+':'+productVersion;
+  if (coverPickTreeKey !== key) {
+    coverPickTreeKey=key;
+    try { coverPickTree=JSON.parse(localStorage.getItem(key)); } catch (_) { coverPickTree=null; }
+    coverPickTree ||= {};
+  }
+  catalog.forEach(c=>{
+    if (coverPickTree[c.id]) return;
+    const children=pickTreeChildren(c);
+    const existing=COVERS.find(x=>x.id===c.id || x.name===c.name);
+    const savedChildren=existing ? (existing.insuredItems || []).slice(1).map(x=>x.type || x.name) : null;
+    const hasSavedSelection = Boolean(existing && Array.isArray(existing.insuredItems));
+    const selected = hasSavedSelection
+      ? children.filter(x=>savedChildren.includes(x.type)).map(x=>x.id)
+      : [];
+    coverPickTree[c.id]={
+      children,
+      selected,
+      // A selected parent may intentionally have zero children selected.
+      parentSelected: hasSavedSelection ? true : false,
+      expanded:false
+    };
+  });
+  syncPickTreeParents();
+}
+function syncPickTreeParents() {
+  Object.entries(coverPickTree || {}).forEach(([id,state])=>{
+    if (state.parentSelected || state.selected.length) pickCoverSelectedIds.add(String(id));
+    else pickCoverSelectedIds.delete(String(id));
+  });
+}
+function savePickTree() {
+  syncPickTreeParents();
+  localStorage.setItem(coverPickTreeKey,JSON.stringify(coverPickTree));
+}
+function changePickTree(id,childId,on) {
+  const state=coverPickTree[id];
+  if(!state)return;
+  if(childId){
+    state.selected=on ? [...new Set([...state.selected,childId])] : state.selected.filter(x=>x!==childId);
+    // Selecting any child also selects the parent cover.
+    state.parentSelected=true;
+  } else {
+    // Parent checkbox toggles the whole parent + all children.
+    state.parentSelected=!!on;
+    state.selected=on ? state.children.map(x=>x.id) : [];
+  }
+  if(state.children.length && state.selected.length===state.children.length) state.parentSelected=true;
+  if(!state.children.length) state.parentSelected=!!on;
+  savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
+}
+function selectAllPickTreeChildren(id) {
+  const state=coverPickTree[id];
+  if(!state)return;
+  state.selected=state.children.map(x=>x.id);
+  state.parentSelected=true;
+  savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
+}
+function unselectAllPickTreeChildren(id) {
+  const state=coverPickTree[id];
+  if(!state)return;
+  // "Unselect all" means unselect all children but keep the parent cover selected.
+  state.selected=[];
+  state.parentSelected=true;
+  savePickTree();renderCoverTable();renderCoverList();setTimeout(syncPickTreeCheckboxStates,0);
+}
+function setPickTreeSelectionMode(id,value) {
+  if(value==='all') selectAllPickTreeChildren(id);
+  else if(value==='none') unselectAllPickTreeChildren(id);
+  const select=document.querySelector('.cover-pick-select[data-parent="'+CSS.escape(String(id))+'"]');
+  if(select) select.value='';
+}
+function expandPickTree(id) {
+  coverPickTree[id].expanded=!coverPickTree[id].expanded;savePickTree();renderCoverTable();
+}
+function pickTreeRows(catalog) {
+  const q=(document.getElementById('cover-search')?.value || '').trim().toLowerCase();
+  const filter=document.getElementById('cover-filter')?.value || 'all';
+  return catalog.map(c=>{
+    const state=coverPickTree[c.id];
+    const parentMatch=[c.name,c.code,c.type,c.coverType].join(' ').toLowerCase().includes(q);
+    let children=state.children.filter(x=>!q || parentMatch || (x.name+' '+x.type).toLowerCase().includes(q));
+    if(filter==='selected')children=children.filter(x=>state.selected.includes(x.id));
+    if(filter==='selected' && !pickCoverSelectedIds.has(String(c.id)))return null;
+    if(filter==='mandatory' && c.availability!=='mandatory')return null;
+    if(filter==='optional' && c.availability==='mandatory')return null;
+    if(filter==='addon' && c.availability!=='addon')return null;
+    if(q && !parentMatch && !children.length)return null;
+    return {c,children,expanded:state.expanded || !!q || filter==='selected'};
+  }).filter(Boolean);
+}
+function pickTreeRowHtml(c,child,expanded) {
+  const state=coverPickTree[c.id];
+  const allChildrenSelected=state.children.length>0 && state.selected.length===state.children.length;
+  const checked=child ? state.selected.includes(child.id) : !!state.parentSelected;
+  const attrs='data-parent="'+htmlEsc(c.id)+'"';
+  if (child) {
+    return `<div class="cover-pick-child">
+      <input type="checkbox" class="cs-check cover-pick-check" ${attrs} data-child="${htmlEsc(child.id)}" ${checked?'checked':''} aria-label="Select ${htmlEsc(child.name)}" onchange="changePickTree(this.dataset.parent,this.dataset.child || null,this.checked)">
+      <div class="cover-pick-child-main">
+        <div class="cover-pick-child-name">${htmlEsc(child.name)}</div>
+        <div class="cover-pick-child-meta">
+          <span>${htmlEsc(child.type || c.coverType || c.type || '')}</span>
+          ${coverPickCategoryPill(c)}
+          <span class="cs-pill cs-pill-active">Active</span>
+        </div>
+      </div>
+    </div>`;
+  }
+  const partial=state.selected.length>0 && !allChildrenSelected;
+  const parentControls =
+      `<select class="cover-pick-select" ${attrs} data-parent="${htmlEsc(c.id)}" aria-label="Child selection for ${htmlEsc(c.name)}" onchange="setPickTreeSelectionMode(this.dataset.parent,this.value)">
+        <option value="">Select children...</option>
+        <option value="all">Select all children</option>
+        <option value="none">Unselect all children</option>
+      </select>`
+    + `<button type="button" class="cover-pick-expand" ${attrs} onclick="expandPickTree(this.dataset.parent)" aria-label="${expanded?'Hide':'Show'} children" title="${expanded?'Hide':'Show'} children">${expanded?'⌃':'⌄'}</button>`
+    + `<button type="button" class="btn btn-secondary btn-sm" ${attrs} onclick="openPickTreeChild(this.dataset.parent)">+ Add Child</button>`;
+  return `<div class="cover-pick-card">
+    <div class="cover-pick-card-head">
+      <input type="checkbox" class="cs-check cover-pick-check" ${attrs} data-tree-parent ${checked?'checked':''} ${partial?'data-indeterminate="true"':''} aria-label="Select ${htmlEsc(c.name)}" onchange="changePickTree(this.dataset.parent,null,this.checked)">
+      <span class="cover-pick-card-icon">${coverCatalogIconHtml(c)}</span>
+      <div class="cover-pick-card-main">
+        <div class="cover-pick-card-title">${htmlEsc(c.name)}</div>
+        <div class="cover-pick-card-meta">
+          <span>${htmlEsc(c.coverType || c.type || '')}</span>
+          ${coverPickCategoryPill(c)}
+          <span class="cs-pill cs-pill-active">Active</span>
+          <span>${state.parentSelected && !state.selected.length ? 'Parent only' : `${state.selected.length} of ${state.children.length} children selected`}</span>
+        </div>
+      </div>
+      <div class="cover-pick-card-actions">${parentControls}</div>
+    </div>
+    ${expanded && state.children.length ? `<div class="cover-pick-children">${state.children.map(child=>pickTreeRowHtml(c,child,false)).join('')}</div>` : ''}
+  </div>`;
+}
+
+function syncPickTreeCheckboxStates() {
+  document.querySelectorAll('input[data-tree-parent][data-parent]').forEach(cb=>{
+    const state=coverPickTree?.[cb.dataset.parent];
+    if(!state)return;
+    const all=state.children.length>0 && state.selected.length===state.children.length;
+    const partial=state.selected.length>0 && !all;
+    cb.checked=!!state.parentSelected;
+    cb.indeterminate=partial;
+  });
+}
+
+function openPickTreeChild(id) {
+  const c=defaultCoversCatalogForProduct().find(x=>String(x.id)===id);
+  if(!c)return;
+  const state=coverPickTree[id];
+  PS.openModal('<div class="modal-header"><h2 class="modal-title">Add child cover to: '+htmlEsc(c.name)+'</h2></div><div class="modal-body"><div class="form-group"><label class="form-label">Select child cover</label><select id="pick-child-existing" class="form-control"><option value="">Create a new child</option>'+state.children.map(x=>'<option value="'+htmlEsc(x.id)+'">'+htmlEsc(x.name)+'</option>').join('')+'</select></div><div class="form-group"><label class="form-label">New child name</label><input id="pick-child-name" class="form-control"></div><p id="pick-child-error" role="alert"></p></div><div class="modal-footer"><button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button><button class="btn btn-primary" data-parent="'+htmlEsc(id)+'" onclick="addPickTreeChild(this.dataset.parent)">Add Child</button></div>');
+}
+function addPickTreeChild(id) {
+  const state=coverPickTree[id];
+  const chosen=document.getElementById('pick-child-existing').value;
+  const name=document.getElementById('pick-child-name').value.trim();
+  let child=state.children.find(x=>x.id===chosen || (name && x.name.toLowerCase()===name.toLowerCase()));
+  if(!child && !name){document.getElementById('pick-child-error').textContent='Select a child or enter its name.';return;}
+  if(!child){child={id:'child-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),parentCoverId:id,name,type:name};state.children.push(child);}
+  state.expanded=true;savePickTree();PS.closeModal();renderCoverTable();renderCoverList();
+}
+
 function ensurePickCoverSelection(catalog) {
   if (!pickCoverSelectionReady) {
-    catalog.forEach(c => pickCoverSelectedIds.add(String(c.id)));
+    // New SouthLake cover configurations start unchecked. Existing saved state is restored by ensurePickTree().
     pickCoverSelectionReady = true;
   }
 }
@@ -4439,87 +4704,41 @@ function coverPickCategoryPill(c) {
 }
 
 function togglePickCover(id, checked) {
-  if (checked) pickCoverSelectedIds.add(String(id));
-  else pickCoverSelectedIds.delete(String(id));
-  renderCoverTable();
-  renderCoverList();
+  ensurePickTree(defaultCoversCatalogForProduct());changePickTree(String(id),null,checked);
 }
-
 function toggleAllPickCovers(checked) {
-  const catalog = defaultCoversCatalogForProduct();
-  const q = (document.getElementById('cover-pick-filter')?.value || '').trim().toLowerCase();
-  const rows = catalog.filter(c => {
-    if (!q) return true;
-    return [c.name, c.code, c.type, c.coverType, c.category, c.family, c.source].join(' ').toLowerCase().includes(q);
-  });
-  rows.forEach(c => {
-    if (checked) pickCoverSelectedIds.add(String(c.id));
-    else pickCoverSelectedIds.delete(String(c.id));
-  });
-  renderCoverTable();
-  renderCoverList();
+  pickTreeRows(defaultCoversCatalogForProduct()).forEach(({c,children})=>{
+    const state=coverPickTree[c.id];
+    children.forEach(child=>{state.selected=state.selected.filter(x=>x!==child.id);if(checked)state.selected.push(child.id);});
+    state.parentSelected=checked;
+    if(!state.children.length){if(checked)pickCoverSelectedIds.add(String(c.id));else pickCoverSelectedIds.delete(String(c.id));}
+  });savePickTree();renderCoverTable();renderCoverList();
 }
 
 function renderExistingCoverPicker() {
   const catalog = defaultCoversCatalogForProduct();
   ensurePickCoverSelection(catalog);
-  const q = (document.getElementById('cover-pick-filter')?.value || '').trim().toLowerCase();
-  const rows = catalog.filter(c => {
-    if (!q) return true;
-    return [c.name, c.code, c.type, c.coverType, c.category, c.family, c.source].join(' ').toLowerCase().includes(q);
-  });
-  const visibleIds = rows.map(c => String(c.id));
-  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => pickCoverSelectedIds.has(id));
-  const selectedCount = visibleIds.filter(id => pickCoverSelectedIds.has(id)).length;
+  ensurePickTree(catalog);
+  const rows=pickTreeRows(catalog);
+  const totalCount=catalog.reduce((n,c)=>n+(coverPickTree[c.id].children.length || 1),0);
+  const selectedCount=catalog.reduce((n,c)=>n+(coverPickTree[c.id].selected.length || Number(pickCoverSelectedIds.has(String(c.id)))),0);
   return `
     <div class="cover-pick-panel">
       <div class="cover-pick-header">
         <div>
           <div class="cover-pick-title">Select covers for this product</div>
-          <div class="cover-pick-sub">Standard catalogue for ${htmlEsc(productName || 'this product')}. Core covers are selected by default — adjust the list, then add to this product.</div>
+          <div class="cover-pick-sub">Standard catalogue for ${htmlEsc(productName || 'this product')}. Covers start unselected. Use Select all, Unselect all, or choose individual children inside each parent card.</div>
         </div>
         <div class="cover-pick-toolbar">
           <button class="btn btn-secondary btn-sm" type="button" onclick="openAddCoverModal()">+ Create new</button>
         </div>
       </div>
-      <div style="overflow:auto;max-height:calc(100vh - 360px)">
-        <table class="cover-pick-table">
-          <thead><tr>
-            <th style="width:44px">
-              <input type="checkbox" class="cs-check" aria-label="Select all covers" ${allVisibleSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleAllPickCovers(this.checked)">
-            </th>
-            <th>Cover Name</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th style="width:48px"></th>
-          </tr></thead>
-          <tbody>
-            ${rows.length ? rows.map(c => `
-              <tr>
-                <td onclick="event.stopPropagation()">
-                  <input type="checkbox" class="pick-cover-cb cs-check" value="${htmlEsc(c.id)}" ${pickCoverSelectedIds.has(String(c.id)) ? 'checked' : ''} onchange="togglePickCover('${htmlEsc(c.id)}', this.checked)">
-                </td>
-                <td>
-                  <div class="cover-pick-name">
-                    ${coverCatalogIconHtml(c)}
-                    <span class="cover-pick-label">${htmlEsc(c.name)}</span>
-                    <span class="cover-pick-info" title="${htmlEsc(c.description || c.name)}">i</span>
-                  </div>
-                </td>
-                <td>${htmlEsc(c.coverType || c.type || '—')}</td>
-                <td>${coverPickCategoryPill(c)}</td>
-                <td><span class="cs-pill cs-pill-active">Active</span></td>
-                <td class="text-center" onclick="event.stopPropagation()">
-                  <button class="btn btn-icon btn-sm" type="button" aria-label="Cover actions" disabled style="opacity:.35">⋮</button>
-                </td>
-              </tr>`).join('') : `<tr><td colspan="6" class="text-muted" style="padding:16px">No covers match this search.</td></tr>`}
-          </tbody>
-        </table>
+      <div class="cover-pick-list">
+        ${rows.length ? rows.map(({c,children,expanded})=>pickTreeRowHtml(c,null,expanded)).join('') : `<div class="cover-pick-empty">No covers match this search or filter.</div>`}
       </div>
       <div class="cover-pick-footer">
-        <span style="font-size:13px;color:var(--color-muted)">${selectedCount} of ${catalog.length} selected</span>
-        <div style="display:flex;gap:8px">
+        <span style="font-size:13px;color:var(--color-muted)">${selectedCount} of ${totalCount} selected</span>
+        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
           <button class="btn btn-secondary" type="button" onclick="openLibraryModal()">Browse full library</button>
           <button class="btn btn-primary" type="button" onclick="useCheckedExistingCovers()">Add selected to product</button>
         </div>
@@ -4527,6 +4746,19 @@ function renderExistingCoverPicker() {
     </div>`;
 }
 
+function applyPickTreeChildren(cover,lib) {
+  const state=coverPickTree[lib.id];
+  if(!state?.children.length)return;
+  const existing=cover.insuredItems || [];
+  const parent=existing[0] || blankSouthLakeNewInsuredItem(cover,0);
+  const existingChildren=existing.slice(1);
+  cover.insuredItems=[parent, ...state.children.filter(x=>state.selected.includes(x.id)).map((child,i)=>{
+    const saved=existingChildren.find(x=>x.type===child.type);
+    const item=saved || blankSouthLakeNewInsuredItem(cover,i+1);
+    return {...item,id:saved?.id || child.id,parentCoverId:cover.id,type:child.type,name:child.name};
+  })];
+  if(!existing.length) blankSouthLakeNewCoverConfiguration(cover);
+}
 function useCheckedExistingCovers() {
   const catalog = defaultCoversCatalogForProduct();
   const ids = pickCoverSelectedIds.size
@@ -4537,7 +4769,10 @@ function useCheckedExistingCovers() {
     PS.actionResult?.('error', 'Nothing selected', 'Select at least one cover to add to this product.');
     return;
   }
+  ensurePickTree(catalog);
   const added = addCatalogCoversToProduct(items);
+  items.forEach(lib=>{const cover=COVERS.find(x=>x.name===lib.name);if(cover)applyPickTreeChildren(cover,lib);});
+  markCoversPicked();
   if (added) {
     studioMode = 'edit';
     resetPickCoverSelection();
@@ -4606,8 +4841,8 @@ function collectProductCoverUsage() {
 }
 
 function renderCoverageLibraryDashboard() {
-  PS.nav.render('coverage', [{ label: 'Class of Business Studio', href: '#' }]);
-  document.getElementById('studio-title').textContent = 'Class of Business Studio';
+  PS.nav.render('coverage', [{ label: 'Class of Business Guide', href: '#' }]);
+  document.getElementById('studio-title').textContent = 'Class of Business Guide';
   const rows = collectProductCoverUsage();
   const used = rows.filter(r => r.productCount > 0).length;
   const productTotal = new Set(rows.flatMap(r => r.products.map(p => p.id))).size;
@@ -4763,10 +4998,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
     { label: `v${productVersion}`, href: `product-detail.html?id=${productId}&version=${productVersion}` },
-    { label: 'Class of Business Studio', href: '#' }
+    { label: 'Class of Business Guide', href: '#' }
   ]);
 
-  document.getElementById('studio-title').textContent = 'Class of Business Studio';
+  document.getElementById('studio-title').textContent = 'Class of Business Guide';
   document.getElementById('ctx-back-link').href = `product-detail.html?id=${productId}`;
   const customerBtn = document.getElementById('customer-view-btn');
   if (customerBtn) customerBtn.href = PS.customerViewHref ? PS.customerViewHref(productId, productVersion) : `product-view.html?id=${productId}&version=${productVersion}`;
@@ -5385,10 +5620,21 @@ function renderCoverTable() {
 
   if (coverPickerActive()) {
     wrap.innerHTML = renderExistingCoverPicker();
+    wrap.querySelectorAll('[data-tree-parent]').forEach(el=>{
+      const state=coverPickTree[el.dataset.parent];
+      if(!state)return;
+      const all=state.children.length>0 && state.selected.length===state.children.length;
+      const partial=state.selected.length>0 && !all;
+      // Parent-only mode remains checked; partial child selection uses native indeterminate.
+      el.checked=!!state.parentSelected;
+      el.indeterminate=partial;
+    });
+    const filter=document.getElementById('cover-filter');
+    if(filter && !filter.querySelector('[value="selected"]')){filter.options[0].text='All covers';filter.add(new Option('Selected covers','selected'));}
     const hubTitle = document.getElementById('covers-hub-title');
     const hubSub = document.querySelector('#covers-hub .card-subtitle');
     if (hubTitle) hubTitle.textContent = `Select covers (${defaultCoversCatalogForProduct().length})`;
-    if (hubSub) hubSub.textContent = 'Choose covers from the standard catalogue — all core covers are pre-selected';
+    if (hubSub) hubSub.textContent = 'Choose covers from the standard catalogue — covers start unselected';
     if (footer) footer.innerHTML = `<span>Select covers to add to this product</span>`;
     return;
   }
@@ -5639,7 +5885,6 @@ function renderDetailPanel(c) {
           ${PS.admin.fieldHtml(f, c[f.id], ro, `patchCoverField('${f.id}', this.value)`)}
         </div>`).join('')}
       </div>
-      ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override cities/counties', 'Allows the underwriter to change the selected cities or counties for this cover at quote time.')}
     `)}
 
   
@@ -5666,7 +5911,6 @@ function renderDetailPanel(c) {
         <div class="form-group">
           <label class="form-label">Applicable Deductible</label>
           <input type="text" class="form-control" value="${htmlEsc(formatApplicableDeductible(c))}" readonly style="background:var(--color-surface);color:var(--color-muted)">
-          <span class="form-help">Auto-linked from Deductible & Co-pay</span>
         </div>
       </div>
       ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override claims behavior', 'Allows the underwriter to change the claims behaviour for this cover at quote time.')}
@@ -5686,11 +5930,11 @@ function renderDetailPanel(c) {
       </div>`).join('') : `
       <div class="vb-empty-state" style="margin-bottom:12px">
         <div class="vb-empty-title">No documents linked</div>
-        <p>Link a clause from Document Studio, upload a file, or add a custom reference.</p>
+        <p>Link a clause from Document Guide, upload a file, or add a custom reference.</p>
       </div>`}
       ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="openLinkDocumentModal()">+ Link Document</button>`}
       <div style="margin-top:var(--space-4)">
-        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View in Document Studio →</a>
+        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View in Document Guide →</a>
       </div>
     `)}
 
@@ -5847,8 +6091,8 @@ function validateDeductibleConfiguration(cover, panel, invalidFields) {
   if (type === 'fixed') {
     const field = panel.querySelector('[data-validation-field="deductibleAmount"]');
     const value = coverNumeric(cover.deductibleAmount);
-    if (value == null || !Number.isFinite(value) || value <= 0) {
-      addCoverValidationError(field, 'Deductible Amount must be greater than 0.', invalidFields);
+    if (value == null || !Number.isFinite(value) || value < 0) {
+      addCoverValidationError(field, 'Deductible Amount must be 0 or greater.', invalidFields);
     }
     return;
   }
@@ -5899,7 +6143,7 @@ function showCoverSaveNotice(type, message) {
 function saveCover(event, options = {}) {
   console.log(1)
   if (event) event.preventDefault();
-  console.log('[Coverage Studio] SAVE CLICKED');
+  console.log('[Coverage Guide] SAVE CLICKED');
   const panel = document.getElementById('detail-panel');
 
   if (!panel) {
@@ -5915,7 +6159,7 @@ function saveCover(event, options = {}) {
   if (cover && typeof snapshotControls === 'function') {
     try { snapshotControls(activeCoverId); } catch (_) {}
   }
-  console.log('[Coverage Studio] VALIDATION START');
+  console.log('[Coverage Guide] VALIDATION START');
 const selectedDed = panel.querySelector('input[name="ded-' + cover.id + '"]:checked');
 if (selectedDed) cover.deductibleType = selectedDed.value;
 
@@ -6023,7 +6267,7 @@ panel.querySelectorAll('[data-required="true"]:not([readonly]):not([disabled])')
     }
   });
 
-  console.log('[Coverage Studio] VALIDATION RESULT:', invalidFields.length);
+  console.log('[Coverage Guide] VALIDATION RESULT:', invalidFields.length);
   if (invalidFields.length) {
     const firstInvalid = invalidFields[0];
 
@@ -6091,7 +6335,6 @@ function openCreateLibraryCover() {
         <div class="form-group">
           <label class="form-label" for="lib-cover-code">Cover Code</label>
           <input type="text" id="lib-cover-code" class="form-control" placeholder="Auto-generated if blank" style="font-family:'IBM Plex Mono',monospace;font-size:13px" oninput="this.dataset.userEdited='1'">
-          <span class="form-help">Suggested from the cover name — you can override before creating.</span>
         </div>
         <div class="form-group">
           <label class="form-label" for="lib-cover-type">Cover Type <span class="required">*</span></label>

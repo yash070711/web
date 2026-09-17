@@ -26,9 +26,9 @@ export const MODULES: Record<string, ModuleHelp> = {
   "product-detail": {
     title: "Product Detail",
     description:
-      "The product hub for a single product version — overview, studio progress, version history, governance actions, and links to every configuration studio.",
+      "The product hub for a single product version — overview, guide progress, version history, governance actions, and links to every configuration guide.",
     tips: [
-      "Each studio shows 0% until you add at least one item, then 100% complete.",
+      "Each guide shows 0% until you add at least one item, then 100% complete.",
       "Use Clone Version to edit a Published version without affecting live business.",
     ],
   },
@@ -42,7 +42,7 @@ export const MODULES: Record<string, ModuleHelp> = {
     ],
   },
   coverage: {
-    title: "Coverage Studio",
+    title: "Coverage Guide",
     description:
       "Define covers (benefits), financial terms, deductibles, sub-limits, dependencies, and claims behaviour for this product version.",
     tips: [
@@ -51,7 +51,7 @@ export const MODULES: Record<string, ModuleHelp> = {
     ],
   },
   questionnaire: {
-    title: "Questionnaire Studio",
+    title: "Questionnaire Guide",
     description:
       "Build the data capture flow for quoting and underwriting — question groups, field types, validation, evidence triggers, and channel visibility.",
     tips: [
@@ -60,16 +60,16 @@ export const MODULES: Record<string, ModuleHelp> = {
     ],
   },
   risk: {
-    title: "Risk Studio",
+    title: "Risk Guide",
     description:
       "Define risk attributes collected at quote or renewal — field types, groups, and sample values used by eligibility, rating, and underwriting rules.",
     tips: [
-      "Attributes here become available as rule conditions in other studios.",
+      "Attributes here become available as rule conditions in other guides.",
       "Use consistent naming so rules reference the same field across modules.",
     ],
   },
   eligibility: {
-    title: "Eligibility Studio",
+    title: "Eligibility Guide",
     description:
       "Author rules that accept, decline, refer, or restrict business based on risk data, cover selection, and jurisdiction.",
     tips: [
@@ -78,7 +78,7 @@ export const MODULES: Record<string, ModuleHelp> = {
     ],
   },
   rating: {
-    title: "Rating & Pricing Studio",
+    title: "Rating & Pricing Guide",
     description:
       "Configure premium calculation — base rates, loadings, discounts, taxes, and rating components tied to covers and risk attributes.",
     tips: [
@@ -87,7 +87,7 @@ export const MODULES: Record<string, ModuleHelp> = {
     ],
   },
   underwriting: {
-    title: "Underwriting Rules Studio",
+    title: "Underwriting Rules Guide",
     description:
       "Define automated underwriting outcomes — referrals, evidence requests, loadings, and restrictions triggered after rating.",
     tips: [
@@ -96,12 +96,12 @@ export const MODULES: Record<string, ModuleHelp> = {
     ],
   },
   distribution: {
-    title: "Distribution Studio",
+    title: "Distribution Guide",
     description:
       "Configure how this product is sold — channels, broker access, commission structures, and binding authority by segment.",
   },
   document: {
-    title: "Document Studio",
+    title: "Document Guide",
     description:
       "Manage policy documents, endorsements, and schedules generated at bind — templates, merge fields, and version alignment with product releases.",
   },
@@ -123,7 +123,7 @@ export const MODULES: Record<string, ModuleHelp> = {
   glossary: {
     title: "Glossary",
     description:
-      "Standard definitions for insurance and platform terms used across Product Studio screens and documentation.",
+      "Standard definitions for insurance and platform terms used across Product Guide screens and documentation.",
   },
   "pricing-library": {
     title: "Central Pricing Library",

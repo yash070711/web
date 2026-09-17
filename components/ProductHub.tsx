@@ -109,7 +109,7 @@ export function ProductHub({
           <Link className="btn btn-secondary" href={`/products/${product.id}/view`}>Customer View</Link>
           <Link className="btn btn-secondary" href="/simulation">Simulate</Link>
           <Link className="btn btn-primary" href={`/products/${product.id}/coverage`}>
-            Open Coverage Studio
+            Open Coverage Guide
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <path d="M7 17 17 7M8 7h9v9" />
             </svg>
@@ -134,7 +134,7 @@ export function ProductHub({
           <div className="card" id="studios">
             <div className="card-header">
               <div>
-                <div className="card-title">Product Studio</div>
+                <div className="card-title">Product Guide</div>
                 <div className="card-subtitle">Design and configure every aspect of your product.</div>
               </div>
               <Link className="btn btn-secondary btn-sm" href={firstOpen?.href || `/products/${product.id}/coverage`}>

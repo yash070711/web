@@ -24,7 +24,7 @@ function channels(list: string[] = ["web", "mobile", "agent", "api"]) {
   return list.map((c) => c[0].toUpperCase() + c.slice(1)).join(", ");
 }
 
-/** Prototype Questionnaire Studio GROUPS + Q_DETAIL (Private Car). */
+/** Prototype Questionnaire Guide GROUPS + Q_DETAIL (Private Car). */
 export function privateCarQuestionGroups(): Row[] {
   return [
     {

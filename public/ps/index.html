@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard — Insurance Product Studio</title>
-  <meta name="description" content="Insurance Product Studio Dashboard — overview of all products, pending actions, and lifecycle pipeline.">
+  <title>Dashboard — Insurance Product Guide</title>
+  <meta name="description" content="Insurance Product Guide Dashboard — overview of all products, pending actions, and lifecycle pipeline.">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -29,7 +29,7 @@
       <div class="page-header">
         <div class="page-header-left">
           <h1 class="page-title" id="page-greeting">Good morning, Anika.</h1>
-          <p class="page-subtitle" id="page-subtitle">Insurance Product Studio — August 2026</p>
+          <p class="page-subtitle" id="page-subtitle">Insurance Product Guide — August 2026</p>
         </div>
         <div class="page-header-actions">
           <button class="btn btn-secondary" type="button" onclick="openDashboardJsonPicker()">View / Download JSON</button>
@@ -220,7 +220,7 @@
 
 <!-- Responsive warning -->
 <div class="responsive-warning" role="alert">
-  Insurance Product Studio is optimized for desktop screens (1280px and wider).
+  Insurance Product Guide is optimized for desktop screens (1280px and wider).
 </div>
 
 <script src="assets/data.js"></script>
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Month/Year subtitle
   const now = new Date();
   const monthYear = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-  document.getElementById('page-subtitle').textContent = `Insurance Product Studio — ${monthYear}`;
+  document.getElementById('page-subtitle').textContent = `Insurance Product Guide — ${monthYear}`;
 
   // Render sections
   renderPendingActions();
@@ -481,7 +481,7 @@ function openDashboardJsonPicker() {
       <button class="btn btn-icon" type="button" onclick="PS.closeModal()" aria-label="Close">×</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:13px;color:var(--color-muted);margin-bottom:14px">Opens the complete product JSON (every studio, pricing, and governance record) — not a count summary.</p>
+      <p style="font-size:13px;color:var(--color-muted);margin-bottom:14px">Opens the complete product JSON (every guide, pricing, and governance record) — not a count summary.</p>
       <div class="form-group">
         <label class="form-label" for="dash-json-product">Product</label>
         <select id="dash-json-product" class="form-control">${options}</select>

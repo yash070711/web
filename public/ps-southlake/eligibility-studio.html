@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eligibility Studio — SouthLake Carrier Portal</title>
+  <title>Eligibility Guide — SouthLake Carrier Portal</title>
   <meta name="description" content="Define eligibility conditions for insurance products — determine when a product or cover can be offered to a risk.">
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/studio-hub.css">
@@ -384,7 +384,7 @@
 
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   Eligibility Studio redesign — landing page + questionnaire picker
+   Eligibility Guide redesign — landing page + questionnaire picker
    ═══════════════════════════════════════════════════════════════ */
 :root {
   --elig-ink:#17202f;
@@ -452,7 +452,7 @@
 .eligibility-hero-action span { display:block; margin-top:3px; font-size:11px; line-height:1.4; color:var(--elig-muted); }
 .eligibility-hero-icon { width:34px; height:34px; border-radius:9px; display:grid; place-items:center; background:#edf8f1; color:var(--elig-green); font-weight:800; }
 
-/* Studio hub surfaces */
+/* Guide hub surfaces */
 #studio-hub { min-width:0; }
 #studio-hub > * { border-radius:12px; }
 #studio-hub .card, #studio-hub .section-card, #studio-hub .cs-card { border-color:var(--elig-line); box-shadow:0 3px 12px rgba(20,32,51,.035); }
@@ -618,7 +618,7 @@
 
 
 <style id="eligibility-studio-recreated-ui">
-/* Recreated Eligibility Studio home — warm existing palette, no external dependencies. */
+/* Recreated Eligibility Guide home — warm existing palette, no external dependencies. */
 #elig-main-page{min-width:0}
 #elig-main-page .eligibility-hero{display:none!important}
 .elig-recreated-home{display:grid;grid-template-columns:285px minmax(0,1fr);gap:14px;align-items:start}
@@ -690,7 +690,7 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="studio-title">Eligibility Studio</h1>
+          <h1 class="page-title" id="studio-title">Eligibility Guide</h1>
           <p class="page-subtitle" id="studio-subtitle">Loading…</p>
         </div>
         <div class="page-header-actions" id="product-studio-actions">
@@ -709,7 +709,7 @@
              Create New Rule
           </button>
           <button class="btn btn-secondary" type="button" onclick="openEligibilityLibrary()">Use Rule Template</button>
-          <button class="btn btn-secondary" type="button" onclick="goNextRatingStudio()">Next: Rating &amp; Pricing Studio</button>
+          <button class="btn btn-secondary" type="button" onclick="goNextRatingStudio()">Next: Rating &amp; Pricing Guide</button>
         </div>
       </div>
 
@@ -735,7 +735,7 @@
             <h2>Control which risks can enter the product</h2>
             <p>Build eligibility decisions from Questionnaire questions, review rule outcomes, and keep every rule traceable back to its source.</p>
             <div class="eligibility-flow-mini">
-              <span>Questionnaire</span><b>→</b><span>Risk Studio</span><b>→</b><span class="current">Eligibility Studio</span><b>→</b><span>Rating &amp; Pricing</span>
+              <span>Questionnaire</span><b>→</b><span>Risk Guide</span><b>→</b><span class="current">Eligibility Guide</span><b>→</b><span>Rating &amp; Pricing</span>
             </div>
           </div>
           <div class="eligibility-hero-action">
@@ -751,7 +751,7 @@
       </div>
       <div id="studio-editor" class="studio-hub-editor hidden elig-editor-page">
         <div class="cs-back elig-editor-back">
-          <button class="btn btn-ghost btn-sm" type="button" onclick="backToEligHub()">← Back to Eligibility Studio</button>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="backToEligHub()">← Back to Eligibility Guide</button>
         </div>
         <div class="elig-editor-layout">
           <aside class="elig-question-sidebar">
@@ -1235,7 +1235,7 @@ function configureRuleFromAttribute(attributeId) {
   if (!id) return;
   const attr = findRiskAttr(id);
   if (!attr || !isAttrAvailableForNewRules(attr)) {
-    notifyElig('Not available', 'This Risk Attribute is not available for Eligibility. Enable “Available for Eligibility” in Risk Studio first.', 'error');
+    notifyElig('Not available', 'This Risk Attribute is not available for Eligibility. Enable “Available for Eligibility” in Risk Guide first.', 'error');
     return;
   }
   const existing = RULES.find(r => primaryLinkedAttributeId(normalizeEligibilityRule(r)) === id);
@@ -1358,7 +1358,7 @@ function enterEligibilityEditor(id) {
   updateQuestionnaireQueueSaveButton();
   const backBtn = document.querySelector('#studio-editor .cs-back button');
   if (backBtn) {
-    backBtn.textContent = '← Back to Eligibility Studio';
+    backBtn.textContent = '← Back to Eligibility Guide';
     backBtn.setAttribute('onclick', 'backToEligHub()');
   }
   document.getElementById('studio-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1377,7 +1377,7 @@ function commitPendingEligibilityRule() {
   if (!pendingEligibilityRule) return true;
   const attr = findRiskAttr(pendingEligibilityRule.riskAttributeId || primaryLinkedAttributeId(pendingEligibilityRule));
   if (!attr || !isAttrAvailableForNewRules(attr)) {
-    notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Studio.', 'error');
+    notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Guide.', 'error');
     return false;
   }
   if (!RULES.some(r => r.id === pendingEligibilityRule.id)) RULES.push(pendingEligibilityRule);
@@ -1389,22 +1389,22 @@ function commitPendingEligibilityRule() {
 function linkedRiskAttributeCardHtml(rule) {
   const attr = findRiskAttr(primaryLinkedAttributeId(rule));
   if (!attr) {
-    return `<div class="attr-warn">This Risk Attribute is not available for Eligibility. Enable “Available for Eligibility” in Risk Studio first.</div>`;
+    return `<div class="attr-warn">This Risk Attribute is not available for Eligibility. Enable “Available for Eligibility” in Risk Guide first.</div>`;
   }
   const available = isAttrAvailableForNewRules(attr);
   return `
     <div class="elig-linked-card">
       <div style="font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--color-muted);margin-bottom:10px">Linked Risk Attribute</div>
-      <p style="font-size:12px;color:var(--color-muted);margin:0 0 12px">Read-only. Name, ID, data type, and source are configured in Risk Studio.</p>
+      <p style="font-size:12px;color:var(--color-muted);margin:0 0 12px">Read-only. Name, ID, data type, and source are configured in Risk Guide.</p>
       <div class="elig-linked-grid">
         <div><div class="k">Risk Attribute</div><div class="v">${htmlEsc(attrDisplayName(attr)) || '—'}</div></div>
         <div><div class="k">Attribute ID</div><div class="v" style="font-family:'IBM Plex Mono',monospace">${htmlEsc(attr.id) || '—'}</div></div>
         <div><div class="k">Question Group</div><div class="v">${htmlEsc(attrGroupLabel(attr)) || '—'}</div></div>
         <div><div class="k">Data Type</div><div class="v">${htmlEsc(attrDataTypeLabel(attr) || attr.type || attr.dataType || '—')}</div></div>
-        <div><div class="k">Source</div><div class="v">Questionnaire → Risk Studio</div></div>
+        <div><div class="k">Source</div><div class="v">Questionnaire → Risk Guide</div></div>
         <div><div class="k">Available for Eligibility</div><div class="v">${available ? 'Yes' : 'No'}</div></div>
       </div>
-      ${available ? '' : `<div class="attr-warn" style="margin:12px 0 0">⚠ Conflict — Linked Risk Attribute is no longer available for Eligibility. <a href="${riskStudioHref()}&risk=${encodeURIComponent(attr.id)}">Resolve in Risk Studio</a></div>`}
+      ${available ? '' : `<div class="attr-warn" style="margin:12px 0 0">⚠ Conflict — Linked Risk Attribute is no longer available for Eligibility. <a href="${riskStudioHref()}&risk=${encodeURIComponent(attr.id)}">Resolve in Risk Guide</a></div>`}
     </div>`;
 }
 
@@ -1446,7 +1446,7 @@ function renderAvailableRiskAttributesPanel() {
   host.innerHTML = `
     <div style="margin-bottom:10px">
       <div style="font-size:14px;font-weight:650">Available Risk Attributes</div>
-      <div style="font-size:12px;color:var(--color-muted);margin-top:4px">Risk Attributes available from Risk Studio for eligibility rule configuration.</div>
+      <div style="font-size:12px;color:var(--color-muted);margin-top:4px">Risk Attributes available from Risk Guide for eligibility rule configuration.</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
       <input class="form-control" style="max-width:240px;height:32px" placeholder="Search attribute..." value="${htmlEsc(eligAvailName)}" oninput="eligAvailName=this.value; renderAvailableRiskAttributesPanel()">
@@ -1468,10 +1468,10 @@ function renderAvailableRiskAttributesPanel() {
         }).join('')}
       </div>
       <div>
-        ${!all.length ? `<div class="cb-empty-group" style="padding:16px 0">No Risk Attributes are available for Eligibility.<p style="margin-top:8px">Risk Attributes appear here only when a Risk-category Questionnaire question has been converted into a Risk Attribute and marked Available for Eligibility in Risk Studio.</p><a class="btn btn-primary btn-sm" href="${riskStudioHref()}">Go to Risk Studio</a></div>`
+        ${!all.length ? `<div class="cb-empty-group" style="padding:16px 0">No Risk Attributes are available for Eligibility.<p style="margin-top:8px">Risk Attributes appear here only when a Risk-category Questionnaire question has been converted into a Risk Attribute and marked Available for Eligibility in Risk Guide.</p><a class="btn btn-primary btn-sm" href="${riskStudioHref()}">Go to Risk Guide</a></div>`
           : (emptyGroup ? `<div class="cb-empty-group" style="padding:16px 0">
               <strong>No Risk Attributes available for Eligibility in ${htmlEsc(selectedGroup)}.</strong>
-              <p style="margin-top:8px">Risk Attributes become available here when a Questionnaire question is categorized as Risk and marked Available for Eligibility in Risk Studio.</p>
+              <p style="margin-top:8px">Risk Attributes become available here when a Questionnaire question is categorized as Risk and marked Available for Eligibility in Risk Guide.</p>
             </div>`
           : `<div class="elig-avail-wrap"><table>
           <thead><tr><th>Risk Attribute</th><th>Attribute ID</th><th>Question Group</th><th>Data Type</th><th>Source</th><th>Eligibility</th><th>Action</th></tr></thead>
@@ -1481,7 +1481,7 @@ function renderAvailableRiskAttributesPanel() {
               <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${htmlEsc(a.id)}</td>
               <td>${htmlEsc(attrGroupLabel(a))}</td>
               <td>${htmlEsc(attrDataTypeLabel(a))}</td>
-              <td>Questionnaire → Risk Studio</td>
+              <td>Questionnaire → Risk Guide</td>
               <td><span class="badge badge-published" style="font-size:10px">Available</span></td>
               <td><button type="button" class="btn btn-primary btn-sm" data-elig-configure="${htmlEsc(a.id)}">Configure Rule</button></td>
             </tr>`).join('') : `<tr><td colspan="7" style="color:var(--color-muted)">No attributes match this search.</td></tr>`}
@@ -1626,7 +1626,7 @@ let openSections = new Set(['identity','condition','outcome','scope','effective'
 document.addEventListener('DOMContentLoaded', () => {
   PS.studioHub.mount({
     navId: 'eligibility',
-    studioLabel: 'Eligibility Studio',
+    studioLabel: 'Eligibility Guide',
     collection: 'eligibility',
     apiField: 'eligibility',
     persist: 'eligibilityRules',
@@ -1727,7 +1727,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (id) loadRule(id);
       const backBtn = document.querySelector('#studio-editor .cs-back button');
       if (backBtn) {
-        backBtn.textContent = '← Back to Eligibility Studio';
+        backBtn.textContent = '← Back to Eligibility Guide';
         backBtn.setAttribute('onclick', 'backToEligHub()');
       }
     };
@@ -1811,10 +1811,10 @@ function eligibilityEmptyStateHtml() {
               No Risk Attributes are available for Eligibility.
               Risk Attributes appear here only when a Risk-category Questionnaire
               question has been converted into a Risk Attribute and marked
-              Available for Eligibility in Risk Studio.
+              Available for Eligibility in Risk Guide.
 
               <a class="btn btn-primary btn-sm" href="${href}">
-                Go to Risk Studio
+                Go to Risk Guide
               </a>
             </div>
           `
@@ -1892,8 +1892,6 @@ function isRuleIncomplete(r) {
   if (!Number.isFinite(Number(rule.priority)) || Number(rule.priority) <= 0) return true;
   if (!rule.outcomeType) return true;
   if (!String(rule.reasonCode || '').trim()) return true;
-  if (!String(rule.internalMsg || '').trim()) return true;
-  if ((rule.outcomeType === 'hard' || rule.outcomeType === 'soft') && !String(rule.customerMsg || '').trim()) return true;
   const conditions = rule.conditions || [];
   if (!conditions.length) return true;
   return conditions.some(c => {
@@ -1994,7 +1992,7 @@ function refreshEligibilityMeta() {
   const productLevel = RULES.filter(r => r.category === 'Product Eligibility').length;
   const conflicts = detectConflicts().length;
   const titleEl = document.getElementById('studio-title');
-  if (titleEl) titleEl.textContent = `Eligibility Studio — ${productName} v${productVersion}`;
+  if (titleEl) titleEl.textContent = `Eligibility Guide — ${productName} v${productVersion}`;
   const subtitle = document.getElementById('studio-subtitle');
   if (subtitle) {
     subtitle.textContent = 'Create and manage eligibility rules using Questionnaire questions or manual conditions.';
@@ -2015,7 +2013,7 @@ function refreshEligibilityMeta() {
   const createBtn = document.getElementById('elig-create-btn');
   if (createBtn) {
     createBtn.disabled = !rulesCanEdit();
-    createBtn.title = rulesCanEdit() ? 'Create an eligibility rule in this studio' : 'This published version cannot be edited.';
+    createBtn.title = rulesCanEdit() ? 'Create an eligibility rule in this guide' : 'This published version cannot be edited.';
   }
   const editorOpen = document.getElementById('studio-editor') && !document.getElementById('studio-editor').classList.contains('hidden');
   if (!editorOpen) renderAvailableRiskAttributesPanel();
@@ -2070,7 +2068,7 @@ function coverChecksHtml(selectedIds, opts) {
   const ddId = (opts && opts.ddId) || 'el-cover-dd';
   if (!covers.length) {
     const href = `coverage-studio.html?product=${encodeURIComponent(productId)}&version=${encodeURIComponent(productVersion)}`;
-    return `<p style="font-size:13px;color:var(--color-muted);margin:0">No covers on this product yet. <a href="${href}">Add them in Coverage Studio</a>, then link this rule.</p>`;
+    return `<p style="font-size:13px;color:var(--color-muted);margin:0">No covers on this product yet. <a href="${href}">Add them in Coverage Guide</a>, then link this rule.</p>`;
   }
   return `<div class="cover-dd" id="${ddId}">
     <button type="button" class="form-control cover-dd-btn" ${ro ? 'disabled' : ''} onclick="toggleCoverDd(event, '${ddId}')" aria-haspopup="listbox">
@@ -2235,7 +2233,7 @@ function eligibilityConditionRowHtml(c, i, lockedId, ro, dis) {
       ? `<div class="attr-warn">
           ⚠ Linked Risk Attribute is no longer available for Eligibility.
           <a href="${riskStudioHref()}&risk=${encodeURIComponent(attr.id || '')}">
-            Resolve in Risk Studio
+            Resolve in Risk Guide
           </a>
         </div>`
       : isQuestionLinked
@@ -2336,7 +2334,7 @@ function addRuleCondition(connector) {
   const isQuestionnaireRule = Array.isArray(rule.linkedQuestionIds) && rule.linkedQuestionIds.length > 0;
 
   // Questionnaire-linked rules use their linked Questionnaire questions directly.
-  // Risk Attribute rules retain the existing Risk Studio behavior.
+  // Risk Attribute rules retain the existing Risk Guide behavior.
   const condition =
     isQuestionnaireRule
       ? emptyCondition()
@@ -2416,7 +2414,7 @@ function openEligibilityEditorOnLoad() {
 
   // Only open the editor when the URL explicitly asks for a rule
   // or a Risk Attribute configuration. Normal studio entry opens
-  // directly on the Eligibility Studio hub with all rules visible.
+  // directly on the Eligibility Guide hub with all rules visible.
   if (deep && (RULES.some(r => r.id === deep) || (pendingEligibilityRule && pendingEligibilityRule.id === deep)) && PS.studioHub) {
     PS.studioHub.open(deep);
     return;
@@ -2427,7 +2425,7 @@ function openEligibilityEditorOnLoad() {
     return;
   }
 
-  // Default landing view: Eligibility Studio hub.
+  // Default landing view: Eligibility Guide hub.
   activeRuleId = '';
   setEligHubVisible(true);
   document.getElementById('studio-hub')?.classList.remove('hidden');
@@ -2536,7 +2534,7 @@ function renderSelectedQuestionSidebar(rule) {
       <div class="elig-sidebar-empty">
         <div class="elig-sidebar-empty-icon">?</div>
         <strong>No Questionnaire questions linked</strong>
-        <span>Select questions from Questionnaire Studio to use them as rule inputs.</span>
+        <span>Select questions from Questionnaire Guide to use them as rule inputs.</span>
         <button type="button" class="btn btn-primary btn-sm" onclick="openEligibilityRuleFromQuestionnairePicker()">Select Questions</button>
       </div>`;
     return;
@@ -2657,7 +2655,7 @@ function renderDetailPanel(r) {
       <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--color-muted);margin-top:4px">${htmlEsc(r.id)}</div>
       <p style="font-size:13px;color:var(--color-muted);margin:8px 0 0">Create and configure the eligibility rule using the linked Questionnaire questions or Risk Attribute.</p>
       <span class="badge badge-${r.status==='active'?'published':'draft'}" style="font-size:10px;margin-top:8px;display:inline-flex">● ${r.status==='active'?'Active':'Inactive'}</span>
-      ${isRuleIncomplete(r) ? `<div class="attr-warn" style="margin:12px 0 0">Needs Attention — complete the rule or restore the linked Risk Attribute in Risk Studio.</div>` : ''}
+      ${isRuleIncomplete(r) ? `<div class="attr-warn" style="margin:12px 0 0">Needs Attention — complete the rule or restore the linked Risk Attribute in Risk Guide.</div>` : ''}
     </div>
 
     ${buildSection('identity','1','Rule Identity',`${htmlEsc(r.category)} · Priority ${r.priority}`, `
@@ -2686,6 +2684,7 @@ function renderDetailPanel(r) {
       <p style="font-size:12px;color:var(--color-muted);margin:0 0 12px">
         Define the condition for eligibility using the selected Questionnaire question(s) or Risk Attribute.
       </p>
+
       <div class="condition-builder">
         <div class="cb-header">
           <div class="cb-logic">
@@ -2725,6 +2724,15 @@ function renderDetailPanel(r) {
         </div>
       </div>
 
+      <div class="form-group" style="margin-top:16px">
+        <label class="form-label" for="el-result">Result</label>
+        <select id="el-result" class="form-control" ${dis} onchange="setOutcomeType(this.value)">
+          <option value="hard" ${r.outcomeType === 'hard' ? 'selected' : ''}>Ineligible</option>
+          <option value="soft" ${r.outcomeType === 'soft' ? 'selected' : ''}>Soft Warning</option>
+          <option value="refer" ${r.outcomeType === 'refer' ? 'selected' : ''}>Referral</option>
+        </select>
+      </div>
+
       <div class="compiled-expression">
         <span class="compiled-title">Compiled expression:</span>
         <div>IF</div>
@@ -2744,41 +2752,6 @@ function renderDetailPanel(r) {
       </div>
     `)}
 
-    ${buildSection('outcome','3','Outcome Configuration', outcomeLabel(r.outcomeType), `
-      <div class="outcome-type-selector">
-        <div class="outcome-card ${r.outcomeType==='hard'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('hard')"`} style="cursor:${ro?'default':'pointer'}">
-          <div class="outcome-card-icon">🛑</div>
-          <div class="outcome-card-label">Hard Block</div>
-          <div class="outcome-card-desc">No quotation permitted</div>
-        </div>
-        <div class="outcome-card ${r.outcomeType==='soft'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('soft')"`} style="cursor:${ro?'default':'pointer'}">
-          <div class="outcome-card-icon">⚠️</div>
-          <div class="outcome-card-label">Soft Warning</div>
-          <div class="outcome-card-desc">Quote proceeds with warning</div>
-        </div>
-        <div class="outcome-card ${r.outcomeType==='refer'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('refer')"`} style="cursor:${ro?'default':'pointer'}">
-          <div class="outcome-card-icon">👤</div>
-          <div class="outcome-card-label">Refer to UW</div>
-          <div class="outcome-card-desc">Routes to underwriter queue</div>
-        </div>
-      </div>
-      <div class="form-grid-2">
-        <div class="form-group">
-          <label class="form-label">Log to Audit</label>
-          <div class="toggle-wrap">
-            <label class="toggle-switch ${r.logAudit?'toggle-on':'toggle-off'}">
-              <input type="checkbox" ${r.logAudit?'checked':''} ${dis} onchange="patchRule('logAudit', this.checked, {light:true})" aria-label="Log to audit">
-              <div class="toggle-slider"></div><div class="toggle-dot"></div>
-            </label>
-            <span>${r.logAudit?'Yes':'No'}</span>
-          </div>
-        </div>
-        ${rf('Customer-facing Message', `<textarea class="form-control" id="el-customer-msg" data-el-validate="customer" rows="3" ${rd} oninput="patchRule('customerMsg', this.value, {light:true}); clearEligFieldError(this)">${htmlEsc(r.customerMsg || '')}</textarea>`, true)}
-        ${rf('Internal Message', `<textarea class="form-control" id="el-internal-msg" data-el-validate="internal" rows="2" ${rd} oninput="patchRule('internalMsg', this.value, {light:true}); clearEligFieldError(this)">${htmlEsc(r.internalMsg || '')}</textarea>`, true)}
-      </div>
-    `)}
-
-    
     ${buildSection('effective','5','Effective Dates', `${r.effectiveFrom} — ${r.effectiveTo}`, `
       <div class="form-grid-2">
         ${rf('Effective From *', `<input type="date" class="form-control" id="el-effective-from" data-el-validate="from" value="${htmlEsc(isoDateValue(r.effectiveFrom))}" ${rd} oninput="patchRule('effectiveFrom', this.value, {light:true}); clearEligFieldError(this)">`)}
@@ -2808,7 +2781,7 @@ function renderDetailPanel(r) {
         ${conditions.map(c => {
           const attr = resolveConditionAttr(c);
           const found = findQuestionById(c.sourceQuestionId || attr?.questionId);
-          const sourceLabel = attr ? 'Risk Studio' : (found?.q ? 'Questionnaire Studio' : 'Manual');
+          const sourceLabel = attr ? 'Risk Guide' : (found?.q ? 'Questionnaire Guide' : 'Manual');
           return `<div class="rp-line"><span class="rp-label">Source:</span><span class="rp-value">${htmlEsc(sourceLabel)} → ${htmlEsc(found?.q?.label || attr?.name || c.field || '—')}</span></div>
             ${attr ? `<div class="rp-line"><span class="rp-label">Risk Attribute ID:</span><span class="rp-value">${htmlEsc(attr.id || c.attributeId || '—')}</span></div>` : ''}`;
         }).join('')}
@@ -3082,7 +3055,7 @@ function openTestModal() {
       <div class="test-layout">
         <div class="test-input-panel">
           <div style="font-size:14px;font-weight:600;margin-bottom:var(--space-4)">Test Input Values</div>
-          ${fields.length ? fields.map(testFieldInputHtml).join('') : `<p style="font-size:13px;color:var(--color-muted)">Mark Risk Attributes as Available for Eligibility in Risk Studio, then enter sample values here.</p>`}
+          ${fields.length ? fields.map(testFieldInputHtml).join('') : `<p style="font-size:13px;color:var(--color-muted)">Mark Risk Attributes as Available for Eligibility in Risk Guide, then enter sample values here.</p>`}
           <button class="btn btn-primary" onclick="runEligibilityTest()" style="width:100%;justify-content:center;margin-top:var(--space-3)" ${fields.length ? '' : 'disabled'}>
             <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M221.69 199.77L160 96.92V40h8a8 8 0 000-16H88a8 8 0 000 16h8v56.92L34.31 199.77A16 16 0 0048 224h160a16 16 0 0013.69-24.23z" fill="currentColor"/></svg>
             Run Eligibility Check
@@ -3284,14 +3257,10 @@ function validateEligibilityRule() {
   } else {
     const linked = findRiskAttr(primaryLinkedAttributeId(rule));
     if (!linked || !isAttrAvailableForNewRules(linked)) {
-      notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Studio.', 'error');
+      notifyElig('Cannot save', 'This Risk Attribute is no longer available for Eligibility. Update the configuration in Risk Guide.', 'error');
       first.push(document.querySelector('.elig-linked-card'));
     }
   }
-  if ((rule.outcomeType === 'hard' || rule.outcomeType === 'soft') && !String(rule.customerMsg || '').trim()) {
-    fail('#el-customer-msg', 'Customer-facing message is required for Hard Block and Soft Warning.');
-  }
-  if (!String(rule.internalMsg || '').trim()) fail('#el-internal-msg', 'Internal message is required.');
   const ids = RULES.map(r => r.id);
   if (ids.filter(id => id === rule.id).length > 1) {
     notifyElig('Cannot save', 'Rule ID must remain unique.', 'error');
@@ -3307,7 +3276,7 @@ function validateEligibilityRule() {
     const type = riskDataType(attr, found?.q);
     const questionLinked = !!(c.sourceQuestionId && found?.q);
     if (!c.attributeId && !attr && !questionLinked) fail(`[data-el-validate="cond-attr-${i}"]`, 'Questionnaire question or Risk Attribute is required.');
-    if (!questionLinked && conditionIsUnavailable(c)) fail(`[data-el-validate="cond-attr-${i}"]`, 'Risk Attribute is no longer available in Risk Studio.');
+    if (!questionLinked && conditionIsUnavailable(c)) fail(`[data-el-validate="cond-attr-${i}"]`, 'Risk Attribute is no longer available in Risk Guide.');
     if (!c.op) fail(`[data-el-validate="cond-op-${i}"]`, 'Operator is required.');
     if (opNeedsValue(c.op) && String(c.value || '').trim() === '') {
       fail(`[data-el-validate="cond-val-${i}"]`, 'This field is required.');
@@ -3468,7 +3437,7 @@ function openEligibilityRuleFromQuestionnairePicker() {
           <div>
             <div class="elig-modal-kicker">QUESTIONNAIRE SOURCE</div>
             <h2 class="modal-title">Select questions for eligibility</h2>
-            <p class="elig-modal-subtitle">Only questions configured in this product's Questionnaire Studio are shown here. Select one or more.</p>
+            <p class="elig-modal-subtitle">Only questions configured in this product's Questionnaire Guide are shown here. Select one or more.</p>
           </div>
           <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
         </div>
@@ -3486,7 +3455,7 @@ function openEligibilityRuleFromQuestionnairePicker() {
         <div class="modal-body elig-picker-body">
           <div class="elig-picker-info">
             <span class="elig-info-icon">i</span>
-            <span>These questions become linked inputs for the new eligibility rule. Their label, ID, and data type remain managed by Questionnaire Studio.</span>
+            <span>These questions become linked inputs for the new eligibility rule. Their label, ID, and data type remain managed by Questionnaire Guide.</span>
           </div>
           <div class="elig-q-groups">${questionnaireQuestionPickerHtml()}</div>
         </div>
@@ -3615,7 +3584,7 @@ function openAddRuleModal(opts) {
             <span class="elig-create-choice-radio">○</span>
             <span>
               <strong>From Questionnaire</strong>
-              <small>Select one or more questions configured in Questionnaire Studio</small>
+              <small>Select one or more questions configured in Questionnaire Guide</small>
             </span>
           </button>
           <button type="button" class="elig-create-choice" onclick="openManualEligibilityRuleModal()">
@@ -3636,7 +3605,7 @@ function openAddRuleModal(opts) {
 function openEligibilityRuleFromAttributePicker() {
   const attrs = eligibilityRiskAttributes();
   if (!attrs.length) {
-    notifyElig('No Risk Attributes are available for Eligibility', 'Mark a Risk Attribute as Available for Eligibility in Risk Studio first.', 'error');
+    notifyElig('No Risk Attributes are available for Eligibility', 'Mark a Risk Attribute as Available for Eligibility in Risk Guide first.', 'error');
     return;
   }
   PS.closeModal();
@@ -3647,7 +3616,7 @@ function openEligibilityRuleFromAttributePicker() {
         <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
       </div>
       <div class="modal-body">
-        <p style="font-size:13px;color:var(--color-muted);margin:0 0 12px">Choose a Risk Attribute that is Available for Eligibility. The rule is configured in Eligibility Studio.</p>
+        <p style="font-size:13px;color:var(--color-muted);margin:0 0 12px">Choose a Risk Attribute that is Available for Eligibility. The rule is configured in Eligibility Guide.</p>
         <div class="form-group">
           <label class="form-label" for="ar-pick-attr">Select Risk Attribute *</label>
           <select id="ar-pick-attr" class="form-control">${groupedAttrOptionsHtml('', null, '')}</select>
@@ -4019,7 +3988,7 @@ function renderCreateConditionBuilder() {
         ${createValueControl(c, i, type, op)}
         ${conditions.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" onclick="removeCreateCondition(${i})">Remove</button>` : ''}
       </div>
-      ${attr ? `<div class="cb-source" style="margin-top:0"><strong>${htmlEsc(attrDisplayName(attr))}</strong> · ${htmlEsc(attr.id)} · Questionnaire → Risk Studio</div>` : ''}`;
+      ${attr ? `<div class="cb-source" style="margin-top:0"><strong>${htmlEsc(attrDisplayName(attr))}</strong> · ${htmlEsc(attr.id)} · Questionnaire → Risk Guide</div>` : ''}`;
     }).join('')}
     <div class="cb-actions">
       <button type="button" class="btn btn-ghost btn-sm" onclick="addCreateCondition('AND')">+ Add Condition</button>
@@ -4108,7 +4077,7 @@ function createEligibilityRule() {
     first.push(document.querySelector('#ar-out-hard'));
   }
   if (!eligibilityRiskAttributes().length) {
-    notifyElig('Cannot create rule', 'Mark Risk Attributes as Available for Eligibility in Risk Studio first.', 'error');
+    notifyElig('Cannot create rule', 'Mark Risk Attributes as Available for Eligibility in Risk Guide first.', 'error');
     return;
   }
   (draft.conditions || []).forEach((c, i) => {
@@ -4177,7 +4146,7 @@ function createEligibilityRule() {
       renderRuleList();
       if (typeof prev === 'function') prev.call(this, e);
 
-      notifyElig('Eligibility rule saved', 'The rule was saved in Eligibility Studio.', 'success');
+      notifyElig('Eligibility rule saved', 'The rule was saved in Eligibility Guide.', 'success');
       PS.studioHub?.paint?.();
       openRuleEditor(activeRuleId);
       updateQuestionnaireQueueSaveButton();
@@ -4212,8 +4181,8 @@ function createEligibilityRule() {
           <div class="elig-about-strip">
             <div class="elig-about-icon">?</div>
             <div>
-              <div class="elig-about-title">About Eligibility Studio</div>
-              <div class="elig-about-text">Eligibility rules use Risk Attributes from Risk Studio that were explicitly marked Available for Eligibility. They do not directly use Questionnaire questions.</div>
+              <div class="elig-about-title">About Eligibility Guide</div>
+              <div class="elig-about-text">Eligibility rules use Risk Attributes from Risk Guide that were explicitly marked Available for Eligibility. They do not directly use Questionnaire questions.</div>
             </div>
           </div>
 
@@ -4236,14 +4205,14 @@ function createEligibilityRule() {
             <div class="elig-attrs-head">
               <div>
                 <div class="elig-attrs-title">Available Risk Attributes</div>
-                <div class="elig-attrs-sub">These are the Risk Attributes from Risk Studio that are explicitly marked Available for Eligibility.</div>
+                <div class="elig-attrs-sub">These are the Risk Attributes from Risk Guide that are explicitly marked Available for Eligibility.</div>
               </div>
               <div class="elig-attrs-count" id="recreated-attrs-count">0 available</div>
             </div>
             <div id="recreated-attrs-host"></div>
             <div class="elig-attrs-footer">
               <span>Only eligible Risk Attributes can be used in conditions.</span>
-              <span>Source: Questionnaire → Risk Studio</span>
+              <span>Source: Questionnaire → Risk Guide</span>
             </div>
           </div>
         </section>
@@ -4321,7 +4290,7 @@ function createEligibilityRule() {
       const type=typeof attrDataTypeLabel==='function'?attrDataTypeLabel(a):(a.type||'Text');
       return `<tr class="elig-attr-row"><td><button type="button" class="btn btn-ghost btn-sm elig-attr-name" data-elig-configure="${htmlEsc(id)}">${htmlEsc(name)}</button></td>
       <td style="font-family:'IBM Plex Mono',monospace;font-size:10px">${htmlEsc(id)}</td><td>${htmlEsc(group)}</td><td>${htmlEsc(type)}</td>
-      <td>Questionnaire → Risk Studio</td><td><span class="badge badge-published" style="font-size:9px">Available</span></td>
+      <td>Questionnaire → Risk Guide</td><td><span class="badge badge-published" style="font-size:9px">Available</span></td>
       <td><button type="button" class="btn btn-primary btn-sm" data-elig-configure="${htmlEsc(id)}">Configure Rule</button></td></tr>`;
     }).join(''):`<tr><td colspan="7" style="text-align:center;padding:28px!important;color:#8a8175">${all.length?'No attributes match this search.':'No Risk Attributes are currently available for Eligibility.'}</td></tr>`}</tbody></table></div>`;
     host.querySelectorAll('[data-elig-configure]').forEach(el=>el.addEventListener('click',e=>{

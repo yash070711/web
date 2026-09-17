@@ -82,9 +82,9 @@ export function CustomerStorefront({
   return (
     <div>
       <div className="preview-banner">
-        <div>Studio preview — customer / end-user view of {product.name}</div>
+        <div>Guide preview — customer / end-user view of {product.name}</div>
         <div className="flex gap-2">
-          <Link className="btn btn-sm" href={`/products/${product.id}`}>Exit to studio</Link>
+          <Link className="btn btn-sm" href={`/products/${product.id}`}>Exit to guide</Link>
           <Link className="btn btn-sm" href="/catalogue">Catalogue</Link>
         </div>
       </div>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Questionnaire Studio — Insurance Product Studio</title>
+  <title>Questionnaire Guide — Insurance Product Guide</title>
   <meta name="description" content="Build and manage the dynamic question flow for insurance product quotation and underwriting.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
@@ -247,7 +247,7 @@
     }
     .channel-check input { accent-color: var(--color-brand); width: 16px; height: 16px; }
 
-    /* Coverage hierarchy in Questionnaire Studio */
+    /* Coverage hierarchy in Questionnaire Guide */
     .coverage-hierarchy-menu { padding: 6px; }
     .coverage-dd-group {
       border-radius: 8px;
@@ -910,7 +910,7 @@
 </style>
 
 <style id="commercial-auto-library-redesign">
-  /* Commercial Auto library — matched to the existing warm/orange Questionnaire Studio palette. */
+  /* Commercial Auto library — matched to the existing warm/orange Questionnaire Guide palette. */
   .caq-page{max-width:1120px;margin:0 auto;padding:0 0 28px;color:#171717}
   .caq-breadcrumb{font-size:12px;color:#6f6a62;margin:2px 0 14px}
   .caq-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px}
@@ -1038,7 +1038,7 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="studio-title">Questionnaire Studio</h1>
+          <h1 class="page-title" id="studio-title">Questionnaire Guide</h1>
           <p class="page-subtitle" id="studio-subtitle">Loading questionnaire…</p>
         </div>
         <div class="page-header-actions" id="product-studio-actions">
@@ -1194,7 +1194,7 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens.</div>
+<div class="responsive-warning" role="alert">Insurance Product Guide is optimized for desktop screens.</div>
 
 <script src="assets/data.js"></script>
 <script src="assets/trucking-questionnaire-seed.js"></script>
@@ -1632,7 +1632,7 @@ function refreshQuestionMeta() {
   const { total, groups, required, conditional, repeatable } = questionCounts();
   const name = productName || productId || 'Product';
   const titleEl = document.getElementById('studio-title');
-  if (titleEl) titleEl.textContent = `Questionnaire Studio — ${name} v${productVersion || '—'}`;
+  if (titleEl) titleEl.textContent = `Questionnaire Guide — ${name} v${productVersion || '—'}`;
   const subtitle = document.getElementById('studio-subtitle');
   if (subtitle) {
     subtitle.textContent = total
@@ -1688,7 +1688,7 @@ function paintStudio() {
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
     { label: `v${productVersion}`, href: `product-detail.html?id=${productId}&version=${productVersion}` },
-    { label: 'Questionnaire Studio', href: '#' }
+    { label: 'Questionnaire Guide', href: '#' }
   ]);
   refreshQuestionMeta();
   renderQuestionTable();
@@ -2682,7 +2682,7 @@ function productCovers() {
 
   // Class of Business's product cover collection is the source of truth.
   // Do NOT fall back to the library/coverPool here, because Questionnaire
-  // Studio must show only covers that were actually added to this product.
+  // Guide must show only covers that were actually added to this product.
   const stored = collections[productKey];
   if (Array.isArray(stored)) return stored.filter(c => c && typeof c === 'object');
 
@@ -2722,7 +2722,7 @@ function coverDdSummary(covers, selected) {
 function questionnaireChildCoverages(cover) {
   if (!cover || typeof cover !== 'object') return [];
 
-  // Coverage Studio reserves the first insured item for the parent class.
+  // Coverage Guide reserves the first insured item for the parent class.
   // The remaining items are its selected children, including an empty list.
   // Use legacy child structures only when insuredItems is absent.
   const children = Array.isArray(cover.insuredItems)
@@ -4657,7 +4657,7 @@ document.addEventListener('click', function(event) {
     );
 
     // IMPORTANT: the editor contains ONLY questions selected in the
-    // Questionnaire Studio. Do not carry over old/unselected groups.
+    // Questionnaire Guide. Do not carry over old/unselected groups.
     const preId='grp-trucking-pre-bind';
     const postId='grp-trucking-post-bind';
 

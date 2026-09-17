@@ -1,4 +1,4 @@
-/* Underwriting Studio page logic — Commercial Trucking */
+/* Underwriting Guide page logic — Commercial Trucking */
 (function () {
   'use strict';
 
@@ -100,7 +100,7 @@ function resolveRiskAttributeId(r, rows) {
     sourceStudio:
       r.sourceStudio ||
       PS.uwRuleStore?.STUDIOS?.UNDERWRITING ||
-      'Underwriting Studio',
+      'Underwriting Guide',
 
     source: r.source || 'Risk Attribute',
 
@@ -214,7 +214,7 @@ function resolveRiskAttributeId(r, rows) {
   function maybeAutoApplyTruckingRules() {
     if (RULES.length || !isTruckingUWProduct() || typeof PS.truckingUnderwritingRules !== 'function') return false;
     const catalog = PS.truckingUnderwritingRules().map(r => normalizeRule(Object.assign({}, r, {
-      sourceStudio: PS.uwRuleStore?.STUDIOS?.UNDERWRITING || 'Underwriting Studio',
+      sourceStudio: PS.uwRuleStore?.STUDIOS?.UNDERWRITING || 'Underwriting Guide',
       syncKey: `native::${r.id}`
     })));
     RULES.splice(0, RULES.length, ...catalog);
@@ -330,7 +330,7 @@ function resolveRiskAttributeId(r, rows) {
   body.innerHTML = `
     <div class="uw-drawer-field"><label>Decision</label><div><span class="rule-outcome-badge outcome-${r.type}">${(r.type || '').toUpperCase()}</span></div></div>
     <div class="uw-drawer-field"><label>Condition</label><div>${conditionSummary(r)}</div></div>
-    <div class="uw-drawer-field"><label>Source</label><div><span class="uw-source-badge uw-src-${sourceFilterKey(r)}">${sourceDisplay(r).toUpperCase()}</span> · ${r.sourceStudio || 'Underwriting Studio'}</div></div>
+    <div class="uw-drawer-field"><label>Source</label><div><span class="uw-source-badge uw-src-${sourceFilterKey(r)}">${sourceDisplay(r).toUpperCase()}</span> · ${r.sourceStudio || 'Underwriting Guide'}</div></div>
     <div class="uw-drawer-field"><label>Question Group</label><div>${r.questionGroup || r.cat || '—'}</div></div>
     <div class="uw-drawer-field"><label>Risk Attribute</label><div>${r.riskAttribute || '—'}</div></div>
     <div class="uw-drawer-field mono"><label>Risk Attribute ID</label><div>${r.riskAttributeId || '—'}</div></div>
@@ -338,7 +338,7 @@ function resolveRiskAttributeId(r, rows) {
     <div class="uw-drawer-field"><label>Authority Required</label><div>${r.authorityLevel || r.out?.authority || '—'}</div></div>
     <div class="uw-drawer-field"><label>Fallback Underwriter</label><div>${r.fallbackUnderwriter || r.out?.fallback || '—'}</div></div>
     <div class="uw-drawer-field"><label>Status</label><div>${statusBadgeHtml(r.status)}${r.inactiveReason ? `<div style="font-size:12px;color:var(--color-muted);margin-top:6px">${r.inactiveReason}</div>` : ''}</div></div>
-    ${r.status === 'inactive' ? `<div class="callout-body" style="font-size:12px">Source rule disabled in ${r.sourceStudio || 'originating studio'}.</div>` : ''}
+    ${r.status === 'inactive' ? `<div class="callout-body" style="font-size:12px">Source rule disabled in ${r.sourceStudio || 'originating guide'}.</div>` : ''}
     <div class="uw-drawer-field"><label>Escalation path</label><div style="font-size:13px;color:var(--color-muted);line-height:1.6">${r.assignedTo || 'Assigned underwriter'} → if outside authority → ${r.fallbackUnderwriter || 'Commercial Underwriting Manager'}</div></div>
     <div class="uw-drawer-field"><label>Priority</label><div>${r.priority ?? '—'}</div></div>`;
 
@@ -447,17 +447,17 @@ window.openUwDrawer = openUwDrawer;
         <span class="rule-outcome-badge outcome-${r.type}">${r.type}</span>
         ${statusBadgeHtml(r.status)}
         <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--color-muted);background:var(--color-surface);border:1px solid var(--color-border);border-radius:4px;padding:2px 7px">${r.id}</span>
-        <span class="uw-source-badge">${r.sourceStudio || 'Underwriting Studio'}</span>
+        <span class="uw-source-badge">${r.sourceStudio || 'Underwriting Guide'}</span>
       </div>
-      ${r.status === 'inactive' ? `<div class="callout-body" style="margin-bottom:var(--space-4);font-size:13px;color:var(--color-danger)">This rule was removed from ${r.sourceStudio || 'its source studio'} and is marked inactive to preserve references.</div>` : ''}
-      ${isDefinitionLocked(r) ? `<div class="callout-body" style="margin-bottom:var(--space-4);font-size:13px">Rule definition is managed in <strong>${r.sourceStudio}</strong>. Underwriting Studio controls assignment and escalation only.</div>` : ''}
+      ${r.status === 'inactive' ? `<div class="callout-body" style="margin-bottom:var(--space-4);font-size:13px;color:var(--color-danger)">This rule was removed from ${r.sourceStudio || 'its source guide'} and is marked inactive to preserve references.</div>` : ''}
+      ${isDefinitionLocked(r) ? `<div class="callout-body" style="margin-bottom:var(--space-4);font-size:13px">Rule definition is managed in <strong>${r.sourceStudio}</strong>. Underwriting Guide controls assignment and escalation only.</div>` : ''}
 
       ${buildSection('identity', '1', 'Rule Identity', `${r.questionGroup || r.cat} · Priority ${r.priority}`, `
         <div class="form-grid-2">
           ${rof('Rule Name', r.name)}
           ${rof('Rule ID', r.id, true)}
           ${rof('Status', (r.status || 'active').toUpperCase())}
-          ${rof('Source Studio', r.sourceStudio || 'Underwriting Studio')}
+          ${rof('Source Guide', r.sourceStudio || 'Underwriting Guide')}
           ${rof('Question Group', r.questionGroup || r.cat)}
           ${rof('Risk Attribute', r.riskAttribute || '—')}
           ${rof('Risk Attribute ID', r.riskAttributeId || '—', true)}
@@ -507,7 +507,7 @@ window.openUwDrawer = openUwDrawer;
           <div class="rp-meta">Priority ${r.priority} · ${r.type.toUpperCase()} · ${r.questionGroup || r.cat}</div>
           <div class="rp-line"><span class="rp-label">When:</span><span class="rp-value">${conditionSummary(r)}</span></div>
           <div class="rp-line"><span class="rp-label">Then:</span><span class="rp-value">${r.type.toUpperCase()} · Assigned to ${r.assignedTo || '—'}</span></div>
-          <div class="rp-line"><span class="rp-label">Source Studio:</span><span class="rp-value">${r.sourceStudio || 'Underwriting Studio'}</span></div>
+          <div class="rp-line"><span class="rp-label">Source Guide:</span><span class="rp-value">${r.sourceStudio || 'Underwriting Guide'}</span></div>
           <div class="rp-line"><span class="rp-label">Source:</span><span class="rp-value">${typeof PS.uwSourceLine === 'function' ? PS.uwSourceLine(r) : r.source}</span></div>
         </div>`)}
     `;
@@ -693,7 +693,7 @@ window.openUwDrawer = openUwDrawer;
           <div class="form-group span-2"><label class="form-label">Rule Name <span class="required">*</span></label><input class="form-control" id="new-uw-name" placeholder="e.g. High-Value Cargo"></div>
           <div class="form-group"><label class="form-label">Rule ID <span class="required">*</span></label><input class="form-control text-mono" id="new-uw-id" placeholder="UW-REF-007"></div>
           <div class="form-group"><label class="form-label">Source</label>
-            <select class="form-control" id="new-uw-source"><option value="Risk Studio">Risk Studio</option><option value="Underwriting Studio">Underwriting Studio</option></select>
+            <select class="form-control" id="new-uw-source"><option value="Risk Guide">Risk Guide</option><option value="Underwriting Guide">Underwriting Guide</option></select>
           </div>
           <div class="form-group"><label class="form-label">Decision <span class="required">*</span></label>
             <select class="form-control" id="new-uw-outcome"><option value="refer">Refer</option><option value="decline">Decline</option><option value="accept">Accept</option></select>
@@ -722,7 +722,7 @@ window.openUwDrawer = openUwDrawer;
     const riskSel = document.getElementById('new-uw-risk');
     const opt = riskSel?.selectedOptions?.[0];
     if (!name || !id) return PS.actionResult?.('error', 'Required fields', 'Rule name and ID are required.');
-    if (!opt?.value) return PS.actionResult?.('error', 'Risk attribute required', 'Select a risk attribute from Risk Studio.');
+    if (!opt?.value) return PS.actionResult?.('error', 'Risk attribute required', 'Select a risk attribute from Risk Guide.');
     const type = document.getElementById('new-uw-outcome')?.value || 'refer';
     const op = document.getElementById('new-uw-op')?.value || '=';
     const value = document.getElementById('new-uw-value')?.value ?? '';
@@ -730,7 +730,7 @@ window.openUwDrawer = openUwDrawer;
     const assigned = document.getElementById('new-uw-assigned')?.value.trim() || '—';
     const fallback = document.getElementById('new-uw-fallback')?.value.trim() || 'Commercial Underwriting Manager';
     const authority = document.getElementById('new-uw-authority')?.value.trim() || 'Level 2';
-    const sourceStudio = document.getElementById('new-uw-source')?.value || 'Risk Studio';
+    const sourceStudio = document.getElementById('new-uw-source')?.value || 'Risk Guide';
     const group = document.getElementById('new-uw-group')?.value || opt.getAttribute('data-group') || 'Operations';
     const riskName = opt.getAttribute('data-name') || opt.textContent;
     const fieldKey = opt.getAttribute('data-field') || '';
@@ -759,7 +759,7 @@ window.openUwDrawer = openUwDrawer;
   document.addEventListener('DOMContentLoaded', () => {
     PS.studioHub.mount({
       navId: 'underwriting',
-      studioLabel: 'Underwriting Studio',
+      studioLabel: 'Underwriting Guide',
       collection: 'underwriting',
       apiField: 'underwriting',
       persist: 'underwritingRules',

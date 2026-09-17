@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel — SouthLake Carrier Portal</title>
-  <meta name="description" content="Add, edit, and remove every dropdown and custom field used across Product Studio.">
+  <meta name="description" content="Add, edit, and remove every dropdown and custom field used across Product Guide.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
     .admin-layout { display: grid; grid-template-columns: 260px 1fr; gap: 16px; align-items: start; }
@@ -52,7 +52,7 @@
     <div class="page-header" style="padding-left:var(--space-5);padding-right:var(--space-5)">
       <div class="page-header-left">
         <h1 class="page-title">Admin Panel</h1>
-        <p class="page-subtitle">Add, edit, or remove every dropdown used across Product Studio. Custom fields you add here appear on cover, product, question, and risk forms.</p>
+        <p class="page-subtitle">Add, edit, or remove every dropdown used across Product Guide. Custom fields you add here appear on cover, product, question, and risk forms.</p>
       </div>
       <div class="page-header-actions">
         <button class="btn btn-ghost" type="button" onclick="exportCatalog()">Export JSON</button>
@@ -138,7 +138,7 @@ function renderFields(q) {
       <div class="admin-card-head">
         <div>
           <div class="admin-card-title">Custom fields</div>
-          <div class="admin-card-sub">These fields appear on cover and product forms across the studio. Anyone with admin access can add or remove them.</div>
+          <div class="admin-card-sub">These fields appear on cover and product forms across the guide. Anyone with admin access can add or remove them.</div>
         </div>
         <button type="button" class="btn btn-primary btn-sm" onclick="addField()">+ Add field</button>
       </div>
@@ -171,7 +171,7 @@ function renderValuation(q) {
       <div class="admin-card-head">
         <div>
           <div class="admin-card-title">Valuation bases</div>
-          <div class="admin-card-sub">Cards in Coverage Studio · Financial Terms. Add AV, MV, RC, or any new basis.</div>
+          <div class="admin-card-sub">Cards in Coverage Guide · Financial Terms. Add AV, MV, RC, or any new basis.</div>
         </div>
         <div style="display:flex;gap:8px">
           <button type="button" class="btn btn-ghost btn-sm" onclick="PS.admin.resetList('valuationBases');renderAdmin()">Reset</button>
@@ -221,7 +221,7 @@ function importCatalog(ev) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    try { PS.admin.importJson(reader.result); renderAdmin(); PS.actionResult?.('success', 'Catalog imported', 'Dropdowns across the studio will use the new values.'); }
+    try { PS.admin.importJson(reader.result); renderAdmin(); PS.actionResult?.('success', 'Catalog imported', 'Dropdowns across the guide will use the new values.'); }
     catch (err) { PS.actionResult?.('error', 'Import failed', String(err.message || err)); }
   };
   reader.readAsText(file);

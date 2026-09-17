@@ -212,7 +212,7 @@ function esc(v) {
 
 
 // Returns the exact state/city scope configured for this product.
-// Coverage Studio can use this as the single source of truth so it never
+// Coverage Guide can use this as the single source of truth so it never
 // offers a state/city outside the saved jurisdiction.
 window.getProductJurisdictionScope = function (productId) {
   const id = productId || productContext();
@@ -652,7 +652,7 @@ function revealStudioValidation() {
     setTimeout(() => first.focus?.(), 200);
   }
   if (issues.length) {
-    PS.actionResult('error', 'Please complete all required fields before continuing.', 'Complete jurisdiction configuration before moving to the next Studio.');
+    PS.actionResult('error', 'Please complete all required fields before continuing.', 'Complete jurisdiction configuration before moving to the next Guide.');
     return false;
   }
   return true;
