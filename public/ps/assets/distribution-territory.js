@@ -43,11 +43,32 @@ PS.distributionTerritoryForCover = function (productId, cover) {
         const mode = territory.mode || 'state';
         const rule = mode === 'local' ? (locations ? `Only selected locations — ${locations}` : 'No cities or counties permitted') :
           mode === 'exclude' && locations ? `Entire state except ${locations}` : 'Entire state permitted';
-        if (!rows.has(code)) rows.set(code, { state: code, rules: [] });
-        const rules = rows.get(code).rules;
-        if (!rules.includes(rule)) rules.push(rule);
+        if (!rows.has(code)) rows.set(code, { state: code, rules: [], cities: [], counties: [], excludedCities: [], excludedCounties: [], entireState: false });
+        const entry = rows.get(code);
+        if (!entry.rules.includes(rule)) entry.rules.push(rule);
+        if (mode === 'local') {
+          cities.forEach(city => { if (!entry.cities.includes(city)) entry.cities.push(city); });
+          counties.forEach(county => { if (!entry.counties.includes(county)) entry.counties.push(county); });
+        } else {
+          entry.entireState = true;
+          if (mode === 'exclude') {
+            cities.forEach(city => { if (!entry.excludedCities.includes(city)) entry.excludedCities.push(city); });
+            counties.forEach(county => { if (!entry.excludedCounties.includes(county)) entry.excludedCounties.push(county); });
+          }
+        }
       });
     });
   });
-  return Array.from(rows.values()).map(row => ({ ...row, rules: row.rules.includes('Entire state permitted') ? ['Entire state permitted'] : row.rules }));
+  return Array.from(rows.values()).map(row => {
+    const all = row.rules.includes('Entire state permitted');
+    return {
+      ...row,
+      entireState: all || row.entireState,
+      rules: all ? ['Entire state permitted'] : row.rules,
+      cities: row.cities.sort((a, b) => a.localeCompare(b)),
+      counties: row.counties.sort((a, b) => a.localeCompare(b)),
+      excludedCities: all ? [] : row.excludedCities.sort((a, b) => a.localeCompare(b)),
+      excludedCounties: all ? [] : row.excludedCounties.sort((a, b) => a.localeCompare(b)),
+    };
+  });
 };

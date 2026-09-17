@@ -256,7 +256,6 @@ window.PS = window.PS || {};
     'cover code': 'Unique cover identifier for integrations and documents. Suggested automatically when created.',
     'cover type': 'Standard cover classification from the library (e.g. Third Party Property Damage).',
     'availability': 'Whether this cover is mandatory, default-on, optional, or sold as an add-on at quote time.',
-    'description': 'Underwriter-facing explanation of scope, exclusions, and intent for this cover or rule.',
     'cover identity': 'Core identifiers and classification for the selected cover.',
     'default selected': 'When enabled, this optional cover is pre-ticked on the quote screen unless mandatory.',
     'conditional on': 'This cover appears only when the named cover is also selected.',

@@ -1320,7 +1320,7 @@ function coverValidationIssues(cover) {
     const ctxWrap = ensureContextNavActions();
     if (ctxWrap) containers.push(ctxWrap);
     const headerActions = document.getElementById('product-studio-actions');
-    if (headerActions) containers.push(headerActions);
+    if (headerActions && studioId !== 'coverage') containers.push(headerActions);
     document.querySelectorAll('.jur-savebar-actions').forEach(el => containers.push(el));
     containers.forEach(container => updateNextStudioLink(container, next, href));
   }
@@ -2529,7 +2529,7 @@ function coverValidationIssues(cover) {
           status: 'incomplete', complete: false,
           defaultSelected: availability === 'mandatory' || availability === 'default',
           basisOfCoverage: 'Market Value', sumInsured: '', maxSingleLimit: '', subLimit: '',
-          deductibleType: 'none', deductibleAmount: '', deductiblePct: '', deductiblePctOf: 'Claim Amount', minDeductible: '', maxDeductible: '',
+          deductibleType: 'none', deductibleAmount: '', deductiblePct: '', deductiblePctOf: 'Claim Amount', deductibleAppliesPer: 'Per Claim', minDeductible: '', maxDeductible: '',
           copay: '0', waitingPeriod: 'None', annualAggregate: false,
           coverVersion: typeof coverVersionLabel === 'function' ? coverVersionLabel() : (context().version ? `v${String(context().version).replace(/^v/i,'')}` : ''),
           mutualExclusions: [], conditionalOn: '', dependencies: [], constraints: [], wordingDocs: [],
@@ -2563,20 +2563,45 @@ function coverValidationIssues(cover) {
       }
     };
     const legacyReorderModal = window.openReorderModal;
+    const markCoverOrderCustom = () => {
+      try { const pid = context().productId; if (pid) localStorage.setItem(`ps-cover-order-custom-${pid}`, '1'); } catch (_) {}
+    };
+    const resetReorderDragState = () => document.querySelectorAll('#reorder-list > div').forEach(r => { r.style.opacity = ''; r.style.borderColor = ''; });
+    const reorderRowIds = () => Array.from(document.querySelectorAll('#reorder-list > div')).map(row => row.dataset.coverId);
     window.openReorderModal = function () {
       legacyReorderModal();
+      let activeDragRow = null;
       document.querySelectorAll('#reorder-list > div').forEach((row, index) => {
         row.dataset.coverId = COVERS[index]?.id || '';
         const controls = document.createElement('span'); controls.style.cssText = 'display:flex;gap:4px';
         controls.innerHTML = '<button class="btn btn-icon btn-sm" type="button" aria-label="Move up">↑</button><button class="btn btn-icon btn-sm" type="button" aria-label="Move down">↓</button>';
         const [up, down] = controls.querySelectorAll('button');
-        up.onclick = () => { const prev = row.previousElementSibling; if (prev) row.parentElement.insertBefore(row, prev); };
-        down.onclick = () => { const next = row.nextElementSibling; if (next) row.parentElement.insertBefore(next, row); };
+        up.onclick = () => { const prev = row.previousElementSibling; if (prev) { row.parentElement.insertBefore(row, prev); markCoverOrderCustom(); } };
+        down.onclick = () => { const next = row.nextElementSibling; if (next) { row.parentElement.insertBefore(next, row); markCoverOrderCustom(); } };
         row.appendChild(controls);
+        row.draggable = true;
+        row.style.cursor = 'grab';
+        row.addEventListener('dragstart', (e) => {
+          activeDragRow = row;
+          row.style.opacity = '.45';
+          try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', row.dataset.coverId); } catch (_) {}
+        });
+        row.addEventListener('dragend', () => { activeDragRow = null; resetReorderDragState(); });
+        row.addEventListener('dragover', (e) => { if (!activeDragRow || activeDragRow === row) return; e.preventDefault(); row.style.borderColor = 'var(--color-accent, #0EA5E9)'; });
+        row.addEventListener('dragleave', () => { row.style.borderColor = ''; });
+        row.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (!activeDragRow || activeDragRow === row) return resetReorderDragState();
+          row.parentElement.insertBefore(activeDragRow, row);
+          resetReorderDragState();
+          activeDragRow = null;
+          markCoverOrderCustom();
+        });
       });
     };
     window.saveCoverOrder = function () {
-      const ids = Array.from(document.querySelectorAll('#reorder-list > div')).map(row => row.dataset.coverId);
+      const ids = reorderRowIds();
+      if (ids.join('|') !== COVERS.map(c => c.id).join('|')) markCoverOrderCustom();
       COVERS.splice(0, COVERS.length, ...ids.map(id => COVERS.find(c => c.id === id)).filter(Boolean));
       persistCollection('covers', COVERS); PS.closeModal();
       if (typeof renderCoverTable === 'function') renderCoverTable();

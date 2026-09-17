@@ -2633,7 +2633,7 @@ function coverValidationIssues(cover) {
           status: 'incomplete', complete: false,
           defaultSelected: availability === 'mandatory' || availability === 'default',
           basisOfCoverage: 'Market Value', sumInsured: '', maxSingleLimit: '', subLimit: '',
-          deductibleType: 'none', deductibleAmount: '', deductiblePct: '', deductiblePctOf: 'Claim Amount', minDeductible: '', maxDeductible: '',
+          deductibleType: 'none', deductibleAmount: '', deductiblePct: '', deductiblePctOf: 'Claim Amount', deductibleAppliesPer: 'Per Claim', minDeductible: '', maxDeductible: '',
           copay: '0', waitingPeriod: 'None', annualAggregate: false,
           coverVersion: typeof coverVersionLabel === 'function' ? coverVersionLabel() : (context().version ? `v${String(context().version).replace(/^v/i,'')}` : ''),
           mutualExclusions: [], conditionalOn: '', dependencies: [], constraints: [], wordingDocs: [],

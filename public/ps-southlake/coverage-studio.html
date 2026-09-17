@@ -1527,7 +1527,8 @@ let DEP_TYPES = ['Requires', 'Excludes', 'Bundles with'];
 let CONSTRAINT_FIELDS = ['Vehicle Age', 'Vehicle Type', 'Insured Value', 'Vehicle Registration', 'Driver Age', 'Usage', 'Sum Insured', 'NCD'];
 let CONSTRAINT_OPS = ['≤', '≥', '=', 'is', 'is one of', 'is not'];
 let WAITING_PERIODS = ['None', '30 days', '60 days', '90 days'];
-let DEDUCTIBLE_PCT_OF = ['Claim Amount', 'Item Limit', 'Loss Amount'];
+let DEDUCTIBLE_PCT_OF = ['Insured Value', 'Coverage Limit', 'Claim Amount', 'Declared Value', 'Shipment Value'];
+let DEDUCTIBLE_APPLIES_PER = ['Per Claim', 'Per Occurrence', 'Per Vehicle', 'Per Shipment'];
 let COVER_TYPES = [
   'First Party — Property Damage',
   'Third Party — Liability',
@@ -3064,19 +3065,6 @@ function setDepCondition(index, value) {
 
   refreshFinancialPanel();
 }
-function dependencyPreviewText(c) {
-  const rules = Array.isArray(c?.dependencies) ? c.dependencies : [];
-  if (!rules.length) return 'No dependency rules configured. This cover behaves independently of other covers.';
-  return rules.map((d, i) => {
-    const type = d.type || 'Requires';
-    const target = d.dependsOn || 'the selected cover';
-    const condition = d.condition && d.condition !== 'Always' ? ` when ${d.condition}` : '';
-    if (type === 'Excludes') return `If this cover is selected, ${target} will be unavailable${condition}.`;
-    if (type === 'Bundles with') return `This cover is recommended with ${target}${condition}.`;
-    return `This cover requires ${target}${condition}.`;
-  }).join(' ');
-}
-
 function addDep() {
   const c = currentCover();
   if (!c || productStatus === 'published') return;
@@ -3110,14 +3098,6 @@ function buildDependenciesSection(c, ro) {
   const badgeClass = type => String(type || 'Requires').toLowerCase().replace(/\s+/g, '-');
 
   return `
-    <div class="dep-hero">
-      <div class="dep-hero-icon" aria-hidden="true">↔</div>
-      <div>
-        <strong>Configure cover-to-cover dependencies</strong>
-        <p>Define what happens when this cover is selected. Use Requires, Excludes, or Bundles with and add an optional condition.</p>
-      </div>
-    </div>
-
     <div class="dep-block">
       <div class="dep-block-head">
         <div>
@@ -3172,14 +3152,8 @@ function buildDependenciesSection(c, ro) {
       : `<div class="dep-help-card"><strong>No dependency rules configured.</strong><br>This cover behaves independently of other covers. Add a rule to require, exclude, or bundle with another cover.</div>`}
 
       ${ro ? '' : `<div class="dep-rule-toolbar">
-        <div class="dep-rules-label">Add a dependency rule</div>
         <button type="button" class="dep-add-btn" onclick="addDep()">+ Add Dependency</button>
       </div>`}
-
-      <div class="dep-preview">
-        <div class="dep-preview-title">Rule Preview</div>
-        <div class="dep-preview-text">${htmlEsc(dependencyPreviewText(c))}</div>
-      </div>
     </div>
   `;
 }
@@ -3795,6 +3769,21 @@ function buildDeductibleSection(c, ro) {
         <span class="form-help">Optional ceiling for the deductible.</span>
       </div>
 
+      <div class="form-group">
+        <label class="form-label">Deductible Applies Per</label>
+        <select
+          class="form-control"
+          data-validation-field="deductibleAppliesPer"
+          ${roDis}
+          onchange="${patch('deductibleAppliesPer')}"
+        >
+          ${DEDUCTIBLE_APPLIES_PER.map(o =>
+            `<option ${(c.deductibleAppliesPer || 'Per Claim') === o ? 'selected' : ''}>${htmlEsc(o)}</option>`
+          ).join('')}
+        </select>
+        <span class="form-help">How often the fixed deductible is applied to exposure.</span>
+      </div>
+
     </div>`;
 
   // Percentage deductible
@@ -3817,7 +3806,7 @@ function buildDeductibleSection(c, ro) {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Percentage Of</label>
+        <label class="form-label">Deductible Basis</label>
         <select
           class="form-control"
           data-validation-field="deductiblePctOf"
@@ -3887,7 +3876,7 @@ function deductibleOverrideCardHtml(c, ro) {
   const roDis = ro ? 'disabled' : '';
   const roAttr = ro ? 'readonly' : '';
   const maxPct = c.uwMaxOverrideDeductiblePct ?? 20;
-  const fields = Array.isArray(c.uwOverrideDeductibleFields) ? c.uwOverrideDeductibleFields : ['amount', 'basis', 'appliesPer'];
+  const fields = Array.isArray(c.uwOverrideDeductibleFields) ? c.uwOverrideDeductibleFields : ['amount'];
   const FIELD_OPTIONS = [
     ['amount', 'Deductible Amount / Percentage'],
     ['basis', 'Deductible Basis'],
@@ -3925,7 +3914,7 @@ function toggleDeductibleOverride(checked) {
   const c = currentCover();
   if (!c || !coversCanEdit()) return;
   c.uwOverrideDeductible = !!checked;
-  if (checked && !Array.isArray(c.uwOverrideDeductibleFields)) c.uwOverrideDeductibleFields = ['amount', 'basis', 'appliesPer'];
+  if (checked && !Array.isArray(c.uwOverrideDeductibleFields)) c.uwOverrideDeductibleFields = ['amount'];
   if (checked && c.uwMaxOverrideDeductiblePct == null) c.uwMaxOverrideDeductiblePct = 20;
   try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
   refreshFinancialPanel();
@@ -4062,8 +4051,13 @@ function normalizeCover(cover, index) {
   c.deductiblePct = c.deductiblePct ?? '';
   c.deductiblePctOf = c.deductiblePctOf || 'Claim Amount';
   if (!DEDUCTIBLE_PCT_OF.includes(c.deductiblePctOf)) {
-    const legacyPctOf = { 'Sum Insured': 'Item Limit', 'Insured Value': 'Item Limit' };
+    const legacyPctOf = { 'Sum Insured': 'Coverage Limit', 'Item Limit': 'Coverage Limit', 'Loss Amount': 'Claim Amount' };
     c.deductiblePctOf = legacyPctOf[c.deductiblePctOf] || 'Claim Amount';
+  }
+  c.deductibleAppliesPer = c.deductibleAppliesPer || 'Per Claim';
+  if (!DEDUCTIBLE_APPLIES_PER.includes(c.deductibleAppliesPer)) {
+    const legacyAppliesPer = { 'Claim': 'Per Claim', 'Occurrence': 'Per Occurrence', 'Vehicle': 'Per Vehicle', 'Shipment': 'Per Shipment' };
+    c.deductibleAppliesPer = legacyAppliesPer[c.deductibleAppliesPer] || 'Per Claim';
   }
   c.minDeductible = c.minDeductible ?? '';
   c.maxDeductible = c.maxDeductible ?? '';
@@ -5933,6 +5927,7 @@ const syncDedField = (selector, key) => {
 syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
 syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
 syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
+syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
 syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
 syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
 syncDedField('[data-validation-field="copay"]', 'copay');
@@ -5962,6 +5957,7 @@ panel.querySelectorAll('[data-required="true"]:not([readonly]):not([disabled])')
   syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
   syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
   syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
+  syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
   syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
   syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
   syncDedField('[data-validation-field="copay"]', 'copay');

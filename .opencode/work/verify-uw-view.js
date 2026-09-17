@@ -1,0 +1,12 @@
+const fs = require('fs');
+const s = fs.readFileSync('public/ps/coverage-studio.html', 'utf8');
+const f = s.indexOf('function buildInsuredItemCard');
+const e = s.indexOf('function formatInsuredItemsSummary');
+const fn = s.slice(f, e);
+const count = (re) => (fn.match(re) || []).length;
+console.log('uw-override-combined-card:', count(/uw-override-combined-card/g));
+console.log('uw-override-fields:', count(/uw-override-fields/g));
+console.log('uw-auth-card-fields:', count(/uw-auth-card-fields/g));
+console.log('plain ii-toggle-row:', count(/class="ii-toggle-row"/g));
+console.log('Underwriter can override valuation strong:', count(/Underwriter can override valuation/g));
+console.log('patchInsuredItem uwOverrideValuation handler intact:', /patchInsuredItem\('\\$\{idAttr\}','uwOverrideValuation'/.test(fn));
