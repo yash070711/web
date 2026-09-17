@@ -72,7 +72,7 @@ export function UnderwritingStudio({
   return (
     <>
       <StudioHeader
-        title="Underwriting Rules Studio"
+        title="Underwriting Rules Guide"
         subtitle={`${productName} · v${version} — ${rows.length} rules configured`}
         productId={productId}
         moduleId="underwriting"

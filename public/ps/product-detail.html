@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Detail — Insurance Product Studio</title>
-  <meta name="description" content="Product detail, version manager, studio configuration, governance, and audit for Insurance Product Studio.">
+  <title>Product Detail — Insurance Product Guide</title>
+  <meta name="description" content="Product detail, version manager, studio configuration, governance, and audit for Insurance Product Guide.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
     /* ── Product header band ───────────────────────────── */
@@ -177,7 +177,7 @@
     .gov-gate { font-weight: 500; min-width: 120px; }
     .gov-detail { color: var(--color-muted); font-size: 12px; }
 
-    /* ── Studio cards (Tab 2) ──────────────────────────── */
+    /* ── Guide cards (Tab 2) ──────────────────────────── */
     .studio-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -488,7 +488,7 @@
 </div>
 
 <div class="toast-container" id="toast-container"></div>
-<div class="responsive-warning" role="alert">Insurance Product Studio is optimized for desktop screens (1280px and wider).</div>
+<div class="responsive-warning" role="alert">Insurance Product Guide is optimized for desktop screens (1280px and wider).</div>
 
 <script src="assets/data.js"></script>
 <script src="assets/trucking-questionnaire-seed.js"></script>
@@ -516,12 +516,12 @@ const PRODUCTS_DETAIL = {
     ],
     studios: [
       { id:'coverage',     name:'Class of Business',           icon:'umbrella',      status:'complete', summary:'8 covers · 3 mandatory · 2 default · 3 optional', href:'coverage-studio.html' },
-      { id:'questionnaire',name:'Questionnaire Studio',      icon:'list-checks',   status:'complete', summary:'22 questions across 4 sections', href:'questionnaire-studio.html' },
-      { id:'eligibility',  name:'Eligibility Studio',        icon:'user-check',    status:'complete', summary:'7 eligibility rules configured', href:'eligibility-studio.html' },
-      { id:'rating',       name:'Rating & Pricing Studio',   icon:'calculator',    status:'complete', summary:'Base $1,850 · GVW, radius, goods, experience', href:'rating-studio.html' },
-      { id:'underwriting', name:'Underwriting Rules Studio', icon:'shield-check',  status:'complete', summary:'7 UW rules · 0 conflicts', href:'underwriting-studio.html' },
-      { id:'distribution', name:'Distribution Studio',       icon:'tree-structure',status:'complete', summary:'3 channels · broker, direct, TMS API', href:'distribution-studio.html' },
-      { id:'document',     name:'Document Studio',           icon:'file-text',     status:'complete', summary:'20 documents · pre-bind + post-bind packs', href:'document-studio.html' }
+      { id:'questionnaire',name:'Questionnaire Guide',      icon:'list-checks',   status:'complete', summary:'22 questions across 4 sections', href:'questionnaire-studio.html' },
+      { id:'eligibility',  name:'Eligibility Guide',        icon:'user-check',    status:'complete', summary:'7 eligibility rules configured', href:'eligibility-studio.html' },
+      { id:'rating',       name:'Rating & Pricing Guide',   icon:'calculator',    status:'complete', summary:'Base $1,850 · GVW, radius, goods, experience', href:'rating-studio.html' },
+      { id:'underwriting', name:'Underwriting Rules Guide', icon:'shield-check',  status:'complete', summary:'7 UW rules · 0 conflicts', href:'underwriting-studio.html' },
+      { id:'distribution', name:'Distribution Guide',       icon:'tree-structure',status:'complete', summary:'3 channels · broker, direct, TMS API', href:'distribution-studio.html' },
+      { id:'document',     name:'Document Guide',           icon:'file-text',     status:'complete', summary:'20 documents · pre-bind + post-bind packs', href:'document-studio.html' }
     ],
     governance:[
       { gate:'Product Owner',  approver:'Anika Sharma',  action:'Approved', date:'04-Aug-2026', comment:'Commercial truck proposition fills the gap between private car and fleet.' },
@@ -532,12 +532,12 @@ const PRODUCTS_DETAIL = {
     ],
     checklist:[
       { studio:'Class of Business',            status:'done',  note:'8 covers configured' },
-      { studio:'Questionnaire Studio',        status:'done',  note:'22 questions' },
-      { studio:'Eligibility Studio',          status:'done',  note:'7 rules' },
-      { studio:'Rating & Pricing Studio',     status:'done',  note:'GVW, radius, goods, experience' },
-      { studio:'Underwriting Rules Studio',   status:'done',  note:'7 rules' },
-      { studio:'Distribution Studio',         status:'done',  note:'3 channels' },
-      { studio:'Document Studio',             status:'done',  note:'20 documents' }
+      { studio:'Questionnaire Guide',        status:'done',  note:'22 questions' },
+      { studio:'Eligibility Guide',          status:'done',  note:'7 rules' },
+      { studio:'Rating & Pricing Guide',     status:'done',  note:'GVW, radius, goods, experience' },
+      { studio:'Underwriting Rules Guide',   status:'done',  note:'7 rules' },
+      { studio:'Distribution Guide',         status:'done',  note:'3 channels' },
+      { studio:'Document Guide',             status:'done',  note:'20 documents' }
     ],
     completion: 100,
     lastSim:{ scenario:'Standard rigid 16t — 12yr HGV driver', date:'11-Aug-2026', passed:true, premium:'$3,240', rulesEval:7, referrals:0, declines:0 }
@@ -547,7 +547,7 @@ const PRODUCTS_DETAIL = {
     code:'TRK-2026-011', segment:'Commercial Lines', riskType:'Fleet + Driver + Cargo',
     jurisdictions:['India','UAE'], distribution:['Commercial Broker Portal','Fleet TMS API'],
     owner:'Anika Sharma', description:'Fleet motor programme for multi-vehicle commercial operators. Extends truck cover with fleet-level rating, driver pooling, and consolidated policy administration.',
-    notes:'Version 2026.05-DRAFT: Fleet variant in early design. Rating Studio base rates pending configuration.',
+    notes:'Version 2026.05-DRAFT: Fleet variant in early design. Rating Guide base rates pending configuration.',
     status:'draft',
     activeVersion:'2026.05-DRAFT',
     versions:[
@@ -555,12 +555,12 @@ const PRODUCTS_DETAIL = {
     ],
     studios:[
       { id:'coverage',     name:'Class of Business',           icon:'umbrella',      status:'partial',  summary:'4 of 8 covers configured',       href:'coverage-studio.html' },
-      { id:'questionnaire',name:'Questionnaire Studio',      icon:'list-checks',   status:'partial',  summary:'12 questions configured',   href:'questionnaire-studio.html' },
-      { id:'eligibility',  name:'Eligibility Studio',        icon:'user-check',    status:'partial',  summary:'4 of 7 rules complete',    href:'eligibility-studio.html' },
-      { id:'rating',       name:'Rating & Pricing Studio',   icon:'calculator',    status:'missing',  summary:'No base rate configured',   href:'rating-studio.html' },
-      { id:'underwriting', name:'Underwriting Rules Studio', icon:'shield-check',  status:'missing',  summary:'Not started',              href:'underwriting-studio.html' },
-      { id:'distribution', name:'Distribution Studio',       icon:'tree-structure',status:'missing',  summary:'Not started',              href:'distribution-studio.html' },
-      { id:'document',     name:'Document Studio',           icon:'file-text',     status:'missing',  summary:'Not started',              href:'document-studio.html' }
+      { id:'questionnaire',name:'Questionnaire Guide',      icon:'list-checks',   status:'partial',  summary:'12 questions configured',   href:'questionnaire-studio.html' },
+      { id:'eligibility',  name:'Eligibility Guide',        icon:'user-check',    status:'partial',  summary:'4 of 7 rules complete',    href:'eligibility-studio.html' },
+      { id:'rating',       name:'Rating & Pricing Guide',   icon:'calculator',    status:'missing',  summary:'No base rate configured',   href:'rating-studio.html' },
+      { id:'underwriting', name:'Underwriting Rules Guide', icon:'shield-check',  status:'missing',  summary:'Not started',              href:'underwriting-studio.html' },
+      { id:'distribution', name:'Distribution Guide',       icon:'tree-structure',status:'missing',  summary:'Not started',              href:'distribution-studio.html' },
+      { id:'document',     name:'Document Guide',           icon:'file-text',     status:'missing',  summary:'Not started',              href:'document-studio.html' }
     ],
     governance:[
       { gate:'Product Owner',  approver:'—', action:'Pending', date:'—', comment:'—' },
@@ -571,12 +571,12 @@ const PRODUCTS_DETAIL = {
     ],
     checklist:[
       { studio:'Class of Business',          status:'warn',  note:'4 of 8 covers' },
-      { studio:'Questionnaire Studio',     status:'warn',  note:'12 questions' },
-      { studio:'Eligibility Studio',       status:'warn',  note:'4 of 7 rules' },
-      { studio:'Rating & Pricing Studio',  status:'empty', note:'Not configured' },
-      { studio:'Underwriting Rules Studio',status:'empty', note:'Not configured' },
-      { studio:'Distribution Studio',      status:'empty', note:'Not configured' },
-      { studio:'Document Studio',          status:'empty', note:'Not configured' }
+      { studio:'Questionnaire Guide',     status:'warn',  note:'12 questions' },
+      { studio:'Eligibility Guide',       status:'warn',  note:'4 of 7 rules' },
+      { studio:'Rating & Pricing Guide',  status:'empty', note:'Not configured' },
+      { studio:'Underwriting Rules Guide',status:'empty', note:'Not configured' },
+      { studio:'Distribution Guide',      status:'empty', note:'Not configured' },
+      { studio:'Document Guide',          status:'empty', note:'Not configured' }
     ],
     completion: 35,
     lastSim: null
@@ -661,7 +661,7 @@ function renderPage() {
   const versions = Array.isArray(p.versions) ? p.versions : [];
   const ver = versions.find(v=>v.label===activeVersion) || versions[0] || { label: activeVersion || 'Draft', status: p.status || 'draft' };
 
-  document.title = `${p.name} — Insurance Product Studio`;
+  document.title = `${p.name} — Insurance Product Guide`;
 
   // Breadcrumb update
   PS.nav.render('catalogue', [
@@ -829,7 +829,7 @@ function exportProductDefinition() {
 }
 
 function tabLabel(t) {
-  return {overview:'Overview',studios:'Studios',simulation:'Simulation',versions:'Versions',audit:'Audit'}[t]||t;
+  return {overview:'Overview',studios:'Guides',simulation:'Simulation',versions:'Versions',audit:'Audit'}[t]||t;
 }
 
 /* ──────────────────────────────────────────────────────────
@@ -979,7 +979,7 @@ function renderStudios(el) {
     ${isPublished ? `<div class="callout callout-info mb-6">
       <div class="callout-body">
         <div class="callout-title">Read-only mode</div>
-        This version is published. Studios open in read-only mode. <a href="#" onclick="openCloneVersionModal();return false">Clone this version</a> to make changes.
+        This version is published. Guides open in read-only mode. <a href="#" onclick="openCloneVersionModal();return false">Clone this version</a> to make changes.
       </div>
     </div>` : ''}
     <div class="studio-grid">
@@ -998,7 +998,7 @@ function renderStudios(el) {
           </div>
           <div style="margin-top:auto">
             <a href="${s.href}?product=${p.id}&version=${activeVersion}" class="btn btn-${isPublished?'secondary':'primary'} btn-sm" style="width:100%;justify-content:center">
-              Open Studio →
+              Open Guide →
             </a>
           </div>
         </div>`;
@@ -1035,7 +1035,7 @@ function renderSimulation(el) {
                 <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path fill="currentColor" d="M221.69 199.77L160 96.92V40h8a8 8 0 000-16H88a8 8 0 000 16h8v56.92L34.31 199.77A16 16 0 0048 224h160a16 16 0 0013.69-24.23z"/></svg>
                 Run Simulation
               </button>
-              <a href="simulation-studio.html?product=${p.id}" class="btn btn-secondary">Open Full Simulation Studio →</a>
+              <a href="simulation-studio.html?product=${p.id}" class="btn btn-secondary">Open Full Simulation Guide →</a>
             </div>
           </div>
         </div>
@@ -1406,7 +1406,7 @@ function createNewVersion() {
     return;
   }
   PS.closeModal();
-  PS.actionResult('success','Version created',`v${label} created as Draft. You can now configure studios.`);
+  PS.actionResult('success','Version created',`v${label} created as Draft. You can now configure guides.`);
 }
 
 function openCloneVersionModal() {
@@ -1416,7 +1416,7 @@ function openCloneVersionModal() {
     </div>
     <div class="modal-body">
       <div class="callout callout-info" style="margin-bottom:var(--space-4)">
-        <div class="callout-body">All studio configuration from <strong>v${activeVersion}</strong> will be copied to the new Draft version. Governance approvals are not carried over.</div>
+        <div class="callout-body">All guide configuration from <strong>v${activeVersion}</strong> will be copied to the new Draft version. Governance approvals are not carried over.</div>
       </div>
       <div class="form-group"><label class="form-label" for="cv-label">New Version Label</label>
         <input type="text" id="cv-label" class="form-control" value="${PS.nextVersionLabel ? PS.nextVersionLabel((currentProduct.versions||[]).map(v=>v.label)) : ''}" readonly style="font-family:'IBM Plex Mono',monospace">

@@ -514,7 +514,7 @@ export function QuestionnaireStudio({
   return (
     <>
       <StudioHeader
-        title="Questionnaire Studio"
+        title="Questionnaire Guide"
         subtitle={`${productName} · v${version} — ${questionCount} questions · ${groups.length} groups · ${flows} conditional flows · ${repeats} repeatable groups`}
         productId={productId}
         moduleId="questionnaire"

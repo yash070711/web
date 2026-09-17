@@ -11,7 +11,7 @@
 
 
   /*
-   * SouthLake Carrier / Distribution Studio visual theme adapter.
+   * SouthLake Carrier / Distribution Guide visual theme adapter.
    * Design follows the supplied Distribution Channels HTML reference.
    * Existing functionality, state, validation, persistence, and navigation remain unchanged.
    */

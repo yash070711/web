@@ -1,4 +1,4 @@
-/* Document Studio page logic — Commercial Trucking */
+/* Document Guide page logic — Commercial Trucking */
 (function () {
   'use strict';
 
@@ -424,7 +424,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     PS.studioHub.mount({
       navId: 'document',
-      studioLabel: 'Document Studio',
+      studioLabel: 'Document Guide',
       collection: 'documents',
       apiField: 'documents',
       persist: 'documents',

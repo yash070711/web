@@ -72,7 +72,7 @@ export function CatalogueList({ items }: { items: CatalogueItem[] }) {
                           {menuId === p.id ? (
                             <div className="cat-more-menu">
                               <Link className="dropdown-item" href={`/products/${p.id}#editor`} onClick={() => setMenuId(null)}>Edit Product</Link>
-                              <Link className="dropdown-item" href={`/products/${p.id}/coverage`} onClick={() => setMenuId(null)}>Coverage Studio</Link>
+                              <Link className="dropdown-item" href={`/products/${p.id}/coverage`} onClick={() => setMenuId(null)}>Coverage Guide</Link>
                               <div className="dropdown-sep" />
                               <DeleteButton id={p.id} name={p.name} className="dropdown-item cat-action-danger" />
                             </div>

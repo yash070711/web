@@ -1,5 +1,5 @@
 /* ============================================================
-   Insurance Product Studio — Shared Dummy Data Store
+   Insurance Product Guide — Shared Dummy Data Store
    data.js
    ============================================================ */
 
@@ -47,7 +47,7 @@ PS.data = {
       type: 'draft', typeLabel: 'Draft Incomplete',
       product: 'Commercial Vehicle Fleet',
       productId: 'PRD-011',
-      detail: 'Rating Studio has no base rate configured',
+      detail: 'Rating Guide has no base rate configured',
       since: '5 days ago',
       action: 'Complete'
     },

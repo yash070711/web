@@ -10,13 +10,13 @@ const CATALOGUE: Array<Partial<Product> & { id: string; name: string; family: st
 
 function studios(id: string) {
   return [
-    { id: "coverage", name: "Coverage Studio", href: `/products/${id}/coverage`, status: "complete" as const, summary: "Configured" },
-    { id: "questionnaire", name: "Questionnaire Studio", href: `/products/${id}/questionnaire`, status: "complete" as const, summary: "Configured" },
-    { id: "eligibility", name: "Eligibility Studio", href: `/products/${id}/eligibility`, status: "complete" as const, summary: "Configured" },
-    { id: "rating", name: "Rating & Pricing Studio", href: `/products/${id}/rating`, status: "partial" as const, summary: "Base rate set" },
-    { id: "underwriting", name: "Underwriting Rules Studio", href: `/products/${id}/underwriting`, status: "partial" as const, summary: "Core rules" },
-    { id: "distribution", name: "Distribution Studio", href: `/products/${id}/distribution`, status: "complete" as const, summary: "Direct + broker" },
-    { id: "document", name: "Document Studio", href: `/products/${id}/document`, status: "complete" as const, summary: "Wording pack" },
+    { id: "coverage", name: "Coverage Guide", href: `/products/${id}/coverage`, status: "complete" as const, summary: "Configured" },
+    { id: "questionnaire", name: "Questionnaire Guide", href: `/products/${id}/questionnaire`, status: "complete" as const, summary: "Configured" },
+    { id: "eligibility", name: "Eligibility Guide", href: `/products/${id}/eligibility`, status: "complete" as const, summary: "Configured" },
+    { id: "rating", name: "Rating & Pricing Guide", href: `/products/${id}/rating`, status: "partial" as const, summary: "Base rate set" },
+    { id: "underwriting", name: "Underwriting Rules Guide", href: `/products/${id}/underwriting`, status: "partial" as const, summary: "Core rules" },
+    { id: "distribution", name: "Distribution Guide", href: `/products/${id}/distribution`, status: "complete" as const, summary: "Direct + broker" },
+    { id: "document", name: "Document Guide", href: `/products/${id}/document`, status: "complete" as const, summary: "Wording pack" },
   ];
 }
 
@@ -36,7 +36,7 @@ export function productDetailFrom(product: Product): ProductDetail {
     description: product.id === TRUCK_ID ? TRUCK_DESCRIPTION : product.description || `${product.name} configuration.`,
     notes: product.id === TRUCK_ID
       ? "Version 2026.08: Commercial truck demo — 8 covers, HGV eligibility, GVW/radius rating, broker/TMS distribution."
-      : `Version ${product.version}: managed in Veridex Product Studio.`,
+      : `Version ${product.version}: managed in Veridex Product Guide.`,
     status: product.status,
     activeVersion: product.version,
     versions: [
@@ -236,7 +236,7 @@ export function emptyWorkspace(ownerName: string): Workspace {
       {
         id: "NTF-welcome",
         title: "Commercial truck demo is live",
-        detail: "Open Coverage Studio and Questionnaire (risk) on Commercial Truck Comprehensive — 8 covers, GVW, HGV licence, cargo class.",
+        detail: "Open Coverage Guide and Questionnaire (risk) on Commercial Truck Comprehensive — 8 covers, GVW, HGV licence, cargo class.",
         href: "/products/PRD-015/coverage",
         read: false,
         at: nowIso(),

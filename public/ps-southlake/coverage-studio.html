@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Class of Business Studio — SouthLake Carrier Portal</title>
+  <title>Class of Business Guide — SouthLake Carrier Portal</title>
   <meta name="description" content="Configure covers, limits, deductibles, exclusions and financial terms for a product version.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
-    /* ── Studio two-panel shell ────────────────────────── */
+    /* ── Guide two-panel shell ────────────────────────── */
     .studio-layout {
       display: grid;
       grid-template-columns: 340px minmax(0, 1fr);
@@ -559,7 +559,7 @@
     .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4) var(--space-5); }
     .span-2 { grid-column: 1 / -1; }
 
-    /* Validation state used by Coverage Studio save validation */
+    /* Validation state used by Coverage Guide save validation */
     .form-control.validation-error {
       border-color: #DC2626 !important;
       box-shadow: 0 0 0 2px rgba(220,38,38,.12) !important;
@@ -816,7 +816,7 @@
       font-size: 12px; color: var(--color-brand); font-weight: 600;
     }
 
-    /* ── Studio context bar ──────────────────────────────── */
+    /* ── Guide context bar ──────────────────────────────── */
     .studio-context-bar {
       display: flex; align-items: center; gap: var(--space-4);
       padding: var(--space-3) var(--space-5);
@@ -1236,7 +1236,7 @@
       <!-- Page Header -->
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="studio-title">Class of Business Studio</h1>
+          <h1 class="page-title" id="studio-title">Class of Business Guide</h1>
           <p class="page-subtitle" id="studio-subtitle">Loading…</p>
         </div>
         <div class="page-header-actions" id="product-studio-actions">
@@ -1452,7 +1452,7 @@ const COVERS = [
     id: 'COV-005', name: 'Roadside Assistance', code: 'COV-RSA-001',
     availability: 'addon', complete: true,
     type: 'Assistance / Service Cover',
-    description: 'Provides up to 3 roadside assistance call-outs per year, with towing up to 50km. Fixed-fee add-on linked to Rating Studio as flat premium.',
+    description: 'Provides up to 3 roadside assistance call-outs per year, with towing up to 50km. Fixed-fee add-on linked to Rating Guide as flat premium.',
     basisOfCoverage: 'Agreed Value',
     sumInsured: '', maxSingleLimit: 'N/A (Service)', subLimit: '',
     deductibleType: 'none', deductibleAmount: '',
@@ -1588,7 +1588,8 @@ let DEP_TYPES = ['Requires', 'Excludes', 'Bundles with'];
 let CONSTRAINT_FIELDS = ['Vehicle Age', 'Vehicle Type', 'Insured Value', 'Vehicle Registration', 'Driver Age', 'Usage', 'Sum Insured', 'NCD'];
 let CONSTRAINT_OPS = ['≤', '≥', '=', 'is', 'is one of', 'is not'];
 let WAITING_PERIODS = ['None', '30 days', '60 days', '90 days'];
-let DEDUCTIBLE_PCT_OF = ['Claim Amount', 'Item Limit', 'Loss Amount'];
+let DEDUCTIBLE_PCT_OF = ['Insured Value', 'Coverage Limit', 'Claim Amount', 'Declared Value', 'Shipment Value'];
+let DEDUCTIBLE_APPLIES_PER = ['Per Claim', 'Per Occurrence', 'Per Vehicle', 'Per Shipment'];
 let COVER_TYPES = [
   'First Party — Property Damage',
   'Third Party — Liability',
@@ -3138,19 +3139,6 @@ function setDepCondition(index, value) {
 
   refreshFinancialPanel();
 }
-function dependencyPreviewText(c) {
-  const rules = Array.isArray(c?.dependencies) ? c.dependencies : [];
-  if (!rules.length) return 'No dependency rules configured. This cover behaves independently of other covers.';
-  return rules.map((d, i) => {
-    const type = d.type || 'Requires';
-    const target = d.dependsOn || 'the selected cover';
-    const condition = d.condition && d.condition !== 'Always' ? ` when ${d.condition}` : '';
-    if (type === 'Excludes') return `If this cover is selected, ${target} will be unavailable${condition}.`;
-    if (type === 'Bundles with') return `This cover is recommended with ${target}${condition}.`;
-    return `This cover requires ${target}${condition}.`;
-  }).join(' ');
-}
-
 function addDep() {
   const c = currentCover();
   if (!c || productStatus === 'published') return;
@@ -3184,14 +3172,6 @@ function buildDependenciesSection(c, ro) {
   const badgeClass = type => String(type || 'Requires').toLowerCase().replace(/\s+/g, '-');
 
   return `
-    <div class="dep-hero">
-      <div class="dep-hero-icon" aria-hidden="true">↔</div>
-      <div>
-        <strong>Configure cover-to-cover dependencies</strong>
-        <p>Define what happens when this cover is selected. Use Requires, Excludes, or Bundles with and add an optional condition.</p>
-      </div>
-    </div>
-
     <div class="dep-block">
       <div class="dep-block-head">
         <div>
@@ -3246,14 +3226,8 @@ function buildDependenciesSection(c, ro) {
       : `<div class="dep-help-card"><strong>No dependency rules configured.</strong><br>This cover behaves independently of other covers. Add a rule to require, exclude, or bundle with another cover.</div>`}
 
       ${ro ? '' : `<div class="dep-rule-toolbar">
-        <div class="dep-rules-label">Add a dependency rule</div>
         <button type="button" class="dep-add-btn" onclick="addDep()">+ Add Dependency</button>
       </div>`}
-
-      <div class="dep-preview">
-        <div class="dep-preview-title">Rule Preview</div>
-        <div class="dep-preview-text">${htmlEsc(dependencyPreviewText(c))}</div>
-      </div>
     </div>
   `;
 }
@@ -3598,40 +3572,6 @@ function buildInsuredItemCard(it, index, ro, c) {
             ${quoteOpts.map(o => `<option ${it.quoteChoice===o?'selected':''}>${htmlEsc(o)}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group span-2 uw-override-combined-card">
-          <div class="ii-toggle-row">
-            <div>
-              <strong>Underwriter can override valuation</strong>
-              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="ii-en">${it.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
-              <label class="toggle-switch">
-                <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
-                <div class="toggle-slider"></div><div class="toggle-dot"></div>
-              </label>
-            </div>
-          </div>
-          ${it.uwOverrideValuation ? `
-          <div class="uw-override-fields">
-            <div class="form-group">
-              <label class="form-label">Maximum variation (%)</label>
-              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Referral requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
-                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Reason requirement</label>
-              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
-                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-              </select>
-            </div>
-          </div>` : ''}
-        </div>
         <div class="form-group">
           <label class="form-label">Limit Basis</label>
           <select class="form-control" ${ro?'disabled':''} onchange="setItemLimitBasisSelect('${idAttr}', this.value)">
@@ -3724,6 +3664,40 @@ function buildInsuredItemCard(it, index, ro, c) {
             <input type="text" class="form-control currency-input" value="${htmlEsc(it.itemAggregateLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','itemAggregateLimit',this.value.replace(/[^0-9.,]/g,''),true)">
           </div>
         </div>` : ''}
+        <div class="form-group span-2 uw-override-combined-card">
+          <div class="ii-toggle-row">
+            <div>
+              <strong>Underwriter can override valuation</strong>
+              <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="ii-en">${it.uwOverrideValuation ? 'Enabled' : 'Disabled'}</span>
+              <label class="toggle-switch">
+                <input type="checkbox" ${it.uwOverrideValuation?'checked':''} ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwOverrideValuation',this.checked,false)" aria-label="Underwriter can override valuation">
+                <div class="toggle-slider"></div><div class="toggle-dot"></div>
+              </label>
+            </div>
+          </div>
+          ${it.uwOverrideValuation ? `
+          <div class="uw-override-fields">
+            <div class="form-group">
+              <label class="form-label">Maximum variation (%)</label>
+              <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Referral requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
+                ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reason requirement</label>
+              <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
+                ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
+              </select>
+            </div>
+          </div>` : ''}
+        </div>
       
       </div>
     </div>`;
@@ -3866,6 +3840,21 @@ function buildDeductibleSection(c, ro) {
         >
       </div>
 
+      <div class="form-group">
+        <label class="form-label">Deductible Applies Per</label>
+        <select
+          class="form-control"
+          data-validation-field="deductibleAppliesPer"
+          ${roDis}
+          onchange="${patch('deductibleAppliesPer')}"
+        >
+          ${DEDUCTIBLE_APPLIES_PER.map(o =>
+            `<option ${(c.deductibleAppliesPer || 'Per Claim') === o ? 'selected' : ''}>${htmlEsc(o)}</option>`
+          ).join('')}
+        </select>
+        <span class="form-help">How often the fixed deductible is applied to exposure.</span>
+      </div>
+
     </div>`;
 
   // Percentage deductible
@@ -3887,7 +3876,7 @@ function buildDeductibleSection(c, ro) {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Percentage Of</label>
+        <label class="form-label">Deductible Basis</label>
         <select
           class="form-control"
           data-validation-field="deductiblePctOf"
@@ -3957,7 +3946,7 @@ function deductibleOverrideCardHtml(c, ro) {
   const roDis = ro ? 'disabled' : '';
   const roAttr = ro ? 'readonly' : '';
   const maxPct = c.uwMaxOverrideDeductiblePct ?? 20;
-  const fields = Array.isArray(c.uwOverrideDeductibleFields) ? c.uwOverrideDeductibleFields : ['amount', 'basis', 'appliesPer'];
+  const fields = Array.isArray(c.uwOverrideDeductibleFields) ? c.uwOverrideDeductibleFields : ['amount'];
   const FIELD_OPTIONS = [
     ['amount', 'Deductible Amount / Percentage'],
     ['basis', 'Deductible Basis'],
@@ -3995,7 +3984,7 @@ function toggleDeductibleOverride(checked) {
   const c = currentCover();
   if (!c || !coversCanEdit()) return;
   c.uwOverrideDeductible = !!checked;
-  if (checked && !Array.isArray(c.uwOverrideDeductibleFields)) c.uwOverrideDeductibleFields = ['amount', 'basis', 'appliesPer'];
+  if (checked && !Array.isArray(c.uwOverrideDeductibleFields)) c.uwOverrideDeductibleFields = ['amount'];
   if (checked && c.uwMaxOverrideDeductiblePct == null) c.uwMaxOverrideDeductiblePct = 20;
   try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
   refreshFinancialPanel();
@@ -4132,8 +4121,13 @@ function normalizeCover(cover, index) {
   c.deductiblePct = c.deductiblePct ?? '';
   c.deductiblePctOf = c.deductiblePctOf || 'Claim Amount';
   if (!DEDUCTIBLE_PCT_OF.includes(c.deductiblePctOf)) {
-    const legacyPctOf = { 'Sum Insured': 'Item Limit', 'Insured Value': 'Item Limit' };
+    const legacyPctOf = { 'Sum Insured': 'Coverage Limit', 'Item Limit': 'Coverage Limit', 'Loss Amount': 'Claim Amount' };
     c.deductiblePctOf = legacyPctOf[c.deductiblePctOf] || 'Claim Amount';
+  }
+  c.deductibleAppliesPer = c.deductibleAppliesPer || 'Per Claim';
+  if (!DEDUCTIBLE_APPLIES_PER.includes(c.deductibleAppliesPer)) {
+    const legacyAppliesPer = { 'Claim': 'Per Claim', 'Occurrence': 'Per Occurrence', 'Vehicle': 'Per Vehicle', 'Shipment': 'Per Shipment' };
+    c.deductibleAppliesPer = legacyAppliesPer[c.deductibleAppliesPer] || 'Per Claim';
   }
   c.minDeductible = c.minDeductible ?? '';
   c.maxDeductible = c.maxDeductible ?? '';
@@ -4181,7 +4175,7 @@ function paintStudio() {
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
     { label: `v${productVersion}`, href: `product-detail.html?id=${productId}&version=${productVersion}` },
-    { label: 'Class of Business Studio', href: '#' }
+    { label: 'Class of Business Guide', href: '#' }
   ]);
   refreshCoverMeta();
   renderCoverTable();
@@ -4872,8 +4866,8 @@ function collectProductCoverUsage() {
 }
 
 function renderCoverageLibraryDashboard() {
-  PS.nav.render('coverage', [{ label: 'Class of Business Studio', href: '#' }]);
-  document.getElementById('studio-title').textContent = 'Class of Business Studio';
+  PS.nav.render('coverage', [{ label: 'Class of Business Guide', href: '#' }]);
+  document.getElementById('studio-title').textContent = 'Class of Business Guide';
   const rows = collectProductCoverUsage();
   const used = rows.filter(r => r.productCount > 0).length;
   const productTotal = new Set(rows.flatMap(r => r.products.map(p => p.id))).size;
@@ -5029,10 +5023,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
     { label: `v${productVersion}`, href: `product-detail.html?id=${productId}&version=${productVersion}` },
-    { label: 'Class of Business Studio', href: '#' }
+    { label: 'Class of Business Guide', href: '#' }
   ]);
 
-  document.getElementById('studio-title').textContent = 'Class of Business Studio';
+  document.getElementById('studio-title').textContent = 'Class of Business Guide';
   document.getElementById('ctx-back-link').href = `product-detail.html?id=${productId}`;
   const customerBtn = document.getElementById('customer-view-btn');
   if (customerBtn) customerBtn.href = PS.customerViewHref ? PS.customerViewHref(productId, productVersion) : `product-view.html?id=${productId}&version=${productVersion}`;
@@ -5916,7 +5910,6 @@ function renderDetailPanel(c) {
           ${PS.admin.fieldHtml(f, c[f.id], ro, `patchCoverField('${f.id}', this.value)`)}
         </div>`).join('')}
       </div>
-      ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override cities/counties', 'Allows the underwriter to change the selected cities or counties for this cover at quote time.')}
     `)}
 
   
@@ -5962,11 +5955,11 @@ function renderDetailPanel(c) {
       </div>`).join('') : `
       <div class="vb-empty-state" style="margin-bottom:12px">
         <div class="vb-empty-title">No documents linked</div>
-        <p>Link a clause from Document Studio, upload a file, or add a custom reference.</p>
+        <p>Link a clause from Document Guide, upload a file, or add a custom reference.</p>
       </div>`}
       ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="openLinkDocumentModal()">+ Link Document</button>`}
       <div style="margin-top:var(--space-4)">
-        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View in Document Studio →</a>
+        <a href="document-studio.html?product=${productId}" class="btn btn-ghost btn-sm">View in Document Guide →</a>
       </div>
     `)}
 
@@ -6175,7 +6168,7 @@ function showCoverSaveNotice(type, message) {
 function saveCover(event, options = {}) {
   console.log(1)
   if (event) event.preventDefault();
-  console.log('[Coverage Studio] SAVE CLICKED');
+  console.log('[Coverage Guide] SAVE CLICKED');
   const panel = document.getElementById('detail-panel');
 
   if (!panel) {
@@ -6191,7 +6184,7 @@ function saveCover(event, options = {}) {
   if (cover && typeof snapshotControls === 'function') {
     try { snapshotControls(activeCoverId); } catch (_) {}
   }
-  console.log('[Coverage Studio] VALIDATION START');
+  console.log('[Coverage Guide] VALIDATION START');
 const selectedDed = panel.querySelector('input[name="ded-' + cover.id + '"]:checked');
 if (selectedDed) cover.deductibleType = selectedDed.value;
 
@@ -6203,6 +6196,7 @@ const syncDedField = (selector, key) => {
 syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
 syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
 syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
+syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
 syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
 syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
 syncDedField('[data-validation-field="copay"]', 'copay');
@@ -6232,6 +6226,7 @@ panel.querySelectorAll('[data-required="true"]:not([readonly]):not([disabled])')
   syncDedField('[data-validation-field="deductibleAmount"]', 'deductibleAmount');
   syncDedField('[data-validation-field="deductiblePct"]', 'deductiblePct');
   syncDedField('[data-validation-field="deductiblePctOf"]', 'deductiblePctOf');
+  syncDedField('[data-validation-field="deductibleAppliesPer"]', 'deductibleAppliesPer');
   syncDedField('[data-validation-field="minDeductible"]', 'minDeductible');
   syncDedField('[data-validation-field="maxDeductible"]', 'maxDeductible');
   syncDedField('[data-validation-field="copay"]', 'copay');
@@ -6297,7 +6292,7 @@ panel.querySelectorAll('[data-required="true"]:not([readonly]):not([disabled])')
     }
   });
 
-  console.log('[Coverage Studio] VALIDATION RESULT:', invalidFields.length);
+  console.log('[Coverage Guide] VALIDATION RESULT:', invalidFields.length);
   if (invalidFields.length) {
     const firstInvalid = invalidFields[0];
 

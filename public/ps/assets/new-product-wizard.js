@@ -1,6 +1,6 @@
 /* New Product wizard — shared by dashboard and catalogue */
 let wizardStep = 1;
-const WIZARD_STEPS = ['Product Identity', 'Version Setup', 'Initial Studios', 'Review & Create'];
+const WIZARD_STEPS = ['Product Identity', 'Version Setup', 'Initial Guides', 'Review & Create'];
 const PRODUCT_TYPE_LOB = {
   Transportation: ['Commercial Auto', 'Personal Auto', 'Inland Marine'],
   Property: ['Commercial Property', 'Homeowners']
@@ -179,16 +179,16 @@ function buildWizardHTML() {
     </div>
 
     <div class="wizard-step" id="wizard-step-3">
-      <p style="font-size:14px;color:var(--color-muted);margin-bottom:var(--space-5)">Select which studios to configure during setup. You can access any studio later from the product detail page.</p>
+      <p style="font-size:14px;color:var(--color-muted);margin-bottom:var(--space-5)">Select which guides to configure during setup. You can access any guide later from the product detail page.</p>
       <div style="display:flex;flex-direction:column;gap:var(--space-3)">
         ${[
           { id: 's-coverage', label: 'Class of Business', desc: 'Define what is covered, limits, deductibles, and exclusions.', checked: true },
-          { id: 's-quest', label: 'Questionnaire Studio', desc: 'Build the questions asked at quote, application, and renewal.', checked: true },
-          { id: 's-risk', label: 'Risk Studio', desc: 'Trucking risk data: business type, fleet, radius, commodities, DOT/MC.', checked: true },
-          { id: 's-eligibility', label: 'Eligibility Studio', desc: 'Set rules for who can buy this product.', checked: true },
-          { id: 's-rating', label: 'Rating & Pricing Studio', desc: 'Configure base rates, factors, and premium calculation rules.', checked: true },
-          { id: 's-dist', label: 'Distribution Studio', desc: 'Configure channels, broker agreements, and commission structures.', checked: false },
-          { id: 's-doc', label: 'Document Studio', desc: 'Set up policy documents, endorsements, and certificate templates.', checked: false }
+          { id: 's-quest', label: 'Questionnaire Guide', desc: 'Build the questions asked at quote, application, and renewal.', checked: true },
+          { id: 's-risk', label: 'Risk Guide', desc: 'Trucking risk data: business type, fleet, radius, commodities, DOT/MC.', checked: true },
+          { id: 's-eligibility', label: 'Eligibility Guide', desc: 'Set rules for who can buy this product.', checked: true },
+          { id: 's-rating', label: 'Rating & Pricing Guide', desc: 'Configure base rates, factors, and premium calculation rules.', checked: true },
+          { id: 's-dist', label: 'Distribution Guide', desc: 'Configure channels, broker agreements, and commission structures.', checked: false },
+          { id: 's-doc', label: 'Document Guide', desc: 'Set up policy documents, endorsements, and certificate templates.', checked: false }
         ].map(s => `
         <label style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-lg);cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--color-surface)'" onmouseleave="this.style.background=''">
           <input type="checkbox" id="${s.id}" ${s.checked ? 'checked' : ''} style="width:18px;height:18px;accent-color:var(--color-brand);margin-top:1px;flex-shrink:0">
@@ -329,7 +329,7 @@ const studios = ['s-coverage', 's-quest', 's-risk', 's-eligibility', 's-rating',
       </div>
     </div>
     <div style="grid-column:1/-1;border-top:1px solid var(--color-border);padding-top:var(--space-4);margin-top:var(--space-2)">
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted);margin-bottom:var(--space-3)">Studios to Configure</div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted);margin-bottom:var(--space-3)">Guides to Configure</div>
       <div style="display:flex;flex-wrap:wrap;gap:var(--space-2)">
         ${studios.map(s => `<span class="role-badge">${s}</span>`).join('')}
       </div>
@@ -423,7 +423,7 @@ function toggleCloneSection() {
 function executeCreate() {
   try {
     if (!window.PS?.prototypeApp?.createProductFromWizard) {
-      throw new Error('Product Studio is still loading. Refresh and try Create Product again.');
+      throw new Error('Product Guide is still loading. Refresh and try Create Product again.');
     }
     const created = PS.prototypeApp.createProductFromWizard();
     const products = wizardProductList();

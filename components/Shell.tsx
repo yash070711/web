@@ -44,12 +44,12 @@ export function Shell({
           <div className="topbar-logo-mark">v</div>
           <span className="topbar-logo-wordmark">
             <span className="topbar-logo-text">Veridex</span>
-            <span className="topbar-logo-sub">Product Studio</span>
+            <span className="topbar-logo-sub">Product Guide</span>
           </span>
         </Link>
         <div className="topbar-divider" />
         <nav className="topbar-breadcrumb">
-          <Link href="/dashboard">Studio</Link>
+          <Link href="/dashboard">Guide</Link>
           {crumbs.map((c, i) => (
             <span key={`${c.href}-${i}`}>
               <span className="sep"> › </span>

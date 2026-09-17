@@ -1,4 +1,4 @@
-/* Product detail hub — dynamic overview matching the Product Studio hub layout. */
+/* Product detail hub — dynamic overview matching the Product Guide hub layout. */
 (function () {
   const EDITOR_TABS = ['overview', 'studios', 'simulation', 'versions', 'audit'];
   const LIFECYCLE = [
@@ -133,7 +133,7 @@ function buildHubStudios() {
 
     {
       id: 'questionnaire',
-      title: 'Questionnaire Studio',
+      title: 'Questionnaire Guide',
       description: 'Risk questions the customer answers at quote time.',
       count: qCount,
       noun: ['Question', 'Questions'],
@@ -145,7 +145,7 @@ function buildHubStudios() {
 
     {
       id: 'eligibility',
-      title: 'Eligibility Studio',
+      title: 'Eligibility Guide',
       description: 'Who can buy this product, and when a case is referred.',
       count: liveOrDetailCount(
         'eligibility',
@@ -160,7 +160,7 @@ function buildHubStudios() {
 
     {
       id: 'risk',
-      title: 'Risk Studio',
+      title: 'Risk Guide',
       description: 'Commercial trucking risk attributes by question group: operations, fleet, vehicle, driver, cargo, safety, and loss history.',
       count: liveOrDetailCount(
         'risk',
@@ -175,7 +175,7 @@ function buildHubStudios() {
 
     {
       id: 'rating',
-      title: 'Rating & Pricing Studio',
+      title: 'Rating & Pricing Guide',
       description: 'Base premium, factors, and rating tables.',
       count: rCount,
       noun: ['Factor', 'Factors'],
@@ -187,7 +187,7 @@ function buildHubStudios() {
 
     {
       id: 'distribution',
-      title: 'Distribution Studio',
+      title: 'Distribution Guide',
       description: 'How the product is sold: web, broker, API.',
       count: liveOrDetailCount(
         'distribution',
@@ -202,7 +202,7 @@ function buildHubStudios() {
 
     {
       id: 'document',
-      title: 'Document Studio',
+      title: 'Document Guide',
       description: 'Policy wording, certificates, schedules, and endorsements.',
       count: liveOrDetailCount(
         'document',
@@ -333,19 +333,19 @@ function buildHubStudios() {
           <div class="ph-studio-name">${esc(s.title)}</div>
           <div class="ph-studio-desc">Not selected for this product. Add it to start configuring.</div>
         </div>
-        <button class="btn btn-secondary btn-sm" type="button" onclick="selectProductStudio('${esc(s.id)}')">Select studio</button>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="selectProductStudio('${esc(s.id)}')">Select guide</button>
       </div>`;
   }
   window.blockLockedStudio = function (event, prevTitle) {
     event.preventDefault();
-    PS.actionResult?.('error', 'Please complete the previous studio first', `Finish ${prevTitle} before opening this studio.`);
+    PS.actionResult?.('error', 'Please complete the previous guide first', `Finish ${prevTitle} before opening this guide.`);
     return false;
   };
   window.selectProductStudio = function (studioId) {
     if (!PS.prototypeApp?.enableStudio) return;
     const next = PS.prototypeApp.enableStudio(currentProduct.id, studioId);
     currentProduct.enabledStudios = next;
-    PS.actionResult?.('success', 'Studio added', 'This studio is now available to configure on the product hub.');
+    PS.actionResult?.('success', 'Guide added', 'This guide is now available to configure on the product hub.');
     renderPage();
   };
   function hubSummary(studios) {
@@ -617,7 +617,7 @@ function buildHubStudios() {
     const versions = p.versions || [];
 
     p.completion = summary.overall;
-    document.title = `${p.name} — Insurance Product Studio`;
+    document.title = `${p.name} — Insurance Product Guide`;
     document.getElementById('page-inner').classList.add('product-hub');
 
     PS.nav.render('catalogue', [
@@ -632,7 +632,7 @@ function buildHubStudios() {
 
     const studioRows = [
       selected.map(configuredStudioRow).join(''),
-      available.length ? `<div class="ph-studio-more">Add a studio</div>${available.map(availableStudioRow).join('')}` : ''
+      available.length ? `<div class="ph-studio-more">Add a guide</div>${available.map(availableStudioRow).join('')}` : ''
     ].join('');
 
     const activityHtml = activity.length === 0
@@ -691,12 +691,12 @@ function buildHubStudios() {
           <div class="card" id="studios">
             <div class="card-header">
               <div>
-                <div class="card-title">Product Studio</div>
+                <div class="card-title">Product Guide</div>
                 <div class="card-subtitle">Design and configure every aspect of your product.</div>
               </div>
               <a class="btn btn-primary btn-sm ph-configure-all" href="${esc(studioHref('coverage-studio.html'))}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
-                ${selected.length ? 'Configure All' : 'Add studios'}
+                ${selected.length ? 'Configure All' : 'Add guides'}
               </a>
             </div>
             <div class="ph-studio-list">${studioRows}</div>
@@ -726,7 +726,7 @@ function buildHubStudios() {
             <button class="ph-quick-card" type="button" onclick="downloadFullProductJson()">
               <span class="ph-quick-icon">${quickIcon('export')}</span>
               <span class="ph-quick-title">Download JSON</span>
-              <span class="ph-quick-desc">All studios, pricing, and governance</span>
+              <span class="ph-quick-desc">All guides, pricing, and governance</span>
             </button>
             <a class="ph-quick-card" href="audit-log.html?product=${encodeURIComponent(p.id)}">
               <span class="ph-quick-icon">${quickIcon('log')}</span>

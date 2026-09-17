@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (window.PS && PS.nav && typeof PS.nav.render === 'function') {
     PS.nav.render('distribution', [
       { label: 'Product Catalogue', href: '/catalogue' },
-      { label: 'Distribution Studio', href: '/distribution' },
+      { label: 'Distribution Guide', href: '/distribution' },
       { label: 'Create Channel', href: '/distribution-create' }
     ]);
   }
@@ -445,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // prototype app. This keeps product-specific class configurations isolated.
     if(requested && records.some(p => String(p.id) === String(requested))) return requested;
 
-    // The Class of Business Studio is also used from the product route. If the
+    // The Class of Business Guide is also used from the product route. If the
     // page was opened without a query string, resolve the product from the
     // prototype application's current context/name instead of falling back to
     // an unrelated hard-coded id.
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function normalizeClasses(value){
-    // Class of Business Studio persists its configured classes as the coverage
+    // Class of Business Guide persists its configured classes as the coverage
     // objects themselves. It may also be wrapped in { coverages: [...] } or a
     // product/detail object, so unwrap all supported forms first.
     if(value && !Array.isArray(value) && typeof value === "object"){
@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const collectionCovers = [];
 
     // IMPORTANT:
-    // In the current Class of Business Studio, the items shown under
+    // In the current Class of Business Guide, the items shown under
     // "COVERS" (for example Auto Liability, Physical Damage and
     // Motor Truck Cargo) are the configured parent objects that this
     // Distribution screen needs to use for authority configuration.
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', function () {
       proto?.state?.businessClasses?.[app.productId],
 
       // Product covers are the actual configured parent/child hierarchy
-      // visible in the Class of Business Studio "COVERS" panel.
+      // visible in the Class of Business Guide "COVERS" panel.
       product.covers,
       detail.covers,
       bundle.covers,
@@ -552,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return classes.length ? classes : null;
     };
 
-    // 1. Exact product-scoped Class of Business Studio collection.
+    // 1. Exact product-scoped Class of Business Guide collection.
     try{
       const exactKeys = [
         `veridex-class-of-business-${app.productId}`,
@@ -575,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 3. Recover the product's persisted "covers" collection.
-    // The Class of Business Studio saves its visible COVERS hierarchy as:
+    // The Class of Business Guide saves its visible COVERS hierarchy as:
     //   <productId>::<version>::covers
     // in prototypeApp.state.collections. Some older prototype builds also
     // expose a product-scoped localStorage value, so support both forms.
@@ -608,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 4. Recover any product-scoped class collection. This is important when
     // the Distribution page was opened without ?product=... but the upstream
-    // Class of Business Studio was saved against the real product id.
+    // Class of Business Guide was saved against the real product id.
     try{
       const candidates=[];
       for(let i=0;i<localStorage.length;i++){
@@ -745,11 +745,11 @@ document.addEventListener('DOMContentLoaded', function () {
   function classContext(){
     if(!app.classes.length) return `<div class="class-empty">
       <div><strong>No Class of Business is configured for this product yet.</strong></div>
-      <div class="muted">Classes / covers configured in Class of Business Studio will appear here automatically.</div>
+      <div class="muted">Classes / covers configured in Class of Business Guide will appear here automatically.</div>
     </div>`;
     return `
       <div class="class-context">${app.classes.length} class${app.classes.length===1?"":"es"} of business configured
-        <small>Dynamic data from Class of Business Studio</small>
+        <small>Dynamic data from Class of Business Guide</small>
       </div>
       <div class="chips">
         ${app.classes.map(c=>`

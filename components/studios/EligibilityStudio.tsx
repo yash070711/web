@@ -312,7 +312,7 @@ export function EligibilityStudio({
   return (
     <>
       <StudioHeader
-        title="Eligibility Studio"
+        title="Eligibility Guide"
         subtitle="Define eligibility criteria to determine who can buy this product."
         productId={productId}
         moduleId="eligibility"

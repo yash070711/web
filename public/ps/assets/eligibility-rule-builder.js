@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   'use strict';
   const esc = htmlEsc;
   const defaults = [
@@ -60,7 +60,7 @@
     });
   }
   function fields() {
-    const result = productQuestionGroups().flatMap(g => (g.questions || []).map(q => ({id:String(q.id),field:questionFieldKey(q),label:q.label || q.name || q.id,category:q.questionCategory || g.label || g.name || 'General',source:'Questionnaire Studio',type:q.fieldType || q.type || 'text',sourceQuestionId:q.id})));
+    const result = productQuestionGroups().flatMap(g => (g.questions || []).map(q => ({id:String(q.id),field:questionFieldKey(q),label:q.label || q.name || q.id,category:q.questionCategory || g.label || g.name || 'General',source:'Questionnaire Guide',type:q.fieldType || q.type || 'text',sourceQuestionId:q.id})));
     return result.filter((f, i) => result.findIndex(other => other.id === f.id) === i);
   }
   function prepare(r) {
@@ -221,7 +221,7 @@
     filter() {
       const q=document.getElementById('eb-search').value.toLowerCase(),cat=document.getElementById('eb-category').value;
       const matches=pickerFields.map((f,i)=>({f,i})).filter(({f})=>(cat==='All categories'||f.category===cat)&&`${f.label} ${f.category} ${f.source}`.toLowerCase().includes(q));
-      const sourceOrder=['Questionnaire Studio','Product data','External data'];
+      const sourceOrder=['Questionnaire Guide','Product data','External data'];
       const groups=new Map();
       matches.forEach(item => {
         const src=item.f.source || 'Other';
@@ -240,7 +240,7 @@
         : '<p>No matching fields.</p>';
     },
     pick(i) { if(!rulesCanEdit())return;const f=pickerFields[i],c=active().conditions[pickerIndex];Object.assign(c,{field:f.field,label:f.label,fieldType:f.type,source:f.source,category:f.category,sourceQuestionId:f.sourceQuestionId || '',attributeId:f.attributeId || '',value:''});PS.closeModal();detail(); },
-    samples() { if(!rulesCanEdit())return;const pd=covers().find(c=>/physical damage/i.test(c.name));if(!pd)return toast('Add Physical Damage in Coverage Studio before adding the sample rules.');const a=newRule('Vehicle age – Physical Damage');Object.assign(a,{coverageMode:'specific',category:'Cover Eligibility',cover:pd.name,coverIds:[pd.id],coverageChildren:{[pd.id]:pd.children.slice()},conditions:[{field:'vehicle_age',label:'Vehicle age',op:'>',value:'20'}],outcomeType:'hard',affectedScope:'Affected vehicle',internalMsg:'Vehicle age exceeds Physical Damage threshold.',customerMsg:'Physical Damage cannot be offered for this vehicle.'});const b=newRule('Long operating radius');Object.assign(b,{conditions:[{field:'operating_radius',label:'Operating radius',op:'>',value:'500'}],referralQueue:'Transportation Underwriting',internalMsg:'Operating radius exceeds 500 miles.',customerMsg:'Underwriting review is required for this operating radius.'});[a,b].forEach(r=>{if(!RULES.some(x=>x.name===r.name))RULES.push(r);});activeRuleId=RULES.find(r=>r.name===a.name).id;render();toast('Sample rules added. Save Draft to keep them.'); }
+    samples() { if(!rulesCanEdit())return;const pd=covers().find(c=>/physical damage/i.test(c.name));if(!pd)return toast('Add Physical Damage in Coverage Guide before adding the sample rules.');const a=newRule('Vehicle age – Physical Damage');Object.assign(a,{coverageMode:'specific',category:'Cover Eligibility',cover:pd.name,coverIds:[pd.id],coverageChildren:{[pd.id]:pd.children.slice()},conditions:[{field:'vehicle_age',label:'Vehicle age',op:'>',value:'20'}],outcomeType:'hard',affectedScope:'Affected vehicle',internalMsg:'Vehicle age exceeds Physical Damage threshold.',customerMsg:'Physical Damage cannot be offered for this vehicle.'});const b=newRule('Long operating radius');Object.assign(b,{conditions:[{field:'operating_radius',label:'Operating radius',op:'>',value:'500'}],referralQueue:'Transportation Underwriting',internalMsg:'Operating radius exceeds 500 miles.',customerMsg:'Underwriting review is required for this operating radius.'});[a,b].forEach(r=>{if(!RULES.some(x=>x.name===r.name))RULES.push(r);});activeRuleId=RULES.find(r=>r.name===a.name).id;render();toast('Sample rules added. Save Draft to keep them.'); }
   };
   window.openRuleEditor = function(id) { PS.closeModal?.();pendingEligibilityRule=null;activeRuleId=id;setEligHubVisible(true);if(PS.studioHub)PS.studioHub.mode='hub';document.getElementById('studio-editor')?.classList.add('hidden');const host=document.getElementById('studio-hub');host?.classList.remove('hidden');host?.closest('.studio-hub-home')?.classList.remove('hidden');render(); };
   window.openAddRuleModal = () => api.add();

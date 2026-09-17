@@ -1,4 +1,4 @@
-/* Default trucking questionnaire groups — Questionnaire Studio */
+/* Default trucking questionnaire groups — Questionnaire Guide */
 window.PS = window.PS || {};
 
 (function () {

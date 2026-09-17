@@ -1,13 +1,13 @@
 export const STUDIO_NAV_CHAIN = [
   { id: "jurisdiction", segment: "jurisdiction", title: "Define Jurisdiction" },
-  { id: "coverage", segment: "coverage", title: "Coverage Studio" },
-  { id: "questionnaire", segment: "questionnaire", title: "Questionnaire Studio" },
-  { id: "risk", segment: "risk", title: "Risk Studio" },
-  { id: "eligibility", segment: "eligibility", title: "Eligibility Studio" },
-  { id: "rating", segment: "rating", title: "Rating & Pricing Studio" },
-  { id: "underwriting", segment: "underwriting", title: "Underwriting Rules Studio" },
-  { id: "distribution", segment: "distribution", title: "Distribution Studio" },
-  { id: "document", segment: "document", title: "Document Studio" },
+  { id: "coverage", segment: "coverage", title: "Coverage Guide" },
+  { id: "questionnaire", segment: "questionnaire", title: "Questionnaire Guide" },
+  { id: "risk", segment: "risk", title: "Risk Guide" },
+  { id: "eligibility", segment: "eligibility", title: "Eligibility Guide" },
+  { id: "rating", segment: "rating", title: "Rating & Pricing Guide" },
+  { id: "underwriting", segment: "underwriting", title: "Underwriting Rules Guide" },
+  { id: "distribution", segment: "distribution", title: "Distribution Guide" },
+  { id: "document", segment: "document", title: "Document Guide" },
 ] as const;
 
 export function getNextStudio(currentId: string, productId: string) {

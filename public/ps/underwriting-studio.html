@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Underwriting Studio — Insurance Product Studio</title>
+  <title>Underwriting Guide — Insurance Product Guide</title>
   <meta name="description" content="Configure the risk appetite rules that evaluate quotation and risk data to produce underwriting decisions.">
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/studio-hub.css">
@@ -258,7 +258,7 @@
 
       <div class="page-header">
         <div class="page-header-left">
-          <h1 class="page-title" id="studio-title">Underwriting Studio</h1>
+          <h1 class="page-title" id="studio-title">Underwriting Guide</h1>
           <p class="page-subtitle" id="studio-subtitle">Loading…</p>
         </div>
         <div class="page-header-actions uw-page-actions" id="product-studio-actions">
@@ -386,7 +386,7 @@
   function questionnaireGroups() {
     var out = [];
 
-    // Primary source: Questionnaire Studio's configured groups.
+    // Primary source: Questionnaire Guide's configured groups.
     try {
       if (window.PS && typeof PS.truckingQuestionGroups === 'function') {
         var groups = PS.truckingQuestionGroups();
@@ -399,7 +399,7 @@
       }
     } catch (_) {}
 
-    // Also read question-group values exposed by Questionnaire Studio.
+    // Also read question-group values exposed by Questionnaire Guide.
     var candidates = [
       window.QUESTIONS,
       window.QUESTIONNAIRE_QUESTIONS,
@@ -417,8 +417,8 @@
       });
     });
 
-    // Read the actual persisted Questionnaire Studio group collection.
-    // Questionnaire Studio persists its editable groups as "questionGroups".
+    // Read the actual persisted Questionnaire Guide group collection.
+    // Questionnaire Guide persists its editable groups as "questionGroups".
     try {
       var persistedGroupSources = [];
 
@@ -459,7 +459,7 @@
         arr.forEach(function(item) {
           if (!item || typeof item !== 'object') return;
 
-          // A Questionnaire Studio group is normally {id,label,name,...}.
+          // A Questionnaire Guide group is normally {id,label,name,...}.
           var directGroup = text(item.label || item.name || item.groupName);
           if (directGroup) out.push(directGroup);
 
@@ -604,7 +604,7 @@
     var attrs = sourceRiskAttributes();
 
     // If the existing risk-attribute select is populated, keep its options
-    // and map values back to Questionnaire Studio question groups.
+    // and map values back to Questionnaire Guide question groups.
     riskSelect.addEventListener('change', function () {
       var selectedText = riskSelect.options[riskSelect.selectedIndex]
         ? text(riskSelect.options[riskSelect.selectedIndex].textContent) : '';
@@ -692,13 +692,13 @@
       }
     }
 
-    // 2. Question Group comes from Questionnaire Studio groups.
+    // 2. Question Group comes from Questionnaire Guide groups.
     var questionGroup = findGroup(modal, 'Question Group');
     var groupSelect = replaceWithSelect(questionGroup, questionnaireGroups(), 'uw-question-group');
     if (questionGroup && groupSelect) {
       var note = document.createElement('div');
       note.className = 'uw-source-note';
-      note.textContent = 'Options are sourced from Questionnaire Studio question groups.';
+      note.textContent = 'Options are sourced from Questionnaire Guide question groups.';
       questionGroup.appendChild(note);
     }
 
@@ -775,9 +775,9 @@
     var existing = findModal();
     if (existing) enhanceAddRuleModal(existing);
 
-    // Keep the Question Group dropdown synchronized with Questionnaire Studio.
+    // Keep the Question Group dropdown synchronized with Questionnaire Guide.
     // This means a newly created group appears without requiring an Underwriting
-    // Studio page refresh.
+    // Guide page refresh.
     refreshQuestionGroupDropdowns();
     setInterval(refreshQuestionGroupDropdowns, 1000);
   }

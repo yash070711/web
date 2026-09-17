@@ -10,13 +10,13 @@ window.PS = window.PS || {};
     COLLECTION,
 
     STUDIOS: {
-      COVERAGE: 'Coverage Studio',
-      RISK: 'Risk Studio',
-      QUESTIONS: 'Questions Studio',
-      PRODUCT: 'Product Studio',
-      UNDERWRITING: 'Underwriting Studio',
-      ELIGIBILITY: 'Eligibility Studio',
-      DISTRIBUTION: 'Distribution Studio'
+      COVERAGE: 'Coverage Guide',
+      RISK: 'Risk Guide',
+      QUESTIONS: 'Questions Guide',
+      PRODUCT: 'Product Guide',
+      UNDERWRITING: 'Underwriting Guide',
+      ELIGIBILITY: 'Eligibility Guide',
+      DISTRIBUTION: 'Distribution Guide'
     },
 
     SYNC_COLLECTIONS: ['eligibilityRules', 'covers', 'questionGroups', 'riskAttributes', 'channels', COLLECTION],
@@ -117,12 +117,12 @@ window.PS = window.PS || {};
       }
       const pid = productId || '';
       const map = {
-        'Coverage Studio': `coverage-studio.html?product=${encodeURIComponent(pid)}`,
-        'Eligibility Studio': `eligibility-studio.html?product=${encodeURIComponent(pid)}&rule=${encodeURIComponent(rule?.id || '')}`,
-        'Questions Studio': `questionnaire-studio.html?product=${encodeURIComponent(pid)}`,
-        'Risk Studio': `risk-studio.html?product=${encodeURIComponent(pid)}`,
-        'Product Studio': `product-detail.html?id=${encodeURIComponent(pid)}`,
-        'Distribution Studio': `distribution-studio.html?product=${encodeURIComponent(pid)}`
+        'Coverage Guide': `coverage-studio.html?product=${encodeURIComponent(pid)}`,
+        'Eligibility Guide': `eligibility-studio.html?product=${encodeURIComponent(pid)}&rule=${encodeURIComponent(rule?.id || '')}`,
+        'Questions Guide': `questionnaire-studio.html?product=${encodeURIComponent(pid)}`,
+        'Risk Guide': `risk-studio.html?product=${encodeURIComponent(pid)}`,
+        'Product Guide': `product-detail.html?id=${encodeURIComponent(pid)}`,
+        'Distribution Guide': `distribution-studio.html?product=${encodeURIComponent(pid)}`
       };
       return map[rule?.sourceStudio] || `underwriting-studio.html?product=${encodeURIComponent(pid)}&rule=${encodeURIComponent(rule?.id || '')}`;
     },
@@ -145,7 +145,7 @@ window.PS = window.PS || {};
         priority: prev.priority != null && next.sourceStudio !== PS.uwRuleStore.STUDIOS.UNDERWRITING
           ? (prev.priority ?? next.priority)
           : (next.priority ?? prev.priority),
-        audit: [...(prev.audit || []), { d: new Date().toISOString().slice(0, 10), u: 'System', c: 'Synchronized from source studio' }].slice(-12)
+        audit: [...(prev.audit || []), { d: new Date().toISOString().slice(0, 10), u: 'System', c: 'Synchronized from source guide' }].slice(-12)
       }));
     },
 
@@ -361,7 +361,7 @@ window.PS = window.PS || {};
             condition: {
               groups: [{ logic: 'AND', rows: [{ f: a.name, fieldKey: a.fieldKey || a.id, op, v: String(val) }] }]
             },
-            desc: ur.description || `${a.name} rule from Risk Studio.`,
+            desc: ur.description || `${a.name} rule from Risk Guide.`,
             priority: ur.priority || 30,
             assignedTo: ur.assignedTo || '—',
             fallbackUnderwriter: ur.fallback || 'Commercial Underwriting Manager',
@@ -417,7 +417,7 @@ window.PS = window.PS || {};
         if (norm.syncKey && !sourceSyncKeys.has(norm.syncKey)) {
           merged.push(this.normalize(Object.assign({}, norm, {
             status: 'inactive',
-            inactiveReason: 'Removed from originating studio'
+            inactiveReason: 'Removed from originating guide'
           })));
           seenIds.add(norm.id);
         }

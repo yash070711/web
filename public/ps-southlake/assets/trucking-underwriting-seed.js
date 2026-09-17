@@ -1,4 +1,4 @@
-/* Commercial Trucking underwriting rules — Underwriting Studio */
+/* Commercial Trucking underwriting rules — Underwriting Guide */
 window.PS = window.PS || {};
 
 (function () {
@@ -17,7 +17,7 @@ window.PS = window.PS || {};
       priority,
       status: 'active',
       source: 'Risk',
-      sourceStudio: PS.uwRuleStore?.STUDIOS?.UNDERWRITING || 'Underwriting Studio',
+      sourceStudio: PS.uwRuleStore?.STUDIOS?.UNDERWRITING || 'Underwriting Guide',
       syncKey: `native::${id}`,
       questionGroup: group,
       riskAttributeId: riskId,

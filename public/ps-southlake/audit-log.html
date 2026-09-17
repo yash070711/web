@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Audit Log — SouthLake Carrier Portal</title>
-  <meta name="description" content="Complete, immutable record of all Studio events.">
+  <meta name="description" content="Complete, immutable record of all Guide events.">
   <link rel="stylesheet" href="assets/style.css">
   <style>
     /* ── Layout ────────────────────────────────── */
@@ -67,7 +67,7 @@
     <div class="page-header" style="padding-left:var(--space-5);padding-right:var(--space-5)">
       <div class="page-header-left">
         <h1 class="page-title">Audit Log</h1>
-        <p class="page-subtitle">Complete, immutable record of all Studio events. Entries cannot be modified or deleted.</p>
+        <p class="page-subtitle">Complete, immutable record of all Guide events. Entries cannot be modified or deleted.</p>
       </div>
       <div class="page-header-actions">
         <button class="btn btn-ghost" onclick="PS.actionResult('info','Export','Exporting audit log as CSV...')">
@@ -110,7 +110,7 @@
             <select class="form-control"><option>Product: All</option><option>PRD-015</option><option>PRD-011</option><option>PRD-020</option></select>
             <select class="form-control"><option>User: All</option><option>Anika Sharma</option><option>Rajan Mehta</option></select>
             <select class="form-control"><option>Action: All</option><option>MODIFIED</option><option>APPROVED</option></select>
-            <select class="form-control"><option>Studio: All</option><option>Rating</option><option>Governance</option></select>
+            <select class="form-control"><option>Guide: All</option><option>Rating</option><option>Governance</option></select>
           </div>
           
           <div class="filter-chips">
@@ -125,7 +125,7 @@
                 <th style="width:14%">Timestamp (UTC+5:30)</th>
                 <th style="width:14%">User</th>
                 <th style="width:10%">Action</th>
-                <th style="width:12%">Studio</th>
+                <th style="width:12%">Guide</th>
                 <th style="width:15%">Product</th>
                 <th style="width:25%">Description</th>
                 <th style="width:10%;text-align:right">Details</th>
@@ -237,7 +237,7 @@
   <div class="drawer-header">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
       <span class="act-badge badge-brand">MODIFIED</span>
-      <span style="font-size:14px;color:var(--color-muted);font-weight:600">Rating Studio</span>
+      <span style="font-size:14px;color:var(--color-muted);font-weight:600">Rating Guide</span>
     </div>
     <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--color-ink)">21-Aug-2026 14:22:05 UTC+5:30</div>
     <div style="font-size:13px;color:var(--color-muted);margin-top:4px">Rajan Mehta — Pricing Actuary</div>

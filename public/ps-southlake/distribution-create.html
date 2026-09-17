@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (window.PS && PS.nav && typeof PS.nav.render === 'function') {
     PS.nav.render('distribution', [
       { label: 'Product Catalogue', href: '/catalogue' },
-      { label: 'Distribution Studio', href: '/distribution' },
+      { label: 'Distribution Guide', href: '/distribution' },
       { label: 'Create Channel', href: '/distribution-create' }
     ]);
   }
@@ -584,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if(!app.classes.length) return `<div class="muted">No Class of Business is configured for this product yet.</div>`;
     return `
       <div class="class-context">${app.classes.length} class${app.classes.length===1?"":"es"} of business configured
-        <small>Dynamic data from Class of Business Studio</small>
+        <small>Dynamic data from Class of Business Guide</small>
       </div>
       <div class="chips">
         ${app.classes.map(c=>`

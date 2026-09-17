@@ -39,7 +39,7 @@
       ]
     },
     {
-      group: 'Questionnaire Studio',
+      group: 'Questionnaire Guide',
       lists: [
         { key: 'questionTypes', label: 'Question types', items: ['Text', 'Textarea', 'Number', 'Currency', 'Date', 'Boolean', 'Single-select', 'Multi-select', 'Entity Lookup', 'Attachment', 'Repeatable Group', 'Date Range', 'Address'] },
         { key: 'questionChannels', label: 'Question channels', items: ['web', 'mobile', 'agent', 'api'] },
@@ -77,7 +77,7 @@
       ]
     },
     {
-      group: 'Risk Studio',
+      group: 'Risk Guide',
       lists: [
         { key: 'riskAttributeTypes', label: 'Risk attribute types', items: ['Text', 'Number', 'Select', 'Multi-select', 'Boolean'] }
       ]
@@ -91,7 +91,7 @@
         { key: 'userRoles', label: 'User roles', items: ['Product Manager', 'Pricing Actuary', 'Underwriting Manager', 'Compliance Officer', 'Compliance/Legal', 'Publisher', 'Administrator', 'Auditor'] },
         { key: 'userStatuses', label: 'User statuses', items: ['Active', 'Invited', 'Suspended'] },
         { key: 'approvalModes', label: 'Approval modes', items: ['Sequential (in listed order)', 'Parallel (all simultaneously)'] },
-        { key: 'glossaryCategories', label: 'Glossary categories', items: ['Insurance Domain', 'Product Studio Concepts', 'Lifecycle & Status', 'Roles', 'Studios', 'UI Labels', 'API & Technical'] },
+        { key: 'glossaryCategories', label: 'Glossary categories', items: ['Insurance Domain', 'Product Guide Concepts', 'Lifecycle & Status', 'Roles', 'Guides', 'UI Labels', 'API & Technical'] },
         { key: 'integrationStatuses', label: 'Integration statuses', items: ['Operational', 'Degraded', 'Down'] },
         { key: 'paymentPreferences', label: 'Payment preferences', items: ['Annual', 'Monthly Installments'] }
       ]

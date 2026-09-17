@@ -1,5 +1,5 @@
 /* ============================================================
-   Insurance Product Studio — Shared Nav + Topbar
+   Insurance Product Guide — Shared Nav + Topbar
    nav.js
    ============================================================ */
 
@@ -9,16 +9,16 @@ PS.nav = {
   items: [
     { group: 'HOME' },
     { id: 'dashboard',      label: 'Dashboard',                href: '/dashboard',                icon: 'house' },
-    { group: 'PRODUCT STUDIO' },
+    { group: 'PRODUCT GUIDE' },
     { id: 'catalogue',      label: 'Product Catalogue',        href: '/catalogue',             icon: 'book-open' },
     { id: 'jurisdiction',   label: 'Define Jurisdiction',      href: '/jurisdiction',   icon: 'map-pin' },
-    { id: 'coverage',       label: 'Coverage Studio',          href: '/coverage-studio',       icon: 'umbrella' },
-    { id: 'questionnaire',  label: 'Questionnaire Studio',     href: '/questionnaire-studio',  icon: 'list-checks' },
-    { id: 'risk',           label: 'Risk Studio',               href: '/risk-studio',           icon: 'warning' },
-    { id: 'eligibility',    label: 'Eligibility Studio',       href: '/eligibility-studio',    icon: 'user-check' },
-    { id: 'rating',         label: 'Rating & Pricing Studio',  href: '/rating-pricing',         icon: 'calculator' },
-    { id: 'distribution',   label: 'Distribution Studio',      href: '/distribution',    icon: 'tree-structure' },
-    { id: 'document',       label: 'Document Studio',          href: '/document-studio',       icon: 'file-text' },
+    { id: 'coverage',       label: 'Coverage Guide',          href: '/coverage-studio',       icon: 'umbrella' },
+    { id: 'questionnaire',  label: 'Questionnaire Guide',     href: '/questionnaire-studio',  icon: 'list-checks' },
+    { id: 'risk',           label: 'Risk Guide',               href: '/risk-studio',           icon: 'warning' },
+    { id: 'eligibility',    label: 'Eligibility Guide',       href: '/eligibility-studio',    icon: 'user-check' },
+    { id: 'rating',         label: 'Rating & Pricing Guide',  href: '/rating-pricing',         icon: 'calculator' },
+    { id: 'distribution',   label: 'Distribution Guide',      href: '/distribution',    icon: 'tree-structure' },
+    { id: 'document',       label: 'Document Guide',          href: '/document-studio',       icon: 'file-text' },
     { group: 'GOVERNANCE' },
     { id: 'simulation',     label: 'Simulation & Testing',     href: '/simulation',     icon: 'flask' },
     { id: 'audit',          label: 'Audit Log',                href: '/audit-log',             icon: 'clock-counter' },

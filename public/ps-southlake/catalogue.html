@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -684,7 +684,7 @@ function statusCellHtml(p) {
   try { stage = PS.prototypeApp.productBuildStage(p.id, p.version); } catch (_) {}
   if (!stage) return `<div class="cat-status">${badge}</div>`;
   const cls = stage.pending ? 'cat-stage' : 'cat-stage is-ready';
-  const tip = `${stage.done} of ${stage.total} studios configured`;
+  const tip = `${stage.done} of ${stage.total} guides configured`;
   return `<div class="cat-status">${badge}<a class="${cls}" href="${stage.href}" onclick="event.stopPropagation()" title="${tip}">${stage.text}</a></div>`;
 }
 

@@ -1,4 +1,4 @@
-/* Commercial Trucking documents — Document Studio */
+/* Commercial Trucking documents — Document Guide */
 window.PS = window.PS || {};
 
 (function () {
