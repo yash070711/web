@@ -138,16 +138,18 @@ export function EditorActions({
   readOnly,
   onDiscard,
   onSave,
+  saveLabel = "Save Changes",
 }: {
   pending?: boolean;
   readOnly?: boolean;
   onDiscard: () => void;
   onSave: () => void;
+  saveLabel?: string;
 }) {
   return (
     <div className="studio-editor-actions">
       <button className="btn btn-secondary" type="button" disabled={readOnly} onClick={onDiscard}>Discard visible edits</button>
-      <button className="btn btn-primary" type="button" disabled={pending} onClick={onSave}>{pending ? "Saving…" : "Save Changes"}</button>
+      <button className="btn btn-primary" type="button" disabled={pending} onClick={onSave}>{pending ? "Saving…" : saveLabel}</button>
     </div>
   );
 }

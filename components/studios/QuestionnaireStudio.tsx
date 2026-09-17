@@ -278,6 +278,25 @@ export function QuestionnaireStudio({
     setSel({ g: next.length - 1, q: 0 });
   }
 
+  function selectNextQuestion() {
+    if (sel.q + 1 < questions.length) {
+      setSel({ g: sel.g, q: sel.q + 1 });
+      return;
+    }
+    for (let gi = sel.g + 1; gi < groups.length; gi++) {
+      if (asRows(groups[gi].questions).length) {
+        setSel({ g: gi, q: 0 });
+        return;
+      }
+    }
+    for (let gi = 0; gi < groups.length; gi++) {
+      if (asRows(groups[gi].questions).length) {
+        setSel({ g: gi, q: 0 });
+        return;
+      }
+    }
+  }
+
   function groupBindPhase(g: Row) {
     return str(g, "bindPhase") === "post-bind" ? "post-bind" : "pre-bind";
   }
@@ -531,8 +550,6 @@ export function QuestionnaireStudio({
         productId={productId}
         version={version}
         summary={`${questionCount} questions · ${groups.length} groups · ${flows} conditional flows · ${repeats} repeatable groups`}
-        studioId="questionnaire"
-        itemCount={questionCount}
       />
       <PublishedBanner productId={productId} studio="questionnaire" readOnly={readOnly} />
 
@@ -783,7 +800,7 @@ export function QuestionnaireStudio({
                 }}>+ Add evidence trigger</button>}
               </Accordion>
 
-              <EditorActions pending={pending} readOnly={readOnly} onDiscard={() => setGroups(asGroups(items))} onSave={() => save()} />
+              <EditorActions pending={pending} readOnly={readOnly} saveLabel="Save & Next" onDiscard={() => setGroups(asGroups(items))} onSave={() => { save(); selectNextQuestion(); }} />
             </>
           ) : (
             <div className="card"><div className="card-body empty-state">Select or add a question in the tree.</div></div>

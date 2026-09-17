@@ -194,14 +194,6 @@
       border-top: 1px solid var(--color-border);
       background: var(--color-surface);
     }
-    .q-quick-add { display: flex; flex-direction: column; gap: var(--space-2); }
-    .q-quick-add-label {
-      font-size: 10px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .4px; color: var(--color-muted);
-    }
-    .q-quick-add-row { display: flex; gap: var(--space-2); }
-    .q-quick-add-row .form-control { flex: 1; height: 34px; font-size: 12px; min-width: 0; }
-    .q-quick-add-row select.form-control { flex: 0 0 110px; }
 
     /* ── Detail sections ───────────────────────── */
     .section-card {
@@ -1154,30 +1146,7 @@
             <div class="q-tree-scroll">
               <div class="q-tree" id="q-tree"></div>
             </div>
-            <div class="q-sidebar-footer" id="q-sidebar-footer">
-              <div class="q-quick-add-label">Quick add</div>
-              <div class="q-quick-add">
-                <input type="text" id="qa-quick-label" class="form-control" placeholder="Question label…" onkeydown="if(event.key==='Enter')quickAddQuestion()">
-                <div class="q-quick-add-row">
-                  <select id="qa-quick-phase" class="form-control" title="Bind phase" onchange="renderQuickAddGroupSelect({ keepPhase: true })">
-                    <option value="pre-bind">Pre-bind</option>
-                    <option value="post-bind">Post-bind</option>
-                  </select>
-                  <select id="qa-quick-type" class="form-control">
-                    <option value="text">Text</option>
-                    <option value="number">Number</option>
-                    <option value="boolean">Yes / No</option>
-                    <option value="select">Dropdown</option>
-                    <option value="date">Date</option>
-                    <option value="currency">Currency</option>
-                    <option value="textarea">Long text</option>
-                    <option value="entity">Entity lookup</option>
-                  </select>
-                  <select id="qa-quick-group" class="form-control" title="Target group"></select>
-                  <button class="btn btn-primary btn-sm" type="button" id="qa-quick-add-btn" onclick="quickAddQuestion()">Add</button>
-                </div>
-              </div>
-            </div>
+
           </div>
         </div>
 
@@ -1661,11 +1630,10 @@ function refreshQuestionMeta() {
       : 'No questions yet — add one below';
   }
   const canEdit = questionsCanEdit();
-  ['q-sidebar-add-btn', 'q-sidebar-group-btn', 'qa-quick-add-btn', 'qa-quick-label', 'qa-quick-type', 'qa-quick-group', 'qa-quick-phase'].forEach(id => {
+  ['q-sidebar-add-btn', 'q-sidebar-group-btn'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.disabled = !canEdit;
   });
-  renderQuickAddGroupSelect();
   PS.prototypeApp?.refreshStudioNav?.();
 }
 
@@ -1816,25 +1784,6 @@ function activeGroupId() {
   return GROUPS[0]?.id || '';
 }
 
-function renderQuickAddGroupSelect(opts = {}) {
-  const sel = document.getElementById('qa-quick-group');
-  const phaseSel = document.getElementById('qa-quick-phase');
-  if (!sel) return;
-  const target = activeGroupId();
-  if (phaseSel && !opts.keepPhase && target) {
-    phaseSel.value = bindPhaseForGroupId(target);
-  }
-  const phase = phaseSel?.value || bindPhaseForGroupId(target);
-  const groups = groupsInPhase(phase);
-  if (!groups.length) {
-    sel.innerHTML = `<option value="">New group (${bindPhaseLabel(phase)})</option>`;
-    return;
-  }
-  sel.innerHTML = groups.map(g =>
-    `<option value="${g.id}" ${g.id === target ? 'selected' : ''}>${g.label || g.name}</option>`
-  ).join('');
-}
-
 function buildQuestionRecord(label, type, groupId, extras = {}) {
   const slug = slugFromLabel(label);
   return {
@@ -1881,29 +1830,6 @@ function insertQuestionIntoGroup(q, groupId, bindPhase) {
   group.questions = group.questions || [];
   group.questions.push(q);
   return group;
-}
-
-function quickAddQuestion() {
-  if (!questionsCanEdit()) {
-    PS.actionResult?.('warning', 'Read-only', 'Published versions cannot be edited.');
-    return;
-  }
-  const label = document.getElementById('qa-quick-label')?.value.trim();
-  const type = document.getElementById('qa-quick-type')?.value || 'text';
-  const groupId = document.getElementById('qa-quick-group')?.value || '';
-  const bindPhase = document.getElementById('qa-quick-phase')?.value || 'pre-bind';
-  if (!label) {
-    PS.actionResult('error', 'Required', 'Enter a question label.');
-    document.getElementById('qa-quick-label')?.focus();
-    return;
-  }
-  const q = buildQuestionRecord(label, type, groupId);
-  insertQuestionIntoGroup(q, groupId, bindPhase);
-  persistQuestions();
-  const labelInput = document.getElementById('qa-quick-label');
-  if (labelInput) labelInput.value = '';
-  openQuestionEditor(q.id);
-  PS.actionResult('success', 'Question added', `"${label}" added — configure details on the right.`);
 }
 
 function templateGroupCatalog() {
@@ -2010,7 +1936,6 @@ function renderTree() {
     renderPhaseSection('pre-bind', 'Pre-bind', preBind),
     renderPhaseSection('post-bind', 'Post-bind', postBind)
   ].join('');
-  renderQuickAddGroupSelect();
   refreshTruckingSelectionBar();
 }
 
@@ -3365,7 +3290,6 @@ function loadQuestion(id) {
   window.activeQuestionId = id;
   document.querySelectorAll('.q-item').forEach(el => el.classList.remove('active'));
   document.getElementById(`qitem-${id}`)?.classList.add('active');
-  renderQuickAddGroupSelect();
   const q = ensureQuestionDetail(id);
   if (!q) { renderEmptyQuestionDetail(); return; }
   renderDetailPanel(q);
@@ -4433,6 +4357,32 @@ document.addEventListener('click', function(event) {
   const wrapper = document.getElementById('q-category-multi');
   if (wrapper && !wrapper.contains(event.target)) wrapper.classList.remove('open');
 });
+</script>
+
+<script id="questionnaire-save-advance">
+(function () {
+  const origBar = window.addStudioSaveBar;
+
+  function nextQuestionId() {
+    const qs = allQuestions();
+    const i = qs.findIndex(q => q.id === activeQId);
+    if (i < 0) return qs[0]?.id || '';
+    return qs[i + 1]?.id || qs[0]?.id || '';
+  }
+
+  window.addStudioSaveBar = function () {
+    if (typeof origBar === 'function') origBar();
+    const btn = document.getElementById('ps-save-studio');
+    if (!btn) return;
+    btn.textContent = 'Save & Next';
+    const prev = btn.onclick;
+    btn.onclick = function (e) {
+      if (typeof prev === 'function') prev.call(this, e);
+      const next = nextQuestionId();
+      if (next && next !== activeQId) loadQuestion(next);
+    };
+  };
+})();
 </script>
 
 
