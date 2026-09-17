@@ -728,7 +728,7 @@
              Create New Rule
           </button>
           <button class="btn btn-secondary" type="button" onclick="openEligibilityLibrary()">Use Rule Template</button>
-          <button class="btn btn-secondary" type="button" onclick="goNextRatingStudio()">Next: Rating &amp; Pricing Studio</button>
+          <button class="btn btn-secondary" type="button" onclick="goNextRiskStudio()">Next: Risk Studio</button>
         </div>
       </div>
 
@@ -774,16 +774,14 @@
         </div>
         <div class="elig-editor-layout">
           <aside class="elig-question-sidebar">
-            <div class="elig-question-sidebar-card">
-              <div class="elig-sidebar-head">
+            <div class="elig-rule-nav-card">
+              <div class="rule-sidebar-header">
                 <div>
-                  <div class="elig-sidebar-kicker">RULE INPUTS</div>
-                  <div class="elig-sidebar-title">Selected Questions</div>
-                  <div class="elig-sidebar-count" id="elig-selected-question-sidebar-count">0 questions</div>
+                  <div class="rule-sidebar-title">Eligibility Rules</div>
+                  <div class="rule-sidebar-count" id="elig-editor-rule-count"></div>
                 </div>
-                <button class="btn btn-ghost btn-sm" type="button" onclick="openEligibilityRuleFromRiskQuestionPicker()">Change</button>
               </div>
-              <div id="elig-selected-question-sidebar" class="elig-selected-question-list"></div>
+              <div id="elig-editor-rule-list" class="rule-list"></div>
             </div>
           </aside>
           <main id="detail-panel" class="elig-detail-panel"></main>
@@ -1006,17 +1004,6 @@ function isQuestionConditionsComplete(rule, questionId) {
   const matches = (rule?.conditions || []).filter(c => String(c.sourceQuestionId || '') === String(questionId));
   if (!matches.length) return false;
   return matches.every(isConditionComplete);
-}
-
-function allEligibilityQuestionsCompleted(rule) {
-  const ids = Array.isArray(rule?.linkedQuestionIds) ? rule.linkedQuestionIds : [];
-  if (!ids.length) return true;
-  return ids.every(id => isQuestionConditionsComplete(rule, id));
-}
-
-function firstIncompleteEligibilityQuestionId(rule) {
-  const ids = Array.isArray(rule?.linkedQuestionIds) ? rule.linkedQuestionIds : [];
-  return ids.find(id => !isQuestionConditionsComplete(rule, id)) || '';
 }
 
 function normalizeOp(op) {
@@ -2622,7 +2609,8 @@ function ruleStatusDotClass(r) {
 
 function renderRuleList() {
   const list = document.getElementById('rule-list');
-  if (!list) return;
+  const editorList = document.getElementById('elig-editor-rule-list');
+  if (!list && !editorList) return;
   ensureDefaultEligibilityRules();
   refreshEligibilityMeta();
   const all = sidebarRules().map(normalizeEligibilityRule);
@@ -2654,7 +2642,7 @@ function renderRuleList() {
     </div>`;
   }).join('');
 
-  list.innerHTML = `
+  const sectionsHtml = `
     <div class="rule-section-label">Product Eligibility</div>
     ${productRules.length ? listHTML(productRules) : `<div style="padding:12px 14px;font-size:12px;color:var(--color-muted)">No product-level rules yet.</div>`}
     <div class="rule-section-label" style="margin-top:var(--space-2)">Cover Eligibility</div>
@@ -2666,74 +2654,14 @@ function renderRuleList() {
       Add eligibility rule
     </button>
   `;
+  if (list) list.innerHTML = sectionsHtml;
+  if (editorList) editorList.innerHTML = sectionsHtml;
+  const countText = `${all.length} rule${all.length === 1 ? '' : 's'} · ${productRules.length} product · ${coverRules.length} cover`;
   const countEl = document.getElementById('rule-sidebar-count');
-  if (countEl) countEl.textContent = `${all.length} rule${all.length === 1 ? '' : 's'} · ${productRules.length} product · ${coverRules.length} cover`;
+  if (countEl) countEl.textContent = countText;
+  const editorCountEl = document.getElementById('elig-editor-rule-count');
+  if (editorCountEl) editorCountEl.textContent = countText;
 }
-
-function renderSelectedQuestionSidebar(rule) {
-  const host = document.getElementById('elig-selected-question-sidebar');
-  const count = document.getElementById('elig-selected-question-sidebar-count');
-  if (!host) return;
-
-  const ids = [...new Set(
-    (Array.isArray(rule?.linkedQuestionIds) && rule.linkedQuestionIds.length
-      ? rule.linkedQuestionIds
-      : (rule?.conditions || []).map(c => c.sourceQuestionId).filter(Boolean))
-      .map(String)
-      .filter(Boolean)
-  )];
-
-  const questions = ids.map(id => {
-    const found = findQuestionById(id);
-    return { id, q: found?.q, group: found?.group };
-  }).filter(item => item.q || item.id);
-
-  if (count) {
-    const completedCount = questions.filter(item => isQuestionConditionsComplete(rule, item.id)).length;
-    count.textContent = `${completedCount} of ${questions.length} completed`;
-  }
-
-  if (!questions.length) {
-    host.innerHTML = `
-      <div class="elig-sidebar-empty">
-        <div class="elig-sidebar-empty-icon">?</div>
-        <strong>No Questionnaire questions linked</strong>
-        <span>Select Questionnaire questions to use them as rule inputs.</span>
-        <button type="button" class="btn btn-primary btn-sm" onclick="openEligibilityRuleFromRiskQuestionPicker()">Select Questions</button>
-      </div>`;
-    return;
-  }
-
-  const linkedIds = new Set(
-    (Array.isArray(rule?.linkedQuestionIds) ? rule.linkedQuestionIds : [])
-      .map(String)
-  );
-  if (!activeQuestionId || !linkedIds.has(String(activeQuestionId))) {
-    activeQuestionId = questions[0]?.id || '';
-  }
-
-  host.innerHTML = questions.map((item, i) => {
-    const isCurrent = String(activeQuestionId) === String(item.id);
-    const isConfigured = isQuestionConditionsComplete(rule, item.id);
-    const stateClass = isCurrent ? 'is-current' : (isConfigured ? 'is-completed' : 'is-upcoming');
-    const stateLabel = isCurrent ? 'Editing' : (isConfigured ? 'Configured' : 'Needs condition');
-    return `
-      <div style="display:flex;align-items:center;gap:4px">
-      <button type="button" style="flex:1;min-width:0" class="elig-selected-question ${stateClass}"
-        title="Configure ${htmlEsc(item.q?.label || item.id)}"
-        onclick="focusEligibilityQuestion('${htmlEsc(item.id)}')">
-        <div class="elig-selected-question-number">${i + 1}</div>
-        <div class="elig-selected-question-body">
-          <div class="elig-selected-question-label">${htmlEsc(item.q?.label || item.id)}</div>
-          <div class="elig-selected-question-meta">${htmlEsc(item.id)}${item.group?.label ? ` · ${htmlEsc(item.group.label)}` : ''}</div>
-        </div>
-        <span class="elig-selected-question-state">${stateLabel}</span>
-      </button>
-      <button type="button" class="btn btn-ghost btn-xs" data-question-id="${htmlEsc(item.id)}" onclick="deleteSelectedEligibilityQuestion(this.dataset.questionId)" ${rulesCanEdit() ? "" : "disabled"} aria-label="Delete ${htmlEsc(item.q?.label || item.id)} from Eligibility">Delete</button>
-      </div>`;
-  }).join('');
-}
-
 
 function deleteEligibilityRule(ruleId) {
   if (!rulesCanEdit()) return;
@@ -2754,34 +2682,6 @@ function deleteEligibilityRule(ruleId) {
   notifyElig('Deleted', 'Eligibility rule deleted.', 'success');
 }
 
-function deleteSelectedEligibilityQuestion(questionId) {
-  if (!rulesCanEdit()) return;
-  const rule = currentRule();
-  if (!rule) return;
-  const id = String(questionId);
-  const ids = (rule.linkedQuestionIds?.length ? rule.linkedQuestionIds : (rule.conditions || []).map(c => c.sourceQuestionId).filter(Boolean)).map(String);
-  if (!ids.includes(id)) return;
-  const remaining = ids.filter(qid => qid !== id);
-  if (!remaining.length) { deleteEligibilityRule(rule.id); return; }
-  rule.linkedQuestionIds = remaining;
-  rule.conditions = (rule.conditions || []).filter(c => String(c.sourceQuestionId || '') !== id);
-  if (String(activeQuestionId) === id) activeQuestionId = remaining[0];
-  persistRules();
-  loadRule(rule.id);
-  refreshEligibilityMeta();
-  notifyElig('Question deleted', 'The question and its conditions were removed from this Eligibility rule.', 'success');
-}
-
-function focusEligibilityQuestion(questionId) {
-  activeQuestionId = String(questionId || '');
-  const rule = currentRule();
-  renderSelectedQuestionSidebar(rule);
-  if (!rule) return;
-  renderDetailPanel(rule);
-  requestAnimationFrame(() => {
-    document.getElementById('eligibility-condition-rows')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-}
 
 /* ═══════════════════════════════════════════════
    LOAD RULE
@@ -2790,7 +2690,7 @@ function loadRule(id) {
   if (id) activeRuleId = id;
   if (!activeRuleId && pendingEligibilityRule) activeRuleId = pendingEligibilityRule.id;
   document.querySelectorAll('.rule-item').forEach(el => el.classList.remove('active'));
-  document.getElementById(`rule-item-${activeRuleId}`)?.classList.add('active');
+  document.querySelectorAll(`[id="rule-item-${activeRuleId}"]`).forEach(el => el.classList.add('active'));
   const rule = currentRule() || RULES.find(r => r.id === activeRuleId);
   if (!rule) return;
   const normalized = normalizeEligibilityRule(rule);
@@ -2800,7 +2700,8 @@ function loadRule(id) {
     const idx = RULES.findIndex(r => r.id === activeRuleId);
     if (idx >= 0) RULES[idx] = normalized;
   }
-  renderSelectedQuestionSidebar(normalized);
+  const linkedIds = Array.isArray(normalized.linkedQuestionIds) ? normalized.linkedQuestionIds.map(String) : [];
+  activeQuestionId = linkedIds[0] || '';
   renderDetailPanel(normalized);
 }
 
@@ -2923,7 +2824,7 @@ function renderDetailPanel(r) {
               ? (activeConditionEntries.length
                   ? `<div style="padding:0 16px 8px;font-size:12px;color:var(--color-muted)">Configuring condition${activeConditionEntries.length > 1 ? 's' : ''} for <strong>${htmlEsc(activeQuestionLabel)}</strong></div>`
                     + activeConditionEntries.map(({ c, i }, idx) => eligibilityConditionRowHtml(c, i, lockedId, ro, dis, { hideRemove: activeConditionEntries.length <= 1, hideConnector: idx === 0 })).join('')
-                  : `<div class="cb-empty">Select a question from Selected Questions to configure its condition.</div>`)
+                  : `<div class="cb-empty">This rule has no linked Questionnaire question yet.</div>`)
               : (conditions.length
                   ? conditions.map((c, i) => eligibilityConditionRowHtml(c, i, lockedId, ro, dis)).join('')
                   : `<div class="cb-empty">No conditions configured. Add at least one condition.</div>`)
@@ -2938,7 +2839,7 @@ function renderDetailPanel(r) {
                   : `<button type="button" class="btn btn-ghost btn-sm"
                        onclick="addConditionForActiveQuestion()">+ Add Condition</button>
                      <span style="font-size:12px;color:var(--color-muted);align-self:center">
-                       Use “Change” in Selected Questions to add or remove linked questions.
+                       Each rule is linked to a single Questionnaire question. Create a separate rule for another question.
                      </span>`)
               : (ro
                   ? ''
@@ -3022,12 +2923,12 @@ function filterEligAttrSearch(value) {
   if (rule) renderDetailPanel(rule);
 }
 
-function goNextRatingStudio() {
+function goNextRiskStudio() {
   const app = PS.prototypeApp;
   const pid = productId || app?.context?.()?.productId;
   const ver = productVersion || app?.context?.()?.version;
   const next = app?.nextStudioInChain?.(pid, 'eligibility');
-  const dest = next?.file || 'rating-studio.html';
+  const dest = next?.file || 'risk-studio.html';
   if (app?.canLeaveCurrentStudio && !app.canLeaveCurrentStudio(dest)) return;
   window.location.assign(`${dest}?product=${encodeURIComponent(pid || '')}&id=${encodeURIComponent(pid || '')}&version=${encodeURIComponent(ver || '')}${next?.hash || ''}`);
 }
@@ -3448,7 +3349,7 @@ function validateEligibilityRule() {
     const missing = [...uniqueIds].filter(qid => !findQuestionById(qid)?.q);
     if (missing.length) {
       notifyElig('Cannot save', `${missing.length === 1 ? 'A linked Questionnaire question is' : 'Some linked Questionnaire questions are'} no longer available. Reselect the questions for this rule.`, 'error');
-      first.push(document.getElementById('elig-selected-question-sidebar'));
+      first.push(document.querySelector('.condition-builder'));
     }
   } else {
     const linked = findRiskAttr(primaryLinkedAttributeId(rule));
@@ -3749,7 +3650,8 @@ function filterEligibilityRiskQuestionPicker(query) {
 
 function openEligibilityRuleFromRiskQuestionPicker() {
   refreshEligibilityRiskQuestionSource();
-  const rule = currentRule();
+  const editorOpen = document.getElementById('studio-editor') && !document.getElementById('studio-editor').classList.contains('hidden');
+  const rule = editorOpen ? currentRule() : null;
   const existingIds = rule
     ? (
         Array.isArray(rule.linkedQuestionIds)
@@ -3878,81 +3780,76 @@ function createEligibilityRuleFromRiskQuestions() {
     return;
   }
 
-  const editorOpen = document.getElementById('studio-editor') && !document.getElementById('studio-editor').classList.contains('hidden');
-  const editingRule = editorOpen ? currentRule() : null;
+  // Each Questionnaire question becomes its own, independent Eligibility
+  // rule — one question, one rule, one condition set. Rules are never
+  // bundled together even when several questions are selected at once.
+  const createdIds = [];
+  const newlyCreatedIds = [];
 
-  if (editingRule) {
-    const existingByQuestion = new Map(
-      (editingRule.conditions || []).map(c => [String(c.sourceQuestionId || ''), c])
-    );
-    editingRule.conditions = ids.map(qid => existingByQuestion.get(String(qid)) || conditionFromQuestion(eligibilityRiskQuestionIndex.get(qid)?.q));
-    editingRule.linkedQuestionIds = ids;
-    if (!ids.includes(String(activeQuestionId))) activeQuestionId = ids[0] || '';
-    persistRules();
-    window.__ELIG_SELECTED_RISK_QUESTION_IDS = new Set();
-    PS.closeModal();
-    loadRule(editingRule.id);
-    refreshEligibilityMeta();
-    notifyElig(
-      'Questions updated',
-      `${questions.length} Questionnaire question${questions.length === 1 ? '' : 's'} linked to ${editingRule.name}.`,
-      'success'
-    );
+  ids.forEach(qid => {
+    const q = eligibilityRiskQuestionIndex.get(qid)?.q;
+    if (!q) return;
+
+    const existing = RULES.find(r => (Array.isArray(r.linkedQuestionIds) ? r.linkedQuestionIds.map(String) : []).includes(String(qid)));
+    if (existing) {
+      createdIds.push(existing.id);
+      return;
+    }
+
+    const id = nextEligibilityRuleId();
+    const condition = conditionFromQuestion(q);
+    // The question is linked first. Operator/value are configured
+    // explicitly in Eligibility Studio.
+    condition.op = '';
+    condition.value = '';
+    condition.value2 = '';
+    condition.attributeId = '';
+
+    const rule = normalizeEligibilityRule({
+      id,
+      name: `${q.label || q.id} Eligibility`,
+      category: 'Product Eligibility',
+      cover: 'All Covers',
+      coverIds: [],
+      priority: 10,
+      status: 'active',
+      description: '',
+      source: 'Risk Studio',
+      sourceQuestionId: q.id,
+      linkedQuestionIds: [qid],
+      conditions: [condition],
+      riskAttributeId: '',
+      outcomeType: 'hard',
+      logic: 'and',
+      reasonCode: id,
+      customerMsg:
+        'This risk does not meet eligibility requirements for this product.',
+      internalMsg: 'Eligibility rule triggered.',
+      logAudit: true,
+      effectiveFrom: defaultEffectiveDates().from,
+      effectiveTo: defaultEffectiveDates().to,
+      scopes: {
+        product: productName || PS.studioHub?.productName || 'This product',
+        version: productVersion ? `v${productVersion}` : '—',
+        covers: ['All Covers'],
+        segments: ['All Segments'],
+        channels: ['All Channels']
+      }
+    });
+
+    RULES.push(rule);
+    createdIds.push(id);
+    newlyCreatedIds.push(id);
+  });
+
+  if (!createdIds.length) {
+    notifyElig('Cannot create rule', 'No Eligibility rules could be created from the selected questions.', 'error');
     return;
   }
 
-  const id = nextEligibilityRuleId();
-  const firstQuestion = questions[0];
-
-  const conditions = questions.map(q => {
-    const c = conditionFromQuestion(q);
-
-    // The question is linked first. Operator/value are configured
-    // explicitly in Eligibility Studio.
-    c.op = '';
-    c.value = '';
-    c.value2 = '';
-    c.attributeId = '';
-
-    return c;
-  });
-
-  const rule = normalizeEligibilityRule({
-    id,
-    name: `${firstQuestion.label || firstQuestion.id} Eligibility`,
-    category: 'Product Eligibility',
-    cover: 'All Covers',
-    coverIds: [],
-    priority: 10,
-    status: 'active',
-    description: '',
-    source: 'Risk Studio',
-    sourceQuestionId: firstQuestion.id,
-    linkedQuestionIds: ids,
-    conditions,
-    riskAttributeId: '',
-    outcomeType: 'hard',
-    logic: 'and',
-    reasonCode: id,
-    customerMsg:
-      'This risk does not meet eligibility requirements for this product.',
-    internalMsg: 'Eligibility rule triggered.',
-    logAudit: true,
-    effectiveFrom: defaultEffectiveDates().from,
-    effectiveTo: defaultEffectiveDates().to,
-    scopes: {
-      product: productName || PS.studioHub?.productName || 'This product',
-      version: productVersion ? `v${productVersion}` : '—',
-      covers: ['All Covers'],
-      segments: ['All Segments'],
-      channels: ['All Channels']
-    }
-  });
-
-  RULES.push(rule);
-
-  activeQuestionId = ids[0] || '';
-  activeRuleId = id;
+  activeRuleId = createdIds[0];
+  const firstRule = RULES.find(r => r.id === activeRuleId);
+  activeQuestionId = (Array.isArray(firstRule?.linkedQuestionIds) && firstRule.linkedQuestionIds[0]) || ids[0] || '';
 
   persistRules();
 
@@ -3961,11 +3858,13 @@ function createEligibilityRuleFromRiskQuestions() {
   PS.closeModal();
   refreshEligibilityMeta();
   PS.studioHub?.paint?.();
-  PS.studioHub?.open?.(id);
+  PS.studioHub?.open?.(activeRuleId);
 
   notifyElig(
-    'Eligibility rule created',
-    `${questions.length} Questionnaire question${questions.length === 1 ? '' : 's'} linked to ${rule.name}.`,
+    'Eligibility rules created',
+    newlyCreatedIds.length
+      ? `${newlyCreatedIds.length} eligibility rule${newlyCreatedIds.length === 1 ? '' : 's'} created — one per selected question.`
+      : 'Selected questions already have eligibility rules configured.',
     'success'
   );
 }
@@ -4653,220 +4552,23 @@ function createEligibilityRule() {
       renderRuleList();
       if (typeof prev === 'function') prev.call(this, e);
 
-      const savedRule = RULES.find(r => r.id === savedId);
-      const isQuestionnaireRule = Array.isArray(savedRule?.linkedQuestionIds) && savedRule.linkedQuestionIds.length > 0;
-
-      if (!isQuestionnaireRule) {
-        notifyElig('Eligibility rule saved', 'The rule was saved in Eligibility Studio.', 'success');
-        PS.studioHub?.paint?.();
-        openRuleEditor(savedId);
-        updateQuestionnaireQueueSaveButton();
-        eligibilitySaveInFlight = false;
-        return;
-      }
-
-      const linkedIds = savedRule.linkedQuestionIds.map(String);
-      const curIdx = linkedIds.indexOf(String(activeQuestionId));
-      const isLastQuestion = curIdx === -1 || curIdx === linkedIds.length - 1;
-
-      if (!isLastQuestion) {
-        const nextId = linkedIds[curIdx + 1];
-        const label = findQuestionById(activeQuestionId)?.q?.label || 'Question';
-        notifyElig('Question saved', `${label} configuration saved.`, 'success');
-        PS.studioHub?.paint?.();
-        activeQuestionId = nextId;
-        activeRuleId = savedId;
-        loadRule(savedId);
-        updateQuestionnaireQueueSaveButton();
-        eligibilitySaveInFlight = false;
-        return;
-      }
-
-      if (!allEligibilityQuestionsCompleted(savedRule)) {
-        const incompleteId = firstIncompleteEligibilityQuestionId(savedRule);
-        notifyElig('Cannot continue', 'Please complete all questions before continuing.', 'error');
-        if (incompleteId) {
-          activeQuestionId = incompleteId;
-          activeRuleId = savedId;
-          loadRule(savedId);
-        }
-        updateQuestionnaireQueueSaveButton();
-        eligibilitySaveInFlight = false;
-        return;
-      }
-
-      notifyElig('Eligibility rule saved', 'All questions completed. Moving to the next studio.', 'success');
+      // Each rule is linked to exactly one Questionnaire question, so a
+      // save here only ever completes that single rule — it never advances
+      // through other questions/rules and never auto-navigates to the next
+      // studio. Moving on to Risk Studio remains an explicit action via the
+      // "Next: Risk Studio" button.
+      notifyElig('Eligibility rule saved', 'The rule was saved in Eligibility Studio.', 'success');
       PS.studioHub?.paint?.();
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-      setTimeout(() => {
-        if (typeof goNextRatingStudio === 'function') goNextRatingStudio();
-        eligibilitySaveInFlight = false;
-      }, 600);
+      openRuleEditor(savedId);
+      updateQuestionnaireQueueSaveButton();
+      eligibilitySaveInFlight = false;
     };
   };
   document.addEventListener('DOMContentLoaded', function () {});
 })();
 </script>
 
-<script id="eligibility-studio-recreated-ui-js">
-(function(){
-  function recreatedEligibilityHome(){
-    const host=document.getElementById('studio-hub');
-    if(!host) return;
-    host.innerHTML=`
-      <div class="elig-recreated-home">
-        <aside class="elig-recreated-card elig-rules-panel">
-          <div class="elig-rules-head">
-            <div class="elig-rules-head-row">
-              <div>
-                <div class="elig-rules-title">Eligibility Rules</div>
-                <div class="elig-rules-sub"><span id="recreated-rule-count">0</span> rules · 1 product · 0 cover</div>
-              </div>
-              <button class="elig-add-link" type="button" onclick="openAddRuleModal()">+ Add</button>
-            </div>
-          </div>
-          <input id="recreated-rule-search" class="elig-rule-search" placeholder="Search rules..." oninput="filterRecreatedRules(this.value)">
-          <div id="recreated-rule-list" class="elig-recreated-rule-list"></div>
-        </aside>
-
-        <section class="elig-work-area">
-          <div class="elig-work-area-actions" style="display:flex;justify-content:flex-end;margin-bottom:12px">
-            <button type="button" class="btn btn-primary btn-sm" onclick="openAddRuleModal()">+ Add Question</button>
-          </div>
-
-          <div class="elig-recreated-card elig-attrs-card">
-            <div class="elig-attrs-head">
-              <div>
-                <div class="elig-attrs-title">Added Questionnaire Questions</div>
-                <div class="elig-attrs-sub">These are the questions you added to Eligibility through Add Question.</div>
-              </div>
-              <div class="elig-attrs-count" id="recreated-attrs-count">0 added</div>
-            </div>
-            <div id="recreated-attrs-host"></div>
-            <div class="elig-attrs-footer">
-              <span>Use Add Question to select more questions for Eligibility.</span>
-              <span>Source: Questionnaire</span>
-            </div>
-          </div>
-        </section>
-      </div>`;
-    renderRecreatedRules();
-    renderRecreatedAttrs();
-  }
-
-  function renderRecreatedRules(){
-    const host=document.getElementById('recreated-rule-list');
-    if(!host) return;
-    // Rendering must not call refreshEligibilityMeta: its wrapper renders this list.
-    const all=(typeof sidebarRules==='function'?sidebarRules():RULES||[]).map(r=>typeof normalizeEligibilityRule==='function'?normalizeEligibilityRule(r):r);
-    const q=String(document.getElementById('recreated-rule-search')?.value||'').toLowerCase().trim();
-    const filtered=all.filter(r=>!q || String(r.name||'').toLowerCase().includes(q) || String(r.id||'').toLowerCase().includes(q));
-    const product=filtered.filter(r=>String(r.category||'Product Eligibility')==='Product Eligibility');
-    const cover=filtered.filter(r=>String(r.category||'')==='Cover Eligibility');
-    const item=r=>`<div class="rule-item ${r.id===activeRuleId?'active':''}" onclick="openRuleEditor('${String(r.id).replace(/'/g,"\\'")}')">
-      <span class="rule-status-dot ${typeof ruleStatusDotClass==='function'?ruleStatusDotClass(r):'active'}"></span>
-      <div class="rule-item-body">
-        <div class="rule-item-top"><div class="rule-item-name">${htmlEsc(r.name||'Unnamed Rule')}</div><span class="rule-priority">P${htmlEsc(r.priority??10)}</span></div>
-        <div class="rule-item-id">${htmlEsc(r.id||'')}</div>
-        <div class="rule-item-cond">${htmlEsc(typeof ruleListCondLine==='function'?ruleListCondLine(r):'')}</div>
-      </div>
-      <button type="button" class="btn btn-ghost btn-xs" data-rule-id="${htmlEsc(r.id)}" onclick="event.stopPropagation();deleteEligibilityRule(this.dataset.ruleId)" ${rulesCanEdit() ? "" : "disabled"} aria-label="Delete ${htmlEsc(r.name || r.id)}">Delete</button>
-    </div>`;
-    host.innerHTML=`<div class="rule-section-label">PRODUCT ELIGIBILITY</div>${product.length?product.map(item).join(''):'<div class="elig-sidebar-empty" style="padding:14px 9px">No product eligibility rules yet.</div>'}
-      <div class="rule-section-label">COVER ELIGIBILITY</div>${cover.length?cover.map(item).join(''):'<div style="padding:8px 9px 14px;color:var(--color-muted);font-size:10px">No cover-level rules yet.</div>'}`;
-    const c=document.getElementById('recreated-rule-count'); if(c)c.textContent=all.length;
-  }
-
-  function addedEligibilityQuestions(){
-    const selectedIds = new Set((RULES || []).flatMap(rule =>
-      (Array.isArray(rule.linkedQuestionIds) && rule.linkedQuestionIds.length
-        ? rule.linkedQuestionIds
-        : (rule.conditions || []).map(condition => condition.sourceQuestionId).filter(Boolean)
-      ).map(String)
-    ));
-    return allRiskStudioEligibilityQuestions().filter(item => selectedIds.has(String(item.q.id)));
-  }
-
-  function renderRecreatedAttrs(){
-    const host=document.getElementById('recreated-attrs-host');
-    if(!host) return;
-    if (typeof refreshEligibilityRiskQuestionSource === 'function') refreshEligibilityRiskQuestionSource();
-    const all=addedEligibilityQuestions();
-    const types=[...new Set(all.map(item=>typeof riskDataType==='function'?riskDataType(null,item.q):'Text'))].sort();
-    host.innerHTML=`
-      <div class="elig-attrs-toolbar">
-        <input id="recreated-attr-search" placeholder="Search questions..." oninput="filterRecreatedAttrs()">
-        <select id="recreated-attr-group" onchange="filterRecreatedAttrs()">
-          <option value="">All Groups</option>
-          ${[...new Set(all.map(item=>item.group?.label||item.group?.name||'General'))].sort().map(g=>`<option>${htmlEsc(g)}</option>`).join('')}
-        </select>
-        <select id="recreated-attr-type" onchange="filterRecreatedAttrs()">
-          <option value="">All Data Types</option>
-          ${types.map(t=>`<option>${htmlEsc(t)}</option>`).join('')}
-        </select>
-        <span style="margin-left:auto;align-self:center;font-size:10px;color:#6f675c">Added to Eligibility</span>
-      </div>
-      <div id="recreated-attr-table"></div>`;
-    const c=document.getElementById('recreated-attrs-count');if(c)c.textContent=`${all.length} added`;
-    filterRecreatedAttrs();
-  }
-
-  window.filterRecreatedAttrs=function(){
-    const host=document.getElementById('recreated-attr-table'); if(!host)return;
-    const all=addedEligibilityQuestions();
-    const q=String(document.getElementById('recreated-attr-search')?.value||'').toLowerCase().trim();
-    const g=String(document.getElementById('recreated-attr-group')?.value||'');
-    const t=String(document.getElementById('recreated-attr-type')?.value||'');
-    const rows=all.filter(item=>{
-      const name=item.q?.label||item.q?.id||'';
-      const group=item.group?.label||item.group?.name||'General';
-      const type=typeof riskDataType==='function'?riskDataType(null,item.q):'Text';
-      return (!q || String(name).toLowerCase().includes(q)||String(item.q?.id||'').toLowerCase().includes(q))
-        &&(!g||group===g)&&(!t||type===t);
-    });
-    const configuredIds=new Set((RULES||[]).flatMap(r=>Array.isArray(r.linkedQuestionIds)?r.linkedQuestionIds.map(String):[]));
-    host.innerHTML=`<div class="elig-available-wrap"><table><thead><tr>
-      <th>Question</th><th>Question ID</th><th>Question Group</th><th>Data Type</th><th>Source</th><th>Eligibility</th><th>Action</th>
-    </tr></thead><tbody>${rows.length?rows.map(item=>{
-      const id=String(item.q?.id||''), name=item.q?.label||id;
-      const group=item.group?.label||item.group?.name||'General';
-      const type=typeof riskDataType==='function'?riskDataType(null,item.q):'Text';
-      const already=configuredIds.has(id);
-      return `<tr class="elig-attr-row"><td><button type="button" class="btn btn-ghost btn-sm elig-attr-name" data-elig-configure-question="${htmlEsc(id)}">${htmlEsc(name)}</button></td>
-      <td style="font-family:'IBM Plex Mono',monospace;font-size:10px">${htmlEsc(id)}</td><td>${htmlEsc(group)}</td><td>${htmlEsc(type)}</td>
-      <td>Questionnaire</td><td><span class="badge badge-published" style="font-size:9px">Available</span></td>
-      <td>${already?'<span style="font-size:11px;color:#8a8175">Already configured</span>':`<button type="button" class="btn btn-primary btn-sm" data-elig-configure-question="${htmlEsc(id)}">Configure Rule</button>`}</td></tr>`;
-    }).join(''):`<tr><td colspan="7" style="text-align:center;padding:28px!important;color:#8a8175">${all.length?'No questions match this search.':'No questions added to Eligibility yet. Click + Add Question to select questions.'}</td></tr>`}</tbody></table></div>`;
-  };
-
-  window.filterRecreatedRules=function(value){
-    renderRecreatedRules();
-  };
-
-  window.renderRecreatedEligibilityHome=recreatedEligibilityHome;
-
-  // Keep the existing application data/editor. Replace only the landing hub after
-  // the built-in hub has initialized.
-  function boot(){
-    setTimeout(()=>{
-      if(document.getElementById('studio-hub')) recreatedEligibilityHome();
-    },80);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-
-  // Existing functions call this when metadata changes. Refresh our home as well.
-  const oldRefresh=window.refreshEligibilityMeta;
-  if(typeof oldRefresh==='function'){
-    window.refreshEligibilityMeta=function(){
-      oldRefresh.apply(this,arguments);
-      if(document.getElementById('recreated-attrs-host')){
-        renderRecreatedRules();renderRecreatedAttrs();
-      }
-    };
-  }
-})();
-</script>
+<script src="assets/eligibility-rule-builder.js"></script>
 
 </body>
 </html>

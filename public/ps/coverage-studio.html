@@ -3133,6 +3133,86 @@ function removeDep(index) {
   persistAndRefreshCover();
 }
 
+function buildDependenciesSection(c, ro) {
+  const rules = Array.isArray(c?.dependencies) ? c.dependencies : [];
+  const targets = otherCoverNames(c.id);
+  const badgeClass = type => String(type || 'Requires').toLowerCase().replace(/\s+/g, '-');
+
+  return `
+    <div class="dep-hero">
+      <div class="dep-hero-icon" aria-hidden="true">↔</div>
+      <div>
+        <strong>Configure cover-to-cover dependencies</strong>
+        <p>Define what happens when this cover is selected. Use Requires, Excludes, or Bundles with and add an optional condition.</p>
+      </div>
+    </div>
+
+    <div class="dep-block">
+      <div class="dep-block-head">
+        <div>
+          <div class="dep-block-title">Dependency Rules</div>
+          <div class="dep-block-sub">Rules are evaluated against other covers configured for this product.</div>
+        </div>
+        <span class="dep-rule-count">${rules.length} rule${rules.length === 1 ? '' : 's'}</span>
+      </div>
+
+      ${rules.length ? `
+      <div class="dep-table-wrap">
+        <table class="dep-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Action</th>
+              <th>Depends On</th>
+              <th>Condition</th>
+              ${ro ? '' : '<th>Actions</th>'}
+            </tr>
+          </thead>
+          <tbody>
+            ${rules.map((d, i) => `
+            <tr>
+              <td><span class="dep-row-number">${i + 1}</span></td>
+              <td>
+                ${ro
+                  ? `<span class="dep-action-badge ${badgeClass(d.type)}">${htmlEsc(d.type || 'Requires')}</span>`
+                  : `<select class="form-control" onchange="patchDep(${i}, 'type', this.value); persistAndRefreshCover();">
+                    ${DEP_TYPES.map(type => `<option value="${htmlEsc(type)}" ${type === (d.type || 'Requires') ? 'selected' : ''}>${htmlEsc(type)}</option>`).join('')}
+                  </select>`}
+              </td>
+              <td>
+                ${ro
+                  ? `<span>${htmlEsc(d.dependsOn || '—')}</span>`
+                  : `<select class="form-control" onchange="patchDep(${i}, 'dependsOn', this.value); persistAndRefreshCover();">
+                    <option value="">Select cover…</option>
+                    ${targets.map(name => `<option value="${htmlEsc(name)}" ${name === (d.dependsOn || '') ? 'selected' : ''}>${htmlEsc(name)}</option>`).join('')}
+                  </select>`}
+              </td>
+              <td>
+                ${ro
+                  ? `<span>${htmlEsc(d.condition || 'Always')}</span>`
+                  : `<input type="text" class="form-control" value="${htmlEsc(d.condition || 'Always')}" placeholder="e.g. Vehicle Type is Tractor" oninput="setDepCondition(${i}, this.value)">`}
+              </td>
+              ${ro ? '' : `<td><button type="button" class="btn btn-ghost btn-sm danger" onclick="removeDep(${i})">Delete</button></td>`}
+            </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`
+      : `<div class="dep-help-card"><strong>No dependency rules configured.</strong><br>This cover behaves independently of other covers. Add a rule to require, exclude, or bundle with another cover.</div>`}
+
+      ${ro ? '' : `<div class="dep-rule-toolbar">
+        <div class="dep-rules-label">Add a dependency rule</div>
+        <button type="button" class="dep-add-btn" onclick="addDep()">+ Add Dependency</button>
+      </div>`}
+
+      <div class="dep-preview">
+        <div class="dep-preview-title">Rule Preview</div>
+        <div class="dep-preview-text">${htmlEsc(dependencyPreviewText(c))}</div>
+      </div>
+    </div>
+  `;
+}
+
 function unlinkWordingDoc(code) {
   const c = currentCover();
   if (!c || productStatus === 'published') return;
@@ -3434,7 +3514,7 @@ function buildInsuredItemCard(it, index, ro, c) {
   return `
     <div class="ii-item" ${index === 0 ? 'id="ii-item"' : ''}>
       <div class="ii-item-head">
-        <strong>${index === 0 ? 'Insured Item' : `Child Coverage Class ${index}`}</strong>
+        <strong>${index === 0 ? htmlEsc(c.name) : `Child Coverage Class ${index}`}</strong>
         ${ro || index === 0 ? '' : `<button type="button" class="btn btn-ghost btn-sm" onclick="removeInsuredItem('${idAttr}')">Remove</button>`}
       </div>
       <div class="form-grid-2 ii-item-grid">
@@ -3784,22 +3864,6 @@ function buildDeductibleSection(c, ro) {
     <div id="ded-block">
 
       <div class="form-group span-2" style="margin-bottom:16px">
-        <div class="uw-override-row">
-          <div>
-            <strong>Underwriter can override deductible</strong>
-            <p>Allows the underwriter to change the configured deductible for this coverage with an audit reason.</p>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span>${c.uwOverrideDeductible ? 'Enabled' : 'Disabled'}</span>
-            <label class="toggle-switch">
-              <input type="checkbox" ${c.uwOverrideDeductible ? 'checked' : ''} ${roDis} onchange="patchCoverField('uwOverrideDeductible', this.checked)" aria-label="Underwriter can override deductible">
-              <div class="toggle-slider"></div><div class="toggle-dot"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group span-2" style="margin-bottom:16px">
         <label class="form-label">Deductible Type</label>
 
         <div class="ded-cards" role="radiogroup" aria-label="Deductible type">
@@ -3843,10 +3907,77 @@ function buildDeductibleSection(c, ro) {
 
       
 
-    ${uwValuationOverrideToggleHtml(c, ro)}
+    ${deductibleOverrideCardHtml(c, ro)}
 
     </div>`;
 }
+
+function deductibleOverrideCardHtml(c, ro) {
+  const roDis = ro ? 'disabled' : '';
+  const roAttr = ro ? 'readonly' : '';
+  const maxPct = c.uwMaxOverrideDeductiblePct ?? 20;
+  const fields = Array.isArray(c.uwOverrideDeductibleFields) ? c.uwOverrideDeductibleFields : ['amount', 'basis', 'appliesPer'];
+  const FIELD_OPTIONS = [
+    ['amount', 'Deductible Amount / Percentage'],
+    ['basis', 'Deductible Basis'],
+    ['appliesPer', 'Deductible Applies Per']
+  ];
+  return `
+    <div class="uw-override-row" style="flex-direction:column;align-items:stretch;gap:12px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" ${c.uwOverrideDeductible ? 'checked' : ''} ${roDis} onchange="toggleDeductibleOverride(this.checked)">
+        <strong style="font-size:14px;font-weight:650;color:var(--color-ink)">Allow Underwriter Override</strong>
+      </label>
+      ${c.uwOverrideDeductible ? `
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Maximum Override (%)</label>
+          <input type="text" class="form-control" value="${htmlEsc(maxPct)}" ${roAttr} oninput="patchDeductibleOverrideMax(this.value)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Allow Override For</label>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:2px">
+            ${FIELD_OPTIONS.map(([key, label]) => `
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--color-ink);cursor:pointer">
+              <input type="checkbox" ${fields.includes(key) ? 'checked' : ''} ${roDis} onchange="toggleDeductibleOverrideField('${key}', this.checked)">
+              ${label}
+            </label>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="uw-auth-foot">Maximum allowed change: ±${htmlEsc(maxPct)}%</div>
+      ` : ''}
+    </div>`;
+}
+
+function toggleDeductibleOverride(checked) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  c.uwOverrideDeductible = !!checked;
+  if (checked && !Array.isArray(c.uwOverrideDeductibleFields)) c.uwOverrideDeductibleFields = ['amount', 'basis', 'appliesPer'];
+  if (checked && c.uwMaxOverrideDeductiblePct == null) c.uwMaxOverrideDeductiblePct = 20;
+  try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
+  refreshFinancialPanel();
+}
+
+function patchDeductibleOverrideMax(value) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  c.uwMaxOverrideDeductiblePct = String(value || '').replace(/[^0-9.]/g, '');
+  try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
+  const foot = document.querySelector('#ded-block .uw-auth-foot');
+  if (foot) foot.textContent = `Maximum allowed change: ±${c.uwMaxOverrideDeductiblePct}%`;
+}
+
+function toggleDeductibleOverrideField(key, checked) {
+  const c = currentCover();
+  if (!c || !coversCanEdit()) return;
+  const set = new Set(Array.isArray(c.uwOverrideDeductibleFields) ? c.uwOverrideDeductibleFields : []);
+  if (checked) set.add(key); else set.delete(key);
+  c.uwOverrideDeductibleFields = Array.from(set);
+  try { PS.prototypeApp?.persistCollection?.('covers', COVERS); } catch (_) {}
+}
+
 function buildInsuredItemsSection(c, ro) {
   ensureInsuredItems(c);
   // Keep the default/base insured item visible as the parent.
@@ -5548,6 +5679,10 @@ function renderDetailPanel(c) {
 
   
     ${buildSection('insuredItems', '3', 'Insured Items, Valuation & Limits', formatInsuredItemsSummary(c), buildInsuredItemsSection(c, ro))}
+
+    ${buildSection('deductible', '2', 'Deductible & Co-pay', formatDeductibleSummary(c), buildDeductibleSection(c, ro))}
+
+    ${buildSection('dependencies', '6', 'Dependencies', `${Array.isArray(c.dependencies) ? c.dependencies.length : 0} rule${Array.isArray(c.dependencies) && c.dependencies.length === 1 ? '' : 's'}`, buildDependenciesSection(c, ro))}
 
     ${buildSection('claims', '7', 'Claims Behaviour', `${c.lossBasis} · ${c.benefitBasis}`, `
       <div class="form-grid-2">

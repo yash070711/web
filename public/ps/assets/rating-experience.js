@@ -523,8 +523,8 @@ function syncRatingFormulas() {
     ctx.innerHTML = `<span class="studio-context-pill">${esc(context.productId)} · v${esc(context.version)}</span><span class="cs-stat">${esc(product.name || context.productId)}</span><span class="cs-stat">${esc(selected.name)}</span><span class="cs-stat">${money(selected.base)} starting price</span><span class="cs-stat">${enabledRuleCount()} active decisions</span>`;
     const back = document.getElementById('ctx-back-link');
     if (back) back.href = `product-detail.html?id=${encodeURIComponent(context.productId)}&version=${encodeURIComponent(context.version)}`;
-    const viewBtn = document.getElementById('view-product-btn');
-    if (viewBtn) viewBtn.href = `product-detail.html?id=${encodeURIComponent(context.productId)}&version=${encodeURIComponent(context.version)}`;
+    document.getElementById('view-product-btn')?.remove();
+    document.getElementById('customer-view-btn')?.remove();
     const readonly = document.getElementById('readonly-band');
     if (readonly) readonly.style.display = canEdit() ? 'none' : '';
     PS.prototypeApp?.refreshStudioNav?.();

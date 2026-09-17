@@ -2302,29 +2302,13 @@ function coverValidationIssues(cover) {
         }
       });
 
-      const actions = document.querySelector('.page-header-actions');
-      const existingView = document.getElementById('view-product-btn') || document.getElementById('ps-view-product');
-      if (existingView) {
-        existingView.href = detailHref;
-      } else if (actions) {
-        const view = document.createElement('a');
-        view.id = 'ps-view-product';
-        view.className = 'btn btn-secondary';
-        view.href = detailHref;
-        view.textContent = 'View Product';
-        actions.insertBefore(view, actions.firstChild);
-      }
-      const existingCustomer = document.getElementById('customer-view-btn') || document.getElementById('ps-customer-view');
-      if (existingCustomer) {
-        existingCustomer.href = customerViewHref(product.id, version);
-      } else if (actions) {
-        const customer = document.createElement('a');
-        customer.id = 'ps-customer-view';
-        customer.className = 'btn btn-primary';
-        customer.href = customerViewHref(product.id, version);
-        customer.textContent = 'Customer view';
-        actions.insertBefore(customer, actions.firstChild);
-      }
+      // "View Product" and "Customer view" have been removed from every
+      // studio header. Tear down any static or previously-injected instance
+      // instead of creating or updating one.
+      document.getElementById('view-product-btn')?.remove();
+      document.getElementById('ps-view-product')?.remove();
+      document.getElementById('customer-view-btn')?.remove();
+      document.getElementById('ps-customer-view')?.remove();
 
       const bundle = getProductBundle(product.id, version);
       const qCount = (bundle.questionGroups || []).reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 1), 0);
@@ -2371,7 +2355,7 @@ function coverValidationIssues(cover) {
     if (PS.data?.currentUser && state.currentRole) {
       PS.data.currentUser.role = state.currentRole;
       document.querySelectorAll('.topbar-user-role, .role-badge').forEach(el => {
-        if (el.closest('.topbar-user')) el.textContent = 'Carrier';
+        if (el.closest('.topbar-user')) el.textContent = 'Non admitted';
         else if (el.closest('.nav-footer')) el.textContent = state.currentRole;
       });
     }

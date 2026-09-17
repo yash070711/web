@@ -129,7 +129,7 @@ PS.nav = {
         <div class="user-avatar ${u.avatarClass}">${u.initials}</div>
         <div class="topbar-user-info">
           <div class="topbar-user-name">SouthLake Carrier</div>
-          <div class="topbar-user-role">Carrier</div>
+          <div class="topbar-user-role">Non admitted</div>
         </div>
         ${this.icon('caret-down', 12)}
       </div>

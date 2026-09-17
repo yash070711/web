@@ -144,21 +144,6 @@ function buildHubStudios() {
     },
 
     {
-      id: 'risk',
-      title: 'Risk Studio',
-      description: 'Commercial trucking risk attributes by question group: operations, fleet, vehicle, driver, cargo, safety, and loss history.',
-      count: liveOrDetailCount(
-        'risk',
-        (bundle.risk || []).length
-      ),
-      noun: ['Attribute', 'Attributes'],
-      expected: 122,
-      tone: '#E98A12',
-      iconBg: '#FFF0DE',
-      href: studioHref('risk-studio.html')
-    },
-
-    {
       id: 'eligibility',
       title: 'Eligibility Studio',
       description: 'Who can buy this product, and when a case is referred.',
@@ -171,6 +156,21 @@ function buildHubStudios() {
       tone: '#21A35A',
       iconBg: '#E6F7EA',
       href: studioHref('eligibility-studio.html')
+    },
+
+    {
+      id: 'risk',
+      title: 'Risk Studio',
+      description: 'Commercial trucking risk attributes by question group: operations, fleet, vehicle, driver, cargo, safety, and loss history.',
+      count: liveOrDetailCount(
+        'risk',
+        (bundle.risk || []).length
+      ),
+      noun: ['Attribute', 'Attributes'],
+      expected: 122,
+      tone: '#E98A12',
+      iconBg: '#FFF0DE',
+      href: studioHref('risk-studio.html')
     },
 
     {

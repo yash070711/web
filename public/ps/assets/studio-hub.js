@@ -623,10 +623,8 @@
 
       const back = document.getElementById('ctx-back-link');
       if (back) back.href = `product-detail.html?id=${encodeURIComponent(this.productId)}`;
-      const customerBtn = document.getElementById('customer-view-btn');
-      if (customerBtn) customerBtn.href = PS.customerViewHref ? PS.customerViewHref(this.productId, this.productVersion) : `product-view.html?id=${this.productId}&version=${this.productVersion}`;
-      const productBtn = document.getElementById('view-product-btn');
-      if (productBtn) productBtn.href = `product-detail.html?id=${this.productId}&version=${this.productVersion}`;
+      document.getElementById('customer-view-btn')?.remove();
+      document.getElementById('view-product-btn')?.remove();
 
       this.renderShell();
       const bundle = PS.prototypeApp?.getProductBundle?.(this.productId, this.productVersion);

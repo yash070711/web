@@ -829,8 +829,8 @@
   const STUDIO_WIZARD_IDS = {
     's-coverage': 'coverage',
     's-quest': 'questionnaire',
-    's-risk': 'risk',
     's-eligibility': 'eligibility',
+    's-risk': 'risk',
     's-rating': 'rating',
     's-uw': 'underwriting',
     's-dist': 'distribution',
@@ -850,8 +850,8 @@
 const STUDIO_NAV_CHAIN = [
   { id: 'coverage', file: 'coverage-studio.html', title: 'Class of Business' },
   { id: 'questionnaire', file: 'questionnaire-studio.html', title: 'Questionnaire Studio' },
-  { id: 'risk', file: 'risk-studio.html', title: 'Risk Studio' },
   { id: 'eligibility', file: 'eligibility-studio.html', title: 'Eligibility Studio' },
+  { id: 'risk', file: 'risk-studio.html', title: 'Risk Studio' },
   { id: 'rating', file: 'rating-studio.html', title: 'Rating & Pricing Studio' },
   { id: 'distribution', file: 'distribution-studio.html', title: 'Distribution Studio' },
   { id: 'document', file: 'document-studio.html', title: 'Document Studio' }
@@ -1431,12 +1431,12 @@ function coverValidationIssues(cover) {
         skip: !enabled.has('questionnaire'), done: qCount > 0
       },
       {
-        id: 'risk', label: 'Risk', href: studioHref('risk-studio.html'),
-        skip: !enabled.has('risk'), done: (bundle.risk || []).length > 0
-      },
-      {
         id: 'eligibility', label: 'Eligibility', href: studioHref('eligibility-studio.html'),
         skip: !enabled.has('eligibility'), done: (bundle.eligibility || []).length > 0
+      },
+      {
+        id: 'risk', label: 'Risk', href: studioHref('risk-studio.html'),
+        skip: !enabled.has('risk'), done: (bundle.risk || []).length > 0
       },
       {
         id: 'rating', label: 'Rating', href: studioHref('rating-studio.html'),
@@ -1602,8 +1602,8 @@ function coverValidationIssues(cover) {
     const studios = [
       mark('coverage', 'Class of Business', 'umbrella', 'coverage-studio.html', (bundle.covers || []).length, 'covers'),
       mark('questionnaire', 'Questionnaire Studio', 'list-checks', 'questionnaire-studio.html', qCount, 'questions'),
-      mark('risk', 'Risk Studio', 'warning', 'risk-studio.html', (bundle.risk || []).length, 'risk attributes'),
       mark('eligibility', 'Eligibility Studio', 'user-check', 'eligibility-studio.html', (bundle.eligibility || []).length, 'eligibility rules'),
+      mark('risk', 'Risk Studio', 'warning', 'risk-studio.html', (bundle.risk || []).length, 'risk attributes'),
       mark('rating', 'Rating & Pricing Studio', 'calculator', 'rating-studio.html', ratingCount, 'rating items'),
       mark('underwriting', 'Underwriting Rules Studio', 'shield-check', 'underwriting-studio.html', (bundle.underwriting || []).length, 'UW rules'),
       mark('distribution', 'Distribution Studio', 'tree-structure', 'distribution-studio.html', (bundle.channels || []).length, 'channels'),
@@ -2198,29 +2198,13 @@ function coverValidationIssues(cover) {
         }
       });
 
-      const actions = document.querySelector('.page-header-actions');
-      const existingView = document.getElementById('view-product-btn') || document.getElementById('ps-view-product');
-      if (existingView) {
-        existingView.href = detailHref;
-      } else if (actions) {
-        const view = document.createElement('a');
-        view.id = 'ps-view-product';
-        view.className = 'btn btn-secondary';
-        view.href = detailHref;
-        view.textContent = 'View Product';
-        actions.insertBefore(view, actions.firstChild);
-      }
-      const existingCustomer = document.getElementById('customer-view-btn') || document.getElementById('ps-customer-view');
-      if (existingCustomer) {
-        existingCustomer.href = customerViewHref(product.id, version);
-      } else if (actions) {
-        const customer = document.createElement('a');
-        customer.id = 'ps-customer-view';
-        customer.className = 'btn btn-primary';
-        customer.href = customerViewHref(product.id, version);
-        customer.textContent = 'Customer view';
-        actions.insertBefore(customer, actions.firstChild);
-      }
+      // "View Product" and "Customer view" have been removed from every
+      // studio header. Tear down any static or previously-injected instance
+      // instead of creating or updating one.
+      document.getElementById('view-product-btn')?.remove();
+      document.getElementById('ps-view-product')?.remove();
+      document.getElementById('customer-view-btn')?.remove();
+      document.getElementById('ps-customer-view')?.remove();
 
       const bundle = getProductBundle(product.id, version);
       const qCount = (bundle.questionGroups || []).reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 1), 0);
@@ -3061,7 +3045,7 @@ function coverValidationIssues(cover) {
         state.simulationRuns.unshift({ id:`RUN-${Date.now()}`, type:'single-test', testId:test.id, status:'passed', at:now(), context:context() }); saveState();
         showResult('Test completed', `${test.name} passed and its row was updated.`);
       }
-    } else if (page !== 'questionnaire-studio.html' && page !== 'eligibility-studio.html' && /\+ Add Constraint|\+ Add Jurisdiction|\+ Add Rule Override|\+ Add Intermediary|\+ Add Condition|\+ Add OR Group/i.test(text)) {
+    } else if (page !== 'questionnaire-studio.html' && page !== 'eligibility-studio.html' && page !== 'risk-studio.html' && /\+ Add Constraint|\+ Add Jurisdiction|\+ Add Rule Override|\+ Add Intermediary|\+ Add Condition|\+ Add OR Group/i.test(text)) {
       consume();
       const section = target.closest('.card, .detail-section, .section-card, .condition-builder') || target.parentElement;
       const row = document.createElement('div'); row.className = 'ps-added-row'; row.style.cssText = 'display:flex;gap:8px;margin-top:8px;padding:10px;border:1px solid var(--color-border);border-radius:6px;background:var(--color-panel)';

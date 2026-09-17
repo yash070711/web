@@ -3043,10 +3043,22 @@ function patchQuestion(key, value, opts) {
   if (key === 'label') found.q.internalName = slugFromLabel(value);
   if (key === 'internalName') found.q.internalName = String(value).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
   if (key === 'helpText') found.q.help = value;
+  if (key === 'conditional') {
+    found.q.hiddenFromFlow = false;
+    if (!value) found.q.conditions = [];
+    else if (!found.q.conditions?.length) {
+      const other = allQuestions().filter(x => x.id !== activeQId);
+      found.q.conditions = [{field: other[0]?.label || '', op:'is', value:'', connector:'AND'}];
+    }
+    syncExprPreview(found.q);
+    openSections.add('identity');
+  }
   if (key === 'type' || key === 'fieldType') {
     found.q.type = value;
     found.q.fieldType = value;
     if ((value === 'select' || value === 'multisel') && !Array.isArray(found.q.options)) found.q.options = [];
+    if (value === 'multisel' && !found.q.options.length) found.q.options.push({value:'', label:''});
+    openSections.add('identity');
     if (value === 'repeat' && !Array.isArray(found.q.repeatQuestions)) {
       found.q.repeatQuestions = [];
       if (found.q.repeatMin === undefined) found.q.repeatMin = 0;
@@ -3145,9 +3157,9 @@ function requireLiveQuestion() {
 
 const LIST_SECTION = {
   validations: 'validation',
-  conditions: 'conditional',
+  conditions: 'identity',
   evidence: 'evidence',
-  options: 'field',
+  options: 'identity',
   repeatQuestions: 'field'
 };
 
@@ -3443,9 +3455,7 @@ function renderDetailPanel(q) {
           ${qf('Field Type', `<select class="form-control" ${dis} onchange="patchQuestion('fieldType', this.value)">
             ${questionTypeEntries().map(([v, l]) => `<option value="${v}" ${(q.fieldType || q.type || 'text') === v ? 'selected' : ''}>${l}</option>`).join('')}
           </select>`)}
-          ${qf('Question Category', `<select class="form-control" ${dis} onchange="patchQuestion('questionCategory', this.value)">
-            ${QUESTION_CATEGORIES.map(c => `<option value="${c.id}" ${(q.questionCategory || 'general') === c.id ? 'selected' : ''}>${c.label}</option>`).join('')}
-          </select>`)}
+          ${["select", "multisel"].includes(q.fieldType || q.type) ? `<div class="span-2">${optionsListHtml(q, ro)}</div>` : ""}
           ${qf('Question Group', `<select class="form-control" ${dis} onchange="moveQuestionToGroup(this.value)">
             ${GROUPS.map(g => `<option value="${g.id}" ${g.id === q.groupId ? 'selected' : ''}>${qEsc(g.label || g.name)}</option>`).join('')}
           </select>`)}
@@ -3466,14 +3476,14 @@ function renderDetailPanel(q) {
   }),
   true
 ) : ''}
-          ${qf('Visibility', `<select class="form-control" ${dis} onchange="patchQuestion('hiddenFromFlow', this.value === 'hidden')">
-            <option value="always" ${!q.hiddenFromFlow ? 'selected' : ''}>Always show</option>
-            <option value="hidden" ${q.hiddenFromFlow ? 'selected' : ''}>Hidden</option>
+          ${qf('Visibility', `<select class="form-control" ${dis} onchange="patchQuestion('conditional', this.value === 'conditional')">
+            <option value="always" ${!q.conditional && !conditions.length ? 'selected' : ''}>Always visible</option>
+            <option value="conditional" ${q.conditional || conditions.length ? 'selected' : ''}>Show only when condition matches</option>
           </select>`)}
+          ${q.conditional || conditions.length ? `<div class="span-2">${conditionalVisibilityHtml(q, conditions, otherQs, ro, dis, rd)}</div>` : ""}
           ${qf('Help Text', `<textarea class="form-control" rows="3" ${rd} placeholder="Guidance shown to the user below the field" oninput="patchQuestion('helpText', this.value, {refresh:false})">${qEsc(q.helpText || '')}</textarea>`, true)}
           ${qf('Required question', toggleHtml('required', !!q.required, ro))}
         </div>
-        ${optionsListHtml(q, ro)}
       `)}
 
     </div>
