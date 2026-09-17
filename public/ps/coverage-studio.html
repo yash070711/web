@@ -3480,9 +3480,10 @@ function buildInsuredItemCard(it, index, ro, c) {
             <input type="text" class="form-control currency-input" value="${htmlEsc(it.itemAggregateLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','itemAggregateLimit',this.value.replace(/[^0-9.,]/g,''),true)">
           </div>
           <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
-        </div>` : ''}
-      
+</div>` : ''}
+
 </div>
+        ${index > 0 ? uwValuationOverrideToggleHtml(c, ro) : ''}
     </div>`;
 }
 function formatInsuredItemsSummary(c) {
@@ -3818,7 +3819,7 @@ function buildChildCoverageSection(c, ro) {
       <div class="callout callout-info" style="margin-bottom:14px">
         <div class="callout-body" style="font-size:13px">Each child coverage is a separately configured extension under the parent cover. Configure its insured item, valuation basis and limits here; the parent cover configuration stays in Cover Identity above.</div>
       </div>
-      ${childItems.map((it, i) => buildInsuredItemCard(it, i + 1, ro, c) + uwValuationOverrideToggleHtml(c, ro)).join('')}
+      ${childItems.map((it, i) => buildInsuredItemCard(it, i + 1, ro, c)).join('')}
     `);
 }
 

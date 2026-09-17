@@ -515,6 +515,10 @@ function InsuredItemCard({
   onPatchValConfig,
   onSetLimitBasisMode,
   onRemove,
+  uwMaxVariation,
+  uwReferral,
+  uwReason,
+  onPatchCover,
 }: {
   it: InsuredItem;
   index: number;
@@ -524,6 +528,10 @@ function InsuredItemCard({
   onPatchValConfig: (itemId: string, basisId: string, key: string, value: string) => void;
   onSetLimitBasisMode: (itemId: string, mode: "fixed" | "percent") => void;
   onRemove: (id: string) => void;
+  uwMaxVariation: string;
+  uwReferral: string;
+  uwReason: string;
+  onPatchCover: (key: string, value: unknown) => void;
 }) {
   const tiles = iiTiles();
   const allowed = it.allowedBases;
@@ -698,6 +706,41 @@ function InsuredItemCard({
             </Field>
           </div>
         </section>
+        {index > 0 ? (
+          <section className="ii-sub">
+            <div className="ii-sub-head"><span className="ii-sub-num">5</span> Underwriting Controls</div>
+            <div className="form-grid-3">
+              <div className="form-group span-3">
+                <div className="ii-toggle-row">
+                  <div>
+                    <strong>Underwriter can override valuation</strong>
+                    <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="ii-en">{it.uwOverrideValuation ? "Enabled" : "Disabled"}</span>
+                    <label className="toggle-switch">
+                      <input type="checkbox" disabled={readOnly} checked={it.uwOverrideValuation} onChange={(e) => onPatch(it.id, { uwOverrideValuation: e.target.checked })} aria-label="Underwriter can override valuation" />
+                      <div className="toggle-slider" /><div className="toggle-dot" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <Field label="Maximum variation (%)">
+                <input className="form-control" disabled={readOnly} value={uwMaxVariation} onChange={(e) => onPatchCover("uwMaxVariation", e.target.value)} />
+              </Field>
+              <Field label="Referral requirement">
+                <select className="form-control" disabled={readOnly} value={uwReferral} onChange={(e) => onPatchCover("uwReferral", e.target.value)}>
+                  {["Referral required", "No referral", "Referral above max variation"].map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </Field>
+              <Field label="Reason requirement">
+                <select className="form-control" disabled={readOnly} value={uwReason} onChange={(e) => onPatchCover("uwReason", e.target.value)}>
+                  {["Reason required", "Reason optional", "No reason"].map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </Field>
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
@@ -1060,6 +1103,10 @@ export function CoverageStudio({
                     onPatchValConfig={patchValConfig}
                     onSetLimitBasisMode={setItemLimitBasisMode}
                     onRemove={removeInsuredItem}
+                    uwMaxVariation={str(cover, "uwMaxVariation", "20")}
+                    uwReferral={str(cover, "uwReferral", "Referral required")}
+                    uwReason={str(cover, "uwReason", "Reason required")}
+                    onPatchCover={update}
                   />
                 ))}
                 <div className="identity-section-divider" />
@@ -1123,40 +1170,11 @@ export function CoverageStudio({
                     onPatchValConfig={patchValConfig}
                     onSetLimitBasisMode={setItemLimitBasisMode}
                     onRemove={removeInsuredItem}
+                    uwMaxVariation={str(cover, "uwMaxVariation", "20")}
+                    uwReferral={str(cover, "uwReferral", "Referral required")}
+                    uwReason={str(cover, "uwReason", "Reason required")}
+                    onPatchCover={update}
                   />
-                  <section className="ii-sub">
-                    <div className="ii-sub-head"><span className="ii-sub-num">5</span> Underwriting Controls</div>
-                    <div className="form-grid-3">
-                      <div className="form-group span-3">
-                        <div className="ii-toggle-row">
-                          <div>
-                            <strong>Underwriter can override valuation</strong>
-                            <p>Allows a permitted valuation basis to be changed for this item with audit reason.</p>
-                          </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span className="ii-en">{it.uwOverrideValuation ? "Enabled" : "Disabled"}</span>
-                            <label className="toggle-switch">
-                              <input type="checkbox" disabled={readOnly} checked={it.uwOverrideValuation} onChange={(e) => patchInsured(it.id, { uwOverrideValuation: e.target.checked })} aria-label="Underwriter can override valuation" />
-                              <div className="toggle-slider" /><div className="toggle-dot" />
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                      <Field label="Maximum variation (%)">
-                        <input className="form-control" disabled={readOnly} value={str(cover, "uwMaxVariation", "20")} onChange={(e) => update("uwMaxVariation", e.target.value)} />
-                      </Field>
-                      <Field label="Referral requirement">
-                        <select className="form-control" disabled={readOnly} value={str(cover, "uwReferral", "Referral required")} onChange={(e) => update("uwReferral", e.target.value)}>
-                          {["Referral required", "No referral", "Referral above max variation"].map((o) => <option key={o}>{o}</option>)}
-                        </select>
-                      </Field>
-                      <Field label="Reason requirement">
-                        <select className="form-control" disabled={readOnly} value={str(cover, "uwReason", "Reason required")} onChange={(e) => update("uwReason", e.target.value)}>
-                          {["Reason required", "Reason optional", "No reason"].map((o) => <option key={o}>{o}</option>)}
-                        </select>
-                      </Field>
-                    </div>
-                  </section>
                 </div>
               ))}
             </Accordion>
