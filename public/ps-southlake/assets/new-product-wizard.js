@@ -79,7 +79,6 @@ function buildWizardHTML() {
         <div class="form-group" style="grid-column:1/-1">
           <label class="form-label" for="w-name">Product Name <span class="required">*</span></label>
           <input type="text" id="w-name" class="form-control" maxlength="100" placeholder="e.g. Truck Auto Liability">
-          <span class="form-help">Must be unique. You cannot create two products with the same name.</span>
         </div>
         <div class="form-group">
           <label class="form-label" for="w-family">Product Family <span class="required">*</span></label>
@@ -88,11 +87,10 @@ function buildWizardHTML() {
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label" for="w-lob">Coverage <span class="required">*</span></label>
+          <label class="form-label" for="w-lob">Coverage/Product/LOB <span class="required">*</span></label>
           <select id="w-lob" class="form-control">
             <option value="" data-keep>Select a product family first…</option>
           </select>
-          <span class="form-help">Updates with Product Family.</span>
         </div>
       
         <div class="form-group">
@@ -125,7 +123,6 @@ function buildWizardHTML() {
             <svg width="16" height="16" viewBox="0 0 256 256" fill="none" aria-hidden="true"><path d="M173.66 98.34a8 8 0 010 11.32l-56 56a8 8 0 01-11.32 0l-24-24a8 8 0 0111.32-11.32L112 148.69l50.34-50.35a8 8 0 0111.32 0zM232 128A104 104 0 1128 128a104 104 0 01208 0zm-16 0a88 88 0 10-176 0 88 88 0 00176 0z" fill="var(--color-brand)"/></svg>
             <span style="font-size:14px;font-weight:500">All ${US_STATES.length} states selected</span>
           </div>
-          <span class="form-help">This product is available in every US jurisdiction by default.</span>
           <div class="jur-picker hidden">
             <div class="jur-picker-toolbar">
               <div class="jur-picker-search">
@@ -158,12 +155,10 @@ function buildWizardHTML() {
         <div class="form-group">
           <label class="form-label" for="w-eff-from">Effective Proposed Date From <span class="required">*</span></label>
           <input type="date" id="w-eff-from" class="form-control" oninput="PS.syncEffectiveTo && PS.syncEffectiveTo('w-eff-from','w-eff-to')">
-          <span class="form-help">Effective proposed date must be approved.</span>
         </div>
         <div class="form-group">
           <label class="form-label" for="w-eff-to">Expiration Date</label>
           <input type="date" id="w-eff-to" class="form-control">
-          <span class="form-help">Leave blank for open-ended. Must be on or after Effective Proposed Date From.</span>
         </div>
       </div>
       <div style="margin-top:var(--space-4);padding:var(--space-5);border:1px solid var(--color-border);border-radius:var(--radius-lg)">
@@ -403,7 +398,7 @@ function syncSelectedStates() {
   if (!box) return;
   box.innerHTML = selected.length
     ? selected.map(s => `<span class="jur-chip" title="${stateNameFor(s)}">${s}<span class="jur-chip-remove" role="button" tabindex="0" aria-label="Remove ${s}" onclick="removeSelectedState('${s}')">×</span></span>`).join('')
-    : '<span class="form-help">No states selected yet</span>';
+    : '<span>No states selected yet</span>';
 }
 
 function removeSelectedState(abbr) {

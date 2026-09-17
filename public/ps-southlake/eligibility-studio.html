@@ -1892,8 +1892,6 @@ function isRuleIncomplete(r) {
   if (!Number.isFinite(Number(rule.priority)) || Number(rule.priority) <= 0) return true;
   if (!rule.outcomeType) return true;
   if (!String(rule.reasonCode || '').trim()) return true;
-  if (!String(rule.internalMsg || '').trim()) return true;
-  if ((rule.outcomeType === 'hard' || rule.outcomeType === 'soft') && !String(rule.customerMsg || '').trim()) return true;
   const conditions = rule.conditions || [];
   if (!conditions.length) return true;
   return conditions.some(c => {
@@ -2686,6 +2684,7 @@ function renderDetailPanel(r) {
       <p style="font-size:12px;color:var(--color-muted);margin:0 0 12px">
         Define the condition for eligibility using the selected Questionnaire question(s) or Risk Attribute.
       </p>
+
       <div class="condition-builder">
         <div class="cb-header">
           <div class="cb-logic">
@@ -2725,6 +2724,15 @@ function renderDetailPanel(r) {
         </div>
       </div>
 
+      <div class="form-group" style="margin-top:16px">
+        <label class="form-label" for="el-result">Result</label>
+        <select id="el-result" class="form-control" ${dis} onchange="setOutcomeType(this.value)">
+          <option value="hard" ${r.outcomeType === 'hard' ? 'selected' : ''}>Ineligible</option>
+          <option value="soft" ${r.outcomeType === 'soft' ? 'selected' : ''}>Soft Warning</option>
+          <option value="refer" ${r.outcomeType === 'refer' ? 'selected' : ''}>Referral</option>
+        </select>
+      </div>
+
       <div class="compiled-expression">
         <span class="compiled-title">Compiled expression:</span>
         <div>IF</div>
@@ -2744,41 +2752,6 @@ function renderDetailPanel(r) {
       </div>
     `)}
 
-    ${buildSection('outcome','3','Outcome Configuration', outcomeLabel(r.outcomeType), `
-      <div class="outcome-type-selector">
-        <div class="outcome-card ${r.outcomeType==='hard'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('hard')"`} style="cursor:${ro?'default':'pointer'}">
-          <div class="outcome-card-icon">🛑</div>
-          <div class="outcome-card-label">Hard Block</div>
-          <div class="outcome-card-desc">No quotation permitted</div>
-        </div>
-        <div class="outcome-card ${r.outcomeType==='soft'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('soft')"`} style="cursor:${ro?'default':'pointer'}">
-          <div class="outcome-card-icon">⚠️</div>
-          <div class="outcome-card-label">Soft Warning</div>
-          <div class="outcome-card-desc">Quote proceeds with warning</div>
-        </div>
-        <div class="outcome-card ${r.outcomeType==='refer'?'selected':''}" ${ro ? '' : `onclick="setOutcomeType('refer')"`} style="cursor:${ro?'default':'pointer'}">
-          <div class="outcome-card-icon">👤</div>
-          <div class="outcome-card-label">Refer to UW</div>
-          <div class="outcome-card-desc">Routes to underwriter queue</div>
-        </div>
-      </div>
-      <div class="form-grid-2">
-        <div class="form-group">
-          <label class="form-label">Log to Audit</label>
-          <div class="toggle-wrap">
-            <label class="toggle-switch ${r.logAudit?'toggle-on':'toggle-off'}">
-              <input type="checkbox" ${r.logAudit?'checked':''} ${dis} onchange="patchRule('logAudit', this.checked, {light:true})" aria-label="Log to audit">
-              <div class="toggle-slider"></div><div class="toggle-dot"></div>
-            </label>
-            <span>${r.logAudit?'Yes':'No'}</span>
-          </div>
-        </div>
-        ${rf('Customer-facing Message', `<textarea class="form-control" id="el-customer-msg" data-el-validate="customer" rows="3" ${rd} oninput="patchRule('customerMsg', this.value, {light:true}); clearEligFieldError(this)">${htmlEsc(r.customerMsg || '')}</textarea>`, true)}
-        ${rf('Internal Message', `<textarea class="form-control" id="el-internal-msg" data-el-validate="internal" rows="2" ${rd} oninput="patchRule('internalMsg', this.value, {light:true}); clearEligFieldError(this)">${htmlEsc(r.internalMsg || '')}</textarea>`, true)}
-      </div>
-    `)}
-
-    
     ${buildSection('effective','5','Effective Dates', `${r.effectiveFrom} — ${r.effectiveTo}`, `
       <div class="form-grid-2">
         ${rf('Effective From *', `<input type="date" class="form-control" id="el-effective-from" data-el-validate="from" value="${htmlEsc(isoDateValue(r.effectiveFrom))}" ${rd} oninput="patchRule('effectiveFrom', this.value, {light:true}); clearEligFieldError(this)">`)}
@@ -3288,10 +3261,6 @@ function validateEligibilityRule() {
       first.push(document.querySelector('.elig-linked-card'));
     }
   }
-  if ((rule.outcomeType === 'hard' || rule.outcomeType === 'soft') && !String(rule.customerMsg || '').trim()) {
-    fail('#el-customer-msg', 'Customer-facing message is required for Hard Block and Soft Warning.');
-  }
-  if (!String(rule.internalMsg || '').trim()) fail('#el-internal-msg', 'Internal message is required.');
   const ids = RULES.map(r => r.id);
   if (ids.filter(id => id === rule.id).length > 1) {
     notifyElig('Cannot save', 'Rule ID must remain unique.', 'error');

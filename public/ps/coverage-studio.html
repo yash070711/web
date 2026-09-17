@@ -3566,21 +3566,18 @@ function buildInsuredItemCard(it, index, ro, c) {
             <div class="form-group">
               <label class="form-label">Maximum variation (%)</label>
               <input type="text" class="form-control" value="${htmlEsc(it.uwMaxVariation == null ? '20' : it.uwMaxVariation)}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','uwMaxVariation',this.value,false)">
-              <span class="form-help">Maximum percent an underwriter may move a value from the configured default.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Referral requirement</label>
               <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReferral',this.value,false)">
                 ${['Referral required', 'No referral', 'Referral above max variation'].map(o => `<option ${it.uwReferral === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
               </select>
-              <span class="form-help">Whether changing this field requires referral to a senior underwriter.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Reason requirement</label>
               <select class="form-control" ${ro?'disabled':''} onchange="patchInsuredItem('${idAttr}','uwReason',this.value,false)">
                 ${['Reason required', 'Reason optional', 'No reason'].map(o => `<option ${it.uwReason === o ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
               </select>
-              <span class="form-help">Whether a free-text audit reason is mandatory for overrides.</span>
             </div>
           </div>` : ''}
         </div>
@@ -3622,7 +3619,6 @@ function buildInsuredItemCard(it, index, ro, c) {
                    ${ro?'readonly':''}
                    oninput="patchInsuredItem('${idAttr}','limitAmount',this.value,true)">
           </div>
-          <span class="form-help">Required. Enter the maximum amount payable for this insured item.</span>
         </div>
         <div class="form-group">
   <label class="form-label">Fully Earned</label>
@@ -3667,7 +3663,6 @@ function buildInsuredItemCard(it, index, ro, c) {
             <input type="text" class="form-control" value="${htmlEsc(it.serviceUsageLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','serviceUsageLimit',this.value.replace(/[^0-9]/g,''),true)" aria-label="Service usage limit">
             <input type="text" class="form-control" value="${htmlEsc(it.serviceUsageUnit || 'call-outs per year')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','serviceUsageUnit',this.value,true)" aria-label="Service usage unit">
           </div>
-          <span class="form-help">No monetary valuation is applied to service covers.</span>
         </div>` : ''}
       
         </div>
@@ -3677,7 +3672,6 @@ function buildInsuredItemCard(it, index, ro, c) {
           <div class="currency-wrap"><span class="currency-prefix">$</span>
             <input type="text" class="form-control currency-input" value="${htmlEsc(it.itemAggregateLimit || '')}" ${ro?'readonly':''} oninput="patchInsuredItem('${idAttr}','itemAggregateLimit',this.value.replace(/[^0-9.,]/g,''),true)">
           </div>
-          <span class="form-help">Separate from the per-occurrence/per-claim coverage limit.</span>
         </div>` : ''}
       
       </div>
@@ -3795,7 +3789,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="syncDeductibleAmountAuto(this.value)"
         >
-        <span class="form-help">Primary fixed deductible amount applied to the claim.</span>
       </div>
 
       <div class="form-group">
@@ -3808,7 +3801,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="${patch('minDeductible')}"
         >
-        <span class="form-help">Optional floor for the deductible.</span>
       </div>
 
       <div class="form-group">
@@ -3821,7 +3813,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="${patch('maxDeductible')}"
         >
-        <span class="form-help">Optional ceiling for the deductible.</span>
       </div>
 
     </div>`;
@@ -3842,7 +3833,6 @@ function buildDeductibleSection(c, ro) {
           ${roAttr}
           oninput="currentCover().deductiblePct=this.value.replace(/[^0-9.]/g,'')"
         >
-        <span class="form-help">Percentage of the claim or sum insured applied as excess.</span>
       </div>
 
       <div class="form-group">
@@ -5701,7 +5691,6 @@ function renderDetailPanel(c) {
         <div class="form-group">
           <label class="form-label">Applicable Deductible</label>
           <input type="text" class="form-control" value="${htmlEsc(formatApplicableDeductible(c))}" readonly style="background:var(--color-surface);color:var(--color-muted)">
-          <span class="form-help">Auto-linked from Deductible & Co-pay</span>
         </div>
       </div>
       ${uwValuationOverrideToggleHtml(c, ro, false, 'Underwriter can override claims behavior', 'Allows the underwriter to change the claims behaviour for this cover at quote time.')}
@@ -6124,7 +6113,6 @@ function openCreateLibraryCover() {
         <div class="form-group">
           <label class="form-label" for="lib-cover-code">Cover Code</label>
           <input type="text" id="lib-cover-code" class="form-control" placeholder="Auto-generated if blank" style="font-family:'IBM Plex Mono',monospace;font-size:13px" oninput="this.dataset.userEdited='1'">
-          <span class="form-help">Suggested from the cover name — you can override before creating.</span>
         </div>
         <div class="form-group">
           <label class="form-label" for="lib-cover-type">Cover Type <span class="required">*</span></label>

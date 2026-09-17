@@ -2245,9 +2245,6 @@ function coverValidationIssues(cover) {
   }
 
   function wireShell() {
-    PS.studioHelp?.mountAll?.();
-    PS.studioHelp?.observeDynamicContent?.();
-
     if (PS.data?.currentUser && state.currentRole) {
       PS.data.currentUser.role = state.currentRole;
       document.querySelectorAll('.topbar-user-role, .role-badge').forEach(el => {

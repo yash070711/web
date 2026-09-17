@@ -971,12 +971,12 @@ function coverValidationIssues(cover) {
           .trim()
       );
 
-      if (!Number.isFinite(amount) || amount <= 0) {
+      if (!Number.isFinite(amount) || amount < 0) {
         issues.push({
           key: 'deductibleAmount',
           section: 'deductible',
           selector: '[data-cover-validate="deductible-amount"]',
-          message: 'Deductible Amount must be greater than 0.'
+          message: 'Deductible Amount must be 0 or greater.'
         });
       }
     }
@@ -2349,9 +2349,6 @@ function coverValidationIssues(cover) {
   }
 
   function wireShell() {
-    PS.studioHelp?.mountAll?.();
-    PS.studioHelp?.observeDynamicContent?.();
-
     if (PS.data?.currentUser && state.currentRole) {
       PS.data.currentUser.role = state.currentRole;
       document.querySelectorAll('.topbar-user-role, .role-badge').forEach(el => {

@@ -1268,7 +1268,6 @@ function renderGovernance(el) {
           <button class="btn btn-primary" onclick="schedulePublication()">Schedule Publication</button>
           <button class="btn btn-danger" onclick="publishNow()">Publish Now</button>
         </div>
-        <span class="form-help" style="margin-top:8px;display:block">Publisher role required. Publication will make this version live immediately.</span>
       </div>
     </div>` : ''}`;
 }
@@ -1374,14 +1373,12 @@ function openNewVersionModal() {
     <div class="modal-body">
       <div class="form-group"><label class="form-label" for="nv-label">Version Label</label>
         <input type="text" id="nv-label" class="form-control" value="${PS.nextVersionLabel ? PS.nextVersionLabel((currentProduct.versions||[]).map(v=>v.label)) : ''}" readonly style="font-family:'IBM Plex Mono',monospace">
-        <span class="form-help">Generated automatically. Will not reuse an existing version on this product.</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
         <div class="form-group"><label class="form-label" for="nv-from">Effective From <span class="required">*</span></label>
           <input type="date" id="nv-from" class="form-control" oninput="PS.syncEffectiveTo && PS.syncEffectiveTo('nv-from','nv-to')"></div>
         <div class="form-group"><label class="form-label" for="nv-to">Effective To</label>
-          <input type="date" id="nv-to" class="form-control">
-          <span class="form-help">Leave blank for open-ended. Must be on or after Effective From.</span></div>
+          <input type="date" id="nv-to" class="form-control"></div>
       </div>
       <div class="form-group"><label class="form-label" for="nv-base">Base this version on</label>
         <select id="nv-base" class="form-control">
@@ -1423,13 +1420,11 @@ function openCloneVersionModal() {
       </div>
       <div class="form-group"><label class="form-label" for="cv-label">New Version Label</label>
         <input type="text" id="cv-label" class="form-control" value="${PS.nextVersionLabel ? PS.nextVersionLabel((currentProduct.versions||[]).map(v=>v.label)) : ''}" readonly style="font-family:'IBM Plex Mono',monospace">
-        <span class="form-help">Generated automatically. Will not reuse an existing version on this product.</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
         <div class="form-group"><label class="form-label" for="cv-from">Effective From</label><input type="date" id="cv-from" class="form-control" oninput="PS.syncEffectiveTo && PS.syncEffectiveTo('cv-from','cv-to')"></div>
         <div class="form-group"><label class="form-label" for="cv-to">Effective To</label>
-          <input type="date" id="cv-to" class="form-control">
-          <span class="form-help">Must be on or after Effective From. Leave blank for open-ended.</span></div>
+          <input type="date" id="cv-to" class="form-control"></div>
       </div>
     </div>
     <div class="modal-footer">

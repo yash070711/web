@@ -405,7 +405,6 @@ function buildHubStudios() {
           <div class="form-group">
             <label class="form-label" for="ep-code">Internal Product Code</label>
             <input type="text" id="ep-code" class="form-control" value="${esc(p.code || (window.PS?.prototypeApp?.nextProductCode?.(p.family) || ''))}" style="font-family:'IBM Plex Mono',monospace;font-size:13px" placeholder="e.g. AUTO-2026-001">
-            <span class="form-help">Unique internal code. Suggested automatically — you can change it.</span>
           </div>
           <div class="form-group">
             <label class="form-label">Product ID</label>

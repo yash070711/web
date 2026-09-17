@@ -1700,7 +1700,6 @@ function ensureRiskConditions(r) {
 
 function riskConditionCardHtml(r, cond, index, disabled) {
   const opOptions = riskConditionOperatorOptions(r);
-  const action = UNDERWRITING_ACTIONS.find(a => a[0] === (cond.underwritingAction || 'none')) || UNDERWRITING_ACTIONS[0];
   const isBetween = cond.operator === 'between';
   const ratingImpact = cond.ratingImpact === 'none' ? 'none' : 'apply';
 
@@ -1773,7 +1772,6 @@ function riskConditionCardHtml(r, cond, index, disabled) {
       <div style="display:grid;grid-template-columns:repeat(${row2Items.length},minmax(0,1fr));gap:var(--space-4) var(--space-6);margin-top:var(--space-4)">
         ${row2Items.join('')}
       </div>
-      <span class="form-help">${rcEsc(action[2])}</span>
     </div>`;
 }
 
@@ -2027,7 +2025,6 @@ function loadRisk(id) {
           <select class="form-control" ${disabled ? 'disabled' : ''} onchange="patchRiskNoMatch(this.value)">
             ${NO_MATCH_PRESETS.map(([key, label]) => `<option value="${key}" ${(r.noMatchPreset || 'none-1') === key ? 'selected' : ''}>${rcEsc(label)}</option>`).join('')}
           </select>
-          <span class="form-help">Controls every answer not listed above.</span>
         </div>
 
         <div style="margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D">UNDERWRITING RATIONALE</div>
