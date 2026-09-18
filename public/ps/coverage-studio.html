@@ -1487,11 +1487,17 @@ function resetPickCoverSelection() {
   pickCoverSelectionReady = false;
 }
 
+function distributionScopedCovers() {
+  if (typeof PS.distributionAllowsCover !== 'function') return COVERS;
+  return COVERS.filter(cover => PS.distributionAllowsCover(productId, cover));
+}
+
 function coverCounts() {
+  const covers = distributionScopedCovers();
   return {
-    total: COVERS.length,
-    mandatory: COVERS.filter(c => c.availability === 'mandatory').length,
-    addon: COVERS.filter(c => c.availability === 'addon').length
+    total: covers.length,
+    mandatory: covers.filter(c => c.availability === 'mandatory').length,
+    addon: covers.filter(c => c.availability === 'addon').length
   };
 }
 
@@ -4264,6 +4270,10 @@ function paintStudio() {
   if (!COVERS.length && productNeedsCoverSelection()) {
     studioMode = 'hub';
   }
+  const scopedCovers = distributionScopedCovers();
+  if (scopedCovers.length && !scopedCovers.some(c => String(c.id) === String(activeCoverId))) {
+    activeCoverId = scopedCovers[0].id;
+  }
   PS.nav.render('coverage', [
     { label: 'Product Catalogue', href: 'catalogue.html' },
     { label: productName, href: `product-detail.html?id=${productId}` },
@@ -4966,9 +4976,10 @@ function coverReorderCustomized() {
 }
 
 function sortedCoversForSidebar() {
-  if (coverReorderCustomized()) return [...COVERS];
+  const covers = distributionScopedCovers();
+  if (coverReorderCustomized()) return [...covers];
   const order = TRUCKING_DEFAULT_COVER_CATALOG.map(c => String(c.name).toLowerCase());
-  return [...COVERS].sort((a, b) => {
+  return [...covers].sort((a, b) => {
     const ai = order.indexOf(String(a.name || '').toLowerCase());
     const bi = order.indexOf(String(b.name || '').toLowerCase());
     if (ai === -1 && bi === -1) return 0;
@@ -5438,7 +5449,7 @@ function coverUpdatedBy(c) {
 function filteredCovers() {
   const q = (document.getElementById('cover-search')?.value || '').trim().toLowerCase();
   const filter = document.getElementById('cover-filter')?.value || 'all';
-  return COVERS.filter(c => {
+  return distributionScopedCovers().filter(c => {
     if (filter === 'mandatory' && c.availability !== 'mandatory') return false;
     if (filter === 'optional' && c.availability === 'mandatory') return false;
     if (filter === 'addon' && c.availability !== 'addon') return false;

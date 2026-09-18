@@ -438,6 +438,13 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function resolveProductId(){
+    const query = new URLSearchParams(location.search);
+    const explicit = query.get("productId") || query.get("product") || query.get("id");
+    // An explicit route always owns its own SouthLake distribution record,
+    // including newly created products that are not in the local catalogue
+    // yet. Never substitute another known product and inherit its selections.
+    if(explicit) return explicit;
+
     const requested = productIdFromPage();
     const records = productRecords();
 
@@ -651,19 +658,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const ch = currentChannel();
     const key = `${ch?.type || "MGA"}|${ch?.name || ""}`;
     if(!app.configs[key]){
-      const parent = app.classes[0];
       app.configs[key] = {
         commission:12,
         commissionBasis:"Written Premium",
-        grants:[{
-          id:Date.now(),
-          parent:parent?.id || "",
-          children:[],
-          authority:"Brokerage",
-          bindingLimit:"",
-          states:[],
-          territory:{}
-        }]
+        // A new product/channel starts with no authority. Parent covers,
+        // child classes and states become selected only through user input.
+        grants:[]
       };
     }
     return app.configs[key];

@@ -1039,8 +1039,61 @@ function coverValidationIssues(cover) {
     return { pct: Math.round((complete / list.length) * 100), complete, total: list.length };
   }
 
-  function liveCoversForCompletion() {
-    if (typeof COVERS !== 'undefined' && Array.isArray(COVERS) && routeName() === 'coverage-studio.html') return COVERS;
+  function distributionScopedCoverageRows(productId, covers) {
+    const list = Array.isArray(covers) ? covers : [];
+    if (!productId || !list.length) return list;
+    if (typeof PS.distributionAllowsCover === 'function') {
+      return list.filter(cover => PS.distributionAllowsCover(productId, cover));
+    }
+
+    // Other Guides do not load distribution-territory.js, but their previous-
+    // Guide gate must calculate Class of Business completion identically.
+    const seen = new Set();
+    let id = productId;
+    let distribution = null;
+    while (id && !seen.has(String(id))) {
+      seen.add(String(id));
+      try {
+        const saved = JSON.parse(localStorage.getItem(`veridex-distribution-${id}`) || 'null');
+        if (saved && String(saved.productId) === String(id) && /southlake/i.test(saved.carrier || '')) {
+          distribution = saved;
+          break;
+        }
+      } catch (_) { /* No usable SouthLake distribution record. */ }
+      const product = productById(id) || state.productDetails[id];
+      id = product?.sourceProductId;
+    }
+    if (!distribution) return list;
+
+    const assigned = Array.isArray(distribution.assigned) ? distribution.assigned : [];
+    const futuristic = assigned.filter(channel => /^futuristic$/i.test(String(channel?.name || '').trim()));
+    const channels = futuristic.length ? futuristic : assigned;
+    const parentIds = new Set();
+    channels.forEach(channel => {
+      const config = distribution.configs?.[`${channel.type}|${channel.name}`];
+      (Array.isArray(config?.grants) ? config.grants : []).forEach(grant => {
+        if (grant?.parent != null && String(grant.parent).trim()) parentIds.add(String(grant.parent));
+      });
+    });
+    const classes = (Array.isArray(distribution.classes) ? distribution.classes : [])
+      .filter(row => parentIds.has(String(row.id)));
+    const ids = new Set(classes.flatMap(row => [row.id, row.sourceCoverId].filter(Boolean).map(String)));
+    const codes = new Set(classes.map(row => String(row.code || '').trim().toLowerCase()).filter(Boolean));
+    const names = new Set(classes.map(row => String(row.name || '').trim().toLowerCase()).filter(Boolean));
+    return list.filter(cover => {
+      const coverIds = [cover?.id, cover?.sourceCoverId].filter(Boolean).map(String);
+      if (coverIds.some(coverId => ids.has(coverId))) return true;
+      const code = String(cover?.code || '').trim().toLowerCase();
+      if (code && codes.has(code)) return true;
+      const name = String(cover?.name || '').trim().toLowerCase();
+      return Boolean(name && names.has(name));
+    });
+  }
+
+  function liveCoversForCompletion(productId) {
+    if (typeof COVERS !== 'undefined' && Array.isArray(COVERS) && routeName() === 'coverage-studio.html') {
+      return distributionScopedCoverageRows(productId || context().productId, COVERS);
+    }
     return null;
   }
 
@@ -1099,6 +1152,138 @@ function coverValidationIssues(cover) {
     return null;
   }
 
+  function persistedDistributionFor(productId) {
+    if (!productId) return null;
+    try {
+      const saved = JSON.parse(localStorage.getItem(`veridex-distribution-${productId}`) || 'null');
+      return saved && String(saved.productId || productId) === String(productId) ? saved : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function calculateDistributionCompletion(productId) {
+    const saved = persistedDistributionFor(productId);
+    const assigned = Array.isArray(saved?.assigned) ? saved.assigned : [];
+    if (!assigned.length) return { pct:0, complete:0, total:0 };
+    const complete = assigned.filter(channel => {
+      const config = saved.configs?.[`${channel?.type || ''}|${channel?.name || ''}`];
+      const grants = Array.isArray(config?.grants) ? config.grants : [];
+      if (!config || !Number.isFinite(Number(config.commission)) || !String(config.commissionBasis || '').trim() || !grants.length) return false;
+      return grants.every(grant => {
+        if (!String(grant?.parent || '').trim()) return false;
+        if (!Array.isArray(grant.states) || !grant.states.length) return false;
+        if (grant.authority === 'Binding' && !(Number(grant.bindingLimit) > 0)) return false;
+        return true;
+      });
+    }).length;
+    return { pct:Math.round((complete / assigned.length) * 100), complete, total:assigned.length };
+  }
+
+  function distributionChannelCount(productId) {
+    return calculateDistributionCompletion(productId).total;
+  }
+
+  function readDistributionRecord(productId) {
+    if (!productId) return null;
+    try {
+      const raw = localStorage.getItem(`veridex-distribution-${productId}`);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && String(parsed.productId || productId) === String(productId) ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Looks up what a named MGA/Broker/Agent distribution channel (assigned to
+  // this product via the existing Distribution Guide) is actually granted:
+  // which Class of Business classes/covers, under what commission/authority.
+  // This is the single source of truth for "what can this MGA see" — no
+  // separate MGA ownership model is created.
+  function mgaChannelAssignment(productId, channelName, channelType) {
+    const record = readDistributionRecord(productId);
+    if (!record) return null;
+    const wantName = String(channelName || '').trim().toLowerCase();
+    const wantType = String(channelType || '').trim().toUpperCase();
+    const channel = (record.assigned || []).find(a => {
+      if (wantType && String(a?.type || '').toUpperCase() !== wantType) return false;
+      return String(a?.name || '').trim().toLowerCase() === wantName;
+    });
+    if (!channel) return null;
+    const config = record.configs?.[`${channel.type}|${channel.name}`] || null;
+    const grantedClassIds = new Set((config?.grants || []).map(g => String(g.parent || '')).filter(Boolean));
+    const classes = (record.classes || []).filter(c => grantedClassIds.has(String(c.id)));
+    return { record, channel, config, classes };
+  }
+
+  // Every product that has assigned the given MGA/Broker/Agent name as a
+  // distribution channel, with what that channel is granted on each.
+  function productsAssignedToChannel(channelName, channelType) {
+    const target = String(channelName || '').trim().toLowerCase();
+    if (!target) return [];
+    return state.products
+      .map(product => ({ product, assignment: mgaChannelAssignment(product.id, channelName, channelType) }))
+      .filter(row => row.assignment);
+  }
+
+  const CONFIG_STATUS_LABELS = {
+    not_configured: 'Not configured',
+    configured: 'Configured',
+    incomplete: 'Incomplete'
+  };
+
+  // Reusable configuration-status engine for a product, derived entirely from
+  // the existing studio data (never duplicated/re-modeled). Consumed by the
+  // Product Workspace and the MGA Product Catalogue alike.
+  function getProductConfigurationStatus(productId, version) {
+    const product = productById(productId) || state.productDetails[productId];
+    if (!product) return null;
+    const ver = version || product.version;
+    const bundle = getProductBundle(productId, ver) || {};
+    const enabled = new Set(enabledStudioIdsFor(productId) || []);
+
+    const coverRows = liveCoversForCompletion(productId) || distributionScopedCoverageRows(productId, bundle.covers || []);
+    const coverageState = coverRows.length === 0 ? 'not_configured'
+      : (calculateCoverageCompletion(coverRows).pct >= 100 ? 'configured' : 'incomplete');
+
+    const jurRows = jurisdictionSetupFor(productId) || [];
+    const jurisdictionState = jurRows.length === 0 ? 'not_configured'
+      : (calculateJurisdictionCompletion(jurRows).pct >= 100 ? 'configured' : 'incomplete');
+
+    const qCount = (bundle.questionGroups || []).reduce((n, g) => n + (Array.isArray(g.questions) ? g.questions.length : 1), 0);
+    const ratingCount = (bundle.rating || []).reduce((n, g) => n + (Array.isArray(g.items) ? g.items.length : 1), 0);
+    const riskCount = (bundle.risk || []).length;
+    const eligCount = (bundle.eligibility || []).length;
+    const distCount = distributionChannelCount(productId) || (bundle.channels || []).length;
+    const docCount = (bundle.documents || []).length;
+
+    const simple = (count, isEnabled) => (isEnabled === false ? 'not_configured' : (count > 0 ? 'configured' : 'not_configured'));
+
+    return {
+      classOfBusiness: coverageState,
+      jurisdiction: jurisdictionState,
+      coverage: coverageState,
+      questionnaire: simple(qCount, enabled.has('questionnaire')),
+      risk: simple(riskCount, enabled.has('risk')),
+      eligibility: simple(eligCount, enabled.has('eligibility')),
+      ratingPricing: simple(ratingCount, enabled.has('rating')),
+      distribution: simple(distCount, enabled.has('distribution')),
+      documents: simple(docCount, enabled.has('document')),
+      labels: CONFIG_STATUS_LABELS,
+      counts: {
+        coverage: coverRows.length,
+        jurisdiction: jurRows.length,
+        questionnaire: qCount,
+        risk: riskCount,
+        eligibility: eligCount,
+        rating: ratingCount,
+        distribution: distCount,
+        documents: docCount
+      }
+    };
+  }
+
   function calculateStudioCompletion(studioId, productId, version) {
     const ctx = context();
     const pid = productId || ctx.productId;
@@ -1106,12 +1291,14 @@ function coverValidationIssues(cover) {
     const bundle = getProductBundle(pid, ver) || {};
     const product = productById(pid) || state.productDetails[pid];
     if (studioId === 'coverage') {
-      return calculateCoverageCompletion(liveCoversForCompletion() || bundle.covers || []);
+      const covers = liveCoversForCompletion(pid) || distributionScopedCoverageRows(pid, bundle.covers || []);
+      return calculateCoverageCompletion(covers);
     }
     if (studioId === 'jurisdiction') {
       const rows = liveJurisdictionRows() || jurisdictionSetupFor(pid) || [];
       return calculateJurisdictionCompletion(rows);
     }
+    if (studioId === 'distribution') return calculateDistributionCompletion(pid);
     const count = studioContentCount(pid, ver, studioId);
     if (studioId === 'eligibility' && typeof window.eligibilityStudioCompletion === 'function') {
       return window.eligibilityStudioCompletion();
@@ -1127,14 +1314,16 @@ function coverValidationIssues(cover) {
   }
 
   function validateCoverage(coverageId) {
-    const covers = liveCoversForCompletion() || getProductBundle(context().productId, context().version).covers || [];
+    const ctx = context();
+    const covers = liveCoversForCompletion(ctx.productId) || distributionScopedCoverageRows(ctx.productId, getProductBundle(ctx.productId, ctx.version).covers || []);
     const cover = covers.find(c => c.id === coverageId);
     const issues = coverValidationIssues(cover);
     return { ok: !issues.length, issues, cover };
   }
 
   function validateSelectedCoverages() {
-    const covers = liveCoversForCompletion() || getProductBundle(context().productId, context().version).covers || [];
+    const ctx = context();
+    const covers = liveCoversForCompletion(ctx.productId) || distributionScopedCoverageRows(ctx.productId, getProductBundle(ctx.productId, ctx.version).covers || []);
     const results = covers.map(c => ({ id: c.id, name: c.name, ...validateCoverage(c.id) }));
     return { ok: results.length > 0 && results.every(r => r.ok), results, covers };
   }
@@ -1234,7 +1423,7 @@ function coverValidationIssues(cover) {
       case 'underwriting':
         return (bundle.underwriting || []).length;
       case 'distribution':
-        return (bundle.channels || []).length;
+        return distributionChannelCount(productId) || (bundle.channels || []).length;
       case 'document':
         return (bundle.documents || []).length;
       default:
@@ -1910,7 +2099,14 @@ function coverValidationIssues(cover) {
     studioContentCount,
     productBuildStage,
     calculateStudioCompletion,
+    calculateDistributionCompletion,
+    distributionChannelCount,
+    readDistributionRecord,
+    mgaChannelAssignment,
+    productsAssignedToChannel,
+    getProductConfigurationStatus,
     calculateCoverageCompletion,
+    distributionScopedCovers: distributionScopedCoverageRows,
     calculateJurisdictionCompletion,
     canLeaveJurisdiction,
     previousIncompleteStudio,

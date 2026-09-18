@@ -1609,6 +1609,39 @@ let productLastModified = '';
 let productLastModifiedBy = 'Anika Sharma';
 let studioMode = 'hub';
 let questionView = 'list';
+
+function questionnaireSelectionStorageKey() {
+  return `futuristicQuestionSelection::${encodeURIComponent(productId || '')}::${encodeURIComponent(productVersion || '')}`;
+}
+
+function saveQuestionnaireSelection(questionIds) {
+  const payload = {
+    product: productId || '',
+    version: productVersion || '',
+    questionIds: Array.from(questionIds || []).map(String),
+    updatedAt: new Date().toISOString()
+  };
+  try { localStorage.setItem(questionnaireSelectionStorageKey(), JSON.stringify(payload)); } catch (_) {}
+}
+
+function loadQuestionnaireSelection() {
+  try {
+    const scoped = JSON.parse(localStorage.getItem(questionnaireSelectionStorageKey()) || 'null');
+    if (scoped && String(scoped.product) === String(productId) && String(scoped.version) === String(productVersion)) {
+      return Array.isArray(scoped.questionIds) ? scoped.questionIds.map(String) : [];
+    }
+
+    // Migrate the previous global record only when it belongs to this exact
+    // product/version. Never leak another product's selected questions.
+    const legacy = JSON.parse(localStorage.getItem('riskStudioQuestionSelection') || 'null');
+    if (legacy && String(legacy.product) === String(productId) && String(legacy.version) === String(productVersion)) {
+      const ids = Array.isArray(legacy.questionIds) ? legacy.questionIds.map(String) : [];
+      saveQuestionnaireSelection(ids);
+      return ids;
+    }
+  } catch (_) {}
+  return [];
+}
 let questionPage = 1;
 let questionPageSize = 10;
 
@@ -2020,14 +2053,7 @@ window.__TRUCKING_SELECTED_QUESTIONS = window.__TRUCKING_SELECTED_QUESTIONS || n
 function toggleTruckingQuestionSelection(questionId, checked) {
   if (checked) window.__TRUCKING_SELECTED_QUESTIONS.add(questionId);
   else window.__TRUCKING_SELECTED_QUESTIONS.delete(questionId);
-  try {
-    localStorage.setItem('riskStudioQuestionSelection', JSON.stringify({
-      product: productId,
-      version: productVersion,
-      questionIds: Array.from(window.__TRUCKING_SELECTED_QUESTIONS),
-      updatedAt: new Date().toISOString()
-    }));
-  } catch (_) {}
+  saveQuestionnaireSelection(window.__TRUCKING_SELECTED_QUESTIONS);
   refreshTruckingSelectionBar();
 }
 
@@ -2045,11 +2071,7 @@ function refreshTruckingSelectionBar() {
 function clearTruckingQuestionSelection() {
   window.__TRUCKING_SELECTED_QUESTIONS?.clear();
   document.querySelectorAll('.trucking-q-select').forEach(cb => { cb.checked = false; });
-  try {
-    localStorage.setItem('riskStudioQuestionSelection', JSON.stringify({
-      product: productId, version: productVersion, questionIds: [], updatedAt: new Date().toISOString()
-    }));
-  } catch (_) {}
+  saveQuestionnaireSelection([]);
   refreshTruckingSelectionBar();
 }
 
@@ -2360,7 +2382,7 @@ function useCheckedExistingQuestions() {
 
 function initializeTruckingQuestionSelection() {
   if (window.__TRUCKING_SELECTION_INITIALIZED) return;
-  window.__TRUCKING_SELECTED_QUESTIONS = new Set(allQuestions().map(q => q.id));
+  window.__TRUCKING_SELECTED_QUESTIONS = new Set(loadQuestionnaireSelection());
   window.__TRUCKING_SELECTION_INITIALIZED = true;
 }
 
@@ -2388,13 +2410,7 @@ function renderTruckingSelectionPage() {
 function selectAllTruckingQuestions() {
   initializeTruckingQuestionSelection();
   TRUCKING_APPLICATION_QUESTIONS.forEach((_, index) => window.__TRUCKING_SELECTED_QUESTIONS.add(truckingQuestionId(index)));
-  try {
-    localStorage.setItem('riskStudioQuestionSelection', JSON.stringify({
-      product: productId, version: productVersion,
-      questionIds: Array.from(window.__TRUCKING_SELECTED_QUESTIONS),
-      updatedAt: new Date().toISOString()
-    }));
-  } catch (_) {}
+  saveQuestionnaireSelection(window.__TRUCKING_SELECTED_QUESTIONS);
   renderTruckingSelectionPage();
 }
 
@@ -2676,6 +2692,12 @@ function productCovers() {
   const ctx = app?.context?.() || {};
   const pid = (typeof productId !== 'undefined' && productId) || ctx.productId;
   if (!pid) return [];
+  const scoped = list => {
+    const covers = (Array.isArray(list) ? list : []).filter(c => c && typeof c === 'object');
+    return typeof app?.distributionScopedCovers === 'function'
+      ? app.distributionScopedCovers(pid, covers)
+      : covers;
+  };
 
   const collections = app?.state?.collections || {};
   const productKey = `${pid}::covers`;
@@ -2684,20 +2706,20 @@ function productCovers() {
   // Do NOT fall back to the library/coverPool here, because Questionnaire
   // Guide must show only covers that were actually added to this product.
   const stored = collections[productKey];
-  if (Array.isArray(stored)) return stored.filter(c => c && typeof c === 'object');
+  if (Array.isArray(stored)) return scoped(stored);
 
   // Support the product bundle when the collection is hydrated through the
   // version bundle rather than the local collection map.
   for (const ver of productCoverVersionCandidates()) {
     const bundleCovers = app?.getProductBundle?.(pid, ver)?.covers;
     if (Array.isArray(bundleCovers) && bundleCovers.length) {
-      return bundleCovers.filter(c => c && typeof c === 'object');
+      return scoped(bundleCovers);
     }
   }
 
   // COVERS is used only when it is already the product's loaded cover list.
   if (typeof COVERS !== 'undefined' && Array.isArray(COVERS) && COVERS.length) {
-    return COVERS.filter(c => c && typeof c === 'object');
+    return scoped(COVERS);
   }
 
   return [];
@@ -4483,14 +4505,6 @@ document.addEventListener('click', function(event) {
   function syncLegacySelection(){
     const selected=currentSelected();
     window.__TRUCKING_SELECTED_QUESTIONS = new Set(selected);
-    try{
-      localStorage.setItem('riskStudioQuestionSelection',JSON.stringify({
-        product: typeof productId!=='undefined'?productId:'',
-        version: typeof productVersion!=='undefined'?productVersion:'',
-        questionIds:Array.from(selected),
-        updatedAt:new Date().toISOString()
-      }));
-    }catch(_){}
   }
 
   window.renderTruckingSelectionPage = function(){
@@ -4502,13 +4516,10 @@ document.addEventListener('click', function(event) {
 
     if(!window.__CAQ_SELECTION_INITIALIZED){
       window.__CAQ_SELECTION_INITIALIZED = true;
-      try{
-        const raw=localStorage.getItem('riskStudioQuestionSelection');
-        const saved=raw ? JSON.parse(raw) : null;
-        const ids=Array.isArray(saved?.questionIds) ? saved.questionIds.map(String) : [];
-        const catalogIds=new Set(catalog.map(q=>String(q.id)));
-        ids.forEach(id=>{ if(catalogIds.has(id)) selected.add(id); });
-      }catch(_){}
+      selected.clear();
+      const ids=loadQuestionnaireSelection();
+      const catalogIds=new Set(catalog.map(q=>String(q.id)));
+      ids.forEach(id=>{ if(catalogIds.has(id)) selected.add(id); });
     }
 
     const grouped=CATEGORY_DEFS.map(cat=>{
@@ -4711,6 +4722,9 @@ document.addEventListener('click', function(event) {
     groupOpen[preId]=true;
     groupOpen[postId]=true;
 
+    // A library choice becomes the product's default selection only after the
+    // user confirms it and the selected questions are saved to this product.
+    saveQuestionnaireSelection(selected);
     persistQuestions();
     refreshQuestionMeta();
 
@@ -4861,4 +4875,4 @@ document.addEventListener('click', function(event) {
 </script>
 
 </body>
-</html> 
+</html>

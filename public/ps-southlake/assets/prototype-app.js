@@ -1110,6 +1110,38 @@ function coverValidationIssues(cover) {
     return null;
   }
 
+  function persistedDistributionFor(productId) {
+    if (!productId) return null;
+    try {
+      const saved = JSON.parse(localStorage.getItem(`veridex-distribution-${productId}`) || 'null');
+      return saved && String(saved.productId || productId) === String(productId) ? saved : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function calculateDistributionCompletion(productId) {
+    const saved = persistedDistributionFor(productId);
+    const assigned = Array.isArray(saved?.assigned) ? saved.assigned : [];
+    if (!assigned.length) return { pct:0, complete:0, total:0 };
+    const complete = assigned.filter(channel => {
+      const config = saved.configs?.[`${channel?.type || ''}|${channel?.name || ''}`];
+      const grants = Array.isArray(config?.grants) ? config.grants : [];
+      if (!config || !Number.isFinite(Number(config.commission)) || !String(config.commissionBasis || '').trim() || !grants.length) return false;
+      return grants.every(grant => {
+        if (!String(grant?.parent || '').trim()) return false;
+        if (!Array.isArray(grant.states) || !grant.states.length) return false;
+        if (grant.authority === 'Binding' && !(Number(grant.bindingLimit) > 0)) return false;
+        return true;
+      });
+    }).length;
+    return { pct:Math.round((complete / assigned.length) * 100), complete, total:assigned.length };
+  }
+
+  function distributionChannelCount(productId) {
+    return calculateDistributionCompletion(productId).total;
+  }
+
   function calculateStudioCompletion(studioId, productId, version) {
     const ctx = context();
     const pid = productId || ctx.productId;
@@ -1123,6 +1155,7 @@ function coverValidationIssues(cover) {
       const rows = liveJurisdictionRows() || jurisdictionSetupFor(pid) || [];
       return calculateJurisdictionCompletion(rows);
     }
+    if (studioId === 'distribution') return calculateDistributionCompletion(pid);
     const count = studioContentCount(pid, ver, studioId);
     if (studioId === 'eligibility' && typeof window.eligibilityStudioCompletion === 'function') {
       return window.eligibilityStudioCompletion();
@@ -1248,7 +1281,7 @@ function coverValidationIssues(cover) {
       case 'underwriting':
         return (bundle.underwriting || []).length;
       case 'distribution':
-        return (bundle.channels || []).length;
+        return distributionChannelCount(productId) || (bundle.channels || []).length;
       case 'document':
         return (bundle.documents || []).length;
       default:
@@ -1995,6 +2028,8 @@ function coverValidationIssues(cover) {
     studioContentCount,
     productBuildStage,
     calculateStudioCompletion,
+    calculateDistributionCompletion,
+    distributionChannelCount,
     calculateCoverageCompletion,
     calculateJurisdictionCompletion,
     canLeaveJurisdiction,
