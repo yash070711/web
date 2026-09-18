@@ -1,11 +1,6 @@
 (function () {
   'use strict';
   const esc = htmlEsc;
-  const defaults = [
-    {id:'AL',name:'Auto Liability (AL)',children:['Bodily Injury Liability','Property Damage Liability','Hired Auto Liability','Non-Owned Auto Liability']},
-    {id:'PD',name:'Physical Damage (PD)',children:['Collision','Comprehensive','Specified Causes of Loss']},
-    {id:'MTC',name:'Motor Truck Cargo',children:['Cargo Loss / Damage','Debris Removal','Earned Freight']}
-  ];
   const operators = [['=','Equals'],['≠','Does not equal'],['>','Greater than'],['<','Less than'],['CONTAINS','Contains'],['IS EMPTY','Is blank']];
   const outcomes = [['hard','Ineligible'],['refer','Referral'],['info','Require Information']];
   const scopes = ['Entire submission','Affected vehicle','Affected driver'];
@@ -49,15 +44,15 @@
     return changed;
   }
   function covers() {
-    const actual = productCovers();
-    return (actual.length ? actual : defaults).map(c => {
-      const fallback = defaults.find(d => (c.name || '').toLowerCase().includes(d.name.split(' (')[0].toLowerCase()));
-      const raw = c.children || c.childCoverages || c.childClasses;
-      let children = Array.isArray(raw) ? raw.map(x => typeof x === 'string' ? x : x.name || x.label || x.type).filter(Boolean) : [];
-      if (!children.length && c.insuredItems?.length > 1) children = c.insuredItems.slice(1).map(x => x.type || x.name).filter(Boolean);
-      if (!children.length) children = fallback?.children || [c.name];
-      return {id:String(c.id),name:c.name || c.code,children:[...new Set(children)]};
-    });
+    return productCovers().map(c => {
+      // Class of Business is authoritative for the hierarchy. The first
+      // insured item is the parent; only later saved items are child classes.
+      const children = Array.isArray(c.insuredItems)
+        ? c.insuredItems.slice(1).map(x => x?.type || x?.name).filter(Boolean)
+        : [];
+      const id = c.id || c.code || c.name;
+      return {id:String(id || ''),name:c.name || c.code,children:[...new Set(children)]};
+    }).filter(c => c.id && c.name);
   }
   function fields() {
     const result = productQuestionGroups().flatMap(g => (g.questions || []).map(q => ({id:String(q.id),field:questionFieldKey(q),label:q.label || q.name || q.id,category:q.questionCategory || g.label || g.name || 'General',source:'Questionnaire Guide',type:q.fieldType || q.type || 'text',sourceQuestionId:q.id})));
@@ -87,7 +82,14 @@
     if (typeof isPlaceholderDate !== 'function' || isPlaceholderDate(r.effectiveFrom)) r.effectiveFrom = dates.from;
     if (typeof isPlaceholderDate !== 'function' || isPlaceholderDate(r.effectiveTo)) r.effectiveTo = dates.to;
     if (r.coverageMode === 'specific') covers().forEach(c => {
-      if (r.coverIds.map(String).includes(c.id) && !Object.hasOwn(r.coverageChildren,c.id)) r.coverageChildren[c.id] = c.children.slice();
+      if (!r.coverIds.map(String).includes(c.id)) return;
+      if (!Object.hasOwn(r.coverageChildren,c.id)) {
+        r.coverageChildren[c.id] = c.children.slice();
+        return;
+      }
+      // Drop obsolete fallback children while preserving real saved choices.
+      r.coverageChildren[c.id] = (Array.isArray(r.coverageChildren[c.id]) ? r.coverageChildren[c.id] : [])
+        .filter(name => c.children.includes(name));
     });
     return r;
   }
@@ -148,7 +150,7 @@
         ${select('Coverage applicability','coverageMode',[['all','All coverages'],['specific','Specific coverages']],r.coverageMode)}
         ${r.coverageMode==='specific' ? `<div style="margin-top:12px">${covers().map((c,i) => {
           const checked = r.coverIds.map(String).includes(c.id);
-          return `<div class="section-card" style="padding:12px;margin:8px 0"><label><input type="checkbox" ${disabled} ${checked?'checked':''} onchange="EligibilityBuilder.parent(${i},this.checked)"> <strong>${esc(c.name)}</strong></label>${checked?`<div style="padding:12px 0 0 24px;display:flex;gap:16px;flex-wrap:wrap">${c.children.map((name,j)=>`<label><input type="checkbox" ${disabled} ${(r.coverageChildren[c.id]||[]).includes(name)?'checked':''} onchange="EligibilityBuilder.child(${i},${j},this.checked)"> ${esc(name)}</label>`).join('')}</div>`:''}</div>`;
+          return `<div class="section-card" style="padding:12px;margin:8px 0"><label><input type="checkbox" ${disabled} ${checked?'checked':''} onchange="EligibilityBuilder.parent(${i},this.checked)"> <strong>${esc(c.name)}</strong></label>${checked&&c.children.length?`<div style="padding:12px 0 0 24px;display:flex;gap:16px;flex-wrap:wrap">${c.children.map((name,j)=>`<label><input type="checkbox" ${disabled} ${(r.coverageChildren[c.id]||[]).includes(name)?'checked':''} onchange="EligibilityBuilder.child(${i},${j},this.checked)"> ${esc(name)}</label>`).join('')}</div>`:''}</div>`;
         }).join('')}</div>`:''}
       </div>
 
@@ -189,7 +191,11 @@
     if (!String(r.name || '').trim()) e.push('Rule name is required.');
     if (r.coverageMode==='specific') {
       if (!r.coverIds.length) e.push('Select at least one coverage.');
-      r.coverIds.forEach(id => { const c=covers().find(x=>x.id===String(id)); if (!c || !(r.coverageChildren[id]||[]).some(x=>c.children.includes(x))) e.push('Select at least one coverage.'); });
+      r.coverIds.forEach(id => {
+        const coverId=String(id),c=covers().find(x=>x.id===coverId);
+        const selectedChildren=Array.isArray(r.coverageChildren[coverId])?r.coverageChildren[coverId]:[];
+        if (!c || (c.children.length && !selectedChildren.some(x=>c.children.includes(x)))) e.push('Select at least one coverage.');
+      });
     }
     if (!r.conditions.length) e.push('Select a question or field.');
     r.conditions.forEach(c=>{ if (!c.field || !c.op) e.push('Select a question or field.'); else if (!['IS EMPTY','Is empty','Is null','IS NOT EMPTY','Is not empty','Is true','Is false'].includes(c.op) && !String(c.value ?? '').trim()) e.push('Comparison value is required.'); });

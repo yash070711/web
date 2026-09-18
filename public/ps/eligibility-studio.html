@@ -2102,28 +2102,28 @@ function productCovers() {
   syncEligProductContext();
   const app = window.PS?.prototypeApp;
   const pid = productId;
-  const byKey = new Map();
-  const addList = (list) => {
-    (Array.isArray(list) ? list : []).forEach(c => {
-      if (!c || typeof c !== 'object') return;
-      const id = String(c.id || '').trim();
-      const key = id || c.code || c.name;
-      if (!key || byKey.has(key)) return;
-      byKey.set(key, c);
-    });
+  if (!pid) return [];
+  const scoped = list => {
+    const covers = (Array.isArray(list) ? list : []).filter(c => c && typeof c === 'object');
+    return typeof app?.distributionScopedCovers === 'function'
+      ? app.distributionScopedCovers(pid, covers)
+      : covers;
   };
   const collections = app?.state?.collections || {};
-  if (pid) {
-    Object.keys(collections).forEach(k => {
-      if (k.startsWith(`${pid}::`) && k.endsWith('::covers')) addList(collections[k]);
-    });
+
+  // Use the current product/version cover collection. Combining every saved
+  // version can leak old Class of Business children into the active guide.
+  for (const ver of productCoverVersionCandidates()) {
+    const stored = collections[`${pid}::${ver}::covers`];
+    if (Array.isArray(stored)) return scoped(stored);
   }
-  productCoverVersionCandidates().forEach(ver => addList(app?.getProductBundle?.(pid, ver)?.covers));
-  if (!byKey.size) return [];
-  const covers = Array.from(byKey.values());
-  return typeof app?.distributionScopedCovers === 'function'
-    ? app.distributionScopedCovers(pid, covers)
-    : covers;
+
+  for (const ver of productCoverVersionCandidates()) {
+    const bundleCovers = app?.getProductBundle?.(pid, ver)?.covers;
+    if (Array.isArray(bundleCovers) && bundleCovers.length) return scoped(bundleCovers);
+  }
+
+  return [];
 }
 
 function coverDdSummary(covers, selected) {

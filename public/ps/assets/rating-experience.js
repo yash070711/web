@@ -227,6 +227,11 @@ if (!Array.isArray(loaded.riskRatingFactors))
 
 ensureDefaultRiskRatingFactors(loaded);
 
+// Older browser records can contain factors created before IDs were required.
+// Repair only missing/duplicate IDs so unrelated pricing changes are not
+// rejected; every existing valid unique ID remains unchanged.
+ensureUniqueRiskFactorIds(loaded);
+
 // Backward compatibility: older saved records predate explicit Base
 // Price / State Pricing / Coverage Pricing configuration.
 if (loaded.basePrice === undefined) loaded.basePrice = null;
@@ -264,6 +269,21 @@ return loaded;
     const factors = Array.isArray(record.riskRatingFactors) ? record.riskRatingFactors : [];
     const ids = factors.map(factor => String(factor?.id || '').trim());
     return ids.every(Boolean) && new Set(ids).size === ids.length;
+  }
+
+  function ensureUniqueRiskFactorIds(targetRecord) {
+    const factors = Array.isArray(targetRecord?.riskRatingFactors) ? targetRecord.riskRatingFactors : [];
+    const used = new Set();
+    factors.forEach(factor => {
+      const currentId = String(factor?.id || '').trim();
+      if (currentId && !used.has(currentId)) {
+        used.add(currentId);
+        return;
+      }
+      factor.id = generateFactorId(targetRecord);
+      used.add(factor.id);
+    });
+    return targetRecord;
   }
 
   function saveRecord(message) {
@@ -633,6 +653,13 @@ function syncRatingFormulas() {
   function setResult(title, detail, type = 'success') {
     pageResult = { title, detail, type };
     render();
+    document.getElementById('rating-page-result')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  function setResultWithoutRender(title, detail, type = 'success') {
+    pageResult = { title, detail, type };
+    const target = document.getElementById('rating-page-result');
+    if (target) target.outerHTML = resultHtml();
     document.getElementById('rating-page-result')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
 
@@ -2055,9 +2082,15 @@ function getCoverageOptions() {
         console.error('Coverage pricing was not saved because the coverage is outside the current product distribution scope.');
         return;
       }
-      const method = document.querySelector(`[data-coverage-method="${id}"]`)?.value || 'none';
+      let method = document.querySelector(`[data-coverage-method="${id}"]`)?.value || 'none';
       const valueEl = document.querySelector(`[data-coverage-value="${id}"]`);
       const value = valueEl ? valueEl.value : '';
+      // A standalone currency value is a flat coverage adjustment. This keeps
+      // the entered value instead of rejecting and clearing the row when the
+      // method was left at its initial "None" selection.
+      if (method === 'none' && value !== '') {
+        method = 'flat';
+      }
       const hadPrevious = Object.prototype.hasOwnProperty.call(record.coveragePricing, id);
       const previous = hadPrevious ? clone(record.coveragePricing[id]) : null;
       if (method !== 'none') {
@@ -2070,7 +2103,7 @@ function getCoverageOptions() {
       if (!saveRecord(`Updated coverage pricing for ${cover.name}`)) {
         if (hadPrevious) record.coveragePricing[id] = previous;
         else delete record.coveragePricing[id];
-        console.error('Coverage pricing was not saved because rating identifier validation failed.');
+        setResultWithoutRender('Coverage pricing was not saved', 'The saved rating configuration contains invalid identifiers. Refresh the page and try again.', 'error');
         return;
       }
       render();
