@@ -15,12 +15,12 @@ const PRODUCT_FAMILIES = Object.keys(PRODUCT_TYPE_LOB).filter(
 const DEFAULT_FAMILY = PRODUCT_FAMILIES[0] || "Transportation";
 const DEFAULT_LOB = PRODUCT_TYPE_LOB[DEFAULT_FAMILY]?.[0] || "Commercial Auto";
 const STUDIOS = [
-  { id: "coverage", label: "Coverage Guide", desc: "Define what is covered, limits, deductibles, and exclusions.", checked: true },
-  { id: "questionnaire", label: "Questionnaire Guide", desc: "Build the questions asked at quote, application, and renewal.", checked: true },
-  { id: "risk", label: "Risk Guide", desc: "Trucking risk data: business type, fleet, radius, commodities, DOT/MC.", checked: true },
-  { id: "eligibility", label: "Eligibility Guide", desc: "Set rules for who can buy this product.", checked: true },
-  { id: "rating", label: "Rating & Pricing Guide", desc: "Configure base rates, factors, and premium calculation rules.", checked: true },
-  { id: "underwriting", label: "Underwriting Rules Guide", desc: "Define accept/decline/refer rules and loading logic.", checked: true },
+  { id: "coverage", label: "Class Of Business", desc: "Define what is covered, limits, deductibles, and exclusions.", checked: true },
+  { id: "questionnaire", label: "Questionnaire Guide", desc: "Build the questions asked at quote, application, and renewal.", checked: false },
+  { id: "risk", label: "Risk Guide", desc: "Trucking risk data: business type, fleet, radius, commodities, DOT/MC.", checked: false },
+  { id: "eligibility", label: "Eligibility Guide", desc: "Set rules for who can buy this product.", checked: false },
+  { id: "rating", label: "Rating & Pricing Guide", desc: "Configure base rates, factors, and premium calculation rules.", checked: false },
+  { id: "underwriting", label: "Underwriting Rules Guide", desc: "Define accept/decline/refer rules and loading logic.", checked: false },
   { id: "distribution", label: "Distribution Guide", desc: "Configure channels, broker agreements, and commission structures.", checked: false },
   { id: "document", label: "Document Guide", desc: "Set up policy documents, endorsements, and certificate templates.", checked: false },
 ];

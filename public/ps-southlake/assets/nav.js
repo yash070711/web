@@ -243,7 +243,7 @@ PS.nav = {
     menu.innerHTML = `
       <div style="padding:10px 16px;border-bottom:1px solid var(--color-border)">
         <div style="font-size:13px;font-weight:500">${PS.data.currentUser.name}</div>
-        <div style="font-size:12px;color:var(--color-muted)">Role: ${PS.data.currentUser.role}</div>
+        <div style="font-size:12px;color:var(--color-muted)">${PS.data.currentUser.role}</div>
       </div>
       <div style="padding:8px 0">
         <div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--color-muted);padding:4px 16px 4px">Switch Profile</div>

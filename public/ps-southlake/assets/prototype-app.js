@@ -1368,7 +1368,7 @@ function coverValidationIssues(cover) {
     document.querySelectorAll('.jur-savebar-actions').forEach(el => containers.push(el));
     containers.forEach(container => {
       updateNextStudioLink(container, next, href);
-      updateSkipStudioLink(container, !studioReady && !skipped, () => skipCurrentStudio(ctx.productId, ctx.version, studioId));
+      updateSkipStudioLink(container, container === headerActions ? false : (!studioReady && !skipped), () => skipCurrentStudio(ctx.productId, ctx.version, studioId));
     });
   }
 
@@ -2680,6 +2680,33 @@ function coverValidationIssues(cover) {
           lossBasis: 'Per Occurrence', reinstatement: 'Automatic (full limit)', benefitBasis: 'Indemnity',
           claimsNotifPeriod: '14', claimsNotifUnit: 'days'
         };
+        if (typeof pendingNewCover !== 'undefined' && pendingNewCover) {
+          const st = (typeof coverPickTree !== 'undefined' && coverPickTree) ? coverPickTree[pendingNewCover.id] : null;
+          const kids = st ? (st.children || []) : (pendingNewCover.children || []);
+          if (kids.length) {
+            cover.childCoverages = kids.map((ch, i) => ({ id: ch.id, parentCoverId: cover.id, name: ch.name, type: ch.type || ch.name, order: i + 1 }));
+            const existingItems = Array.isArray(cover.insuredItems) ? cover.insuredItems : [];
+            const parent = existingItems[0] || (typeof blankSouthLakeNewInsuredItem === 'function' ? blankSouthLakeNewInsuredItem(cover, 0) : {});
+            cover.insuredItems = [parent].concat(kids.map((ch, i) => {
+              const item = (typeof blankSouthLakeNewInsuredItem === 'function') ? blankSouthLakeNewInsuredItem(cover, i + 1) : {};
+              return Object.assign(item, { id: ch.id, parentCoverId: cover.id, type: ch.type || ch.name, name: ch.name });
+            }));
+          }
+          try {
+            if (typeof coverPickTree !== 'undefined' && coverPickTree) {
+              delete coverPickTree[pendingNewCover.id];
+              if (typeof coverPickTreeKey !== 'undefined' && coverPickTreeKey) {
+                localStorage.setItem(coverPickTreeKey, JSON.stringify(coverPickTree));
+              }
+            }
+          } catch (_) {}
+          try {
+            if (typeof pickCoverSelectedIds !== 'undefined' && pickCoverSelectedIds.delete) {
+              pickCoverSelectedIds.delete(String(pendingNewCover.id));
+            }
+          } catch (_) {}
+          pendingNewCover = null;
+        }
         PS.closeModal();
         COVERS.push(cover);
         activeCoverId = id;

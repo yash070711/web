@@ -186,11 +186,11 @@ function buildWizardHTML() {
       <p style="font-size:14px;color:var(--color-muted);margin-bottom:var(--space-5)">Select which guides to configure during setup. You can access any guide later from the product detail page.</p>
       <div style="display:flex;flex-direction:column;gap:var(--space-3)">
         ${[
-          { id: 's-coverage', label: 'Coverage Guide', desc: 'Define what is covered, limits, deductibles, and exclusions.', checked: true },
-          { id: 's-quest', label: 'Questionnaire Guide', desc: 'Build the questions asked at quote, application, and renewal.', checked: true },
-          { id: 's-risk', label: 'Risk Guide', desc: 'Trucking risk data: business type, fleet, radius, commodities, DOT/MC.', checked: true },
-          { id: 's-eligibility', label: 'Eligibility Guide', desc: 'Set rules for who can buy this product.', checked: true },
-          { id: 's-rating', label: 'Rating & Pricing Guide', desc: 'Configure base rates, factors, and premium calculation rules.', checked: true },
+          { id: 's-coverage', label: 'Class Of Business', desc: 'Define what is covered, limits, deductibles, and exclusions.', checked: true },
+          { id: 's-quest', label: 'Questionnaire Guide', desc: 'Build the questions asked at quote, application, and renewal.', checked: false },
+          { id: 's-risk', label: 'Risk Guide', desc: 'Trucking risk data: business type, fleet, radius, commodities, DOT/MC.', checked: false },
+          { id: 's-eligibility', label: 'Eligibility Guide', desc: 'Set rules for who can buy this product.', checked: false },
+          { id: 's-rating', label: 'Rating & Pricing Guide', desc: 'Configure base rates, factors, and premium calculation rules.', checked: false },
           { id: 's-dist', label: 'Distribution Guide', desc: 'Configure channels, broker agreements, and commission structures.', checked: false },
           { id: 's-doc', label: 'Document Guide', desc: 'Set up policy documents, endorsements, and certificate templates.', checked: false }
         ].map(s => `

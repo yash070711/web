@@ -131,19 +131,22 @@
     .avail-badge {
       display: inline-flex;
       align-items: center;
-      height: 22px;
-      padding: 0 10px;
+      height: 15px;
+      padding: 0 6px;
       border-radius: 100px;
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 700;
-      letter-spacing: .35px;
+      letter-spacing: .3px;
       white-space: nowrap;
       flex-shrink: 0;
     }
-    .avail-mandatory  { background: rgba(192, 149, 83, .28); color: #E8C882; }
-    .avail-optional   { background: rgba(71, 85, 105, .55); color: #CBD5E1; }
-    .avail-default    { background: rgba(22, 101, 52, .45); color: #86EFAC; }
-    .avail-addon      { background: rgba(88, 28, 135, .45); color: #D8B4FE; }
+    .avail-mandatory,
+    .avail-optional,
+    .avail-default,
+    .avail-addon {
+      background: rgba(71, 85, 105, .55);
+      color: #CBD5E1;
+    }
     .cover-avail-select {
       appearance: none; -webkit-appearance: none;
       height: 22px; padding: 0 22px 0 10px; border: 0; border-radius: 3px;
@@ -363,8 +366,32 @@
       display: flex; align-items: center; justify-content: flex-end; gap: 8px;
       flex-wrap: wrap; flex: 0 0 auto;
     }
-    
-    
+    .cover-pick-remove.btn-ghost { color: #F87171; }
+    .cover-pick-remove.btn-ghost:hover {
+      background: rgba(239,68,68,.12);
+      color: #F87171;
+      border-color: rgba(239,68,68,.35);
+    }
+    .ac-children-list {
+      display: flex; flex-direction: column; gap: 6px;
+      padding: 10px; border: 1px solid var(--color-border); border-radius: 10px;
+      background: rgba(127,127,127,.035);
+    }
+    .ac-child-chip {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 8px;
+      background: var(--color-surface); font-size: 13px; font-weight: 550; color: var(--color-ink);
+    }
+    .ac-child-remove {
+      width: 22px; height: 22px; padding: 0; border: none; background: transparent;
+      color: #F87171; cursor: pointer; font-size: 15px; line-height: 1;
+      display: inline-flex; align-items: center; justify-content: center; border-radius: 6px;
+    }
+    .ac-child-remove:hover { background: rgba(239,68,68,.12); }
+    .ac-child-action {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .ac-child-hint { font-size: 12px; color: var(--color-muted); }
     .cover-pick-expand {
       width: 34px; height: 34px; padding: 0;
       border: 1px solid var(--color-border); border-radius: 8px;
@@ -1234,14 +1261,6 @@
         <div class="page-header-actions" id="product-studio-actions">
           <a class="btn btn-ghost" id="customer-view-btn" href="product-view.html">Customer view</a>
           <a class="btn btn-secondary" id="view-product-btn" href="product-detail.html">View Product</a>
-          <button class="btn btn-ghost" onclick="openLibraryModal()" id="import-lib-btn">
-            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M216 40H40a16 16 0 00-16 16v144a16 16 0 0016 16h176a16 16 0 0016-16V56a16 16 0 00-16-16zm-96 136H72a8 8 0 010-16h48a8 8 0 010 16zm0-32H72a8 8 0 010-16h48a8 8 0 010 16zm0-32H72a8 8 0 010-16h48a8 8 0 010 16zm88 64h-48V80h48z" fill="currentColor"/></svg>
-            Cover Library
-          </button>
-          <button class="btn btn-secondary" onclick="openReorderModal()" id="reorder-btn">
-            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8H40a8 8 0 010-16h176a8 8 0 018 8zm-8-72H40a8 8 0 000 16h176a8 8 0 000-16zm0 128H40a8 8 0 000 16h176a8 8 0 000-16z" fill="currentColor"/></svg>
-            Reorder Covers
-          </button>
         </div>
       </div>
 
@@ -1249,7 +1268,11 @@
       <div id="coverage-product-workspace">
       <div class="studio-context-bar" id="context-bar">
         <span id="ctx-count"></span>
-        <div style="margin-left:auto;display:flex;gap:var(--space-3)">
+        <div class="ctx-nav-actions" style="margin-left:auto;display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="openLibraryModal()" id="import-lib-btn">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M216 40H40a16 16 0 00-16 16v144a16 16 0 0016 16h176a16 16 0 0016-16V56a16 16 0 00-16-16zm-96 136H72a8 8 0 010-16h48a8 8 0 010 16zm0-32H72a8 8 0 010-16h48a8 8 0 010 16zm0-32H72a8 8 0 010-16h48a8 8 0 010 16zm88 64h-48V80h48z" fill="currentColor"/></svg>
+            Cover Library
+          </button>
           <a id="ctx-back-link" href="product-detail.html?id=PRD-015#studios" class="btn btn-ghost btn-sm">← Back to Product</a>
         </div>
       </div>
@@ -1265,21 +1288,16 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title" id="covers-hub-title">Covers (0)</div>
+              <div class="card-title" id="covers-hub-title">Covers</div>
               <div class="card-subtitle">Manage and configure covers linked to this product</div>
             </div>
             <div class="cs-hub-toolbar">
-              <span style="font-size:12px;color:var(--color-muted)">View as</span>
-              <div class="cs-view-toggle" role="group" aria-label="View as">
-                <button type="button" id="view-list-btn" class="active" onclick="setCoverView('list')" aria-label="List view">☰</button>
-                <button type="button" id="view-grid-btn" onclick="setCoverView('grid')" aria-label="Grid view">⊞</button>
-              </div>
               <div class="cs-search-wrap">
                 <svg width="13" height="13" viewBox="0 0 256 256" fill="none"><path d="M229.66 218.34l-50.07-50.07a88 88 0 10-11.31 11.31l50.06 50.07a8 8 0 0011.32-11.31zM40 112a72 72 0 1172 72 72.08 72.08 0 01-72-72z" fill="currentColor"/></svg>
                 <input class="cs-search" id="cover-search" type="search" placeholder="Search covers..." oninput="coverPage=1; renderCoverTable()">
               </div>
               <select class="cs-page-size" id="cover-filter" onchange="coverPage=1; renderCoverTable()" aria-label="Filter selected covers">
-                <option value="all">Selected covers</option>
+                <option value="all">All covers</option>
                 <option value="mandatory">Mandatory</option>
                 <option value="optional">Optional</option>
                 <option value="addon">Add-ons</option>
@@ -1493,7 +1511,7 @@ const COVERS = [
 ];
 
 const AVAIL_LABELS = {
-  mandatory: 'MANDATORY', optional: 'OPTIONAL', default: 'DEFAULT-ON', addon: 'ADD-ON'
+  mandatory: 'MANDATORY', optional: 'OPTIONAL', default: 'DEFAULT-ON', addon: 'ADD-ONS'
 };
 const AVAIL_CSS = {
   mandatory: 'avail-mandatory', optional: 'avail-optional', default: 'avail-default', addon: 'avail-addon'
@@ -1515,6 +1533,8 @@ let coverPageSize = 10;
 const selectedCoverIds = new Set();
 const pickCoverSelectedIds = new Set();
 let pickCoverSelectionReady = false;
+let showRemovedCovers = false;
+const pickCoverRemovedIds = new Set();
 
 function productNeedsCoverSelection() {
   const p = PS.prototypeApp?.productById?.(productId);
@@ -1528,6 +1548,16 @@ function resetPickCoverSelection() {
 }
 
 function coverCounts() {
+  if (coverPickerActive() && productNeedsCoverSelection()) {
+    const catalog = defaultCoversCatalogForProduct();
+    ensurePickTree(catalog);
+    const picked = catalog.filter(c => pickCoverSelectedIds.has(String(c.id)));
+    return {
+      total: picked.length,
+      mandatory: picked.filter(c => c.availability === 'mandatory').length,
+      addon: picked.filter(c => c.availability === 'addon').length
+    };
+  }
   return {
     total: COVERS.length,
     mandatory: COVERS.filter(c => c.availability === 'mandatory').length,
@@ -1565,7 +1595,7 @@ function refreshCoverMeta() {
       </span>`;
   }
   const hubTitle = document.getElementById('covers-hub-title');
-  if (hubTitle) hubTitle.textContent = `Covers (${total})`;
+  if (hubTitle) hubTitle.textContent = 'Covers';
   PS.prototypeApp?.refreshStudioNav?.();
 }
 
@@ -2109,7 +2139,14 @@ function ensureInsuredItems(c) {
   c.insuredItems.forEach((it, i) => {
     if (!it.id) it.id = `ii-${i}-${Date.now()}`;
     const allowedTypes = insuredItemTypesForCoverage(c);
-    if (!it.type || !allowedTypes.includes(it.type)) {
+    if (!allowedTypes.length) {
+      // Custom covers without a standard item-type map: keep the configured
+      // child names/types instead of overwriting them with a blank type.
+      if (!it.name || !it.type) {
+        it.type = it.type || it.name || 'Insured item';
+        it.name = it.type;
+      }
+    } else if (!it.type || !allowedTypes.includes(it.type)) {
       const nextType = insuredItemTypeForCoverage(it, c);
       it.type = nextType;
       it.name = nextType;
@@ -4548,6 +4585,11 @@ function ensurePickTree(catalog) {
     coverPickTreeKey=key;
     try { coverPickTree=JSON.parse(localStorage.getItem(key)); } catch (_) { coverPickTree=null; }
     coverPickTree ||= {};
+    pickCoverRemovedIds.clear();
+    try {
+      const saved = JSON.parse(localStorage.getItem('southlake-cover-removed:'+productId+':'+productVersion) || '[]') || [];
+      saved.forEach(id => pickCoverRemovedIds.add(String(id)));
+    } catch (_) {}
   }
   catalog.forEach(c=>{
     if (coverPickTree[c.id]) return;
@@ -4578,10 +4620,28 @@ function savePickTree() {
   syncPickTreeParents();
   localStorage.setItem(coverPickTreeKey,JSON.stringify(coverPickTree));
 }
+function savePickCoverRemoved() {
+  try { localStorage.setItem('southlake-cover-removed:'+productId+':'+productVersion, JSON.stringify(Array.from(pickCoverRemovedIds))); } catch (_) {}
+}
+function toggleShowRemovedCovers() {
+  showRemovedCovers = !showRemovedCovers;
+  renderCoverTable();
+  renderCoverList();
+}
+function restoreRemovedCovers() {
+  pickCoverRemovedIds.clear();
+  savePickCoverRemoved();
+  showRemovedCovers = false;
+  renderCoverTable();
+  renderCoverList();
+}
 function changePickTree(id,childId,on) {
   const state=coverPickTree[id];if(!state)return;
   if(childId)state.selected=on ? [...new Set([...state.selected,childId])] : state.selected.filter(x=>x!==childId);
-  else state.parentSelected=!!on;
+  else {
+    state.parentSelected=!!on;
+    if (on) { pickCoverRemovedIds.delete(String(id)); savePickCoverRemoved(); }
+  }
   savePickTree();renderCoverTable();renderCoverList();
 }
 function selectAllPickTreeChildren(id) {
@@ -4610,7 +4670,7 @@ function pickTreeRows(catalog) {
     if(filter==='selected')children=children.filter(x=>state.selected.includes(x.id));
     if(filter==='selected' && !pickCoverSelectedIds.has(String(c.id)))return null;
     if(filter==='mandatory' && c.availability!=='mandatory')return null;
-    if(filter==='optional' && c.availability==='mandatory')return null;
+    if(filter==='optional' && c.availability!=='optional')return null;
     if(filter==='addon' && c.availability!=='addon')return null;
     if(q && !parentMatch && !children.length)return null;
     return {c,children,expanded:state.expanded || !!q || filter==='selected'};
@@ -4635,13 +4695,13 @@ function pickTreeRowHtml(c,child,expanded) {
     </div>`;
   }
   const partial=state.selected.length>0 && !allChildrenSelected;
-  const parentControls = '<button type="button" class="btn btn-ghost btn-sm" '+attrs+' onclick="expandPickTree(this.dataset.parent)" aria-expanded="'+expanded+'">'+(expanded?'Hide Children &#9652;':'Show Children &#9662;')+'</button><button type="button" class="btn btn-secondary btn-sm" '+attrs+' onclick="openPickTreeChild(this.dataset.parent)">+ Add Child</button>';
+  const parentControls = '<button type="button" class="btn btn-ghost btn-sm" '+attrs+' onclick="expandPickTree(this.dataset.parent)" aria-expanded="'+expanded+'">'+(expanded?'Hide Children &#9652;':'Show Children &#9662;')+'</button><button type="button" class="btn btn-secondary btn-sm" '+attrs+' onclick="openPickTreeChild(this.dataset.parent)">+ Add Child</button><button type="button" class="btn btn-ghost btn-sm cover-pick-remove" '+attrs+' onclick="event.stopPropagation(); confirmRemoveCover(this.dataset.parent)">Remove</button>';
   return `<div class="cover-pick-card">
     <div class="cover-pick-card-head">
       <input type="checkbox" class="cs-check cover-pick-check" ${attrs} data-tree-parent ${checked?'checked':''}  aria-label="Select ${htmlEsc(c.name)}" onchange="changePickTree(this.dataset.parent,null,this.checked)">
       <span class="cover-pick-card-icon">${coverCatalogIconHtml(c)}</span>
       <div class="cover-pick-card-main">
-        <div class="cover-pick-card-title">${htmlEsc(c.name)}</div>
+        <div class="cover-pick-card-title">${htmlEsc(c.name)} ${coverSidebarBadge(c)}</div>
         <div class="cover-pick-card-meta">
           <span>${htmlEsc(c.coverType || c.type || '')}</span>
           ${coverPickCategoryPill(c)}
@@ -4666,11 +4726,23 @@ function syncPickTreeCheckboxStates() {
   });
 }
 
+function pickTreeChildModalContent(id) {
+  const c=defaultCoversCatalogForProduct().find(x=>String(x.id)===id)
+    || (pendingNewCover && String(pendingNewCover.id)===String(id) ? { id: pendingNewCover.id, name: pendingNewCover.name, pending: true } : null);
+  if(!c)return null;
+  const state=coverPickTree?.[id];
+  const children=state
+    ? (state.children||[])
+    : (pendingNewCover && String(pendingNewCover.id)===String(id) ? (pendingNewCover.children||[]) : []);
+  return {
+    title: 'Add child cover to: '+htmlEsc(c.name)+(c.pending ? ' (new cover)' : ''),
+    body: '<div class="form-group"><label class="form-label">Select child cover</label><select id="pick-child-existing" class="form-control"><option value="">Create a new child</option>'+children.map(x=>'<option value="'+htmlEsc(x.id)+'">'+htmlEsc(x.name)+'</option>').join('')+'</select></div><div class="form-group"><label class="form-label">New child name</label><input id="pick-child-name" class="form-control"></div><p id="pick-child-error" role="alert"></p>'
+  };
+}
 function openPickTreeChild(id) {
-  const c=defaultCoversCatalogForProduct().find(x=>String(x.id)===id);
-  if(!c)return;
-  const state=coverPickTree[id];
-  PS.openModal('<div class="modal-header"><h2 class="modal-title">Add child cover to: '+htmlEsc(c.name)+'</h2></div><div class="modal-body"><div class="form-group"><label class="form-label">Select child cover</label><select id="pick-child-existing" class="form-control"><option value="">Create a new child</option>'+state.children.map(x=>'<option value="'+htmlEsc(x.id)+'">'+htmlEsc(x.name)+'</option>').join('')+'</select></div><div class="form-group"><label class="form-label">New child name</label><input id="pick-child-name" class="form-control"></div><p id="pick-child-error" role="alert"></p></div><div class="modal-footer"><button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button><button class="btn btn-primary" data-parent="'+htmlEsc(id)+'" onclick="addPickTreeChild(this.dataset.parent)">Add Child</button></div>');
+  const content=pickTreeChildModalContent(id);
+  if(!content)return;
+  PS.openModal('<div class="modal-header"><h2 class="modal-title">'+content.title+'</h2></div><div class="modal-body">'+content.body+'</div><div class="modal-footer"><button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button><button class="btn btn-primary" data-parent="'+htmlEsc(id)+'" onclick="addPickTreeChild(this.dataset.parent)">Add Child</button></div>');
 }
 function addPickTreeChild(id) {
   const state=coverPickTree[id];
@@ -4680,6 +4752,10 @@ function addPickTreeChild(id) {
   if(!child && !name){document.getElementById('pick-child-error').textContent='Select a child or enter its name.';return;}
   if(!child){child={id:'child-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),parentCoverId:id,name,type:name};state.children.push(child);}
   state.expanded=true;savePickTree();PS.closeModal();renderCoverTable();renderCoverList();
+  if (pendingNewCover && String(pendingNewCover.id)===String(id)) {
+    pendingNewCover.children = state.children.map(ch => Object.assign({}, ch));
+    setTimeout(openAddCoverModal, 0);
+  }
 }
 
 function ensurePickCoverSelection(catalog) {
@@ -4699,7 +4775,7 @@ function togglePickCover(id, checked) {
   ensurePickTree(defaultCoversCatalogForProduct());changePickTree(String(id),null,checked);
 }
 function toggleAllPickCovers(checked) {
-  pickTreeRows(defaultCoversCatalogForProduct()).forEach(({c,children})=>{
+  pickTreeRows(defaultCoversCatalogForProduct().filter(c => !pickCoverRemovedIds.has(String(c.id)))).forEach(({c,children})=>{
     const state=coverPickTree[c.id];
     state.parentSelected=checked;
     if(!state.children.length){if(checked)pickCoverSelectedIds.add(String(c.id));else pickCoverSelectedIds.delete(String(c.id));}
@@ -4707,21 +4783,22 @@ function toggleAllPickCovers(checked) {
 }
 
 function renderExistingCoverPicker() {
-  const catalog = defaultCoversCatalogForProduct();
-  ensurePickCoverSelection(catalog);
-  ensurePickTree(catalog);
+  const allCatalog = defaultCoversCatalogForProduct();
+  ensurePickCoverSelection(allCatalog);
+  ensurePickTree(allCatalog);
+  const removedCount = allCatalog.filter(c => pickCoverRemovedIds.has(String(c.id))).length;
+  const catalog = showRemovedCovers
+    ? allCatalog
+    : allCatalog.filter(c => !pickCoverRemovedIds.has(String(c.id)));
   const rows=pickTreeRows(catalog);
   const totalCount=catalog.reduce((n,c)=>n+(coverPickTree[c.id].children.length || 1),0);
   const selectedCount=catalog.reduce((n,c)=>n+(coverPickTree[c.id].selected.length || Number(pickCoverSelectedIds.has(String(c.id)))),0);
   return `
     <div class="cover-pick-panel">
       <div class="cover-pick-header">
-        <div>
-          <div class="cover-pick-title">Select covers for this product</div>
-          <div class="cover-pick-sub">Standard catalogue for ${htmlEsc(productName || 'this product')}. Covers start unselected. Use Select all, Unselect all, or choose individual children inside each parent card.</div>
-        </div>
         <div class="cover-pick-toolbar">
-          <button class="btn btn-secondary btn-sm" type="button" onclick="openAddCoverModal()">+ Create new</button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="beginCreateCoverFlow()">+ Create new</button>
+          ${removedCount ? `<button class="btn btn-ghost btn-sm" type="button" onclick="toggleShowRemovedCovers()">${showRemovedCovers ? 'Hide removed' : 'Removed (' + removedCount + ')'}</button>` : ''}
         </div>
       </div>
       <div class="cover-pick-list">
@@ -4730,7 +4807,7 @@ function renderExistingCoverPicker() {
       <div class="cover-pick-footer">
         <span style="font-size:13px;color:var(--color-muted)">${selectedCount} of ${totalCount} selected</span>
         <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
-          <button class="btn btn-secondary" type="button" onclick="openLibraryModal()">Browse full library</button>
+          ${showRemovedCovers ? `<button class="btn btn-ghost btn-sm" type="button" onclick="restoreRemovedCovers()">Restore removed covers</button>` : ''}
           <button class="btn btn-primary" type="button" onclick="useCheckedExistingCovers()">Add selected to product</button>
         </div>
       </div>
@@ -5295,17 +5372,20 @@ const expandedChildCoverageIds = new Set();
 
 function selectedChildCoverages(c) {
   const allowed = TRUCKING_INSURED_ITEM_TYPES_BY_COVERAGE[String(c?.name || '').trim()] || [];
-  if (!allowed.length) return [];
-
   const items = Array.isArray(c?.insuredItems) ? c.insuredItems.slice(1) : [];
+  const childPool = Array.isArray(c?.childCoverages) ? c.childCoverages : [];
   const selected = [];
+  const push = value => {
+    value = String(value || '').trim();
+    if (value && !selected.includes(value)) selected.push(value);
+  };
 
   items.forEach(item => {
     const value = String(item?.type || item?.name || '').trim();
-    if (value && allowed.includes(value) && !selected.includes(value)) {
-      selected.push(value);
-    }
+    if (value && (allowed.length ? allowed.includes(value) : true)) push(value);
   });
+
+  if (!allowed.length) childPool.forEach(ch => push(ch?.name || ch?.type || ''));
 
   return selected;
 }
@@ -5371,7 +5451,8 @@ function renderCoverList() {
   renderCoverAboutCard();
   if (coverPickerActive()) {
     if (productNeedsCoverSelection()) {
-      const catalog = defaultCoversCatalogForProduct();
+      const catalog = defaultCoversCatalogForProduct()
+        .filter(c => showRemovedCovers ? true : !pickCoverRemovedIds.has(String(c.id)));
       ensurePickCoverSelection(catalog);
       list.innerHTML = catalog.map(c => {
         const selected = pickCoverSelectedIds.has(String(c.id));
@@ -5379,7 +5460,7 @@ function renderCoverList() {
         <div class="cover-pick-row ${selected ? 'selected' : ''}" onclick="togglePickCover('${htmlEsc(c.id)}', ${selected ? 'false' : 'true'})">
           ${coverCatalogIconHtml(c, 'cover-sidebar-icon')}
           <span class="cover-item-name">${htmlEsc(c.name)}</span>
-          
+          ${coverSidebarBadge(c)}
           <button type="button" class="cover-item-remove" onclick="event.stopPropagation(); togglePickCover('${htmlEsc(c.id)}', false)" aria-label="Deselect ${htmlEsc(c.name)}" title="Remove from selection">×</button>
         </div>`;
       }).join('');
@@ -5391,7 +5472,7 @@ function renderCoverList() {
         <div style="font-size:12px;color:var(--color-muted);line-height:18px;margin-bottom:12px">Use an existing cover or create a new one.</div>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
           <button class="btn btn-primary btn-sm" type="button" onclick="openLibraryModal()">Use existing</button>
-          <button class="btn btn-secondary btn-sm" type="button" onclick="openAddCoverModal()">+ Create new</button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="beginCreateCoverFlow()">+ Create new</button>
         </div>
       </div>`;
     return;
@@ -5438,9 +5519,9 @@ function renderCoverList() {
         <div class="cover-item-main">
           ${coverCatalogIconHtml(c, 'cover-sidebar-icon')}
           <span class="cover-item-name" title="${htmlEsc(c.name)}">${htmlEsc(c.name)}</span>
-          
+          ${coverSidebarBadge(c)}
           ${childSummary}
-          ${canEdit ? `<button type="button" class="cover-item-remove" onclick="event.stopPropagation(); confirmRemoveCover('${htmlEsc(c.id)}')" aria-label="Remove ${htmlEsc(c.name)}" title="Remove cover">×</button>` : ''}
+          <button type="button" class="cover-item-remove" onclick="event.stopPropagation(); confirmRemoveCover('${htmlEsc(c.id)}')" aria-label="Remove ${htmlEsc(c.name)}" title="Remove cover">×</button>
         </div>
       </div>
       ${childList}
@@ -5494,7 +5575,7 @@ function filteredCovers() {
   const filter = document.getElementById('cover-filter')?.value || 'all';
   return COVERS.filter(c => {
     if (filter === 'mandatory' && c.availability !== 'mandatory') return false;
-    if (filter === 'optional' && c.availability === 'mandatory') return false;
+    if (filter === 'optional' && c.availability !== 'optional') return false;
     if (filter === 'addon' && c.availability !== 'addon') return false;
     if (!q) return true;
     const productHit = `${productName || ''} ${productId || ''}`.toLowerCase().includes(q);
@@ -5560,10 +5641,39 @@ function coverNameCounts() {
   return counts;
 }
 
+let pendingRemoveCoverId = '';
+
 function confirmRemoveCover(id) {
-  const c = COVERS.find(x => x.id === id);
-  if (!c || !coversCanEdit()) return;
-  removeCoverFromProduct(id);
+  const catalog = defaultCoversCatalogForProduct();
+  ensurePickTree(catalog);
+  const cover = COVERS.find(x => String(x.id) === String(id))
+    || catalog.find(x => String(x.id) === String(id));
+  const name = cover?.name || String(id);
+  pendingRemoveCoverId = String(id);
+  PS.openModal(`<div class="modal-header"><h2 class="modal-title">Remove ${htmlEsc(name)}?</h2><button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button></div><div class="modal-body"><p style="margin:0;font-size:13px;color:var(--color-muted);line-height:1.6">This coverage and its selected child covers will be removed from this product.</p></div><div class="modal-footer"><button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button><button class="btn btn-danger" onclick="removeCoverConfirmed()">Remove Coverage</button></div>`);
+}
+
+function removeCoverConfirmed() {
+  const id = pendingRemoveCoverId;
+  pendingRemoveCoverId = '';
+  PS.closeModal();
+  if (!id) return;
+  const catalog = defaultCoversCatalogForProduct();
+  ensurePickTree(catalog);
+  const state = coverPickTree[id];
+  if (state) { state.parentSelected = false; state.selected = []; }
+  pickCoverSelectedIds.delete(String(id));
+  pickCoverRemovedIds.add(String(id));
+  savePickCoverRemoved();
+  savePickTree();
+  if (COVERS.some(c => String(c.id) === String(id))) {
+    removeCoverFromProduct(id);
+  } else {
+    refreshCoverMeta();
+    renderCoverTable();
+    renderCoverList();
+    PS.actionResult?.('success', 'Cover removed', 'The coverage was removed from this product.');
+  }
 }
 
 function removeCoverFromProduct(id) {
@@ -5620,13 +5730,11 @@ function renderCoverTable() {
       el.checked=!!state.parentSelected;
       el.indeterminate=false;
     });
-    const filter=document.getElementById('cover-filter');
-    if(filter && !filter.querySelector('[value="selected"]')){filter.options[0].text='All covers';filter.add(new Option('Selected covers','selected'));}
     const hubTitle = document.getElementById('covers-hub-title');
     const hubSub = document.querySelector('#covers-hub .card-subtitle');
-    if (hubTitle) hubTitle.textContent = `Select covers (${defaultCoversCatalogForProduct().length})`;
+    if (hubTitle) hubTitle.textContent = 'Covers';
     if (hubSub) hubSub.textContent = 'Choose covers from the standard catalogue — covers start unselected';
-    if (footer) footer.innerHTML = `<span>Select covers to add to this product</span>`;
+    if (footer) footer.innerHTML = '';
     return;
   }
 
@@ -5640,14 +5748,17 @@ function renderCoverTable() {
         <div class="cs-name-cell" style="margin-bottom:10px">
           <span class="cs-cover-icon" style="${coverIconStyle(c, idx)}">${coverInitials(c.name)}</span>
           <div>
-            <div>${c.name}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${c.name}${coverSidebarBadge(c)}</div>
             <div class="text-mono" style="font-size:12px;color:var(--color-muted)">${c.code || c.id}</div>
           </div>
         </div>
         <div class="cs-product" style="margin-bottom:8px"><span>${productName || productId}</span><small>${productId}</small></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span class="cs-type">${coverTypeLabel(c)}</span>
-          <span class="cs-pill ${coverIsMandatory(c) ? 'cs-pill-mandatory' : 'cs-pill-optional'}">${coverIsMandatory(c) ? 'Mandatory' : 'Optional'}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="cs-type">${coverTypeLabel(c)}</span>
+            <span class="cs-pill ${coverIsMandatory(c) ? 'cs-pill-mandatory' : 'cs-pill-optional'}">${coverIsMandatory(c) ? 'Mandatory' : 'Optional'}</span>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm cover-pick-remove" onclick="event.stopPropagation(); confirmRemoveCover('${c.id}')">Remove</button>
         </div>
       </div>`;
     }).join('')}</div>`;
@@ -5683,6 +5794,7 @@ function renderCoverTable() {
                 <div class="cs-name-cell">
                   <span class="cs-cover-icon" style="${coverIconStyle(c, idx)}">${coverInitials(c.name)}</span>
                   <span>${c.name}</span>
+                  ${coverSidebarBadge(c)}
                 </div>
               </td>
               <td>
@@ -5706,7 +5818,7 @@ function renderCoverTable() {
                   <button class="btn btn-icon btn-sm" type="button" aria-label="Actions" onclick="toggleCoverMenu(event, '${c.id}')">⋮</button>
                   <div class="cs-kebab-menu">
                     <button type="button" onclick="openCoverEditor('${c.id}')">Configure</button>
-                    <button type="button" onclick="removeCoverFromProduct('${c.id}')">Remove from product</button>
+                    <button type="button" onclick="confirmRemoveCover('${c.id}')">Remove from product</button>
                   </div>
                 </div>
               </td>
@@ -5741,7 +5853,7 @@ function renderEmptyDetail() {
     <div class="section-card" style="padding:48px 32px;text-align:center">
       <div style="font-size:16px;font-weight:650;margin-bottom:8px">Select or add a cover</div>
       <div style="font-size:13px;color:var(--color-muted);max-width:42ch;margin:0 auto 16px">This product version has no coverage configuration yet. Add a cover to edit identity, financial terms, and wording in this panel.</div>
-      <button class="btn btn-primary" type="button" onclick="openAddCoverModal()">Add Cover</button>
+      <button class="btn btn-primary" type="button" onclick="beginCreateCoverFlow()">Add Cover</button>
     </div>`;
 }
 
@@ -6263,11 +6375,112 @@ function executeCreateLibraryCover() {
 /* ────────────────────────────────────────────────────────
    ADD COVER MODAL
 ──────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────
+   CREATE NEW COVER FLOW (with staged child covers)
+──────────────────────────────────────────────────────── */
+let pendingNewCover = null;
+
+function cleanupPendingCreateFlow() {
+  if (!pendingNewCover) return;
+  try {
+    if (typeof coverPickTree !== 'undefined' && coverPickTree) {
+      delete coverPickTree[pendingNewCover.id];
+      if (coverPickTreeKey) localStorage.setItem(coverPickTreeKey, JSON.stringify(coverPickTree));
+    }
+  } catch (_) {}
+  try {
+    if (typeof pickCoverSelectedIds !== 'undefined' && pickCoverSelectedIds.delete) {
+      pickCoverSelectedIds.delete(String(pendingNewCover.id));
+    }
+  } catch (_) {}
+  pendingNewCover = null;
+}
+
+function beginCreateCoverFlow() {
+  cleanupPendingCreateFlow();
+  openAddCoverModal();
+}
+
+function cancelCreateCoverFlow() {
+  cleanupPendingCreateFlow();
+  PS.closeModal();
+}
+
+function createFlowTempId() {
+  return 'NEW-' + Date.now().toString(36) + '-' + Math.random().toString(16).slice(2, 6);
+}
+
+function createFlowChildNames() {
+  if (!pendingNewCover) return [];
+  const st = (typeof coverPickTree !== 'undefined' && coverPickTree) ? coverPickTree[pendingNewCover.id] : null;
+  return st ? st.children.map(ch => ch.name) : (pendingNewCover.children || []).map(ch => ch.name);
+}
+
+function createModalAddChild() {
+  const name = document.getElementById('ac-name')?.value.trim();
+  const availability = document.getElementById('ac-avail')?.value || 'optional';
+  const description = document.getElementById('ac-desc')?.value || '';
+  if (!pendingNewCover) {
+    pendingNewCover = { id: createFlowTempId(), name: name || 'New Cover', availability, description, children: [] };
+  } else {
+    if (name) pendingNewCover.name = name;
+    pendingNewCover.availability = availability;
+    pendingNewCover.description = description;
+  }
+  ensurePickTree(defaultCoversCatalogForProduct());
+  if (!coverPickTree) {
+    coverPickTree = {};
+    try { coverPickTreeKey = 'southlake-cover-selection:' + productId + ':' + productVersion; } catch (_) {}
+  }
+  coverPickTree[pendingNewCover.id] = {
+    children: (pendingNewCover.children || []).map(ch => Object.assign({}, ch)),
+    selected: [],
+    parentSelected: true,
+    expanded: true
+  };
+  savePickTree();
+  renderCreateFlowChildStep();
+}
+
+function renderCreateFlowChildStep() {
+  const content = pickTreeChildModalContent(pendingNewCover.id);
+  if (!content) return;
+  PS.openModal('<div class="modal-header"><h2 class="modal-title">'+content.title+'</h2></div><div class="modal-body">'+content.body+'</div><div class="modal-footer"><button class="btn btn-secondary" onclick="beginCreateCoverFlow()">Back</button><button class="btn btn-primary" data-parent="'+htmlEsc(pendingNewCover.id)+'" onclick="addPickTreeChild(this.dataset.parent)">Add Child</button></div>');
+}
+
+function removeCreateFlowChild(index) {
+  if (!pendingNewCover) return;
+  const st = (typeof coverPickTree !== 'undefined' && coverPickTree) ? coverPickTree[pendingNewCover.id] : null;
+  if (st) {
+    st.children = st.children.filter((_, i) => i !== index);
+    st.selected = st.selected.filter(id => st.children.some(ch => ch.id === id));
+    pendingNewCover.children = st.children.map(ch => Object.assign({}, ch));
+    savePickTree();
+  } else if (Array.isArray(pendingNewCover.children)) {
+    pendingNewCover.children = pendingNewCover.children.filter((_, i) => i !== index);
+  }
+  openAddCoverModal();
+}
+
 function openAddCoverModal() {
+  const pending = pendingNewCover;
+  const childNames = pending ? createFlowChildNames() : [];
+  const childrenHtml = childNames.length
+    ? `<div class="form-group span-2">
+        <label class="form-label">Child covers to be saved under this cover</label>
+        <div class="ac-children-list">
+          ${childNames.map((name, i) => `
+            <div class="ac-child-chip">
+              <span>${htmlEsc(name)}</span>
+              <button type="button" class="ac-child-remove" onclick="removeCreateFlowChild(${i})" aria-label="Remove ${htmlEsc(name)}">×</button>
+            </div>`).join('')}
+        </div>
+      </div>`
+    : '';
   PS.openModal(`
     <div class="modal-header">
       <h2 class="modal-title">Add Cover</h2>
-      <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">
+      <button class="btn btn-icon" onclick="cancelCreateCoverFlow()" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M205.66 194.34a8 8 0 01-11.32 11.32L128 139.31l-66.34 66.35a8 8 0 01-11.32-11.32L116.69 128 50.34 61.66a8 8 0 0111.32-11.32L128 116.69l66.34-66.35a8 8 0 0111.32 11.32L139.31 128z" fill="currentColor"/></svg>
       </button>
     </div>
@@ -6275,17 +6488,21 @@ function openAddCoverModal() {
       <div class="form-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
         <div class="form-group">
           <label class="form-label" for="ac-name">Cover Name <span class="required">*</span></label>
-          <input type="text" id="ac-name" class="form-control" placeholder="e.g. Own Damage">
+          <input type="text" id="ac-name" class="form-control" placeholder="e.g. Own Damage" value="${pending ? htmlEsc(pending.name || '') : ''}">
         </div>
         <div class="form-group">
           <label class="form-label" for="ac-avail">Availability <span class="required">*</span></label>
           <select id="ac-avail" class="form-control">
-            ${((PS.admin && PS.admin.options('coverAvailability')) || COVER_AVAIL).map(label => {
-              const val = ({'Mandatory':'mandatory','Optional':'optional','Default-Selected':'default','Optional Add-on':'addon'})[label]
-                || String(label).toLowerCase().replace(/[^a-z0-9]+/g,'');
-              return `<option value="${val}">${label}</option>`;
-            }).join('')}
+            <option value="mandatory" ${pending && pending.availability === 'mandatory' ? 'selected' : ''}>Mandatory</option>
+            <option value="optional" ${!pending || pending.availability === 'optional' ? 'selected' : ''}>Optional</option>
+            <option value="addon" ${pending && pending.availability === 'addon' ? 'selected' : ''}>Add-Ons</option>
           </select>
+        </div>
+        <div class="form-group">
+          <div class="ac-child-action">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="createModalAddChild()">+ Add Child</button>
+            <span class="ac-child-hint">Add one or more child covers — they are saved under this cover when you add it.</span>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Start from Library Template?</label>
@@ -6306,14 +6523,15 @@ function openAddCoverModal() {
             <option>Business Interruption — Standard (Property)</option>
           </select>
         </div>
+        ${childrenHtml}
         <div class="form-group span-2">
           <label class="form-label" for="ac-desc">Description</label>
-          <textarea id="ac-desc" class="form-control" rows="3" placeholder="Brief description of what this cover includes…"></textarea>
+          <textarea id="ac-desc" class="form-control" rows="3" placeholder="Brief description of what this cover includes…">${pending ? htmlEsc(pending.description || '') : ''}</textarea>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+      <button class="btn btn-secondary" onclick="cancelCreateCoverFlow()">Cancel</button>
       <button class="btn btn-primary" onclick="executeAddCover()">Add Cover</button>
     </div>
   `);
@@ -6391,7 +6609,7 @@ function openLibraryModal() {
       </table>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" type="button" onclick="openAddCoverModal()">Create new cover</button>
+      <button class="btn btn-secondary" type="button" onclick="beginCreateCoverFlow()">Create new cover</button>
       <span style="font-size:13px;color:var(--color-muted);margin-right:auto">Then open a cover on this product to update it</span>
       <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
       <button class="btn btn-primary" onclick="importCoverageLibrarySelection()">Add selected</button>
