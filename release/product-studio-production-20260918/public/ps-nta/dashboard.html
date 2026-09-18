@@ -1,0 +1,253 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MGA Dashboard</title>
+<link rel="stylesheet" href="/ps/assets/style.css">
+<link rel="stylesheet" href="assets/mga-theme.css">
+</head><body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="catalogue.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" aria-label="Breadcrumb" id="topbar-breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+
+  <main class="main-content">
+    <div class="page-inner" id="page-root">
+      <div class="mga-empty">Loading dashboard…</div>
+    </div>
+  </main>
+</div>
+
+<script src="/ps/assets/data.js"></script>
+<script src="/ps/assets/trucking-questionnaire-seed.js"></script>
+<script src="/ps/assets/product-seeds.js"></script>
+<script src="/ps/assets/admin-catalog.js"></script>
+<script src="/ps/assets/prototype-app.js"></script>
+<script src="assets/mga-data.js"></script>
+<script src="assets/mga-shell.js"></script>
+<script>
+try { localStorage.setItem('ps-profile', 'nta'); } catch (e) {}
+MgaShell.render('dashboard', 'Dashboard');
+
+const esc = MgaData.escapeHtml.bind(MgaData);
+
+function timeAgo(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const mins = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}
+
+function summaryCardsHtml(rows) {
+  const active = rows.filter(r => r.mgaStatus === 'Active').length;
+  const draft = rows.filter(r => r.mgaStatus === 'Draft').length;
+  const needsAttention = rows.filter(r => r.completionPct < 100).length;
+  const cards = [
+    ['Total Products', rows.length, 'All products in catalogue'],
+    ['Active Products', active, 'Currently active'],
+    ['Draft Products', draft, 'Work in progress'],
+    ['Needs Attention', needsAttention, 'Requires action']
+  ];
+  return `<div class="mga-cards">${cards.map(([label, value, sub]) => `
+    <div class="card">
+      <div class="card-subtitle">${label}</div>
+      <div class="value">${value}</div>
+      <div class="mga-muted" style="font-size:12px">${sub}</div>
+    </div>`).join('')}</div>`;
+}
+
+function statusDistributionHtml(rows) {
+  const total = rows.length || 1;
+  const groups = [['Draft', '#8A8377'], ['Active', 'var(--color-success)'], ['Archived', 'var(--color-brand)']];
+  const counts = { Draft: 0, Active: 0, Archived: 0 };
+  rows.forEach(r => { counts[r.mgaStatus] = (counts[r.mgaStatus] || 0) + 1; });
+  return `
+    <div class="card" style="padding:22px">
+      <h2 class="card-title">Product Status Distribution</h2>
+      ${groups.map(([label, color]) => `
+        <div style="margin:14px 0">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+            <span>${label}</span><strong>${counts[label]}</strong>
+          </div>
+          <div style="height:8px;background:var(--color-surface-alt);border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${Math.round((counts[label] / total) * 100)}%;background:${color}"></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function configHealthHtml(rows) {
+  if (!rows.length) return '';
+  const displaySections = MgaData.CONFIG_SECTIONS.filter(s => ['coverage','questionnaire','risk','eligibility','ratingPricing','distribution','documents'].includes(s.id));
+  return `
+    <div class="card" style="padding:22px">
+      <h2 class="card-title">Product Configuration Health</h2>
+      <p class="card-subtitle" style="margin:-8px 0 16px">Monitor configuration completeness across your MGA products.</p>
+      ${rows.map(row => `
+        <div style="border:1px solid var(--color-border);border-radius:var(--radius-md,10px);padding:18px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+            <div>
+              <div style="font-weight:650">${esc(row.product.name)}</div>
+              <div class="mga-muted" style="font-size:12.5px">${esc(row.product.id)} · ${esc(row.lob)} · v${esc(row.version)}</div>
+            </div>
+            <span class="badge badge-${row.rawStatus}">${esc(row.rawStatus)}</span>
+          </div>
+          <div style="margin:14px 0 4px;display:flex;justify-content:space-between;font-size:12.5px">
+            <span class="mga-muted">Configuration</span><strong>${row.completionPct}%</strong>
+          </div>
+          <div style="height:8px;background:var(--color-surface-alt);border-radius:4px;overflow:hidden;margin-bottom:14px">
+            <div style="height:100%;width:${row.completionPct}%;background:${row.completionPct === 100 ? 'var(--color-success)' : 'var(--color-brand)'}"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;font-size:13px;margin-bottom:14px">
+            ${displaySections.map(s => `<div>${MgaData.statusIcon(row.status[s.id])} ${esc(s.label)}</div>`).join('')}
+          </div>
+          <a class="btn btn-secondary btn-sm" href="product-workspace.html?id=${encodeURIComponent(row.product.id)}&version=${encodeURIComponent(row.version)}">Open Product</a>
+        </div>`).join('')}
+    </div>`;
+}
+
+function needsAttentionHtml(rows) {
+  const items = MgaData.needsAttention(rows).slice(0, 12);
+  if (!items.length) {
+    return `<div class="card" style="padding:22px"><h2 class="card-title">Needs Attention</h2><div class="mga-empty"><strong>All products are configured</strong>Nothing needs your attention right now.</div></div>`;
+  }
+  return `
+    <div class="card" style="padding:22px">
+      <h2 class="card-title">Needs Attention</h2>
+      ${items.map(it => `
+        <div class="mga-row">
+          <div>
+            <div style="font-weight:600">${esc(it.row.product.name)}</div>
+            <div class="mga-muted" style="font-size:12.5px">${esc(it.section.label)} · ${esc(MgaData.statusLabel(it.value))}</div>
+          </div>
+          <a class="mga-open-link" href="${it.href}">Open ${esc(it.section.label)} →</a>
+        </div>`).join('')}
+    </div>`;
+}
+
+function reviewQueueHtml(rows) {
+  const items = MgaData.reviewQueue(rows);
+  if (!items.length) {
+    return `<div class="card" style="padding:22px"><h2 class="card-title">Review Queue</h2><div class="mga-empty"><strong>No items currently require review.</strong></div></div>`;
+  }
+  return `
+    <div class="card" style="padding:22px">
+      <h2 class="card-title">Review Queue</h2>
+      ${items.map(it => `
+        <div class="mga-row">
+          <div>
+            <div style="font-weight:600">${esc(it.row.product.name)} <span class="mga-muted">v${esc(it.row.version)}</span></div>
+            <div class="mga-muted" style="font-size:12.5px">${esc(it.area)} · ${esc(it.statusLabel)}</div>
+          </div>
+          <a class="mga-open-link" href="${it.href}">Open →</a>
+        </div>`).join('')}
+    </div>`;
+}
+
+function recentActivityHtml(rows) {
+  const events = MgaData.recentActivity(rows);
+  if (!events.length) {
+    return `<div class="card" style="padding:22px"><h2 class="card-title">Recent Activity</h2><div class="mga-empty"><strong>No recent activity</strong>Product activity will appear here as configuration changes are made.</div></div>`;
+  }
+  const byId = {};
+  rows.forEach(r => { byId[r.product.id] = r.product.name; });
+  return `
+    <div class="card" style="padding:22px">
+      <h2 class="card-title">Recent Activity</h2>
+      ${events.map(e => `
+        <div class="mga-row">
+          <div>
+            <div style="font-weight:600">${esc(e.action)} — ${esc(byId[e.productId] || e.productId)}</div>
+            <div class="mga-muted" style="font-size:12.5px">${esc(e.description || '')}${e.user ? ' · ' + esc(e.user) : ''}</div>
+          </div>
+          <span class="mga-muted" style="font-size:12px;white-space:nowrap">${timeAgo(e.at)}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function quickActionsHtml() {
+  return `
+    <div class="card" style="padding:22px">
+      <h2 class="card-title">Quick Actions</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+        <a class="btn btn-primary" href="/ps/catalogue.html">+ Create Product</a>
+        <a class="btn btn-secondary" href="catalogue.html">Open Product Catalogue</a>
+        <a class="btn btn-secondary" href="${MgaShell.genericStudioHref('simulation-studio.html')}">Simulation &amp; Testing</a>
+        <a class="btn btn-secondary" href="#review-queue">Review Products</a>
+      </div>
+    </div>`;
+}
+
+function emptyDashboardHtml() {
+  return `
+    <div class="mga-empty" style="padding:60px 24px">
+      <strong>No products yet</strong>
+      Ask a product owner to assign NTA as a distribution channel in the Distribution Guide, or create your first MGA product to get started.
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:center">
+        <a class="btn btn-primary" href="/ps/catalogue.html">+ Create Product</a>
+        <a class="btn btn-secondary" href="catalogue.html">Open Product Catalogue</a>
+      </div>
+    </div>`;
+}
+
+function renderDashboard() {
+  const root = document.getElementById('page-root');
+  try {
+    const rows = MgaData.assignedRows();
+
+    let html = `
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">MGA Dashboard</h1>
+          <p class="page-subtitle">Overview of your products, configuration health, and governance.</p>
+        </div>
+        <div class="page-header-actions">
+          <a class="btn btn-primary" href="/ps/catalogue.html">+ Create Product</a>
+        </div>
+      </div>
+      ${summaryCardsHtml(rows)}
+    `;
+
+    if (!rows.length) {
+      html += emptyDashboardHtml();
+      html += `<div style="margin-top:20px">${quickActionsHtml()}</div>`;
+      root.innerHTML = html;
+      return;
+    }
+
+    html += `<div class="mga-dash-grid-2-1" style="margin-top:20px">
+      ${configHealthHtml(rows)}
+      ${statusDistributionHtml(rows)}
+    </div>`;
+
+    html += `<div class="mga-dash-grid-1-1" style="margin-top:20px" id="review-queue">
+      ${needsAttentionHtml(rows)}
+      ${reviewQueueHtml(rows)}
+    </div>`;
+
+    html += `<div class="mga-dash-grid-2-1" style="margin-top:20px">
+      ${recentActivityHtml(rows)}
+      ${quickActionsHtml()}
+    </div>`;
+
+    root.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    root.innerHTML = `
+      <div class="mga-empty" style="padding:60px 24px">
+        <strong>Unable to load dashboard data.</strong>
+        ${esc(err.message || '')}
+        <div style="margin-top:16px"><button class="btn btn-primary" onclick="renderDashboard()">Retry</button></div>
+      </div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', renderDashboard);
+document.addEventListener('ps-page-ready', renderDashboard);
+</script>
+</body></html>

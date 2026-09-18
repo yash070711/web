@@ -1732,17 +1732,9 @@ function coverTypeOptionsForCover(c) {
 function coverTypeFieldHtml(c, ro) {
   const recommended = coverTypeForName(c.name);
   const current = c.type || recommended || '';
-  const allOpts = coverTypeOptionsForCover(c);
-
-  if (ro) {
-    return `<div class="form-group"><label class="form-label">Cover Type</label>
-      <div class="field-value" style="font-size:14px;padding:6px 0">${htmlEsc(current || '—')}</div></div>`;
-  }
 
   return `<div class="form-group"><label class="form-label">Cover Type</label>
-    <select class="form-control" onchange="patchCoverField('type', this.value)">
-      ${allOpts.map(o => `<option value="${htmlEsc(o)}" ${o === current ? 'selected' : ''}>${htmlEsc(o)}</option>`).join('')}
-    </select>
+    <input type="text" class="form-control cs-readonly-field" value="${htmlEsc(current || '—')}" readonly tabindex="-1" data-cover-type="1" style="background:var(--color-surface);cursor:default;">
   </div>`;
 }
 
@@ -3216,7 +3208,13 @@ window.addEventListener('resize', () => {
 });
 
 function otherCoverNames(id) {
-  return COVERS.filter(x => x.id !== id).map(x => x.name);
+  const current = COVERS.find(cover => String(cover.id) === String(id));
+  const currentName = String(current?.name || '').trim().toLowerCase();
+  const names = COVERS
+    .filter(cover => String(cover.id) !== String(id))
+    .filter(cover => String(cover.name || '').trim().toLowerCase() !== currentName)
+    .map(cover => cover.name);
+  return uniqueList(names, []);
 }
 
 function wordingLibrary() {
@@ -4119,8 +4117,7 @@ function buildInsuredItemsSection(c, ro) {
       </div>
       ${parentItem ? buildInsuredItemCard(parentItem, 0, ro, c) : ''}
       ${childItems.map((it, i) => buildInsuredItemCard(it, i + 1, ro, c)).join('')}
-      ${!childItems.length ? `<div style="padding:14px 0;font-size:12px;color:var(--color-muted)">No child coverage class added.</div>` : ''}
-      ${ro ? '' : `<button type="button" class="btn btn-ghost btn-sm ii-add-item" onclick="addInsuredItem()">+ Add child class</button>`}`;
+      ${!childItems.length ? `<div style="padding:14px 0;font-size:12px;color:var(--color-muted)">No child coverage class added.</div>` : ''}`;
 }
 
 function buildSubLimitsSection(c, ro) {

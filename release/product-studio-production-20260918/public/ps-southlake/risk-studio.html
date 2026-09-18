@@ -1,0 +1,3019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Guide — SouthLake Carrier Portal</title>
+  <meta name="description" content="Define the risk attributes captured at quote for commercial auto and trucking products.">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/studio-hub.css">
+  <style>
+    .risk-hub-layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: var(--space-5);
+      align-items: start;
+    }
+    .risk-group-sidebar { position: sticky; top: calc(56px + var(--space-6)); align-self: start; }
+    .risk-group-sidebar > .card { overflow: hidden; }
+    .risk-group-scroll {
+      max-height: calc(100vh - 320px);
+      min-height: 280px;
+      overflow-y: auto;
+    }
+    .risk-sidebar-header {
+      padding: var(--space-5) var(--space-5) var(--space-4);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .risk-sidebar-header-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: var(--space-3);
+    }
+    .risk-sidebar-title-lg {
+      font-size: 22px; font-weight: 700; letter-spacing: -.02em;
+      color: var(--color-ink); line-height: 1.2;
+    }
+    .risk-sidebar-count { font-size: 12px; color: var(--color-muted); margin-top: 4px; }
+    .risk-sidebar-icon-actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .risk-sidebar-icon-actions .btn { min-width: 32px; padding: 4px 8px; color: var(--color-muted); }
+    .risk-group { margin: 0; border-bottom: 1px solid var(--color-border); }
+    .risk-group:last-child { border-bottom: none; }
+    .risk-group-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px var(--space-5);
+      cursor: pointer; user-select: none;
+      transition: background .1s;
+      min-height: 44px;
+    }
+    .risk-group-header:hover { background: var(--color-surface); }
+    .risk-group-header.active-filter { background: var(--color-brand-light); }
+    .risk-group-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .55px; color: var(--color-ink); flex: 1;
+      line-height: 1.3;
+    }
+    .risk-group-count {
+      font-size: 11px; font-weight: 600; color: var(--color-muted);
+      background: var(--color-panel);
+      border: 1px solid var(--color-border);
+      border-radius: 100px; min-width: 24px; height: 24px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0 8px; flex-shrink: 0;
+    }
+    .risk-group-chevron {
+      color: var(--color-muted); transition: transform .2s;
+      flex-shrink: 0; width: 14px; height: 14px;
+    }
+    .risk-group-chevron.open { transform: rotate(90deg); }
+    .risk-group-items {
+      padding: 0 0 6px;
+      background: #FBF9F5;
+      border-top: 1px solid var(--color-border);
+    }
+    .risk-group-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px var(--space-5) 8px calc(var(--space-5) + 18px);
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .1s, border-color .1s;
+      font-size: 12px; color: var(--color-muted);
+    }
+    .risk-group-item:hover { background: var(--color-surface); color: var(--color-ink); }
+    .risk-group-item.active { background: var(--color-brand-light); border-left-color: var(--color-brand); color: var(--color-ink); }
+    .risk-group-item-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rs-source-badge {
+      display: inline-flex; align-items: center; height: 22px; padding: 0 10px;
+      border-radius: 100px; font-size: 10px; font-weight: 700; letter-spacing: .35px;
+      background: #F3EEE4; color: #6F685D; white-space: nowrap; border: 1px solid #E7DFD2;
+    }
+    .rs-source-badge.is-question { background: #EEF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+    .rs-status-active { color: #159947; }
+    .rs-status-inactive { color: #DC2626; }
+    .rs-metrics {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px; margin-bottom: var(--space-5);
+    }
+    .rs-metric {
+      background: #FFFFFF; border: 1px solid #E7DFD2; border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .rs-metric-value { font-size: 22px; font-weight: 700; color: #171717; line-height: 1.2; }
+    .rs-metric-label { font-size: 12px; color: #6F685D; margin-top: 4px; }
+    .rs-empty {
+      padding: 36px 24px; text-align: center; color: #6F685D;
+    }
+    .rs-empty p { margin: 0 0 16px; line-height: 1.55; }
+    .validation-error { border-color: #DC2626 !important; box-shadow: 0 0 0 2px rgba(220,38,38,.10) !important; }
+    .validation-error-message { color: #DC2626; font-size: 12px; margin-top: 5px; }
+    .rs-warn {
+      padding: 10px 12px; border-radius: 8px; background: #FEF3C7; color: #92400E;
+      font-size: 13px; margin-bottom: 16px;
+    }
+    .rs-option-row {
+      display: grid; grid-template-columns: 1.4fr 140px 120px 100px;
+      gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #E7DFD2;
+    }
+    .rs-option-head { font-size: 11px; font-weight: 700; color: #6F685D; text-transform: uppercase; letter-spacing: .4px; }
+    .rs-tier-high { color: #DC2626; font-weight: 600; }
+    .rs-tier-medium { color: #D99000; font-weight: 600; }
+    .rs-tier-low { color: #159947; font-weight: 600; }
+    .nr-q-list {
+      display: flex; flex-direction: column; gap: 6px;
+      max-height: 220px; overflow-y: auto;
+      padding: 10px; border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); background: var(--color-surface);
+    }
+    .nr-q-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 10px; border-radius: 8px; cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .nr-q-item:hover { background: var(--color-panel); }
+    .nr-q-item.is-selected { border-color: var(--color-brand); background: var(--color-brand-light); }
+    .nr-q-item input { margin-top: 3px; accent-color: var(--color-brand); }
+    .nr-q-item-label { font-size: 13px; font-weight: 600; color: var(--color-ink); }
+    .nr-q-selected {
+      margin-bottom: 8px; padding: 8px 10px;
+      border: 1px solid color-mix(in srgb, var(--color-brand) 40%, var(--color-border));
+      background: color-mix(in srgb, var(--color-brand-light) 70%, var(--color-panel));
+      border-radius: 8px; font-size: 13px; color: var(--color-ink);
+    }
+    .nr-q-selected .mono { font-size: 11px; color: var(--color-muted); margin-left: 6px; }
+
+    /* Risk question picker — keep existing studio UI, only tidy this modal */
+    .risk-select-modal .modal-header { padding-bottom: 12px; }
+    .risk-select-modal .modal-body { padding-top: 12px; }
+    .risk-select-modal .modal-body > p { max-width: 72ch; line-height: 1.5; }
+    .risk-select-modal .nr-q-list { max-height: 260px; background: var(--color-panel); }
+    .risk-select-modal .nr-q-item { min-height: 58px; align-items: center; }
+    .risk-select-modal .nr-q-item-meta { margin-top: 4px; font-size: 11px; color: var(--color-muted); line-height: 1.35; }
+    .risk-select-modal .modal-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .risk-select-modal .modal-footer .risk-footer-spacer { flex: 1 1 auto; min-width: 0; }
+    .risk-select-modal .risk-create-btn { white-space: nowrap; }
+    .risk-select-modal .risk-link-btn { white-space: nowrap; }
+    .risk-select-modal .risk-create-btn + .btn-secondary { margin-left: auto; }
+
+    /* Manual risk modal: keep the complete form visible without changing the studio UI */
+    .manual-risk-modal {
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 40px);
+      overflow: hidden;
+    }
+    .manual-risk-modal .modal-header {
+      flex: 0 0 auto;
+    }
+    .manual-risk-modal .modal-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-bottom: 18px;
+    }
+    .manual-risk-modal .modal-footer {
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 1;
+      background: var(--color-panel);
+      border-top: 1px solid var(--color-border);
+    }
+    .manual-risk-modal .form-grid-2 {
+      align-items: start;
+    }
+    .manual-risk-modal textarea.form-control {
+      min-height: 84px;
+      resize: vertical;
+    }
+    @media (max-width: 760px) {
+      .risk-select-modal .modal-footer { align-items: stretch; }
+      .risk-select-modal .modal-footer > * { margin-left: 0 !important; }
+      .risk-select-modal .modal-footer .risk-footer-spacer { display: none; }
+      .risk-select-modal .modal-footer .risk-create-btn,
+      .risk-select-modal .modal-footer .risk-link-btn { flex: 1 1 auto; }
+    }
+    .studio-layout { display: grid; grid-template-columns: 300px 1fr; gap: var(--space-5); align-items: start; }
+    .risk-sidebar { position: sticky; top: calc(56px + var(--space-6)); }
+    .risk-list { display: flex; flex-direction: column; gap: 2px; padding: var(--space-2); }
+    .risk-item {
+      display: flex; align-items: flex-start; gap: var(--space-3);
+      padding: 10px var(--space-4); border-radius: var(--radius-md); cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+    .risk-item:hover { background: var(--color-surface); }
+    .risk-item.active { background: var(--color-brand-light); border-left-color: var(--color-brand); }
+    .risk-item-name { font-size: 13px; font-weight: 500; }
+    .risk-item-meta { font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+    .section-card { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+    .section-inner { padding: var(--space-5) var(--space-6); }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-6); }
+    .span-2 { grid-column: 1 / -1; }
+    .studio-context-bar {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); margin-bottom: var(--space-5); font-size: 13px;
+    }
+    .studio-context-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; background: var(--color-panel);
+      border: 1px solid var(--color-border); border-radius: 100px;
+      font-size: 12px; font-weight: 500;
+    }
+
+
+    /* Rating Factors — multiple factors per Risk Attribute */
+    .rating-factors-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin:0 0 10px;
+    }
+    .rating-factors-title {
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.4px;
+      color:#6F685D;
+    }
+    .rating-factors-subtitle {
+      margin-top:2px;
+      font-size:11px;
+      color:var(--color-muted);
+    }
+    .rating-factor-card {
+      border:1px solid #E7DFD2;
+      border-radius:10px;
+      background:#FBF9F5;
+      margin-bottom:12px;
+      overflow:visible;
+    }
+    .rating-factor-card-head {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:11px 14px;
+      border-bottom:1px solid #E7DFD2;
+      background:#FFFFFF;
+    }
+    .rating-factor-card-index {
+      width:26px;
+      height:26px;
+      border-radius:7px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      background:var(--color-brand-light);
+      color:var(--color-brand);
+      font-size:11px;
+      font-weight:700;
+    }
+    .rating-factor-card-copy {
+      flex:1;
+      min-width:0;
+    }
+    .rating-factor-card-name {
+      font-size:12px;
+      font-weight:700;
+      color:var(--color-ink);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .rating-factor-card-meta {
+      margin-top:2px;
+      font-size:11px;
+      color:var(--color-muted);
+    }
+    .rating-factor-remove {
+      color:var(--color-danger,#dc2626);
+      flex:0 0 auto;
+    }
+    .rating-factor-card-body {
+      padding:14px;
+      overflow:visible;
+      position:relative;
+    }
+    .rating-factor-table-box {
+      border:1px solid var(--color-border);
+      border-radius:8px;
+      background:var(--color-surface);
+      padding:10px;
+      margin-top:12px;
+    }
+    .rating-factor-table {
+      width:100%;
+      border-collapse:collapse;
+    }
+    .rating-factor-table th {
+      text-align:left;
+      padding:7px 8px;
+      font-size:10px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.35px;
+      color:var(--color-muted);
+      border-bottom:1px solid var(--color-border);
+    }
+    .rating-factor-table td {
+      padding:7px 8px;
+      border-bottom:1px solid var(--color-border);
+      vertical-align:middle;
+    }
+    .rating-factor-table tr:last-child td { border-bottom:none; }
+    .rating-factor-table .form-control { height:34px; font-size:12px; }
+    .rating-factor-empty {
+      padding:14px 10px;
+      text-align:center;
+      color:var(--color-muted);
+      font-size:11px;
+      border:1px dashed var(--color-border);
+      border-radius:8px;
+      background:var(--color-surface);
+    }
+    
+    .rating-factors-section { overflow:visible !important; }
+    .rating-factors-section > .section-inner { overflow:visible; }
+    .rating-coverage-dropdown { position:relative; width:100%; z-index:100; }
+    .rating-coverage-dropdown-btn {
+      width:100%; min-height:40px; padding:8px 11px; box-sizing:border-box;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      text-align:left; cursor:pointer; background:var(--color-panel);
+      border:1px solid var(--color-border); border-radius:8px;
+      color:var(--color-ink); font-size:13px;
+    }
+    .rating-coverage-dropdown-btn:hover,
+    .rating-coverage-dropdown.open .rating-coverage-dropdown-btn {
+      border-color:var(--color-brand); box-shadow:0 0 0 3px rgba(192,149,83,.12);
+    }
+    .rating-coverage-selected {
+      display:flex; align-items:center; gap:6px; flex:1; min-width:0; overflow:hidden;
+      min-height:24px;
+    }
+    .rating-coverage-chip {
+      display:inline-flex; align-items:center; max-width:48%; min-width:0;
+      padding:4px 8px; border-radius:6px; background:var(--color-brand-light);
+      border:1px solid rgba(192,149,83,.22); color:var(--color-brand);
+      font-size:11px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .rating-coverage-placeholder { color:var(--color-muted); font-size:13px; }
+    .rating-coverage-more {
+      flex:0 0 auto; padding:4px 7px; border-radius:6px;
+      background:var(--color-surface); border:1px solid var(--color-border);
+      color:var(--color-muted); font-size:10px; font-weight:700;
+    }
+    .rating-coverage-dropdown-caret { color:var(--color-muted); flex:0 0 auto; font-size:12px; }
+    .rating-coverage-dropdown-menu {
+      display:none; position:absolute; z-index:10000; left:0; right:0; top:calc(100% + 6px);
+      max-height:300px; overflow:auto; padding:6px; box-sizing:border-box;
+      background:#fff; border:1px solid var(--color-border); border-radius:9px;
+      box-shadow:0 14px 32px rgba(15,23,42,.16);
+    }
+    .rating-coverage-dropdown.open .rating-coverage-dropdown-menu { display:block; }
+    .rating-coverage-menu-header {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      padding:8px 9px; margin-bottom:4px; border-bottom:1px solid var(--color-border);
+      font-size:11px; font-weight:700; color:var(--color-ink);
+    }
+    .rating-coverage-count { color:var(--color-muted); font-weight:600; }
+    .rating-coverage-menu-list { max-height:250px; overflow:auto; padding:2px 4px 6px; }
+    .rating-coverage-group { padding:2px 0; }
+    .rating-coverage-group + .rating-coverage-group { border-top:1px solid var(--color-border); margin-top:4px; padding-top:6px; }
+    .rating-coverage-option { display:flex; align-items:center; gap:8px; min-height:32px; padding:6px 8px; border-radius:7px; cursor:pointer; font-size:12px; }
+    .rating-coverage-option:hover { background:var(--color-brand-light); }
+    .rating-coverage-option input { width:15px; height:15px; margin:0; flex:0 0 auto; accent-color:var(--color-brand); }
+    .rating-coverage-parent { font-weight:700; color:var(--color-ink); }
+    .rating-coverage-parent-copy { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
+    .rating-coverage-parent-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rating-coverage-child-count { margin-left:auto; flex:0 0 auto; font-size:10px; color:var(--color-muted); font-weight:600; }
+    .rating-coverage-children { margin:1px 8px 4px 29px; padding-left:10px; border-left:1px solid var(--color-border); }
+    .rating-coverage-child { color:var(--color-muted); }
+    .rating-coverage-child-copy { display:flex; align-items:center; gap:5px; min-width:0; }
+    .rating-coverage-child-arrow { color:var(--color-muted); }
+.rating-factor-fixed {
+      margin-top:12px;
+      padding:10px 12px;
+      border:1px solid var(--color-border);
+      border-radius:8px;
+      background:var(--color-surface);
+    }
+
+    .form-grid-3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-4) var(--space-6); width:100%; }
+    .form-grid-3 .form-group { min-width:0; }
+    .form-grid-3 .span-3 { grid-column:1 / -1; }
+    .pct-wrap { position:relative; width:100%; }
+    .pct-wrap .form-control { width:100%; padding-right:34px; box-sizing:border-box; }
+    .pct-suffix { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--color-muted); font-size:13px; font-weight:600; pointer-events:none; }
+    @media (max-width:900px) { .form-grid-3 { grid-template-columns:repeat(2,minmax(0,1fr)); } .form-grid-3 .span-3 { grid-column:1 / -1; } }
+    @media (max-width:600px) { .form-grid-3 { grid-template-columns:1fr; } .form-grid-3 .span-3 { grid-column:1; } }
+
+    .rating-coverage-picker {
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      background: var(--color-surface);
+      padding: 8px;
+      max-height: 220px;
+      /* overflow-y: auto; */
+    }
+    /* The old picker was a boxed checkbox panel. The new control is a true dropdown. */
+    .rating-coverage-picker.rating-coverage-dropdown {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+      max-height: none;
+      overflow: visible;
+    }
+    .rating-coverage-options { display:flex; flex-direction:column; gap:2px; }
+    .rating-coverage-option {
+      display:flex; align-items:center; gap:8px;
+      min-height:32px; padding:5px 7px; border-radius:6px;
+      cursor:pointer; font-size:12px; color:var(--color-ink);
+    }
+    .rating-coverage-option:hover { background:var(--color-brand-light); }
+    .rating-coverage-option input { width:15px; height:15px; margin:0; accent-color:var(--color-brand); }
+    .rating-coverage-parent { font-weight:600; }
+    .rating-coverage-children {
+      margin-left:22px; padding-left:10px;
+      border-left:1px solid var(--color-border);
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .rating-coverage-child { color:var(--color-muted); font-weight:400; }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+  <main class="main-content" id="main-content">
+    <div class="page-inner">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title" id="studio-title">Risk Guide</h1>
+          <p class="page-subtitle" id="studio-subtitle">Loading…</p>
+        </div>
+        <div class="page-header-actions" id="product-studio-actions">
+          <a class="btn btn-ghost" id="customer-view-btn" href="product-view.html">Customer view</a>
+          <a class="btn btn-secondary" id="view-product-btn" href="product-detail.html">View Product</a>
+          <button class="btn btn-primary" onclick="openAddRiskModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
+            Select a Risk Question
+          </button>
+        </div>
+      </div>
+
+      <div id="studio-library-root" class="hidden"></div>
+      <div id="studio-product-workspace">
+      <div class="studio-context-bar">
+        <span id="ctx-count"></span>
+        <div style="margin-left:auto"><a id="ctx-back-link" href="product-detail.html" class="btn btn-ghost btn-sm">← Back to Product</a></div>
+      </div>
+      <div class="rs-metrics" id="rs-metrics">
+        <div class="rs-metric"><div class="rs-metric-value" id="rs-m-attrs">0</div><div class="rs-metric-label">Risk Attributes</div></div>
+        <div class="rs-metric"><div class="rs-metric-value" id="rs-m-questions">0</div><div class="rs-metric-label">Linked Questions</div></div>
+        <div class="rs-metric"><div class="rs-metric-value" id="rs-m-groups">0</div><div class="rs-metric-label">Groups</div></div>
+        <div class="rs-metric"><div class="rs-metric-value" id="rs-m-studios">0</div><div class="rs-metric-label">Used by Guides</div></div>
+      </div>
+      <div class="readonly-band" id="readonly-band" style="display:none">
+        <span>This version is published — risk attributes are read-only.</span>
+      </div>
+      <div class="card" id="rs-about" style="margin-bottom:var(--space-5);padding:14px 18px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D;margin-bottom:6px">ABOUT RISK GUIDE</div>
+        <p style="margin:0;font-size:13px;color:#171717;line-height:1.5">Risk Guide contains Risk Attributes derived from Questionnaire Guide Risk questions or created manually. These attributes can have one or more coverage-specific Rating Factors used by Rating & Pricing and eligibility workflows.</p>
+      </div>
+      <div class="risk-hub-layout" id="risk-hub-layout">
+        <aside class="risk-group-sidebar">
+          <div class="card">
+            <div class="risk-sidebar-header">
+              <div class="risk-sidebar-header-top">
+                <div>
+                  <div class="risk-sidebar-title-lg">Question Groups</div>
+                  <div class="risk-sidebar-count" id="risk-group-sidebar-count">0 attributes · 0 groups</div>
+                </div>
+                <div class="risk-sidebar-icon-actions">
+                  <button class="btn btn-ghost btn-sm" type="button" onclick="expandAllRiskGroups()" title="Expand all">⤢</button>
+                  <button class="btn btn-ghost btn-sm" type="button" onclick="collapseAllRiskGroups()" title="Collapse all">⤡</button>
+                </div>
+              </div>
+            </div>
+            <div class="risk-group-scroll">
+              <div id="risk-group-tree"></div>
+            </div>
+          </div>
+        </aside>
+        <div id="studio-hub"></div>
+      </div>
+      <div id="studio-editor" class="studio-hub-editor hidden">
+        <div class="cs-back">
+          <button class="btn btn-ghost btn-sm" type="button" onclick="PS.studioHub.back()">← Back to risk attributes</button>
+        </div>
+        <div class="studio-layout">
+          <div class="risk-sidebar">
+            <div class="card">
+              <div class="card-header" style="padding:var(--space-4) var(--space-5)">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted)">Risk attributes</div>
+                <button class="btn btn-ghost btn-sm" onclick="openAddRiskModal()">+ Add</button>
+              </div>
+              <div class="risk-list" id="risk-list"></div>
+            </div>
+          </div>
+          <div id="detail-panel"></div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toast-container"></div>
+<script src="assets/data.js"></script>
+<script src="assets/trucking-questionnaire-seed.js"></script>
+<script src="assets/trucking-risk-seed.js"></script>
+<script src="assets/product-seeds.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/studio-hub.js"></script>
+<script>
+const RISKS = [];
+let activeRiskId = '';
+let activeGroupFilter = 'all';
+const riskGroupOpen = {};
+
+function questionGroupOptions() {
+  const groups = productQuestionGroups();
+  if (Array.isArray(groups) && groups.length) {
+    return groups.map(g => ({
+      id: g.id,
+      label: g.label || g.name || 'Group',
+      filterKey: String(g.label || g.name || g.id).trim().toLowerCase(),
+      bindPhase: g.bindPhase
+    }));
+  }
+  return typeof PS.truckingQuestionGroupMeta === 'function' ? PS.truckingQuestionGroupMeta() : [];
+}
+
+function questionnaireHref() {
+  const pid = PS.studioHub?.productId || '';
+  const ver = PS.studioHub?.productVersion || '';
+  const q = new URLSearchParams();
+  if (pid) q.set('product', pid);
+  if (ver) q.set('version', ver);
+  return `questionnaire-studio.html?${q.toString()}`;
+}
+
+function getPersistedRiskQuestionIds() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('riskStudioSelectedQuestionIds') || '[]');
+    return new Set(Array.isArray(raw) ? raw : []);
+  } catch (_) {
+    return new Set();
+  }
+}
+
+function persistRiskQuestionIds(ids) {
+  let values = [];
+
+  if (Array.isArray(ids)) {
+    values = ids;
+  } else if (ids instanceof Set) {
+    values = Array.from(ids);
+  } else if (ids && typeof ids[Symbol.iterator] === 'function' && typeof ids !== 'string') {
+    values = Array.from(ids);
+  } else if (typeof ids === 'string') {
+    values = [ids];
+  }
+
+  const next = Array.from(
+    new Set(values.filter(Boolean))
+  );
+
+  localStorage.setItem('riskStudioSelectedQuestionIds', JSON.stringify(next));
+}
+
+function isRiskQuestion(q) {
+  if (String(q?.questionCategory || '').toLowerCase() === 'risk') return true;
+  return getPersistedRiskQuestionIds().has(q?.id);
+}
+
+function questionTypeLabel(q) {
+  const t = String(q?.fieldType || q?.type || 'text').toLowerCase();
+  const map = {
+    text: 'Text', textarea: 'Textarea', number: 'Number', currency: 'Currency',
+    date: 'Date', boolean: 'Boolean', select: 'Select', multisel: 'Multi Select',
+    entity: 'Entity', attachment: 'Attachment', repeat: 'Repeatable Group',
+    daterange: 'Date Range', address: 'Address', percentage: 'Percentage', year: 'Year'
+  };
+  if (map[t]) return map[t];
+  if (t.includes('multi')) return 'Multi Select';
+  if (t.includes('select')) return 'Select';
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function findQuestionById(id) {
+  if (!id) return null;
+  for (const g of productQuestionGroups()) {
+    const q = (g.questions || []).find(x => x.id === id);
+    if (q) return { q, group: g };
+  }
+  return null;
+}
+
+function allRiskQuestions() {
+  const out = [];
+  productQuestionGroups().forEach(g => {
+    (g.questions || []).forEach(q => {
+      if (isRiskQuestion(q)) out.push({ q, group: g });
+    });
+  });
+  return out;
+}
+
+function activeRiskDataset() {
+  // Always collapse the dataset by Questionnaire question ID before rendering.
+  // This prevents the same Risk Attribute from appearing twice even if stale
+  // or duplicate records exist in the persisted collection.
+  const linked = allRiskQuestions().map(({ q, group }) => {
+    const r = RISKS.find(x => (x.questionId || x.sourceQuestionId) === q.id);
+    if (!r) return null;
+    r.questionGroup = group.label || group.name;
+    r.questionGroupId = group.id;
+    r.name = q.label;
+    r.type = questionTypeLabel(q);
+    r.source = 'Question';
+    r.status = 'active';
+    r.sourceStale = false;
+    return r;
+  }).filter(Boolean);
+
+  const manual = RISKS.filter(r => !isQuestionDerived(r) && sourceKey(r) === 'manual')
+    .map(r => {
+      r.status = r.status || 'active';
+      r.sourceStale = false;
+      return r;
+    });
+
+  const seen = new Set();
+  return linked.concat(manual).filter(r => {
+    const questionId = String(r?.questionId || r?.sourceQuestionId || '').trim();
+    const key = questionId ? `question:${questionId}` : `risk:${String(r?.id || '')}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function selectedGroupMeta() {
+  if (!activeGroupFilter || activeGroupFilter === 'all') return null;
+  return questionGroupOptions().find(g =>
+    g.id === activeGroupFilter || (g.filterKey || '').toLowerCase() === String(activeGroupFilter).toLowerCase()
+  ) || null;
+}
+
+function itemMatchesSelectedGroup(item) {
+  if (!activeGroupFilter || activeGroupFilter === 'all') return true;
+  const live = liveQuestionForRisk(item);
+  const g = live?.group;
+  const needle = String(activeGroupFilter).toLowerCase();
+  if (g) {
+    return g.id === activeGroupFilter
+      || String(g.label || '').toLowerCase() === needle
+      || String(g.name || '').toLowerCase() === needle;
+  }
+  return String(item?.questionGroupId || '') === String(activeGroupFilter)
+    || String(item?.questionGroup || '').toLowerCase() === needle;
+}
+
+function riskEmptyStateHtml() {
+  const g = selectedGroupMeta();
+  const name = g?.label || 'this group';
+  if (!g) {
+    return `<div class="rs-empty">
+      <h3>No Risk Attributes configured</h3>
+      <p>Add a Risk Attribute from a Risk-category question or create one manually.</p>
+      <button class="btn btn-primary" type="button" onclick="openAddRiskModal()">+ Add Risk Attribute</button>
+    </div>`;
+  }
+  return `<div class="rs-empty">
+    <h3>No Risk Attributes configured for ${name}</h3>
+    <p>This group has no Risk Attributes for the current product/version.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-primary" type="button" onclick="openAddRiskModal()">+ Add Risk Attribute</button>
+      <a class="btn btn-secondary" href="${questionnaireHref()}">Go to Questionnaire Guide</a>
+    </div>
+  </div>`;
+}
+
+function riskIdFromQuestionId(qid) {
+  const raw = String(qid || '');
+  if (/^QST-/i.test(raw)) return raw.replace(/^QST-/i, 'RSK-');
+  return `RSK-${raw || Date.now().toString(36)}`;
+}
+
+function uniqueRiskId(preferred) {
+  let id = preferred;
+  let n = 1;
+  while (RISKS.some(r => r.id === id)) {
+    n += 1;
+    id = `${preferred}-${n}`;
+  }
+  return id;
+}
+
+function sourceKey(r) {
+  return String(r?.source || 'question').toLowerCase().replace(/[^a-z]/g, '');
+}
+
+function isQuestionDerived(r) {
+  return sourceKey(r) === 'question' && !!(r.questionId || r.sourceQuestionId);
+}
+
+function liveQuestionForRisk(r) {
+  const id = r.questionId || r.sourceQuestionId;
+  return findQuestionById(id);
+}
+
+function displayRiskName(r) {
+  const live = liveQuestionForRisk(r);
+  return (live?.q?.label || r.questionLabel || r.name || r.label || r.id);
+}
+
+function refreshRiskMetrics() {
+  const dataset = activeRiskDataset();
+  const riskQs = allRiskQuestions();
+  const linked = dataset.filter(r => !!(r.questionId || r.sourceQuestionId));
+  const manual = dataset.filter(r => sourceKey(r) === 'manual');
+  const groups = questionGroupOptions();
+  const studios = new Set();
+  dataset.forEach(r => (r.usedBy || []).forEach(s => studios.add(s)));
+  const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = String(n); };
+  set('rs-m-attrs', dataset.length);
+  set('rs-m-questions', linked.length);
+  set('rs-m-groups', groups.length);
+  set('rs-m-studios', studios.size);
+  const countEl = document.getElementById('risk-group-sidebar-count');
+  if (countEl) countEl.textContent = `${dataset.length} risk attribute${dataset.length === 1 ? '' : 's'} · ${linked.length} linked questions · ${manual.length} manual`;
+  const sub = document.getElementById('studio-subtitle');
+  if (sub && PS.studioHub) {
+    const name = PS.studioHub.productName || PS.studioHub.productId || 'Product';
+    const ver = PS.studioHub.productVersion || '';
+    sub.textContent = `${name}${ver ? ' · v' + String(ver).replace(/^v/i, '') : ''}`;
+  }
+}
+
+function syncRiskAttributesFromQuestionnaire() {
+  const riskQs = allRiskQuestions();
+  const seen = new Set();
+  let changed = false;
+
+  riskQs.forEach(({ q, group }) => {
+    seen.add(q.id);
+    let r = RISKS.find(x => (x.questionId || x.sourceQuestionId) === q.id);
+    const preferred = riskIdFromQuestionId(q.id);
+    if (!r) {
+      r = normalizeRisk({
+        id: uniqueRiskId(preferred),
+        name: q.label,
+        code: preferred,
+        source: 'Question',
+        sourceQuestionId: q.id,
+        questionId: q.id,
+        questionLabel: q.label,
+        questionGroup: group.label || group.name,
+        questionGroupId: group.id,
+        type: questionTypeLabel(q),
+        status: 'active',
+        sourceStale: false,
+        optionRisk: {},
+        usedBy: [],
+        availableForEligibility: false,
+        lastUpdated: new Date().toISOString().slice(0, 10)
+      });
+      RISKS.push(r);
+      changed = true;
+    } else {
+      const nextType = questionTypeLabel(q);
+      if (r.status === 'inactive' && r.sourceStale) {
+        r.status = 'active';
+        r.sourceStale = false;
+        changed = true;
+      }
+      if (r.source !== 'Question') { r.source = 'Question'; changed = true; }
+      r.sourceQuestionId = q.id;
+      r.questionId = q.id;
+      r.questionGroup = group.label || group.name;
+      r.questionGroupId = group.id;
+      r.type = nextType;
+      if (!r.optionRisk) r.optionRisk = {};
+    }
+  });
+
+  RISKS.forEach(r => {
+    if (!isQuestionDerived(r)) {
+      if (sourceKey(r) === 'question' && !r.questionId) {
+        r.source = 'Manual';
+        changed = true;
+      }
+      return;
+    }
+    if (!seen.has(r.questionId || r.sourceQuestionId)) {
+      if (!r.sourceStale) {
+        r.sourceStale = true;
+        r.status = 'inactive';
+        changed = true;
+      }
+    }
+  });
+
+  if (changed) persistRisks();
+  const active = activeRiskDataset();
+  if (active.length && !active.some(r => r.id === activeRiskId)) activeRiskId = active[0].id;
+  if (!active.length) activeRiskId = '';
+  refreshRiskMetrics();
+  return changed;
+}
+
+function normalizeRisk(r) {
+  return typeof PS.normalizeRiskAttribute === 'function' ? PS.normalizeRiskAttribute(r) : r;
+}
+
+function riskFilterKey(r) {
+  return typeof PS.riskGroupFilterKey === 'function'
+    ? PS.riskGroupFilterKey(r)
+    : String(r.questionGroup || r.category || r.extra || '').toLowerCase();
+}
+
+function risksInGroup(group) {
+  const key = group.filterKey || group.id;
+  const linked = allRiskQuestions()
+    .filter(({ group: g }) => g.id === group.id || String(g.label || g.name || '').toLowerCase() === key)
+    .map(({ q, group: g }) => {
+      const r = RISKS.find(x => (x.questionId || x.sourceQuestionId) === q.id);
+      return r || { id: riskIdFromQuestionId(q.id), name: q.label, questionId: q.id, source: 'Question' };
+    });
+
+  const manual = RISKS.filter(r => sourceKey(r) === 'manual' && (
+    r.questionGroupId === group.id
+    || String(r.questionGroup || '').toLowerCase() === String(group.label || group.name || '').toLowerCase()
+  ));
+
+  const seen = new Set();
+  return linked.concat(manual).filter(r => {
+    if (seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  });
+}
+
+function dedupeRiskAttributes() {
+  const seenQuestionIds = new Set();
+  const seenManualIds = new Set();
+  const unique = [];
+
+  RISKS.forEach(r => {
+    const questionId = String(r?.questionId || r?.sourceQuestionId || '').trim();
+    const isQuestion = !!questionId && sourceKey(r) === 'question';
+
+    if (isQuestion) {
+      if (seenQuestionIds.has(questionId)) return;
+      seenQuestionIds.add(questionId);
+    } else {
+      const manualId = String(r?.id || '').trim();
+      if (manualId && seenManualIds.has(manualId)) return;
+      if (manualId) seenManualIds.add(manualId);
+    }
+
+    unique.push(r);
+  });
+
+  const changed = unique.length !== RISKS.length;
+  if (changed) {
+    RISKS.splice(0, RISKS.length, ...unique);
+  }
+  return changed;
+}
+
+function persistRisks() {
+  dedupeRiskAttributes();
+  RISKS.forEach(r => {
+    normalizeRisk(r);
+    if (PS.prototypeApp?.riskAttributeFieldKey) r.fieldKey = PS.prototypeApp.riskAttributeFieldKey(r);
+  });
+  PS.prototypeApp?.persistCollection?.('riskAttributes', RISKS);
+}
+
+function removeRiskAttributeFromProduct(id) {
+  const risk = RISKS.find(r => String(r?.id) === String(id));
+  if (!risk) return;
+
+  const questionId = String(risk.questionId || risk.sourceQuestionId || '').trim();
+  const label = displayRiskName(risk);
+
+  if (!window.confirm(`Remove "${String(label).replace(/\"/g, '\\"')}" from this product?`)) return;
+
+  // If this Risk Attribute came from Questionnaire Guide, remove the
+  // explicit Risk selection and return the source question to General so
+  // the auto-sync does not recreate the Risk Attribute on the next paint.
+  if (questionId) {
+    const selected = getPersistedRiskQuestionIds();
+    selected.delete(questionId);
+    persistRiskQuestionIds(Array.from(selected));
+
+    const found = findQuestionById(questionId);
+    if (found?.q && String(found.q.questionCategory || '').toLowerCase() === 'risk') {
+      found.q.questionCategory = 'general';
+      PS.prototypeApp?.persistCollection?.('questionGroups', productQuestionGroups());
+    }
+  }
+
+  const index = RISKS.findIndex(r => String(r?.id) === String(id));
+  if (index >= 0) RISKS.splice(index, 1);
+
+  if (activeRiskId === id) {
+    activeRiskId = '';
+  }
+
+  persistRisks();
+  renderGroupSidebar();
+  PS.studioHub?.paint?.();
+
+  const remaining = activeRiskDataset();
+  if (remaining.length) {
+    activeRiskId = remaining[0].id;
+    PS.studioHub?.open?.(activeRiskId);
+  }
+
+  PS.actionResult?.('success', 'Risk attribute removed', `${label} was removed from this product.`);
+}
+
+function isTruckingRiskProduct() {
+  const product = PS.prototypeApp?.productById?.(PS.studioHub?.productId);
+  return PS.isTruckingProduct?.(product) || String(product?.family || product?.productType || '') === 'Commercial Auto';
+}
+
+function maybeAutoApplyTruckingRisks() {
+  syncRiskAttributesFromQuestionnaire();
+  return true;
+}
+
+function renderGroupSidebar() {
+  const tree = document.getElementById('risk-group-tree');
+  const groups = questionGroupOptions();
+  if (!tree) return;
+  refreshRiskMetrics();
+  tree.innerHTML = `<div class="risk-group">
+      <div class="risk-group-header ${activeGroupFilter === 'all' ? 'active-filter' : ''}" onclick="filterRiskGroup('all')">
+        <span class="risk-group-label">ALL GROUPS</span>
+        <span class="risk-group-count">${allRiskQuestions().length}</span>
+      </div>
+    </div>` + groups.map(g => {
+    const items = risksInGroup(g);
+    const open = riskGroupOpen[g.id] !== false;
+    const active = activeGroupFilter === (g.filterKey || g.id) || activeGroupFilter === g.id;
+    return `
+      <div class="risk-group" id="risk-grp-${g.id}">
+        <div class="risk-group-header ${active ? 'active-filter' : ''}" onclick="filterRiskGroup('${g.filterKey || g.id}', '${g.id}')">
+          <svg class="risk-group-chevron ${open ? 'open' : ''}" id="rgchev-${g.id}" width="14" height="14" viewBox="0 0 256 256" fill="currentColor" onclick="event.stopPropagation(); toggleRiskGroup('${g.id}')"><path d="M181.66 133.66l-80 80a8 8 0 01-11.32-11.32L164.69 128 90.34 53.66a8 8 0 0111.32-11.32l80 80a8 8 0 010 11.32z"/></svg>
+          <span class="risk-group-label">${g.label.toUpperCase()}</span>
+          <span class="risk-group-count">${items.length}</span>
+        </div>
+        <div class="risk-group-items" id="rgitems-${g.id}" style="display:${open ? '' : 'none'}">
+            ${items.length ? items.map(r => `
+            <div class="risk-group-item ${r.id === activeRiskId ? 'active' : ''}" onclick="event.stopPropagation(); openRiskFromGroup('${r.id}')">
+              <span class="risk-group-item-name">${displayRiskName(r)}</span>
+              <span class="mono" style="font-size:10px;opacity:.75">${r.id}</span>
+            </div>`).join('') : `<div style="padding:8px 12px 12px 28px;font-size:11px;color:var(--color-muted)">No Risk Attributes</div>`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleRiskGroup(id) {
+  riskGroupOpen[id] = !riskGroupOpen[id];
+  const open = riskGroupOpen[id];
+  document.getElementById(`rgitems-${id}`).style.display = open ? '' : 'none';
+  document.getElementById(`rgchev-${id}`)?.classList.toggle('open', open);
+}
+
+function expandAllRiskGroups() {
+  questionGroupOptions().forEach(g => {
+    riskGroupOpen[g.id] = true;
+    const items = document.getElementById(`rgitems-${g.id}`);
+    if (items) items.style.display = '';
+    document.getElementById(`rgchev-${g.id}`)?.classList.add('open');
+  });
+}
+
+function collapseAllRiskGroups() {
+  questionGroupOptions().forEach(g => {
+    riskGroupOpen[g.id] = false;
+    const items = document.getElementById(`rgitems-${g.id}`);
+    if (items) items.style.display = 'none';
+    document.getElementById(`rgchev-${g.id}`)?.classList.remove('open');
+  });
+}
+
+function filterRiskGroup(filterKey, groupId) {
+  activeGroupFilter = filterKey;
+  if (groupId) {
+    riskGroupOpen[groupId] = true;
+    document.getElementById(`rgitems-${groupId}`).style.display = '';
+    document.getElementById(`rgchev-${groupId}`)?.classList.add('open');
+  }
+  renderGroupSidebar();
+  PS.studioHub.page = 1;
+  PS.studioHub.paint();
+}
+
+function openRiskFromGroup(id) {
+  activeRiskId = id;
+  PS.studioHub.open(id);
+  renderGroupSidebar();
+}
+
+function questionGroupSelectHtml(selected, id) {
+  return questionGroupOptions().map(g => `<option value="${g.label}" data-id="${g.id}" ${selected === g.label ? 'selected' : ''}>${g.label}</option>`).join('');
+}
+
+function productQuestionGroups() {
+  const app = PS.prototypeApp;
+  const pid = PS.studioHub?.productId || app?.context?.()?.productId;
+  const ver = PS.studioHub?.productVersion || app?.context?.()?.version;
+  const bundle = pid && app?.getProductBundle ? app.getProductBundle(pid, ver) : null;
+  if (Array.isArray(bundle?.questionGroups) && bundle.questionGroups.length) return bundle.questionGroups;
+  if (typeof PS.truckingQuestionGroups === 'function') return PS.truckingQuestionGroups();
+  return [];
+}
+
+function questionsForGroup(groupLabel, riskOnly) {
+  const groups = productQuestionGroups();
+  const key = String(groupLabel || '').trim().toLowerCase();
+  const group = groups.find(g =>
+    String(g.label || g.name || '').trim().toLowerCase() === key
+    || String(g.id || '') === key
+  );
+  return (group?.questions || [])
+    .filter(q => !riskOnly || isRiskQuestion(q))
+    .map(q => ({
+      id: q.id || '',
+      label: q.label || q.name || 'Untitled question',
+      type: q.type || q.fieldType || 'text',
+      typeLabel: questionTypeLabel(q),
+      category: q.questionCategory || 'general'
+    }));
+}
+
+function riskTypeFromQuestionType(type) {
+  const t = String(type || '').toLowerCase();
+  if (t.includes('multi')) return 'Multi-select';
+  if (t.includes('select') || t.includes('dropdown')) return 'Select';
+  if (t.includes('number') || t.includes('currency')) return 'Number';
+  if (t.includes('bool') || t.includes('yes')) return 'Boolean';
+  if (t.includes('date')) return 'Date';
+  return 'Text';
+}
+
+function nextRiskId(groupId) {
+  const prefixes = {
+    operations: 'OPR', fleet: 'FLT', vehicle: 'VEH', driver: 'DRV', commodity: 'COM',
+    safety: 'SAF', 'loss-history': 'LOS', 'policy-administration': 'POL', claims: 'CLM', renewal: 'REN'
+  };
+  const prefix = prefixes[groupId] || String(groupId || 'RSK').replace(/[^a-z0-9]/gi, '').slice(0, 3).toUpperCase() || 'RSK';
+  let n = 1;
+  let id = `RSK-${prefix}-${String(n).padStart(3, '0')}`;
+  while (RISKS.some(r => r.id === id)) {
+    n += 1;
+    id = `RSK-${prefix}-${String(n).padStart(3, '0')}`;
+  }
+  return id;
+}
+
+function riskLevelSelectHtml(selected, id) {
+  const value = selected || 'Medium';
+  return ['High', 'Medium', 'Low'].map(level => `<option value="${level}" ${value === level ? 'selected' : ''}>${level}</option>`).join('');
+}
+
+function selectedQuestionSummary(questionId, questionLabel) {
+  if (!questionId && !questionLabel) return '';
+  return `<div class="nr-q-selected">Selected question: <strong>${questionLabel || '—'}</strong>${questionId ? ` <span class="mono">${questionId}</span>` : ''}</div>`;
+}
+
+function groupQuestionRadiosHtml(name, groupLabel, selectedId, onchange) {
+  const questions = questionsForGroup(groupLabel, true);
+  if (!questions.length) {
+    return `<div style="font-size:13px;color:var(--color-muted);padding:8px 4px">No Risk-category questions in this group. Mark questions as Risk in Questionnaire Guide.</div>`;
+  }
+  return questions.map((q) => {
+    const linked = RISKS.find(r => (r.questionId || r.sourceQuestionId) === q.id);
+    const checked = selectedId && (q.id === selectedId || q.label === selectedId);
+    return `
+    <label class="nr-q-item ${checked ? 'is-selected' : ''}">
+      <input type="radio" name="${name}" value="${String(q.id).replace(/"/g, '&quot;')}" data-label="${String(q.label).replace(/"/g, '&quot;')}" data-type="${String(q.type).replace(/"/g, '&quot;')}" ${checked ? 'checked' : ''} ${linked && !checked ? 'data-linked="1"' : ''} onchange="${onchange}">
+      <div>
+        <div class="nr-q-item-label">${q.label}</div>
+        <div class="nr-q-item-meta">${q.id ? q.id + ' · ' : ''}${q.typeLabel}${linked ? ' · Already linked' : ''}${checked ? ' · Selected' : ''}</div>
+      </div>
+    </label>`;
+  }).join('');
+}
+
+function renderCreateGroupQuestions() {
+  const sel = document.getElementById('nr-cat');
+  const wrap = document.getElementById('nr-group-questions');
+  const list = document.getElementById('nr-question-list');
+  const summary = document.getElementById('nr-selected-question');
+  if (!sel || !wrap || !list) return;
+  wrap.hidden = false;
+  const picked = document.querySelector('input[name="nr-question"]:checked');
+  list.innerHTML = groupQuestionRadiosHtml('nr-question', sel.value, picked?.value || '', 'onCreateRiskQuestionPicked(this)');
+  if (summary) summary.innerHTML = selectedQuestionSummary(picked?.value, picked?.dataset.label);
+}
+
+function onCreateRiskQuestionPicked(input) {
+  document.querySelectorAll('#nr-question-list .nr-q-item').forEach(el => el.classList.remove('is-selected'));
+  input.closest('.nr-q-item')?.classList.add('is-selected');
+  const nameEl = document.getElementById('nr-name');
+  if (nameEl && (!nameEl.value.trim() || nameEl.dataset.fromQuestion === '1')) {
+    nameEl.value = input.dataset.label || '';
+    nameEl.dataset.fromQuestion = '1';
+  }
+  const summary = document.getElementById('nr-selected-question');
+  if (summary) summary.innerHTML = selectedQuestionSummary(input.value, input.dataset.label);
+}
+
+function renderEditGroupQuestions() {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  const sel = document.getElementById('rk-cat');
+  const list = document.getElementById('rk-question-list');
+  const summary = document.getElementById('rk-selected-question');
+  if (!sel || !list) return;
+  const selectedId = document.querySelector('input[name="rk-question"]:checked')?.value
+    || r?.questionId
+    || r?.questionLabel
+    || r?.name
+    || '';
+  list.innerHTML = groupQuestionRadiosHtml('rk-question', sel.value, selectedId, 'onEditRiskQuestionPicked(this)');
+  const picked = document.querySelector('input[name="rk-question"]:checked');
+  if (summary) summary.innerHTML = selectedQuestionSummary(picked?.value || r?.questionId, picked?.dataset.label || r?.questionLabel);
+}
+
+function onEditRiskQuestionPicked(input) {
+  document.querySelectorAll('#rk-question-list .nr-q-item').forEach(el => el.classList.remove('is-selected'));
+  input.closest('.nr-q-item')?.classList.add('is-selected');
+  const nameEl = document.getElementById('rk-name');
+  if (nameEl && (!nameEl.value.trim() || nameEl.dataset.fromQuestion === '1')) {
+    nameEl.value = input.dataset.label || '';
+    nameEl.dataset.fromQuestion = '1';
+  }
+  const summary = document.getElementById('rk-selected-question');
+  if (summary) summary.innerHTML = selectedQuestionSummary(input.value, input.dataset.label);
+}
+
+function updateRiskQuestionSelectionCount() {
+  const count = window.__RISK_SELECTED_QUESTION_IDS?.size || 0;
+  const el = document.getElementById('nr-selected-count');
+  if (el) el.textContent = String(count);
+}
+
+function toggleRiskQuestionSelection(input) {
+  window.__RISK_SELECTED_QUESTION_IDS = window.__RISK_SELECTED_QUESTION_IDS || new Set();
+
+  const id = input.value;
+  if (input.checked) {
+    window.__RISK_SELECTED_QUESTION_IDS.add(id);
+    input.closest('.nr-q-item')?.classList.add('is-selected');
+  } else {
+    window.__RISK_SELECTED_QUESTION_IDS.delete(id);
+    input.closest('.nr-q-item')?.classList.remove('is-selected');
+  }
+
+  updateRiskQuestionSelectionCount();
+}
+
+function selectAllRiskQuestionnaireQuestions() {
+  window.__RISK_SELECTED_QUESTION_IDS = window.__RISK_SELECTED_QUESTION_IDS || new Set();
+
+  const search = String(document.getElementById('nr-q-search')?.value || '').trim().toLowerCase();
+
+  productQuestionGroups().forEach(g => {
+    (g.questions || []).forEach(item => {
+      const haystack = [item.label, item.id, item.internalName].filter(Boolean).join(' ').toLowerCase();
+      if (!search || haystack.includes(search)) {
+        window.__RISK_SELECTED_QUESTION_IDS.add(item.id);
+      }
+    });
+  });
+
+  const list = document.getElementById('nr-question-list');
+  if (list) list.innerHTML = questionnaireRiskMultiSelectHtml();
+  updateRiskQuestionSelectionCount();
+}
+
+function clearRiskQuestionnaireSelection() {
+  window.__RISK_SELECTED_QUESTION_IDS = new Set();
+
+  const list = document.getElementById('nr-question-list');
+  if (list) list.innerHTML = questionnaireRiskMultiSelectHtml();
+  updateRiskQuestionSelectionCount();
+}
+
+function questionnaireRiskMultiSelectHtml() {
+  const search = String(document.getElementById('nr-q-search')?.value || '').trim().toLowerCase();
+  const selected = window.__RISK_SELECTED_QUESTION_IDS || new Set();
+  const groups = productQuestionGroups();
+
+  let html = '';
+
+  groups.forEach(g => {
+    const qs = (g.questions || []).filter(item => {
+      if (!search) return true;
+      return [item.label, item.id, item.internalName]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(search);
+    });
+
+    if (!qs.length) return;
+
+    html += `<div style="font-size:11px;font-weight:700;letter-spacing:.4px;color:#6F685D;margin:10px 0 6px">${String(g.label || g.name || '').toUpperCase()}</div>`;
+
+    qs.forEach(item => {
+      const linked = RISKS.find(r =>
+        (r.questionId || r.sourceQuestionId) === item.id && !r.sourceStale
+      );
+      const checked = selected.has(item.id);
+
+      html += `
+        <label class="nr-q-item ${checked ? 'is-selected' : ''}">
+          <input
+            type="checkbox"
+            name="nr-question"
+            value="${String(item.id).replace(/"/g,'&quot;')}"
+            data-label="${String(item.label || '').replace(/"/g,'&quot;')}"
+            data-type="${String(item.fieldType || item.type || '').replace(/"/g,'&quot;')}"
+            data-group="${String(g.label || g.name || '').replace(/"/g,'&quot;')}"
+            data-group-id="${String(g.id || '').replace(/"/g,'&quot;')}"
+            ${checked ? 'checked' : ''}
+            onchange="toggleRiskQuestionSelection(this)"
+          >
+          <div>
+            <div class="nr-q-item-label">${item.label || 'Untitled question'}</div>
+            <div class="nr-q-item-meta">
+              ${item.id || ''} · ${questionTypeLabel(item)}${linked ? ' · Risk Attribute already exists' : ''}
+            </div>
+          </div>
+        </label>`;
+    });
+  });
+
+  return html || `<div style="padding:12px;color:var(--color-muted);font-size:13px">No Questionnaire questions found for this product/version.</div>`;
+}
+
+function openAddRiskModal() {
+  PS.openModal(`
+    <div class="risk-select-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">How do you want to create it?</h2>
+        <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <button type="button" class="nr-q-item" style="text-align:left;background:var(--color-panel);border:1px solid var(--color-border)" onclick="PS.closeModal(); openRiskQuestionModal()">
+            <div>
+              <div class="nr-q-item-label">From Questionnaire Question</div>
+              <div class="nr-q-item-meta">Link an existing Risk-category question</div>
+            </div>
+          </button>
+          <button type="button" class="nr-q-item" style="text-align:left;background:var(--color-panel);border:1px solid var(--color-border)" onclick="PS.closeModal(); openManualRiskModal()">
+            <div>
+              <div class="nr-q-item-label">Create Manually</div>
+              <div class="nr-q-item-meta">Create a standalone risk attribute without a question</div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+      </div>
+    </div>`);
+}
+
+window.__RISK_SELECTED_QUESTION_IDS = window.__RISK_SELECTED_QUESTION_IDS || new Set();
+
+function openRiskQuestionModal() {
+  const persisted = getPersistedRiskQuestionIds();
+  window.__RISK_SELECTED_QUESTION_IDS = new Set(persisted);
+
+  PS.openModal(`
+    <div class="risk-select-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Select Questionnaire Questions</h2>
+        <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:13px;color:#6F685D;margin:0 0 12px">
+          Select one or multiple questions that already exist in Questionnaire Guide. Selected questions will be added to Risk Guide together.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label" for="nr-q-search">Search questions</label>
+          <input
+            id="nr-q-search"
+            class="form-control"
+            placeholder="Search questions…"
+            oninput="document.getElementById('nr-question-list').innerHTML = questionnaireRiskMultiSelectHtml();">
+        </div>
+
+        <div
+          style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 10px"
+        >
+          <div style="font-size:12px;color:var(--color-muted)">
+            <strong id="nr-selected-count">0</strong> selected
+          </div>
+          <div style="display:flex;gap:10px">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="selectAllRiskQuestionnaireQuestions()">Select all</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="clearRiskQuestionnaireSelection()">Clear all</button>
+          </div>
+        </div>
+
+        <div class="nr-q-list" id="nr-question-list">${questionnaireRiskMultiSelectHtml()}</div>
+      </div>
+
+      <div class="modal-footer">
+        <span class="risk-footer-spacer"></span>
+        <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+        <button class="btn btn-primary risk-link-btn" onclick="createRiskAttributesFromSelectedQuestions()">Add Selected Questions</button>
+      </div>
+    </div>`);
+}
+
+function openManualRiskModal() {
+  const groups = questionGroupOptions();
+  const groupOptions = groups.length
+    ? groups.map(g => `<option value="${g.id}">${g.label}</option>`).join('')
+    : '<option value="">No groups available</option>';
+
+  PS.openModal(`
+    <div class="risk-select-modal manual-risk-modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create Risk Manually</h2>
+        <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:#6F685D;margin:0 0 16px">Create a standalone Risk Attribute without linking it to a Questionnaire question.</p>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="mr-name">Risk Attribute Name <span class="required">*</span></label>
+            <input id="mr-name" class="form-control" placeholder="e.g., Loss Ratio">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mr-id">Risk Attribute ID</label>
+            <input id="mr-id" class="form-control" value="${nextManualRiskId()}" readonly aria-readonly="true">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mr-group">Question Group <span class="required">*</span></label>
+            <select id="mr-group" class="form-control">${groupOptions}</select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mr-type">Data Type <span class="required">*</span></label>
+            <select id="mr-type" class="form-control">
+              <option>Text</option>
+              <option>Number</option>
+              <option>Select</option>
+              <option>Boolean</option>
+              <option>Date</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mr-weight">Risk Weight <span class="required">*</span></label>
+            <input id="mr-weight" class="form-control" type="number" placeholder="e.g. 10">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mr-tier">Risk Tier <span class="required">*</span></label>
+            <select id="mr-tier" class="form-control">${riskLevelSelectHtml('Medium')}</select>
+          </div>
+          <div class="form-group span-2">
+            <label class="form-label" for="mr-method">Risk Score Method</label>
+            <select id="mr-method" class="form-control">
+              <option>Range Based</option>
+              <option>Value Based</option>
+              <option>Option Based</option>
+              <option>Flat</option>
+            </select>
+          </div>
+          <div class="form-group span-2">
+            <label class="form-label" for="mr-notes">Risk Interpretation</label>
+            <textarea id="mr-notes" class="form-control" rows="2" placeholder="Enter risk interpretation"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createManualRiskAttribute()">Create Risk Attribute</button>
+      </div>
+    </div>`);
+}
+
+function nextManualRiskId() {
+  let n = 1;
+  let id = `RSK-MAN-${String(n).padStart(3, '0')}`;
+  while (RISKS.some(r => r.id === id)) {
+    n += 1;
+    id = `RSK-MAN-${String(n).padStart(3, '0')}`;
+  }
+  return id;
+}
+
+function createManualRiskAttribute() {
+  const name = String(document.getElementById('mr-name')?.value || '').trim();
+  const groupId = String(document.getElementById('mr-group')?.value || '').trim();
+  const group = questionGroupOptions().find(g => g.id === groupId);
+  const type = String(document.getElementById('mr-type')?.value || '').trim();
+  const weight = String(document.getElementById('mr-weight')?.value || '').trim();
+  const tier = String(document.getElementById('mr-tier')?.value || '').trim();
+
+  if (!name || !groupId || !type || !weight || !tier) {
+    PS.actionResult?.('error', 'Cannot create Risk Attribute', 'Complete all required fields.');
+    return;
+  }
+
+  const id = nextManualRiskId();
+  const created = normalizeRisk({
+    id,
+    name,
+    code: id,
+    source: 'Manual',
+    questionId: '',
+    sourceQuestionId: '',
+    questionLabel: '',
+    questionGroup: group?.label || groupId,
+    questionGroupId: groupId,
+    type,
+    status: 'active',
+    sourceStale: false,
+    riskWeight: weight,
+    riskLevel: tier,
+    riskScoreMethod: document.getElementById('mr-method')?.value || 'Range Based',
+    riskNotes: document.getElementById('mr-notes')?.value.trim() || '',
+    optionRisk: {},
+    usedBy: [],
+    availableForEligibility: false,
+    lastUpdated: new Date().toISOString().slice(0, 10)
+  });
+
+  RISKS.push(created);
+  persistRisks();
+  PS.closeModal();
+  activeRiskId = created.id;
+  PS.studioHub.paint();
+  renderGroupSidebar();
+  PS.studioHub.open(created.id);
+  PS.actionResult?.('success', 'Risk attribute created', `${name} was created manually.`);
+}
+
+function createRiskAttributesFromSelectedQuestions() {
+  const selected = Array.from(window.__RISK_SELECTED_QUESTION_IDS || []);
+
+  if (!selected.length) {
+    PS.actionResult?.(
+      'error',
+      'Select at least one question',
+      'Choose one or more Questionnaire questions to add to Risk Guide.'
+    );
+    return;
+  }
+
+  // Persist the explicit Risk selection separately from the Questionnaire
+  // question object so the selection survives bundle rehydration/reload.
+  const persisted = getPersistedRiskQuestionIds();
+  selected.forEach(id => persisted.add(id));
+  persistRiskQuestionIds(Array.from(persisted));
+
+  let created = 0;
+  let alreadyLinked = 0;
+  let skipped = 0;
+  let firstCreatedId = '';
+
+  selected.forEach(questionId => {
+    const found = findQuestionById(questionId);
+    if (!found || !found.q) {
+      skipped += 1;
+      return;
+    }
+
+    // Keep the in-memory category in sync for the current render.
+    found.q.questionCategory = 'risk';
+
+    let risk = RISKS.find(r =>
+      (r.questionId || r.sourceQuestionId) === questionId
+    );
+
+    if (risk) {
+      alreadyLinked += 1;
+      if (!firstCreatedId) firstCreatedId = risk.id;
+      return;
+    }
+
+    const preferred = riskIdFromQuestionId(questionId);
+    risk = normalizeRisk({
+      id: uniqueRiskId(preferred),
+      name: found.q.label,
+      code: preferred,
+      source: 'Question',
+      sourceQuestionId: questionId,
+      questionId,
+      questionLabel: found.q.label,
+      questionGroup: found.group?.label || found.group?.name || '',
+      questionGroupId: found.group?.id || '',
+      type: questionTypeLabel(found.q),
+      status: 'active',
+      sourceStale: false,
+      optionRisk: {},
+      usedBy: [],
+      availableForEligibility: false,
+      lastUpdated: new Date().toISOString().slice(0, 10)
+    });
+
+    RISKS.push(risk);
+    created += 1;
+    if (!firstCreatedId) firstCreatedId = risk.id;
+  });
+
+  dedupeRiskAttributes();
+  persistRisks();
+
+  window.__RISK_SELECTED_QUESTION_IDS = new Set();
+
+  // Rebuild the collection and UI from the now-persisted source links.
+  syncRiskAttributesFromQuestionnaire();
+  PS.closeModal();
+  PS.studioHub.paint();
+  renderGroupSidebar();
+  refreshRiskMetrics();
+
+  if (firstCreatedId) {
+    activeRiskId = firstCreatedId;
+    PS.studioHub.open(firstCreatedId);
+  }
+
+  const message = [
+    `${created} question${created === 1 ? '' : 's'} added`,
+    alreadyLinked ? `${alreadyLinked} already linked` : '',
+    skipped ? `${skipped} skipped` : ''
+  ].filter(Boolean).join('; ');
+
+  PS.actionResult?.(
+    'success',
+    'Questions added to Risk Guide',
+    message + '.'
+  );
+}
+
+
+// Keep the original single-question entry point for any existing callers.
+function createRiskAttribute() {
+  const picked = document.querySelector('input[name="nr-question"]:checked');
+  if (picked) {
+    window.__RISK_SELECTED_QUESTION_IDS = new Set([picked.value]);
+    createRiskAttributesFromSelectedQuestions();
+    return;
+  }
+  createRiskAttributesFromSelectedQuestions();
+}
+
+function renderSidebar() {
+  const list = document.getElementById('risk-list');
+  if (!list) return;
+  const rows = activeRiskDataset().filter(itemMatchesSelectedGroup);
+  if (!rows.length) {
+    list.innerHTML = `<div style="padding:16px;font-size:12px;color:var(--color-muted)">No Risk-category questions in this view.</div>`;
+    return;
+  }
+  list.innerHTML = rows.map(r => `
+    <div class="risk-item ${r.id===activeRiskId?'active':''}" id="risk-${r.id}" onclick="loadRisk('${r.id}')">
+      <div>
+        <div class="risk-item-name">${displayRiskName(r)}</div>
+        <div class="risk-item-meta">${r.id} · ${r.questionId || ''}</div>
+      </div>
+    </div>`).join('');
+}
+
+
+function getRiskFactorCoverageOptions() {
+  const app = window.PS?.prototypeApp;
+
+  const bundle = app?.getProductBundle?.(
+    PS.studioHub?.productId || '',
+    PS.studioHub?.productVersion || ''
+  );
+
+  const source = Array.isArray(bundle?.covers) ? bundle.covers : [];
+
+  return source.flatMap(item => {
+    const parentId = String(
+      item?.id || item?.coverageId || item?.code || item?.key || item?.name || ''
+    ).trim();
+
+    const parentName = String(
+      item?.name || item?.label || item?.title || item?.coverageName || ''
+    ).trim();
+
+    if (!parentId || !parentName) return [];
+
+    const rows = [{
+      id: parentId,
+      name: parentName,
+      parentId: '',
+      parentName: '',
+      isChild: false
+    }];
+
+    // Coverage Guide stores child coverage classes primarily as additional
+    // insuredItems on the parent cover. Also support any explicit child array
+    // shape when available. The first insured item is the default parent item.
+    const insuredItems = Array.isArray(item?.insuredItems) ? item.insuredItems : [];
+    const explicitChildren = [
+      ...(Array.isArray(item?.children) ? item.children : []),
+      ...(Array.isArray(item?.childClass) ? item.childClass : []),
+      ...(Array.isArray(item?.childClasses) ? item.childClasses : []),
+      ...(Array.isArray(item?.childCoverages) ? item.childCoverages : []),
+      ...(Array.isArray(item?.coverageClasses) ? item.coverageClasses : [])
+    ];
+
+    const childValues = [];
+
+    insuredItems.slice(1).forEach(child => {
+      const id = String(child?.id || child?.typeId || child?.code || child?.type || child?.name || '').trim();
+      const name = String(child?.type || child?.name || child?.label || child?.title || '').trim();
+      if (id && name) childValues.push({ id, name });
+    });
+
+    explicitChildren.forEach(child => {
+      const id = String(child?.id || child?.coverageId || child?.code || child?.key || child?.name || '').trim();
+      const name = String(child?.name || child?.label || child?.title || child?.coverageName || child?.type || '').trim();
+      if (id && name) childValues.push({ id, name });
+    });
+
+    const seen = new Set();
+    childValues.forEach(child => {
+      const key = `${parentId}::${child.id}::${child.name}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      rows.push({
+        id: child.id,
+        name: child.name,
+        parentId,
+        parentName,
+        isChild: true
+      });
+    });
+
+    return rows;
+  }).filter(item => item.id && item.name);
+}
+function newRatingFactor(r) {
+  return {
+    id: `RAT-FACTOR-${String(Date.now()).slice(-6)}-${Math.random().toString(36).slice(2, 6)}`,
+    name: `${displayRiskName(r)} Factor`,
+    status: 'draft',
+    coverage: '',
+    coverageId: '',
+    coverageIds: [],
+    riskAttribute: displayRiskName(r),
+    riskAttributeId: r?.id || '',
+    ratingMethod: 'table',
+    fixedFactor: '',
+    table: {
+      data: []
+    },
+    configured: false
+  };
+}
+
+function getRatingFactors(r) {
+  if (!r) return [];
+
+  if (Array.isArray(r.ratingFactors)) {
+    return r.ratingFactors;
+  }
+
+  // Backward compatibility with the previous single-factor model.
+  if (r.ratingFactor && typeof r.ratingFactor === 'object') {
+    return [r.ratingFactor];
+  }
+
+  return [];
+}
+
+function ensureRatingFactors(r) {
+  if (!r) return [];
+
+  if (!Array.isArray(r.ratingFactors)) {
+    r.ratingFactors = [];
+
+    if (r.ratingFactor && typeof r.ratingFactor === 'object') {
+      r.ratingFactors.push({
+        ...r.ratingFactor,
+        fixedFactor:
+          r.ratingFactor.fixedFactor ??
+          (r.ratingFactor.ratingMethod === 'fixed' ? r.ratingFactor.amount : ''),
+        coverageIds: Array.isArray(r.ratingFactor.coverageIds)
+          ? r.ratingFactor.coverageIds.slice()
+          : (r.ratingFactor.coverageId ? [r.ratingFactor.coverageId] : []),
+        table: r.ratingFactor.table
+          ? {
+              data: Array.isArray(r.ratingFactor.table.data)
+                ? r.ratingFactor.table.data.slice()
+                : []
+            }
+          : { data: [] }
+      });
+    }
+  }
+
+  r.ratingFactors = r.ratingFactors.filter(Boolean);
+
+  // Keep the legacy property pointing at the first factor for compatibility.
+  r.ratingFactor = r.ratingFactors[0] || null;
+
+  return r.ratingFactors;
+}
+
+function ratingFactorRowsHtml(factor, factorIndex) {
+  const rows = Array.isArray(factor?.table?.data)
+    ? factor.table.data
+    : [];
+
+  if (!rows.length) {
+    return `
+      <div class="rating-factor-empty">
+        No rating rows configured. Add an answer/value and factor.
+      </div>
+    `;
+  }
+
+  return rows.map((row, rowIndex) => `
+    <tr data-rating-factor-index="${factorIndex}" data-rating-row-index="${rowIndex}">
+      <td>
+        <input
+          class="form-control"
+          type="text"
+          value="${String(row.value ?? '').replace(/"/g, '&quot;')}"
+          data-rating-row-value="${factorIndex}-${rowIndex}"
+          placeholder="e.g. 0–2 years"
+        >
+      </td>
+      <td style="width:150px">
+        <input
+          class="form-control"
+          type="number"
+          step="0.01"
+          min="0.01"
+          value="${row.factor ?? ''}"
+          data-rating-row-factor="${factorIndex}-${rowIndex}"
+          placeholder="1.00"
+        >
+      </td>
+      <td style="width:72px;text-align:right">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          style="color:var(--color-danger,#dc2626);padding:5px 6px"
+          onclick="removeRatingTableRow(${factorIndex}, ${rowIndex})"
+          title="Remove row"
+        >
+          Remove
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function ratingFactorCardHtml(factor, factorIndex, coverages) {
+  const method = factor?.ratingMethod === 'fixed' ? 'fixed' : 'table';
+  const rows = Array.isArray(factor?.table?.data)
+    ? factor.table.data
+    : [];
+
+  const factorName = factor?.name || `Risk Factor ${factorIndex + 1}`;
+  const selectedCoverageIds = Array.isArray(factor?.coverageIds) && factor.coverageIds.length
+    ? factor.coverageIds.map(String)
+    : (factor?.coverageId ? [String(factor.coverageId)] : []);
+
+  const selectedCoverageNames = coverages
+    .filter(c => selectedCoverageIds.includes(String(c.id)))
+    .map(c => c.name)
+    .filter(Boolean);
+
+  const coverageName = selectedCoverageNames.length
+    ? selectedCoverageNames.join(', ')
+    : (factor?.coverage || 'Coverage not selected');
+
+  return `
+    <div class="rating-factor-card" data-rating-factor-card="${factorIndex}">
+      <div class="rating-factor-card-head">
+        <div class="rating-factor-card-index">${factorIndex + 1}</div>
+
+        <div class="rating-factor-card-copy">
+          <div class="rating-factor-card-name" data-rating-factor-title="${factorIndex}">
+            ${String(factorName).replace(/</g, '&lt;')}
+          </div>
+          <div class="rating-factor-card-meta">
+            ${String(coverageName).replace(/</g, '&lt;')}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm rating-factor-remove"
+          onclick="removeRatingFactor(${factorIndex})"
+        >
+          Remove
+        </button>
+      </div>
+
+      <div class="rating-factor-card-body">
+        <div class="form-grid-2">
+
+          <div class="form-group">
+            <label class="form-label">
+              Factor ID
+            </label>
+            <div class="mono" style="padding-top:9px">
+              ${String(factor?.id || 'Generated automatically')}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="rating-factor-name-${factorIndex}">
+              Factor Name <span class="required">*</span>
+            </label>
+            <input
+              id="rating-factor-name-${factorIndex}"
+              class="form-control"
+              type="text"
+              value="${String(factor?.name || '').replace(/"/g, '&quot;')}"
+              placeholder="e.g. Driver Experience Factor"
+            >
+          </div>
+
+     <div class="form-group">
+  <label class="form-label">
+    Coverage <span class="required">*</span>
+  </label>
+
+ <div class="rating-coverage-picker rating-coverage-dropdown" id="rating-factor-coverage-${factorIndex}">
+  ${(() => {
+    const selectedIds = new Set(
+      Array.isArray(factor?.coverageIds) && factor.coverageIds.length
+        ? factor.coverageIds.map(String)
+        : (factor?.coverageId ? [String(factor.coverageId)] : [])
+    );
+
+    const esc = v => String(v ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+    const parents = coverages.filter(c => !c.isChild);
+
+    const selectedItems = coverages.filter(c =>
+      selectedIds.has(String(c.id))
+    );
+
+    const selectedLabel = selectedItems.length
+      ? `${selectedItems.length} coverage${selectedItems.length > 1 ? 's' : ''} selected`
+      : 'Select coverage(s)...';
+
+    return `
+      <button
+        type="button"
+        class="form-control rating-coverage-dropdown-btn"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        onclick="toggleRatingCoverageDropdown(${factorIndex})"
+      >
+        <span class="rating-coverage-selected">
+          ${
+            selectedItems.length
+              ? selectedItems.slice(0, 2).map(c => `
+                  <span class="rating-coverage-chip">
+                    ${esc(c.isChild ? `${c.parentName} — ${c.name}` : c.name)}
+                  </span>
+                `).join('')
+              : `<span class="rating-coverage-placeholder">${esc(selectedLabel)}</span>`
+          }
+
+          ${
+            selectedItems.length > 2
+              ? `<span class="rating-coverage-more">+${selectedItems.length - 2} more</span>`
+              : ''
+          }
+        </span>
+
+        <span class="rating-coverage-dropdown-caret">⌄</span>
+      </button>
+
+      <div
+        class="rating-coverage-dropdown-menu"
+        id="rating-factor-coverage-menu-${factorIndex}"
+        role="listbox"
+        aria-multiselectable="true"
+      >
+
+        <div class="rating-coverage-menu-header">
+          <span>Select Coverage(s)</span>
+          <span class="rating-coverage-count">
+            ${selectedItems.length} selected
+          </span>
+        </div>
+
+        <div class="rating-coverage-menu-list">
+
+          ${parents.map(parent => {
+            const children = coverages.filter(
+              c =>
+                c.isChild &&
+                String(c.parentId) === String(parent.id)
+            );
+
+            const parentSelected = selectedIds.has(String(parent.id));
+            const childSelectedCount = children.filter(child =>
+              selectedIds.has(String(child.id))
+            ).length;
+
+            return `
+              <div class="rating-coverage-group">
+
+                <label class="rating-coverage-option rating-coverage-parent">
+                  <input
+                    type="checkbox"
+                    class="rating-coverage-checkbox"
+                    data-rating-coverage="${factorIndex}"
+                    value="${esc(parent.id)}"
+                    ${parentSelected ? 'checked' : ''}
+                    onchange="refreshRatingCoverageDropdown(${factorIndex})"
+                  >
+
+                  <span class="rating-coverage-parent-copy">
+                    <span class="rating-coverage-parent-name">
+                      ${esc(parent.name)}
+                    </span>
+
+                    ${
+                      children.length
+                        ? `<span class="rating-coverage-child-count">
+                            ${childSelectedCount}/${children.length} child${children.length !== 1 ? 'ren' : ''}
+                          </span>`
+                        : ''
+                    }
+                  </span>
+                </label>
+
+                ${
+                  children.length
+                    ? `
+                      <div class="rating-coverage-children">
+                        ${children.map(child => {
+                          const checked = selectedIds.has(String(child.id));
+
+                          return `
+                            <label class="rating-coverage-option rating-coverage-child">
+
+                              <input
+                                type="checkbox"
+                                class="rating-coverage-checkbox"
+                                data-rating-coverage="${factorIndex}"
+                                value="${esc(child.id)}"
+                                ${checked ? 'checked' : ''}
+                                onchange="refreshRatingCoverageDropdown(${factorIndex})"
+                              >
+
+                              <span class="rating-coverage-child-copy">
+                                <span class="rating-coverage-child-arrow">↳</span>
+                                <span>${esc(child.name)}</span>
+                              </span>
+
+                            </label>
+                          `;
+                        }).join('')}
+                      </div>
+                    `
+                    : ''
+                }
+
+              </div>
+            `;
+          }).join('')}
+
+        </div>
+      </div>
+    `;
+  })()}
+</div>
+</div>
+
+          <div class="form-group">
+            <label class="form-label" for="rating-factor-method-${factorIndex}">
+              Rating Method <span class="required">*</span>
+            </label>
+            <select
+              id="rating-factor-method-${factorIndex}"
+              class="form-control"
+              onchange="toggleRatingFactorMethod(${factorIndex}, this.value)"
+            >
+              <option value="table" ${method === 'table' ? 'selected' : ''}>
+                Lookup Table
+              </option>
+              <option value="fixed" ${method === 'fixed' ? 'selected' : ''}>
+                Constant Factor
+              </option>
+            </select>
+          </div>
+
+        </div>
+
+        <div
+          id="rating-factor-table-${factorIndex}"
+          class="rating-factor-table-box"
+          style="display:${method === 'table' ? '' : 'none'}"
+        >
+          <div class="rating-factors-header">
+            <div>
+              <div class="rating-factors-title">Rating Table</div>
+              <div class="rating-factors-subtitle">
+                Match the questionnaire answer/value to the rating factor.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              onclick="addRatingTableRow(${factorIndex})"
+            >
+              + Add Row
+            </button>
+          </div>
+
+          <table class="rating-factor-table">
+            <thead>
+              <tr>
+                <th>Answer / Value</th>
+                <th style="width:150px">Rating Factor</th>
+                <th style="width:72px"></th>
+              </tr>
+            </thead>
+            <tbody id="rating-factor-table-body-${factorIndex}">
+              ${ratingFactorRowsHtml(factor, factorIndex)}
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          id="rating-factor-fixed-${factorIndex}"
+          class="rating-factor-fixed"
+          style="display:${method === 'fixed' ? '' : 'none'}"
+        >
+          <div class="form-group" style="margin:0">
+            <label class="form-label" for="rating-factor-fixed-value-${factorIndex}">
+              Constant Rating Factor <span class="required">*</span>
+            </label>
+            <input
+              id="rating-factor-fixed-value-${factorIndex}"
+              class="form-control"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value="${String(
+                factor?.fixedFactor ??
+                (method === 'fixed' ? factor?.amount ?? '' : '')
+              ).replace(/"/g, '&quot;')}"
+              placeholder="e.g. 1.10"
+            >
+            <div style="margin-top:6px;font-size:11px;color:var(--color-muted)">
+              This factor is applied directly when the Constant Factor method is selected.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+function addRatingFactor() {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  if (!r) return;
+
+  const factors = ensureRatingFactors(r);
+  factors.push(newRatingFactor(r));
+
+  r.ratingFactors = factors;
+  r.ratingFactor = factors[0] || null;
+
+  persistRisks();
+  loadRisk(activeRiskId);
+}
+
+function removeRatingFactor(index) {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  if (!r) return;
+
+  const factors = ensureRatingFactors(r);
+
+  if (index < 0 || index >= factors.length) return;
+
+  factors.splice(index, 1);
+
+  r.ratingFactors = factors;
+  r.ratingFactor = factors[0] || null;
+
+  persistRisks();
+  loadRisk(activeRiskId);
+}
+
+function readRatingTableRows(factorIndex) {
+  const rows = [];
+
+  document
+    .querySelectorAll(`tr[data-rating-factor-index="${factorIndex}"][data-rating-row-index]`)
+    .forEach(row => {
+      const rowIndex = Number(row.getAttribute('data-rating-row-index'));
+
+      const value =
+        row.querySelector(`[data-rating-row-value="${factorIndex}-${rowIndex}"]`)
+          ?.value
+          ?.trim() || '';
+
+      const factorRaw =
+        row.querySelector(`[data-rating-row-factor="${factorIndex}-${rowIndex}"]`)
+          ?.value;
+
+      rows.push({
+        value,
+        factor:
+          factorRaw === '' || factorRaw == null
+            ? ''
+            : Number(factorRaw)
+      });
+    });
+
+  return rows;
+}
+
+function addRatingTableRow(factorIndex) {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  if (!r) return;
+
+  const factors = ensureRatingFactors(r);
+  const factor = factors[factorIndex];
+  if (!factor) return;
+
+  // Preserve the current factor state before re-rendering the card.
+  // The coverage picker lives in the DOM, so without reading it here,
+  // loadRisk() would rebuild the card from stale factor data and clear
+  // the user's selected coverages.
+  const selectedCoverageIds = Array.from(
+    document.querySelectorAll(`[data-rating-coverage="${factorIndex}"]:checked`)
+  )
+    .map(el => String(el.value || '').trim())
+    .filter(Boolean);
+
+  factor.coverageIds = selectedCoverageIds;
+  factor.coverageId = selectedCoverageIds[0] || '';
+
+  const coverageOptions = getRiskFactorCoverageOptions();
+  factor.coverage = coverageOptions
+    .filter(c => selectedCoverageIds.includes(String(c.id)))
+    .map(c => c.name)
+    .join(', ');
+
+  const nameEl = document.getElementById(`rating-factor-name-${factorIndex}`);
+  if (nameEl) factor.name = String(nameEl.value || '').trim();
+
+  const methodEl = document.getElementById(`rating-factor-method-${factorIndex}`);
+  if (methodEl) factor.ratingMethod = String(methodEl.value || 'table').trim();
+
+  const current = readRatingTableRows(factorIndex);
+
+  factor.table = factor.table || { data: [] };
+  factor.table.data = current.length
+    ? current
+    : Array.isArray(factor.table.data)
+      ? factor.table.data.slice()
+      : [];
+
+  factor.table.data.push({
+    value: '',
+    factor: ''
+  });
+
+  r.ratingFactors = factors;
+  r.ratingFactor = factors[0] || null;
+
+  loadRisk(activeRiskId);
+}
+
+function removeRatingTableRow(factorIndex, rowIndex) {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  if (!r) return;
+
+  const factors = ensureRatingFactors(r);
+  const factor = factors[factorIndex];
+  if (!factor) return;
+
+  const current = readRatingTableRows(factorIndex);
+
+  factor.table = factor.table || { data: [] };
+  factor.table.data = current;
+
+  if (rowIndex >= 0 && rowIndex < factor.table.data.length) {
+    factor.table.data.splice(rowIndex, 1);
+  }
+
+  r.ratingFactors = factors;
+  r.ratingFactor = factors[0] || null;
+
+  loadRisk(activeRiskId);
+}
+
+function toggleRatingFactorMethod(index, method) {
+  const table = document.getElementById(`rating-factor-table-${index}`);
+  const fixed = document.getElementById(`rating-factor-fixed-${index}`);
+
+  if (table) table.style.display = method === 'table' ? '' : 'none';
+  if (fixed) fixed.style.display = method === 'fixed' ? '' : 'none';
+}
+
+function clearPanelValidation() {
+  document
+    .querySelectorAll('#detail-panel .validation-error')
+    .forEach(el => el.classList.remove('validation-error'));
+
+  document
+    .querySelectorAll('#detail-panel .validation-error-message')
+    .forEach(el => el.remove());
+}
+
+function markPanelValidation(el, msg) {
+  if (!el) return;
+
+  el.classList.add('validation-error');
+
+  const host = el.closest('.form-group') || el.parentElement;
+
+  if (host && !host.querySelector('.validation-error-message')) {
+    const n = document.createElement('div');
+    n.className = 'validation-error-message';
+    n.textContent = msg;
+    host.appendChild(n);
+  }
+}
+
+function toggleRatingCoverageDropdown(index) {
+  const picker = document.getElementById(`rating-factor-coverage-${index}`);
+  if (!picker) return;
+  const btn = picker.querySelector('.rating-coverage-dropdown-btn');
+  if (btn?.disabled) return;
+
+  document.querySelectorAll('.rating-coverage-dropdown.open').forEach(other => {
+    if (other !== picker) {
+      other.classList.remove('open');
+      other.querySelector('.rating-coverage-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  const open = !picker.classList.contains('open');
+  picker.classList.toggle('open', open);
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function refreshRatingCoverageDropdown(index) {
+  const picker = document.getElementById(`rating-factor-coverage-${index}`);
+  if (!picker) return;
+
+  const selected = Array.from(
+    picker.querySelectorAll(`[data-rating-coverage="${index}"]:checked`)
+  ).map(el => String(el.value || '').trim()).filter(Boolean);
+
+  const options = getRiskFactorCoverageOptions();
+  const selectedItems = options.filter(c => selected.includes(String(c.id)));
+  const selectedHost = picker.querySelector('.rating-coverage-selected');
+  const countEl = picker.querySelector('.rating-coverage-count');
+
+  if (selectedHost) {
+    if (!selectedItems.length) {
+      selectedHost.innerHTML = '<span class="rating-coverage-placeholder">Select coverage(s)...</span>';
+    } else {
+      const esc = v => String(v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+      selectedHost.innerHTML = selectedItems.slice(0, 2).map(c => {
+        const name = c.isChild ? `${c.parentName} — ${c.name}` : c.name;
+        return `<span class="rating-coverage-chip">${esc(name)}</span>`;
+      }).join('') + (selectedItems.length > 2
+        ? `<span class="rating-coverage-more">+${selectedItems.length - 2} more</span>`
+        : '');
+    }
+  }
+
+  if (countEl) countEl.textContent = `${selected.length} selected`;
+}
+
+document.addEventListener('click', function(event) {
+  document.querySelectorAll('.rating-coverage-dropdown.open').forEach(picker => {
+    if (!picker.contains(event.target)) {
+      picker.classList.remove('open');
+      picker.querySelector('.rating-coverage-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+    }
+  });
+});
+
+document.addEventListener('keydown', function(event) {
+  if (event.key !== 'Escape') return;
+  document.querySelectorAll('.rating-coverage-dropdown.open').forEach(picker => {
+    picker.classList.remove('open');
+    picker.querySelector('.rating-coverage-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+  });
+});
+
+function saveRatingFactorsFromPanel(r) {
+  const factors = ensureRatingFactors(r);
+  const nextFactors = [];
+
+  for (let i = 0; i < factors.length; i += 1) {
+    const existing = factors[i] || {};
+    const nameEl = document.getElementById(`rating-factor-name-${i}`);
+    const coverageEl = document.getElementById(`rating-factor-coverage-${i}`);
+    const methodEl = document.getElementById(`rating-factor-method-${i}`);
+    const fixedEl = document.getElementById(`rating-factor-fixed-value-${i}`);
+
+    const name = String(nameEl?.value || '').trim();
+    const coverageIds = Array.from(
+      document.querySelectorAll(`[data-rating-coverage="${i}"]:checked`)
+    ).map(el => String(el.value || '').trim()).filter(Boolean);
+    const coverageId = coverageIds[0] || '';
+    const method = String(methodEl?.value || 'table').trim();
+
+    let valid = true;
+
+    if (!name) {
+      markPanelValidation(nameEl, 'Factor Name is required.');
+      valid = false;
+    }
+
+    if (!coverageIds.length) {
+      const picker = document.getElementById(`rating-factor-coverage-${i}`);
+      markPanelValidation(picker, 'Select at least one coverage.');
+      valid = false;
+    }
+
+    const coverageOptions = getRiskFactorCoverageOptions();
+    const selectedCoverages = coverageOptions
+      .filter(item => coverageIds.includes(String(item.id)));
+
+    const next = {
+      id: existing.id || `RAT-FACTOR-${String(Date.now()).slice(-6)}-${i + 1}`,
+      name,
+      status: 'draft',
+      coverage: selectedCoverages.map(item => item.name).join(', '),
+      coverageId,
+      coverageIds,
+      riskAttribute: displayRiskName(r),
+      riskAttributeId: r.id,
+      ratingMethod: method,
+      fixedFactor: '',
+      table: { data: [] },
+      configured: false
+    };
+
+    if (method === 'table') {
+      const rows = readRatingTableRows(i);
+
+      if (!rows.length) {
+        const body = document.getElementById(`rating-factor-table-body-${i}`);
+        markPanelValidation(body, 'Add at least one rating-table row.');
+        valid = false;
+      }
+
+      const cleanedRows = rows.map((row, rowIndex) => {
+        const value = String(row.value || '').trim();
+        const factor = Number(row.factor);
+
+        if (!value) {
+          const el = document.querySelector(
+            `[data-rating-row-value="${i}-${rowIndex}"]`
+          );
+          markPanelValidation(el, 'Answer / Value is required.');
+          valid = false;
+        }
+
+        if (!Number.isFinite(factor) || factor <= 0) {
+          const el = document.querySelector(
+            `[data-rating-row-factor="${i}-${rowIndex}"]`
+          );
+          markPanelValidation(el, 'Rating Factor must be greater than 0.');
+          valid = false;
+        }
+
+        return {
+          value,
+          factor: Number.isFinite(factor) ? factor : ''
+        };
+      });
+
+      next.table.data = cleanedRows;
+    } else {
+      const fixedRaw = String(fixedEl?.value || '').trim();
+      const fixed = Number(fixedRaw);
+
+      if (!Number.isFinite(fixed) || fixed <= 0) {
+        markPanelValidation(
+          fixedEl,
+          'Fixed Rating Factor must be greater than 0.'
+        );
+        valid = false;
+      }
+
+      next.fixedFactor = Number.isFinite(fixed) ? fixed.toFixed(2) : '';
+      next.table = { data: [] };
+    }
+
+    next.configured = valid;
+
+    if (!valid) {
+      return null;
+    }
+
+    nextFactors.push(next);
+  }
+
+  r.ratingFactors = nextFactors;
+  r.ratingFactor = nextFactors[0] || null;
+
+  return nextFactors;
+}
+
+// Backward-compatible entry point for existing callers.
+function saveRiskRatingFactor() {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  if (!r) return false;
+
+  clearPanelValidation();
+
+  const saved = saveRatingFactorsFromPanel(r);
+  if (!saved) return false;
+
+  persistRisks();
+  return true;
+}
+
+function loadRisk(id) {
+  activeRiskId = id;
+
+  const r = RISKS.find(x => x.id === id);
+  if (!r) return;
+
+  ensureRatingFactors(r);
+
+  renderSidebar();
+  renderGroupSidebar();
+
+  const p = document.getElementById('detail-panel');
+  if (!p) return;
+
+  const manual = sourceKey(r) === 'manual';
+  const live = manual ? null : liveQuestionForRisk(r);
+  const q = live?.q;
+
+  const groupLabel =
+    live?.group?.label ||
+    live?.group?.name ||
+    r.questionGroup ||
+    '—';
+
+  const stale =
+    !manual &&
+    (!q || !isRiskQuestion(q));
+
+  const options = Array.isArray(q?.options) ? q.options : [];
+  const optionRisk = r.optionRisk || {};
+  const usedBy = r.usedBy || [];
+
+  const qHref = q
+    ? `${questionnaireHref()}&question=${encodeURIComponent(q.id)}`
+    : questionnaireHref();
+
+  const optionRows = options.map(o => {
+    const key = o.value || o.label;
+    const cfg = optionRisk[key] || {};
+    return {
+      key,
+      label: o.label || o.value,
+      cfg
+    };
+  });
+
+  const coverages = getRiskFactorCoverageOptions();
+  const factors = ensureRatingFactors(r);
+
+  p.innerHTML = `
+    <div class="section-card rating-factors-section">
+      <div class="section-inner">
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <h2 style="font-size:18px;font-weight:700;margin:0">
+            ${displayRiskName(r)}
+          </h2>
+
+          <span
+            class="${stale ? 'rs-status-inactive' : 'rs-status-active'}"
+            style="font-size:12px;font-weight:700;letter-spacing:.4px"
+          >
+            ${stale ? 'INACTIVE' : 'ACTIVE'}
+          </span>
+        </div>
+
+        ${stale
+          ? `<div class="rs-warn">
+              This Risk Attribute is no longer linked to an active Risk question.
+            </div>`
+          : ''
+        }
+
+        <div class="form-grid-2">
+
+          <div class="form-group">
+            <label class="form-label">Question Group</label>
+            <div>${groupLabel}</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Data Type</label>
+            <div>${q ? questionTypeLabel(q) : (r.type || '—')}</div>
+          </div>
+
+          ${manual
+            ? ''
+            : `
+              <div class="form-group">
+                <label class="form-label">Question Category</label>
+                <div>Risk</div>
+              </div>
+            `
+          }
+
+          ${manual
+            ? ''
+            : `
+              <div class="form-group">
+                <label class="form-label">Linked Question</label>
+                <div class="mono">${q?.id || r.questionId || '—'}</div>
+              </div>
+            `
+          }
+
+        </div>
+
+        ${manual
+          ? ''
+          : `
+            <div style="margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D">
+              LINKED QUESTION
+            </div>
+
+            <div style="padding:12px 14px;border:1px solid #E7DFD2;border-radius:8px;background:#FBF9F5;margin-bottom:20px">
+              <div style="font-weight:600">
+                ${q?.label || r.questionLabel || '—'}
+              </div>
+
+              <div class="mono" style="font-size:12px;color:#6F685D;margin:4px 0 10px">
+                ${q?.id || r.questionId || '—'}
+              </div>
+
+              <a class="btn btn-secondary btn-sm" href="${qHref}">
+                View Question
+              </a>
+            </div>
+          `
+        }
+
+        <div class="rating-factors-header">
+          <div>
+            <div class="rating-factors-title">RATING FACTORS</div>
+            <div class="rating-factors-subtitle">
+              Define one or more coverage-specific rating factors for this Risk Attribute.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="addRatingFactor()"
+          >
+            + Add Factor
+          </button>
+        </div>
+
+        <div id="rating-factors-list">
+
+          ${
+            factors.length
+              ? factors
+                  .map((factor, index) =>
+                    ratingFactorCardHtml(factor, index, coverages)
+                  )
+                  .join('')
+              : `
+                <div class="rating-factor-empty">
+                  No rating factors configured.
+                  Click <strong>+ Add Factor</strong> to create one.
+                </div>
+              `
+          }
+
+        </div>
+
+        <div style="margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D">
+          RISK INTERPRETATION
+        </div>
+
+        <div class="form-grid-2">
+
+          <div class="form-group span-2">
+            <label class="form-label" for="rk-notes">
+              Risk Interpretation
+            </label>
+            <textarea
+              id="rk-notes"
+              class="form-control"
+              rows="2"
+              placeholder="Describe how this Risk Attribute should be interpreted."
+            >${String(r.riskNotes || '').replace(/</g, '&lt;')}</textarea>
+          </div>
+
+
+        </div>
+
+        ${
+          optionRows.length
+            ? `
+              <div style="margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D">
+                OPTION RISK
+              </div>
+
+              <div class="section-card" style="box-shadow:none">
+                <div class="section-inner">
+                  ${
+                    optionRows.map(row => `
+                      <div
+                        class="rs-option-row"
+                        data-opt-key="${String(row.key).replace(/"/g, '&quot;')}"
+                      >
+                        <div style="font-size:13px;font-weight:600">
+                          ${String(row.label).replace(/</g, '&lt;')}
+                        </div>
+
+                        <select class="form-control rk-opt-tier">
+                          ${riskLevelSelectHtml(row.cfg.riskTier || 'Medium')}
+                        </select>
+
+                        <input
+                          class="form-control rk-opt-score"
+                          type="number"
+                          step="0.01"
+                          placeholder="Score impact"
+                          value="${row.cfg.scoreImpact ?? ''}"
+                        >
+
+                        <input
+                          class="form-control rk-opt-weight"
+                          type="number"
+                          step="0.01"
+                          placeholder="Weight"
+                          value="${row.cfg.riskWeight ?? ''}"
+                        >
+                      </div>
+                    `).join('')
+                  }
+                </div>
+              </div>
+            `
+            : ''
+        }
+
+        <div style="margin-top:20px;display:flex;justify-content:flex-end">
+          <button
+            class="btn btn-primary"
+            type="button"
+            onclick="saveRiskDetail()"
+          >
+            Save changes
+          </button>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+function saveRiskDetail() {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  if (!r) return;
+
+  clearPanelValidation();
+
+  // Save rating-factor configuration from the current editor.
+  const factors = ensureRatingFactors(r);
+
+  if (factors.length) {
+    const savedFactors = saveRatingFactorsFromPanel(r);
+
+    if (!savedFactors) {
+      const first = document.querySelector(
+        '#detail-panel .validation-error'
+      );
+
+      first?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+
+      first?.focus();
+
+      PS.actionResult?.(
+        'error',
+        'Cannot save',
+        'Please complete the rating-factor configuration.'
+      );
+
+      return;
+    }
+  }
+
+  r.riskNotes =
+    document.getElementById('rk-notes')?.value.trim() || '';
+
+  r.usedBy = Array.from(
+    document.querySelectorAll('.rk-used-by:checked')
+  ).map(cb => cb.value);
+
+  r.availableForEligibility =
+    !!document.getElementById('rk-available-eligibility')?.checked;
+
+  if (
+    r.availableForEligibility &&
+    !r.usedBy.includes('eligibility')
+  ) {
+    r.usedBy.push('eligibility');
+  }
+
+  if (!r.availableForEligibility) {
+    r.usedBy = r.usedBy.filter(
+      s => s !== 'eligibility'
+    );
+  }
+
+  const next = Object.assign({}, r.optionRisk || {});
+
+  document
+    .querySelectorAll('.rs-option-row[data-opt-key]')
+    .forEach(row => {
+      const key = row.getAttribute('data-opt-key');
+
+      next[key] = {
+        riskTier:
+          row.querySelector('.rk-opt-tier')?.value ||
+          'Medium',
+
+        scoreImpact:
+          row.querySelector('.rk-opt-score')?.value,
+
+        riskWeight:
+          row.querySelector('.rk-opt-weight')?.value
+      };
+    });
+
+  r.optionRisk = next;
+  r.lastUpdated = new Date()
+    .toISOString()
+    .slice(0, 10);
+
+  // Keep legacy single-factor property synchronized.
+  r.ratingFactor =
+    Array.isArray(r.ratingFactors) && r.ratingFactors.length
+      ? r.ratingFactors[0]
+      : null;
+
+  persistRisks();
+  PS.studioHub.paint();
+
+  const dataset =
+    activeRiskDataset().filter(itemMatchesSelectedGroup);
+
+  const currentIndex =
+    dataset.findIndex(item => item.id === r.id);
+
+  const nextRisk =
+    currentIndex >= 0
+      ? dataset[currentIndex + 1]
+      : null;
+
+  PS.actionResult?.(
+    'success',
+    'Risk attribute updated',
+    `${displayRiskName(r)} risk configuration is saved.`
+  );
+
+  if (nextRisk) {
+    loadRisk(nextRisk.id);
+  } else {
+    loadRisk(r.id);
+  }
+}
+
+  document.addEventListener('DOMContentLoaded', () => {
+  questionGroupOptions().forEach(g => { riskGroupOpen[g.id] = false; });
+  PS.studioHub.mount({
+    navId: 'risk',
+    studioLabel: 'Risk Guide',
+    collection: 'risk',
+    apiField: 'risk',
+    persist: 'riskAttributes',
+    persistTarget: () => RISKS,
+    skipProductColumn: true,
+    getItems: () => {
+      dedupeRiskAttributes();
+      return activeRiskDataset().filter(itemMatchesSelectedGroup);
+    },
+    emptyHtml: riskEmptyStateHtml,
+    applyItems: list => {
+      RISKS.splice(0, RISKS.length, ...(Array.isArray(list) ? list : []).map(r => normalizeRisk(Object.assign({}, r, {
+        name: r.name || r.label,
+        type: r.type || 'Text',
+        source: r.source || (r.questionId ? 'Question' : 'Manual'),
+        questionGroup: r.questionGroup || r.category || r.extra || 'Operations',
+        questionGroupId: r.questionGroupId || '',
+        questionId: r.questionId || r.sourceQuestionId || '',
+        sourceQuestionId: r.sourceQuestionId || r.questionId || '',
+        optionRisk: r.optionRisk || {},
+        ratingFactor: r.ratingFactor || null,
+        ratingFactors: Array.isArray(r.ratingFactors)
+          ? r.ratingFactors.map(f => ({
+              ...f,
+              coverageIds: Array.isArray(f.coverageIds)
+                ? f.coverageIds
+                : (f.coverageId ? [f.coverageId] : [])
+            }))
+          : (r.ratingFactor ? [{
+              ...r.ratingFactor,
+              coverageIds: Array.isArray(r.ratingFactor.coverageIds)
+                ? r.ratingFactor.coverageIds
+                : (r.ratingFactor.coverageId ? [r.ratingFactor.coverageId] : [])
+            }] : []),
+        usedBy: r.usedBy || [],
+        availableForEligibility: r.availableForEligibility === true || (Array.isArray(r.usedBy) && r.usedBy.includes('eligibility')),
+        status: r.status || 'draft',
+        description: r.description || r.desc || ''
+      }))));
+      // Remove duplicate Risk Attributes that point to the same Questionnaire question
+      // before the collection is rendered or persisted.
+      dedupeRiskAttributes();
+      syncRiskAttributesFromQuestionnaire();
+      dedupeRiskAttributes();
+      persistRisks();
+      renderGroupSidebar();
+    },
+    getActiveId: () => activeRiskId,
+    setActiveId: id => { activeRiskId = id; },
+    loadItem: loadRisk,
+    renderSidebar: renderSidebar,
+    onPaint: () => { renderGroupSidebar(); refreshRiskMetrics(); },
+    noun: 'risk attributes',
+    hubTitle: 'Risk Attributes',
+    hubSubtitle: 'Risk Attributes from Questionnaire questions or created manually',
+    addOnclick: 'openAddRiskModal()',
+    rowMenuHtml: item => `
+      <button type="button" onclick="PS.studioHub.open('${item.id}')">Configure</button>
+      <button type="button" onclick="removeRiskAttributeFromProduct('${item.id}')">Remove from product</button>
+    `,
+    deepParam: 'risk',
+    searchKeys: ['name', 'id', 'questionGroup', 'questionId', 'sourceQuestionId', 'questionLabel'],
+    searchPlaceholder: 'Search attribute, question, or ID…',
+    filters: [
+      { value: 'all', label: 'All Risk Attributes' },
+      { value: 'active', label: 'Active' },
+      { value: 'inactive', label: 'Inactive' },
+      { value: 'question', label: 'Source: Question' },
+      { value: 'manual', label: 'Source: Manual' },
+      { value: 'select', label: 'Data Type: Select' },
+      { value: 'number', label: 'Data Type: Number' }
+    ],
+    matchFilter: (item, filter) => {
+      if (!itemMatchesSelectedGroup(item)) return false;
+      const live = liveQuestionForRisk(item);
+      const manual = sourceKey(item) === 'manual';
+      const type = String(item.type || live?.q?.fieldType || live?.q?.type || '').toLowerCase();
+      if (filter === 'all' || filter === 'all-sources') return true;
+      if (filter === 'question') return !manual;
+      if (filter === 'manual') return manual;
+      if (filter === 'active') return item.status !== 'inactive' && !item.sourceStale;
+      if (filter === 'inactive') return item.status === 'inactive' || item.sourceStale;
+      if (filter === 'select') return type.includes('select');
+      if (filter === 'number') return type.includes('number') || type.includes('currency');
+      return true;
+    },
+    stats: () => {
+      const n = activeRiskDataset().length;
+      const linked = activeRiskDataset().filter(r => isQuestionDerived(r)).length;
+      const g = selectedGroupMeta();
+      if (g) {
+        const rows = risksInGroup(g);
+        return [`${rows.length} risk attributes`, `${rows.filter(isQuestionDerived).length} linked questions`];
+      }
+      return [`${n} risk attributes`, `${linked} linked questions`];
+    },
+    contextStats: () => [`${allRiskQuestions().length} risk attributes`],
+    isCreated: () => true,
+    statusLabel: () => 'Active',
+    columns: [
+      { header: 'Risk Attribute', value: r => displayRiskName(r), primary: true },
+      { header: 'Attribute ID', value: r => r.id, mono: true },
+      { header: 'Source', value: () => 'QUESTION', kind: 'source-badge' },
+      { header: 'Data Type', value: r => { const live = liveQuestionForRisk(r); return live ? questionTypeLabel(live.q) : (r.type || '—'); } },
+      { header: 'Linked Question', value: r => r.questionId || r.sourceQuestionId || liveQuestionForRisk(r)?.q?.id || '—', mono: true },
+      { header: 'Risk Status', value: () => 'Active', kind: 'status' }
+    ]
+  });
+  maybeAutoApplyTruckingRisks();
+  renderGroupSidebar();
+  const hub = PS.studioHub;
+  hub.filtered = function () {
+    const q = (document.getElementById('hub-search')?.value || '').trim().toLowerCase();
+    const filter = document.getElementById('hub-filter')?.value || 'all';
+    return this.items().filter(item => {
+      if (this.cfg.matchFilter && !this.cfg.matchFilter(item, filter)) return false;
+      if (!q) return true;
+      const live = liveQuestionForRisk(item);
+      const blob = [
+        displayRiskName(item), item.id, item.questionId, item.sourceQuestionId, item.name,
+        live?.q?.label, live?.q?.id, live?.q?.internalName
+      ].join(' ').toLowerCase();
+      return blob.includes(q);
+    });
+  };
+  const origRenderTable = hub.renderTable.bind(hub);
+  hub.renderTable = function () {
+    origRenderTable();
+    refreshRiskMetrics();
+    const wrap = document.getElementById('studio-hub-table');
+    if (!wrap) return;
+    if (!this.filtered().length) {
+      wrap.innerHTML = riskEmptyStateHtml();
+      const title = document.getElementById('studio-hub-title');
+      const g = selectedGroupMeta();
+      const count = g ? risksInGroup(g).length : allRiskQuestions().length;
+      if (title) title.textContent = g ? `${g.label} (${count})` : `Risk attributes (${count})`;
+      const sub = document.querySelector('#studio-hub .card-subtitle');
+      if (sub) sub.textContent = `${count} risk attributes • ${count} linked questions`;
+    } else {
+      const title = document.getElementById('studio-hub-title');
+      const g = selectedGroupMeta();
+      const count = this.filtered().length;
+      if (title) title.textContent = g ? `${g.label} (${count})` : `Risk attributes (${count})`;
+    }
+  };
+  const showHub = hub.showHub.bind(hub);
+  const showEditor = hub.showEditor.bind(hub);
+  hub.showHub = function () {
+    showHub();
+    document.getElementById('risk-hub-layout')?.classList.remove('hidden');
+    renderGroupSidebar();
+    this.renderTable();
+  };
+  hub.showEditor = function () {
+    showEditor();
+    document.getElementById('risk-hub-layout')?.classList.add('hidden');
+  };
+  document.getElementById('hub-filter')?.addEventListener('change', () => {
+    renderGroupSidebar();
+    const wrap = document.getElementById('studio-hub-table');
+    if (wrap && !PS.studioHub.filtered().length) {
+      wrap.innerHTML = riskEmptyStateHtml();
+    }
+  });
+});
+</script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/underwriting-rule-store.js"></script>
+<script src="assets/prototype-app.js"></script>
+</body>
+</html>

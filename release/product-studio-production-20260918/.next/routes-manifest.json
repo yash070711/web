@@ -1,0 +1,263 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/api/runtime/products/[id]",
+      "regex": "^/api/runtime/products/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/runtime/products/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/runtime/products/[id]/quote",
+      "regex": "^/api/runtime/products/([^/]+?)/quote(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/runtime/products/(?<nxtPid>[^/]+?)/quote(?:/)?$"
+    },
+    {
+      "page": "/products/[id]",
+      "regex": "^/products/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/products/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/products/[id]/view",
+      "regex": "^/products/([^/]+?)/view(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/products/(?<nxtPid>[^/]+?)/view(?:/)?$"
+    },
+    {
+      "page": "/products/[id]/[studio]",
+      "regex": "^/products/([^/]+?)/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid",
+        "nxtPstudio": "nxtPstudio"
+      },
+      "namedRegex": "^/products/(?<nxtPid>[^/]+?)/(?<nxtPstudio>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/proto/[...path]",
+      "regex": "^/proto/(.+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPpath": "nxtPpath"
+      },
+      "namedRegex": "^/proto/(?<nxtPpath>.+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin",
+      "regex": "^/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/api/runtime/products",
+      "regex": "^/api/runtime/products(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/runtime/products(?:/)?$"
+    },
+    {
+      "page": "/audit",
+      "regex": "^/audit(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/audit(?:/)?$"
+    },
+    {
+      "page": "/audit-log",
+      "regex": "^/audit\\-log(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/audit\\-log(?:/)?$"
+    },
+    {
+      "page": "/catalogue",
+      "regex": "^/catalogue(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/catalogue(?:/)?$"
+    },
+    {
+      "page": "/coverage-studio",
+      "regex": "^/coverage\\-studio(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/coverage\\-studio(?:/)?$"
+    },
+    {
+      "page": "/dashboard",
+      "regex": "^/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard(?:/)?$"
+    },
+    {
+      "page": "/distribution",
+      "regex": "^/distribution(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/distribution(?:/)?$"
+    },
+    {
+      "page": "/distribution/create",
+      "regex": "^/distribution/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/distribution/create(?:/)?$"
+    },
+    {
+      "page": "/document-studio",
+      "regex": "^/document\\-studio(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/document\\-studio(?:/)?$"
+    },
+    {
+      "page": "/eligibility-studio",
+      "regex": "^/eligibility\\-studio(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/eligibility\\-studio(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/glossary",
+      "regex": "^/glossary(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/glossary(?:/)?$"
+    },
+    {
+      "page": "/governance",
+      "regex": "^/governance(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/governance(?:/)?$"
+    },
+    {
+      "page": "/integration",
+      "regex": "^/integration(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/integration(?:/)?$"
+    },
+    {
+      "page": "/jurisdiction",
+      "regex": "^/jurisdiction(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/jurisdiction(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/pricing-library",
+      "regex": "^/pricing\\-library(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pricing\\-library(?:/)?$"
+    },
+    {
+      "page": "/questionnaire-studio",
+      "regex": "^/questionnaire\\-studio(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/questionnaire\\-studio(?:/)?$"
+    },
+    {
+      "page": "/rating-pricing",
+      "regex": "^/rating\\-pricing(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/rating\\-pricing(?:/)?$"
+    },
+    {
+      "page": "/register",
+      "regex": "^/register(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/register(?:/)?$"
+    },
+    {
+      "page": "/risk-studio",
+      "regex": "^/risk\\-studio(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/risk\\-studio(?:/)?$"
+    },
+    {
+      "page": "/roles",
+      "regex": "^/roles(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/roles(?:/)?$"
+    },
+    {
+      "page": "/simulation",
+      "regex": "^/simulation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/simulation(?:/)?$"
+    },
+    {
+      "page": "/underwriting",
+      "regex": "^/underwriting(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/underwriting(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

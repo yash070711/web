@@ -1,0 +1,147 @@
+{
+  "app": {
+    "[project]/app/_not-found/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/admin/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/audit-log/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/audit/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/catalogue/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/coverage-studio/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/dashboard/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/distribution/create/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/distribution/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/document-studio/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/eligibility-studio/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/glossary/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/governance/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/integration/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/jurisdiction/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/login/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/pricing-library/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/products/[id]/[studio]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/products/[id]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/products/[id]/view/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/questionnaire-studio/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/rating-pricing/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/register/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/risk-studio/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/roles/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/simulation/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ],
+    "[project]/app/underwriting/page": [
+      "static/media/83afe278b6a6bb3c-s.p.2bn3s6zvc0dyp.woff2",
+      "static/media/99e609270109b47d-s.p.40sczeszzbjw1.woff2",
+      "static/media/23b7a97ae3b5c134-s.p.226pwps5o-gq_.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

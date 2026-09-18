@@ -1,0 +1,157 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Product Catalogue — MGA Workspace</title>
+<link rel="stylesheet" href="/ps/assets/style.css">
+<link rel="stylesheet" href="assets/mga-theme.css">
+</head><body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="catalogue.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" aria-label="Breadcrumb" id="topbar-breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+
+  <main class="main-content">
+    <div class="page-inner">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">Product Catalogue</h1>
+          <p class="page-subtitle">Products assigned to NTA by product owners via the existing Distribution Guide</p>
+        </div>
+      </div>
+
+      <div class="mga-cards" id="summary-cards"></div>
+
+      <div class="tabs" id="status-tabs" role="tablist" aria-label="Product status"></div>
+
+      <div class="mga-toolbar">
+        <input id="q-search" placeholder="Search product, ID or description…" oninput="renderProducts()">
+        <select id="q-lob" onchange="renderProducts()"><option value="">All lines of business</option></select>
+        <select id="q-status" onchange="renderProducts()"><option value="">All statuses</option><option>Draft</option><option>Active</option><option>Archived</option></select>
+        <select id="q-owner" onchange="renderProducts()"><option value="">All owners</option></select>
+      </div>
+
+      <div id="product-grid"></div>
+    </div>
+  </main>
+</div>
+
+<script src="/ps/assets/data.js"></script>
+<script src="/ps/assets/trucking-questionnaire-seed.js"></script>
+<script src="/ps/assets/product-seeds.js"></script>
+<script src="/ps/assets/admin-catalog.js"></script>
+<script src="/ps/assets/prototype-app.js"></script>
+<script src="assets/mga-data.js"></script>
+<script src="assets/mga-shell.js"></script>
+<script>
+try { localStorage.setItem('ps-profile', 'nta'); } catch (e) {}
+MgaShell.render('catalogue', 'Product Catalogue');
+
+let activeStatusTab = 'all';
+
+function populateFilterOptions(rows) {
+  const lobSel = document.getElementById('q-lob');
+  const ownerSel = document.getElementById('q-owner');
+  const lobs = Array.from(new Set(rows.map(r => r.lob))).sort();
+  const owners = Array.from(new Set(rows.map(r => r.owner))).sort();
+  const keep = (sel, values) => {
+    const current = sel.value;
+    sel.querySelectorAll('option[data-dyn]').forEach(o => o.remove());
+    values.forEach(v => {
+      const o = document.createElement('option');
+      o.textContent = v; o.value = v; o.setAttribute('data-dyn', '1');
+      sel.appendChild(o);
+    });
+    if (values.includes(current)) sel.value = current;
+  };
+  keep(lobSel, lobs);
+  keep(ownerSel, owners);
+}
+
+function renderSummaryCards(rows) {
+  const coverageTotal = rows.reduce((n, r) => n + r.coverageCount, 0);
+  const activeCount = rows.filter(r => r.mgaStatus === 'Active').length;
+  document.getElementById('summary-cards').innerHTML = [
+    ['Assigned products', rows.length],
+    ['Active assignments', activeCount],
+    ['Granted coverages', coverageTotal],
+    ['Lines of business', new Set(rows.map(r => r.lob)).size]
+  ].map(([label, value]) => `<div class="card"><div class="card-subtitle">${label}</div><div class="value">${value}</div></div>`).join('');
+}
+
+function renderTabs(rows) {
+  const counts = { all: rows.length, Draft: 0, Active: 0, Archived: 0 };
+  rows.forEach(r => { counts[r.mgaStatus] = (counts[r.mgaStatus] || 0) + 1; });
+  const tabs = [['all', 'All Products'], ['Draft', 'Draft'], ['Active', 'Active'], ['Archived', 'Archived']];
+  document.getElementById('status-tabs').innerHTML = tabs.map(([key, label]) => `
+    <button role="tab" class="tab-btn ${activeStatusTab === key ? 'active' : ''}" onclick="activeStatusTab='${key}';renderProducts()">${label} ${counts[key] || 0}</button>
+  `).join('');
+}
+
+function productCard(row) {
+  const { product, version } = row;
+  const href = `product-workspace.html?id=${encodeURIComponent(product.id)}&version=${encodeURIComponent(version || '')}`;
+  return `
+    <div class="card mga-product-card">
+      <div class="mga-status-row" style="justify-content:space-between">
+        <span class="badge badge-${row.rawStatus}">${MgaData.escapeHtml(row.rawStatus)}</span>
+      </div>
+      <div class="name">${MgaData.escapeHtml(product.name || product.id)}</div>
+      <div class="idline">${MgaData.escapeHtml(product.id)} · v${MgaData.escapeHtml(version || 'n/a')}</div>
+      <div class="card-subtitle">${MgaData.escapeHtml(row.lob)} · ${MgaData.escapeHtml(String(row.jurisdictionCount))} jurisdiction${row.jurisdictionCount === 1 ? '' : 's'}</div>
+      <div class="mga-stat-row">
+        <span><strong>${row.coverageCount}</strong> Coverage${row.coverageCount === 1 ? '' : 's'} granted</span>
+        <span><strong>${row.riskCount}</strong> Risk Factor${row.riskCount === 1 ? '' : 's'}</span>
+      </div>
+      <div class="mga-status-row">
+        <span class="badge ${MgaData.statusBadgeClass(row.status.eligibility)}">Eligibility · ${MgaData.statusLabel(row.status.eligibility)}</span>
+        <span class="badge ${MgaData.statusBadgeClass(row.status.ratingPricing)}">Rating · ${MgaData.statusLabel(row.status.ratingPricing)}</span>
+      </div>
+      <a class="mga-open-link" href="${href}">Open Product →</a>
+    </div>`;
+}
+
+function renderProducts() {
+  const all = MgaData.assignedRows();
+  populateFilterOptions(all);
+  renderSummaryCards(all);
+  renderTabs(all);
+
+  const q = document.getElementById('q-search').value.trim().toLowerCase();
+  const lob = document.getElementById('q-lob').value;
+  const statusFilter = document.getElementById('q-status').value;
+  const owner = document.getElementById('q-owner').value;
+
+  const rows = all.filter(r => {
+    if (activeStatusTab !== 'all' && r.mgaStatus !== activeStatusTab) return false;
+    if (statusFilter && r.mgaStatus !== statusFilter) return false;
+    if (lob && r.lob !== lob) return false;
+    if (owner && r.owner !== owner) return false;
+    if (q) {
+      const hay = `${r.product.name || ''} ${r.product.id || ''} ${r.product.description || ''} ${r.lob} v${r.version || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const grid = document.getElementById('product-grid');
+  if (!all.length) {
+    grid.innerHTML = `<div class="mga-empty"><strong>No products yet</strong>Ask a product owner to assign NTA as a distribution channel in the Distribution Guide, or create your first product to get started.<div style="margin-top:14px"><a class="btn btn-primary" href="/ps/catalogue.html">+ Create Product</a></div></div>`;
+    return;
+  }
+  if (!rows.length) {
+    grid.innerHTML = `<div class="mga-empty"><strong>No products match these filters</strong>Try clearing search or filters.</div>`;
+    return;
+  }
+  grid.innerHTML = `<div class="mga-product-grid">${rows.map(productCard).join('')}</div>`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const q = new URLSearchParams(location.search).get('q');
+  if (q) document.getElementById('q-search').value = q;
+  renderProducts();
+});
+document.addEventListener('ps-page-ready', renderProducts);
+</script>
+</body></html>

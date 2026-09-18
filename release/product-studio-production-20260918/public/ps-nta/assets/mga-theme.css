@@ -1,0 +1,71 @@
+/* MGA-specific components. These reuse the real Product Studio design
+   tokens/classes from /ps/assets/style.css (shell, topbar, sidenav, page
+   header) so the MGA workspace looks exactly like the rest of the app —
+   this file only adds the handful of components style.css doesn't have. */
+
+.mga-logo-mark{width:32px;height:32px;background:linear-gradient(180deg,var(--color-brand) 0%,var(--color-brand-dark) 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:700;letter-spacing:-.02em}
+
+.mga-muted{color:var(--color-muted)}
+.mga-topbar-user-role{font-size:11px;color:var(--color-muted)}
+.mga-profile-caret{font-size:16px;line-height:1;color:var(--color-muted);margin-left:2px;transform:translateY(-1px)}
+.mga-profile-dropdown{position:fixed;right:24px;top:52px;z-index:999;min-width:220px}
+.mga-profile-heading{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--color-muted);padding:8px 16px 6px}
+.mga-profile-option{width:100%;border:0;background:transparent;font-family:inherit;text-align:left;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+.mga-profile-check{color:var(--color-brand);font-size:16px;font-weight:700}
+.mga-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:var(--space-6,24px)}
+.mga-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.mga-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.mga-cards .card{padding:20px}
+.mga-cards .value{font-size:22px;font-weight:700;margin:4px 0;color:var(--color-ink)}
+
+.mga-toolbar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin:20px 0}
+
+.mga-product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.mga-product-card{padding:20px;display:flex;flex-direction:column;gap:10px}
+.mga-product-card .name{font-size:15.5px;font-weight:650;color:var(--color-ink)}
+.mga-product-card .idline{font-size:12.5px;color:var(--color-muted)}
+.mga-stat-row{display:flex;gap:18px;font-size:12.5px;color:var(--color-muted)}
+.mga-stat-row strong{color:var(--color-ink)}
+.mga-status-row{display:flex;gap:8px;flex-wrap:wrap}
+.mga-open-link{margin-top:6px;font-size:13px;color:var(--color-brand-dark);font-weight:650;text-decoration:none}
+.mga-open-link:hover{text-decoration:underline}
+
+.mga-empty{padding:40px 24px;text-align:center;background:var(--color-panel);border:1px dashed var(--color-border);border-radius:var(--radius-md,10px);color:var(--color-muted)}
+.mga-empty strong{display:block;color:var(--color-ink);margin-bottom:4px;font-size:14px}
+
+.mga-workspace-body{display:grid;grid-template-columns:250px 1fr;gap:24px;align-items:start}
+.mga-config-menu{background:var(--color-panel);border:1px solid var(--color-border);border-radius:var(--radius-md,10px);padding:8px;position:sticky;top:24px}
+.mga-config-menu .heading{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--color-muted);padding:10px 12px 6px}
+.mga-config-link{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--color-ink);font-size:13.5px}
+.mga-config-link:hover{background:var(--color-surface)}
+.mga-config-link .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.mga-config-link .dot.configured{background:var(--color-success)}
+.mga-config-link .dot.incomplete{background:var(--color-brand)}
+.mga-config-link .dot.not_configured{background:var(--color-disabled)}
+
+.mga-row{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--color-border)}
+.mga-row:last-child{border-bottom:0}
+
+.mga-coverage-item{padding:16px;border:1px solid var(--color-border);border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mga-coverage-item .meta{font-size:12.5px;color:var(--color-muted);margin-top:2px}
+
+.mga-back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:var(--color-muted);font-size:13px;padding:0;margin-bottom:16px;text-decoration:none}
+.mga-back:hover{color:var(--color-brand-dark)}
+
+.mga-dash-grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start}
+.mga-dash-grid-1-1{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+
+@media (max-width:1280px){
+  .mga-cards{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:1024px){
+  .mga-dash-grid-2-1,.mga-dash-grid-1-1{grid-template-columns:1fr}
+  .mga-workspace-body{grid-template-columns:1fr}
+  .mga-config-menu{position:static}
+  .mga-toolbar{grid-template-columns:1fr 1fr}
+}
+@media (max-width:650px){
+  .mga-cards{grid-template-columns:1fr}
+  .mga-toolbar{grid-template-columns:1fr}
+}

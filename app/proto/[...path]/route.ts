@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 const MAP: Record<string, string> = {
-  "index.html": "/dashboard",
+  "index.html": "/catalogue",
   "catalogue.html": "/catalogue",
   "coverage-studio.html": "/coverage-studio",
   "questionnaire-studio.html": "/questionnaire-studio",
@@ -64,5 +64,5 @@ export async function GET(
     }
     redirect(`${url.pathname}${url.search}`);
   }
-  redirect("/dashboard");
+  redirect("/catalogue");
 }

@@ -1,0 +1,25 @@
+1:"$Sreact.fragment"
+2:I[17281,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/3vlz-z8bqfimq.js"],"HtmlAppPage"]
+3:I[97367,["/_next/static/chunks/3fntmmi971322.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+8:I[97367,["/_next/static/chunks/3fntmmi971322.js"],"ViewportBoundary"]
+9:I[97367,["/_next/static/chunks/3fntmmi971322.js"],"MetadataBoundary"]
+a:I[27201,["/_next/static/chunks/3fntmmi971322.js"],"IconMark"]
+c:I[39756,["/_next/static/chunks/3fntmmi971322.js"],"default"]
+d:I[37457,["/_next/static/chunks/3fntmmi971322.js"],"default"]
+10:I[22016,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/22i43cg4l4-dq.js"],""]
+:HL["/_next/static/chunks/2jtccfi43jjar.css","style"]
+:HL["/_next/static/chunks/3rn_k701wasgn.css","style"]
+7:X
+f:X
+f:C
+0:{"buildId":"g2OYjcCqxEDlaxu9ZQnsm","data":[{"rsc":["$","$1","c",{"children":[["$","$L2",null,{"file":"governance.html"}],[["$","script","script-0",{"src":"/_next/static/chunks/3vlz-z8bqfimq.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":"$@6","staleTime":"$7","varyParams":null},{"rsc":["$","$1","h",{"children":[null,["$","$L8",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$L9",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Veridex Product Guide"}],["$","meta","1",{"name":"description","content":"Insurance product configuration SaaS — design, govern, and publish products."}],["$","link","2",{"rel":"icon","href":"/favicon.ico?favicon.2vob68tjqpejf.ico","sizes":"256x256","type":"image/x-icon"}],["$","$La","3",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"isPartial":"$@b","staleTime":"$7","varyParams":null},{"rsc":["$","$1","c",{"children":[null,["$","$Lc",null,{"parallelRouterKey":"children","template":["$","$Ld",null,{}]}]]}],"isPartial":"$@e","staleTime":"$7","varyParams":"$f"},{"rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/2jtccfi43jjar.css","precedence":"next"}],["$","link","1",{"rel":"stylesheet","href":"/_next/static/chunks/3rn_k701wasgn.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/3fntmmi971322.js","async":true}]],["$","html",null,{"lang":"en","className":"inter_b2991b2-module__9mH_6q__variable ibm_plex_mono_23546476-module__ALNHsW__variable","children":["$","body",null,{"style":{"fontFamily":"Inter, system-ui, sans-serif"},"children":["$","$Lc",null,{"parallelRouterKey":"children","template":["$","$Ld",null,{}],"notFound":[["$","div",null,{"className":"page-inner","style":{"padding":80,"textAlign":"center"},"children":[["$","h1",null,{"className":"page-title","children":"Not found"}],["$","p",null,{"className":"page-subtitle","children":"That product or page is not in this workspace."}],["$","$L10",null,{"className":"btn btn-primary","href":"/catalogue","children":"Back to catalogue"}]]}],[]]}]}]}]]}],"isPartial":"$@11","staleTime":"$7","varyParams":null}],"isUpgradeableISRFallback":false,"a":"$@12","rootVaryParams":null,"needsRuntimeRequest":"$@13"}
+5:null
+7:300
+13:true
+7:C
+12:0
+b:"$undefined"
+e:"$undefined"
+11:"$undefined"
+6:"$undefined"

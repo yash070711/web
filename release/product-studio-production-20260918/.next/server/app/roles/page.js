@@ -1,0 +1,13 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/roles/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__15r7t7d._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_1n3w9lb._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1jbxgjr._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0f6s48x._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__02gx3zy._.js")
+R.c("server/chunks/ssr/_05p5doo._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_0p8s4lh._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_0l_sp0x.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_0q-w892.js")
+R.c("server/chunks/ssr/_next-internal_server_app_roles_page_actions_1vjw3p5.js")
+R.m(35640)
+module.exports=R.m(35640).exports

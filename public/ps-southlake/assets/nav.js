@@ -7,17 +7,15 @@ window.PS = window.PS || {};
 
 PS.nav = {
   items: [
-    { group: 'HOME' },
-    { id: 'dashboard',      label: 'Dashboard',                href: '/dashboard',                icon: 'house' },
     { group: 'PRODUCT GUIDE' },
     { id: 'catalogue',      label: 'Product Catalogue',        href: '/catalogue',             icon: 'book-open' },
-    { id: 'jurisdiction',   label: 'Define Jurisdiction',      href: '/jurisdiction',   icon: 'map-pin' },
-    { id: 'coverage',       label: 'Coverage Guide',          href: '/coverage-studio',       icon: 'umbrella' },
-    { id: 'questionnaire',  label: 'Questionnaire Guide',     href: '/questionnaire-studio',  icon: 'list-checks' },
-    { id: 'risk',           label: 'Risk Guide',               href: '/risk-studio',           icon: 'warning' },
-    { id: 'eligibility',    label: 'Eligibility Guide',       href: '/eligibility-studio',    icon: 'user-check' },
-    { id: 'rating',         label: 'Rating & Pricing Guide',  href: '/rating-pricing',         icon: 'calculator' },
-    { id: 'distribution',   label: 'Distribution Guide',      href: '/distribution',    icon: 'tree-structure' },
+    { id: 'jurisdiction',   label: 'Define Jurisdiction',      href: '/jurisdiction',           icon: 'map-pin', hidden:true },
+    { id: 'coverage',       label: 'Coverage Guide',           href: '/coverage-studio',        icon: 'umbrella', hidden:true },
+    { id: 'questionnaire',  label: 'Questionnaire Guide',      href: '/questionnaire-studio',   icon: 'list-checks', hidden:true },
+    { id: 'risk',           label: 'Risk Guide',               href: '/risk-studio',            icon: 'warning', hidden:true },
+    { id: 'eligibility',    label: 'Eligibility Guide',        href: '/eligibility-studio',     icon: 'user-check', hidden:true },
+    { id: 'rating',         label: 'Rating & Pricing Guide',   href: '/rating-pricing',         icon: 'calculator', hidden:true },
+    { id: 'distribution',   label: 'Distribution Guide',       href: '/distribution',           icon: 'tree-structure', hidden:true },
     { id: 'document',       label: 'Document Guide',          href: '/document-studio',       icon: 'file-text' },
     { group: 'GOVERNANCE' },
     { id: 'simulation',     label: 'Simulation & Testing',     href: '/simulation',     icon: 'flask' },
@@ -96,18 +94,22 @@ PS.nav = {
     const u = PS.data.currentUser;
     const navActiveId = this.sidebarActiveId(activeId);
 
-    document.querySelector('.topbar-logo').innerHTML = `
+    const logoEl = document.querySelector('.topbar-logo');
+    logoEl.innerHTML = `
       <div class="topbar-logo-mark" aria-hidden="true" style="font-size:14px;padding-bottom:0">SL</div>
       <span class="topbar-logo-wordmark">
         <span class="topbar-logo-text">SouthLake Carrier</span>
         <span class="topbar-logo-sub">Carrier Portal</span>
       </span>
     `;
+    // Dashboard is hidden from this app — the logo (and every "home" link)
+    // takes the user to the Product Catalogue instead.
+    logoEl.setAttribute('href', 'catalogue.html');
 
     // Breadcrumb
     const bcEl = document.querySelector('.topbar-breadcrumb');
     if (bcEl) {
-      const crumbs = [{ label: 'Carrier Portal', href: '/dashboard' }, ...breadcrumbs];
+      const crumbs = [{ label: 'Carrier Portal', href: '/catalogue' }, ...breadcrumbs];
       bcEl.innerHTML = crumbs.map((c, i) => {
         const isLast = i === crumbs.length - 1;
         return (i > 0 ? `<span class="sep">›</span>` : '') +
@@ -129,7 +131,7 @@ PS.nav = {
         <div class="user-avatar ${u.avatarClass}">${u.initials}</div>
         <div class="topbar-user-info">
           <div class="topbar-user-name">SouthLake Carrier</div>
-          <div class="topbar-user-role">Non admitted</div>
+          <div class="topbar-user-role">Carrier</div>
         </div>
         ${this.icon('caret-down', 12)}
       </div>
@@ -140,6 +142,7 @@ PS.nav = {
     let html = '';
     let inGroup = false;
     for (const item of this.items) {
+      if (item.hidden) continue;
       if (item.group) {
         if (inGroup) html += '</div>';
         html += `<div class="nav-group"><div class="nav-group-label">${item.group}</div>`;
@@ -206,9 +209,9 @@ PS.nav = {
   },
 
   profiles: [
-    { key: 'vikram',    label: 'Futuristic',    href: '/ps/index.html' },
-    { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/index.html' },
-    { key: 'nta',       label: 'NTA',        href: '/ps-nta/dashboard.html' }
+    { key: 'vikram',    label: 'Futuristic',    href: '/ps/catalogue.html' },
+    { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/catalogue.html' },
+    { key: 'nta',       label: 'NTA',        href: '/ps-nta/catalogue.html' }
   ],
 
   activeProfileKey() {
@@ -249,7 +252,7 @@ PS.nav = {
     menu.innerHTML = `
       <div style="padding:10px 16px;border-bottom:1px solid var(--color-border)">
         <div style="font-size:13px;font-weight:500">${PS.data.currentUser.name}</div>
-        <div style="font-size:12px;color:var(--color-muted)">Role: ${PS.data.currentUser.role}</div>
+        <div style="font-size:12px;color:var(--color-muted)">Role: Carrier</div>
       </div>
       <div style="padding:8px 0">
         <div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--color-muted);padding:4px 16px 4px">Switch Profile</div>

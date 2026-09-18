@@ -9,9 +9,9 @@ window.MgaShell = {
   LAST_PRODUCT_KEY: 'mga-nta-last-product',
 
   profiles: [
-    { key: 'vikram', label: 'Futuristic', href: '/ps/index.html' },
-    { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/index.html' },
-    { key: 'nta', label: 'NTA', href: '/ps-nta/dashboard.html' }
+    { key: 'vikram', label: 'Futuristic', href: '/ps/catalogue.html' },
+    { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/catalogue.html' },
+    { key: 'nta', label: 'NTA', href: '/ps-nta/catalogue.html' }
   ],
 
   icons: {
@@ -58,12 +58,17 @@ window.MgaShell = {
 
   render(activeId, breadcrumbLabel) {
     const logo = document.querySelector('.topbar-logo');
-    if (logo) logo.innerHTML = `
-      <div class="mga-logo-mark">NT</div>
-      <span class="topbar-logo-wordmark">
-        <span class="topbar-logo-text">NTA</span>
-        <span class="topbar-logo-sub">MGA Workspace</span>
-      </span>`;
+    if (logo) {
+      logo.innerHTML = `
+        <div class="mga-logo-mark">NT</div>
+        <span class="topbar-logo-wordmark">
+          <span class="topbar-logo-text">NTA</span>
+          <span class="topbar-logo-sub">MGA Workspace</span>
+        </span>`;
+      // Dashboard is hidden from this app — the logo takes the user to the
+      // Product Catalogue instead.
+      logo.setAttribute('href', 'catalogue.html');
+    }
 
     const bc = document.querySelector('.topbar-breadcrumb');
     if (bc) bc.innerHTML = `<span class="current">${breadcrumbLabel}</span>`;
@@ -79,7 +84,7 @@ window.MgaShell = {
         <div class="user-avatar">NT</div>
         <div class="topbar-user-info">
           <div class="topbar-user-name">NTA</div>
-          <div class="mga-topbar-user-role">Brokerage MGA</div>
+          <div class="mga-topbar-user-role">MGA</div>
         </div>
         <span class="mga-profile-caret" aria-hidden="true">⌄</span>
       </div>`;
@@ -113,7 +118,6 @@ window.MgaShell = {
     if (nav) nav.innerHTML = `
       <div class="nav-group">
         <div class="nav-group-label">MGA</div>
-        ${item('dashboard', 'Dashboard', 'dashboard.html', 'house')}
         ${item('catalogue', 'Product Catalogue', 'catalogue.html', 'book-open')}
       </div>
       <div class="nav-group">
@@ -123,16 +127,7 @@ window.MgaShell = {
         ${item('simulation', 'Simulation &amp; Testing', this.genericStudioHref('simulation-studio.html'), 'flask')}
       </div>
       <div class="nav-group">
-        <div class="nav-group-label">Configuration</div>
-        ${item('coverage', 'Coverage', this.genericStudioHref('coverage-studio.html'), 'umbrella')}
-        ${item('questionnaire', 'Questionnaire', this.genericStudioHref('questionnaire-studio.html'), 'list-checks')}
-        ${item('risk', 'Risk', this.genericStudioHref('risk-studio.html'), 'warning')}
-        ${item('eligibility', 'Eligibility', this.genericStudioHref('eligibility-studio.html'), 'user-check')}
-        ${item('rating', 'Rating &amp; Pricing', this.genericStudioHref('rating-studio.html'), 'calculator')}
-      </div>
-      <div class="nav-group">
         <div class="nav-group-label">Operations</div>
-        ${item('distribution', 'Distribution', this.genericStudioHref('distribution-studio.html'), 'tree-structure')}
         ${item('documents', 'Documents', this.genericStudioHref('document-studio.html'), 'file-text')}
       </div>
       <div class="nav-group">
@@ -141,9 +136,9 @@ window.MgaShell = {
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Switch profile</div>
-        <a href="/ps/index.html" class="nav-item">${this.icons['arrow-square']}<span>Futuristic</span></a>
-        <a href="/ps-southlake/index.html" class="nav-item">${this.icons['arrow-square']}<span>SouthLake</span></a>
-        <a href="dashboard.html" class="nav-item active">${this.icons['arrow-square']}<span>NTA</span></a>
+        <a href="/ps/catalogue.html" class="nav-item">${this.icons['arrow-square']}<span>Futuristic</span></a>
+        <a href="/ps-southlake/catalogue.html" class="nav-item">${this.icons['arrow-square']}<span>SouthLake</span></a>
+        <a href="catalogue.html" class="nav-item active">${this.icons['arrow-square']}<span>NTA</span></a>
       </div>`;
   },
 
@@ -159,6 +154,10 @@ window.MgaShell = {
     menu.className = 'dropdown-menu mga-profile-dropdown';
     menu.setAttribute('role', 'menu');
     menu.innerHTML = `
+      <div style="padding:10px 16px;border-bottom:1px solid var(--color-border)">
+        <div style="font-size:13px;font-weight:500">NTA</div>
+        <div style="font-size:12px;color:var(--color-muted)">Role: MGA</div>
+      </div>
       <div class="mga-profile-heading">Switch Profile</div>
       ${this.profiles.map(profile => `
         <button class="dropdown-item mga-profile-option" type="button" role="menuitem" data-profile-href="${profile.href}">

@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulation & Testing — Insurance Product Guide</title>
+  <meta name="description" content="Validate the complete product configuration against representative risk scenarios before publication.">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    /* ── Tabs ──────────────────────────────────── */
+    .tabs-nav {
+      display: flex; gap: var(--space-5); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-5);
+    }
+    .tab-btn {
+      padding: var(--space-3) 0; font-size: 14px; font-weight: 500; color: var(--color-muted);
+      border-bottom: 2px solid transparent; cursor: pointer; user-select: none;
+      transition: color .2s, border-color .2s;
+    }
+    .tab-btn:hover { color: var(--color-ink); }
+    .tab-btn.active { color: var(--color-brand); border-bottom-color: var(--color-brand); font-weight: 600; }
+    
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Progress Bar ──────────────────────────── */
+    .progress-bar-wrap { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+    .progress-header { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; }
+    .progress-track { width: 100%; height: 8px; background: var(--color-disabled); border-radius: 4px; overflow: hidden; position: relative; }
+    .progress-fill { height: 100%; background: var(--color-success); width: 100%; transition: width .3s; }
+    .progress-fill.running { background: var(--color-brand); }
+    .progress-footer { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--color-muted); font-family: 'IBM Plex Mono', monospace; }
+
+    /* ── Data Tables ───────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
+    .data-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--color-muted); border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+    .data-table td { padding: 12px 12px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+    .data-table tr:last-child td { border-bottom: none; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .status-badge.pass { background: #DCFCE7; color: var(--color-success); }
+    .status-badge.fail { background: #FEE2E2; color: var(--color-danger); }
+    .status-badge.skip { background: var(--color-surface); color: var(--color-muted); }
+    
+    .row-expandable { cursor: pointer; transition: background .1s; }
+    .row-expandable:hover { background: var(--color-surface); }
+    
+    .detail-drawer { display: none; background: var(--color-surface); padding: var(--space-5); border-bottom: 1px solid var(--color-border); }
+    .detail-drawer.open { display: block; }
+    .drawer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-5); }
+    .drawer-box { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); }
+    .drawer-title { font-size: 11px; font-weight: 700; color: var(--color-muted); text-transform: uppercase; margin-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); padding-bottom: 6px; }
+
+    /* ── Individual Run ────────────────────────── */
+    .run-layout { display: grid; grid-template-columns: 350px 1fr; gap: var(--space-5); }
+    .run-panel { background: var(--color-panel); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-5); }
+    .run-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); }
+    .form-grid { display: grid; gap: var(--space-3); }
+
+    /* ── Context bar ───────────────────────────── */
+    .studio-context-bar {
+      display: flex; align-items: center; gap: var(--space-4);
+      padding: var(--space-3) var(--space-5);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); margin-bottom: var(--space-5); font-size: 13px;
+    }
+    .studio-context-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; background: var(--color-panel);
+      border: 1px solid var(--color-border); border-radius: 100px;
+      font-size: 12px; font-weight: 500;
+    }
+    
+    /* ── Rule Trace ────────────────────────────── */
+    .run-panel .form-group { min-width: 0; }
+
+    .rule-trace { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--color-muted); background: #1E293B; border-radius: var(--radius-md); padding: var(--space-3); overflow-x: auto; margin-top: var(--space-3); }
+    .rule-trace-line { display: flex; gap: var(--space-3); margin-bottom: 4px; }
+    .trace-time { color: #94A3B8; }
+    .trace-msg { color: #E2E8F0; }
+    .trace-pass { color: #4ADE80; font-weight: 700; }
+    .trace-head { color: #38BDF8; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="index.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+  <main class="main-content" id="main-content">
+    <div class="page-inner">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1 class="page-title">Simulation & Testing</h1>
+          <p class="page-subtitle">Commercial Truck Comprehens · v2026.08</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M229.66 109.66l-48 48a8 8 0 01-11.32-11.32L206.69 112H128a88.1 88.1 0 00-88 88 8 8 0 01-16 0 104.11 104.11 0 01104-104h78.69l-36.35-36.34a8 8 0 0111.32-11.32l48 48a8 8 0 010 11.32z" fill="currentColor"/></svg>
+            Compare Versions
+          </button>
+          <button class="btn btn-primary" onclick="openAddTestModal()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M224 128a8 8 0 01-8 8h-80v80a8 8 0 01-16 0v-80H40a8 8 0 010-16h80V40a8 8 0 0116 0v80h80a8 8 0 018 8z" fill="currentColor"/></svg>
+            Add Test Case
+          </button>
+          <button class="btn btn-primary" style="background:var(--color-success);border-color:var(--color-success)" onclick="runAllTests()">
+            <svg width="16" height="16" viewBox="0 0 256 256" fill="none"><path d="M228 128a8 8 0 01-4 6.93l-144 80A8 8 0 0168 208V48a8 8 0 0112-6.93l144 80a8 8 0 010 13.86z" fill="currentColor"/></svg>
+            Run All Tests
+          </button>
+        </div>
+      </div>
+
+      <div class="studio-context-bar">
+        <span class="studio-context-pill">
+          <svg width="12" height="12" viewBox="0 0 256 256" fill="none"><path d="M128 24a104 104 0 100 208A104 104 0 00128 24zm0 192a88 88 0 110-176 88 88 0 010 176zm64-88a8 8 0 01-8 8h-56a8 8 0 01-8-8V72a8 8 0 0116 0v48h48a8 8 0 018 8z" fill="currentColor"/></svg>
+          PRD-015 · v2026.08
+        </span>
+        <span style="color:var(--color-muted)">·</span>
+        <span>12 test cases &nbsp;·&nbsp; 12 passed &nbsp;·&nbsp; 0 failed</span>
+        <span class="status-badge pass" style="margin-left:8px">ALL TESTS PASSED</span>
+        <div style="margin-left:auto"><a href="product-detail.html?id=PRD-015#studios" class="btn btn-ghost btn-sm">← Back to Product</a></div>
+      </div>
+
+      <div class="tabs-nav">
+        <div class="tab-btn active" onclick="switchTab('suite', this)">Test Suite</div>
+        <div class="tab-btn" onclick="switchTab('run', this)">Individual Run</div>
+        <div class="tab-btn" onclick="switchTab('compare', this)">Version Comparison</div>
+        <div class="tab-btn" onclick="switchTab('regress', this)">Regression Suite</div>
+      </div>
+
+      <!-- TAB 1: Test Suite -->
+      <div id="tab-suite" class="tab-pane active">
+        <div class="progress-bar-wrap">
+          <div class="progress-header">
+            <span>12 Test Cases</span>
+            <span><span style="color:var(--color-success)">12 Passed</span> &nbsp; <span style="color:var(--color-danger)">0 Failed</span> &nbsp; <span style="color:var(--color-muted)">0 Skipped</span></span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="main-progress"></div></div>
+          <div class="progress-footer">
+            <span>Last Run: 21-Aug-2026 14:37 by Rajan Mehta</span>
+            <span>Duration: 2.3s</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4)">
+          <input type="text" class="form-control" placeholder="Search test cases..." style="flex:1;max-width:300px">
+          <select class="form-control" style="width:150px" data-admin-key="simulationCategories"><option value="" data-keep>All Categories</option><option>Rating</option><option>Eligibility</option><option>Underwriting</option><option>Boundary</option></select>
+          <select class="form-control" style="width:150px" data-admin-key="simulationResults"><option value="" data-keep>All Results</option><option>Passed</option><option>Failed</option></select>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th>Test Case Name</th>
+              <th>Category</th>
+              <th>Expected Outcome</th>
+              <th>Last Result</th>
+              <th>Prem. Expected</th>
+              <th>Prem. Actual</th>
+              <th>Variance</th>
+            </tr>
+          </thead>
+          <tbody id="test-table-body">
+            <!-- Rows generated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TAB 2: Individual Run -->
+      <div id="tab-run" class="tab-pane">
+        <div class="run-layout">
+          <div class="run-panel">
+            <div class="run-header">
+              <div style="font-weight:600;font-size:14px">Risk Profile Inputs</div>
+              <select class="form-control" style="width:160px;height:28px;font-size:12px" data-sim-profile><option>Load profile...</option></select>
+            </div>
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">driver_age</label><input type="number" class="form-control" value="35" data-sim-field="driver_age"></div>
+              <div class="form-group"><label class="form-label">vehicle_year</label><input type="number" class="form-control" value="2021" data-sim-field="vehicle_year"></div>
+              <div class="form-group"><label class="form-label">vehicle_make</label><input type="text" class="form-control" value="Toyota Fortuner" data-sim-field="vehicle_make"></div>
+              <div class="form-group"><label class="form-label">insured_value</label><input type="number" class="form-control" value="28000" data-sim-field="insured_value"></div>
+              <div class="form-group"><label class="form-label">territory_zone</label><select class="form-control" data-sim-field="territory_zone"><option value="metro">Zone A (Metro)</option><option value="town" selected>Zone B (Urban)</option><option value="rural">Zone C (Rural)</option></select></div>
+              <div class="form-group"><label class="form-label">claims_free_years</label><input type="number" class="form-control" value="3" data-sim-field="claims_free_years"></div>
+              <div class="form-group"><label class="form-label">conviction_count</label><input type="number" class="form-control" value="0" data-sim-field="conviction_count"></div>
+              <div class="form-group"><label class="form-label">selected_covers</label><select class="form-control" multiple style="height:60px" data-sim-field="selected_covers"><option selected value="Own Damage">Own Damage</option><option selected value="Third Party">Third Party</option><option selected value="PA">PA</option><option selected value="Theft">Theft</option><option value="Roadside">Roadside</option></select></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-4)">
+              <div class="form-group">
+                <label class="form-label">Expected Eligibility</label>
+                <select class="form-control" data-sim-expected-eligibility><option value="">Do not validate</option><option>Eligible</option><option>Ineligible</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Expected UW Decision</label>
+                <select class="form-control" data-sim-expected-uw><option value="">Do not validate</option><option>Accept</option><option>Decline</option><option>Refer</option><option>Load</option><option>Skip</option></select>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:var(--space-4)" onclick="runIndividual()">Run Full Simulation</button>
+          </div>
+          <div class="run-panel" id="run-output">
+            <div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--color-muted);flex-direction:column;gap:12px">
+              <div style="font-size:32px">⚙️</div>
+              <div style="font-size:14px">Enter risk values and run simulation to view detailed trace.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Version Comparison -->
+      <div id="tab-compare" class="tab-pane">
+        <div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-5);padding:var(--space-4);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md)">
+          <div style="flex:1">
+            <label class="form-label">Base Version</label>
+            <div style="padding:8px 12px;background:var(--color-panel);border:1px solid var(--color-border);border-radius:4px;font-size:13px;font-weight:600">v2026.04 (Published)</div>
+          </div>
+          <div style="font-size:20px;color:var(--color-muted)">VS</div>
+          <div style="flex:1">
+            <label class="form-label">Comparison Version</label>
+            <select class="form-control"><option>v2026.07-DRAFT (PRD-002)</option></select>
+          </div>
+          <button class="btn btn-primary" style="align-self:flex-end">Run Comparison Suite</button>
+        </div>
+        
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:var(--space-3)">Premium Movement Analysis (Mode B)</h3>
+        <table class="data-table">
+          <thead><tr><th>Segment</th><th>v2026.04 Avg</th><th>v2026.07 Avg</th><th>Change</th><th>Tolerance</th></tr></thead>
+          <tbody>
+            <tr><td>21–25 years</td><td>$612</td><td>$624</td><td><span style="color:var(--color-danger)">+2.0%</span></td><td><span class="status-badge pass">PASS (<5%)</span></td></tr>
+            <tr><td>26–40 years</td><td>$394</td><td>$402</td><td><span style="color:var(--color-danger)">+2.0%</span></td><td><span class="status-badge pass">PASS (<5%)</span></td></tr>
+            <tr><td>41–60 years</td><td>$356</td><td>$363</td><td><span style="color:var(--color-danger)">+2.0%</span></td><td><span class="status-badge pass">PASS (<5%)</span></td></tr>
+            <tr><td>Metro Zone</td><td>$433</td><td>$442</td><td><span style="color:var(--color-danger)">+2.0%</span></td><td><span class="status-badge pass">PASS (<5%)</span></td></tr>
+            <tr><td>Rural Zone</td><td>$355</td><td>$362</td><td><span style="color:var(--color-danger)">+2.0%</span></td><td><span class="status-badge pass">PASS (<5%)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TAB 4: Regression Suite -->
+      <div id="tab-regress" class="tab-pane">
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:var(--space-3)">Regression Configuration</h3>
+        <table class="data-table" style="margin-bottom:var(--space-5)">
+          <tbody>
+            <tr><td style="width:300px;font-weight:600">Regression Trigger</td><td>Automatic — runs when version status changes to Approved</td></tr>
+            <tr><td style="font-weight:600">Tests in Regression</td><td>12 (all tests in suite)</td></tr>
+            <tr><td style="font-weight:600">Pass Threshold</td><td>100% must pass</td></tr>
+            <tr><td style="font-weight:600">Premium Variance Tolerance</td><td>±0.01% (rounding tolerance only)</td></tr>
+            <tr><td style="font-weight:600">Failure Action</td><td>Block publication; notify Product Owner + Actuary</td></tr>
+          </tbody>
+        </table>
+        
+        <h3 style="font-size:16px;font-weight:600;margin-bottom:var(--space-3)">Regression Log</h3>
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Trigger</th><th>Result</th><th>Duration</th></tr></thead>
+          <tbody>
+            <tr><td style="font-family:'IBM Plex Mono',monospace">21-Aug-2026 14:37</td><td>Status change → Approved</td><td><span class="status-badge pass">12/12 PASSED</span></td><td>2.3s</td></tr>
+            <tr><td style="font-family:'IBM Plex Mono',monospace">10-Aug-2026 09:12</td><td>Status change → Review</td><td><span class="status-badge pass">12/12 PASSED</span></td><td>2.1s</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="assets/data.js"></script>
+<script src="assets/product-seeds.js"></script>
+<script src="assets/admin-catalog.js"></script>
+<script src="assets/nav.js"></script>
+<script>
+/* ─────────────────────────────────────────────────────────────
+   Dynamic Simulation & Testing
+   Uses the same browser/localStorage rating configuration that
+   Rating & Pricing Guide writes to:
+   insurance-product-studio-rating-gui-v1
+   ───────────────────────────────────────────────────────────── */
+
+const SIM_TESTS_KEY = 'insurance-product-studio-simulation-tests-v1';
+const SIM_RUNS_KEY  = 'insurance-product-studio-simulation-runs-v1';
+
+const DEFAULT_TESTS = [
+  { id:1, name:'Standard Risk — Clean Record 35yo', cat:'Rating', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-5,vehicle_make:'Toyota Fortuner',insured_value:28000,territory_zone:'town',claims_free_years:3,conviction_count:0,selected_covers:['Own Damage','Third Party','PA','Theft']}, expected:{eligibility:'Eligible',uw:'Accept'} },
+  { id:2, name:'Young Driver — 22yo Under Limit', cat:'Rating', inputs:{driver_age:22,vehicle_year:new Date().getFullYear()-2,vehicle_make:'Toyota Fortuner',insured_value:18000,territory_zone:'metro',claims_free_years:1,conviction_count:0,selected_covers:['Own Damage','Third Party']}, expected:{eligibility:'Eligible',uw:'Accept'} },
+  { id:3, name:'Below Min Age — 19yo', cat:'Eligibility', inputs:{driver_age:19,vehicle_year:new Date().getFullYear()-3,vehicle_make:'Toyota Fortuner',insured_value:18000,territory_zone:'town',claims_free_years:0,conviction_count:0,selected_covers:['Own Damage']}, expected:{eligibility:'Ineligible',uw:'Skip'} },
+  { id:4, name:'Serious Conviction — 2 in 5yr', cat:'Underwriting', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-4,vehicle_make:'Toyota Fortuner',insured_value:28000,territory_zone:'town',claims_free_years:0,conviction_count:2,selected_covers:['Own Damage','Third Party']}, expected:{eligibility:'Eligible',uw:'Decline'} },
+  { id:5, name:'High-Value Vehicle — $65k', cat:'Underwriting', inputs:{driver_age:46,vehicle_year:new Date().getFullYear()-1,vehicle_make:'Toyota Fortuner',insured_value:65000,territory_zone:'metro',claims_free_years:5,conviction_count:0,selected_covers:['Own Damage','Third Party']}, expected:{eligibility:'Eligible',uw:'Refer'} },
+  { id:6, name:'Old Vehicle — 16yr', cat:'Eligibility', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-16,vehicle_make:'Toyota Fortuner',insured_value:12000,territory_zone:'town',claims_free_years:0,conviction_count:0,selected_covers:['Own Damage']}, expected:{eligibility:'Ineligible',uw:'Skip'} },
+  { id:7, name:'Minor Conviction — 1 in 3yr', cat:'Underwriting', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-4,vehicle_make:'Toyota Fortuner',insured_value:28000,territory_zone:'town',claims_free_years:0,conviction_count:1,selected_covers:['Own Damage','Third Party']}, expected:{eligibility:'Eligible',uw:'Load'} },
+  { id:8, name:'Roadside Add-On Selected', cat:'Rating', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-5,vehicle_make:'Toyota Fortuner',insured_value:28000,territory_zone:'town',claims_free_years:3,conviction_count:0,selected_covers:['Own Damage','Third Party','PA','Theft','Roadside']}, expected:{eligibility:'Eligible',uw:'Accept'} },
+  { id:9, name:'Broker Channel — High SI Override', cat:'Rating', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-4,vehicle_make:'Toyota Fortuner',insured_value:130000,territory_zone:'metro',claims_free_years:3,conviction_count:0,selected_covers:['Own Damage','Third Party']}, expected:{eligibility:'Eligible',uw:'Refer'} },
+  { id:10, name:'No Claims Discount — 5 Years', cat:'Rating', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-5,vehicle_make:'Toyota Fortuner',insured_value:28000,territory_zone:'town',claims_free_years:5,conviction_count:0,selected_covers:['Own Damage','Third Party']}, expected:{eligibility:'Eligible',uw:'Accept'} },
+  { id:11, name:'Boundary: Age exactly 21', cat:'Boundary', inputs:{driver_age:21,vehicle_year:new Date().getFullYear()-4,vehicle_make:'Toyota Fortuner',insured_value:28000,territory_zone:'town',claims_free_years:3,conviction_count:0,selected_covers:['Own Damage']}, expected:{eligibility:'Eligible',uw:'Accept'} },
+  { id:12, name:'Boundary: Vehicle Age exactly 15yr', cat:'Boundary', inputs:{driver_age:35,vehicle_year:new Date().getFullYear()-15,vehicle_make:'Toyota Fortuner',insured_value:18000,territory_zone:'town',claims_free_years:3,conviction_count:0,selected_covers:['Own Damage']}, expected:{eligibility:'Eligible',uw:'Accept'} }
+];
+
+let TESTS = loadSimulationTests();
+let lastRunResults = {};
+
+document.addEventListener('DOMContentLoaded', () => {
+  PS.nav.render('catalogue', [
+    { label:'Product Catalogue', href:'catalogue.html' },
+    { label:'PRD-015', href:'product-detail.html?id=PRD-015' },
+    { label:'v2026.08', href:'product-detail.html?id=PRD-015&version=2026.08' },
+    { label:'Simulation & Testing', href:'#' }
+  ]);
+
+  wireSimulationFilters();
+  renderTests();
+  updateSuiteSummary();
+  populateIndividualProfile();
+});
+
+function loadSimulationTests() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SIM_TESTS_KEY));
+    if (Array.isArray(saved) && saved.length) return saved;
+  } catch (_) {}
+  return DEFAULT_TESTS.map(t => JSON.parse(JSON.stringify(t)));
+}
+
+function saveSimulationTests() {
+  localStorage.setItem(SIM_TESTS_KEY, JSON.stringify(TESTS));
+}
+
+function loadRuns() {
+  try { return JSON.parse(localStorage.getItem(SIM_RUNS_KEY)) || []; } catch (_) { return []; }
+}
+
+function saveRun(run) {
+  const runs = loadRuns();
+  runs.unshift(run);
+  localStorage.setItem(SIM_RUNS_KEY, JSON.stringify(runs.slice(0,100)));
+}
+
+function getProductContext() {
+  const q = new URLSearchParams(location.search);
+  return {
+    productId:q.get('product') || q.get('id') || 'PRD-015',
+    version:q.get('version') || '2026.08'
+  };
+}
+
+function getRatingRecord() {
+  const key = 'insurance-product-studio-rating-gui-v1';
+  try {
+    const store = JSON.parse(localStorage.getItem(key)) || {};
+    const ctx = getProductContext();
+    const exact = store[`${ctx.productId}::${ctx.version}`];
+    if (exact) return exact;
+
+    const first = Object.values(store).find(v => v && v.bands && v.charges);
+    return first || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function getCentralPricingState() {
+  try { return window.PS?.centralPricing?.getState?.() || null; } catch (_) { return null; }
+}
+
+function getBasePrice() {
+  const state = getCentralPricingState();
+  const ctx = getProductContext();
+  const product = window.PS?.prototypeApp?.productById?.(ctx.productId)
+    || window.PS?.data?.products?.find?.(p => p.id === ctx.productId);
+
+  const templates = Array.isArray(state?.templates) ? state.templates : [];
+  const family = String(product?.family || '').toLowerCase();
+  const name = String(product?.name || '').toLowerCase();
+
+  const matching = templates
+    .filter(t => !t.status || t.status === 'active')
+    .filter(t => !family || String(t.family || '').toLowerCase() === family);
+
+  const named = matching
+    .filter(t => t.match && name.includes(String(t.match).toLowerCase()))
+    .sort((a,b) => String(b.match).length - String(a.match).length)[0];
+
+  const template = named || matching.find(t => !t.match) || matching[0] || templates[0];
+  return Number(template?.base) || 350;
+}
+
+function normalizeInputs(raw) {
+  const year = Number(raw.vehicle_year);
+  const currentYear = new Date().getFullYear();
+  return {
+    driverAge:Number(raw.driver_age) || 0,
+    vehicleAge:Number.isFinite(currentYear - year) ? Math.max(0,currentYear-year) : 0,
+    location:raw.territory_zone === 'Zone A (Metro)' ? 'metro' : raw.territory_zone === 'Zone C (Rural)' ? 'rural' : (raw.territory_zone || 'town'),
+    use:raw.vehicle_use || 'personal',
+    claims:Number(raw.claims || 0),
+    claimFreeYears:Number(raw.claims_free_years || 0),
+    vehicleValue:Number(raw.insured_value || 0),
+    convictions:Number(raw.conviction_count || 0) > 0 ? 'yes' : 'no',
+    convictionCount:Number(raw.conviction_count || 0),
+    selectedCovers:Array.isArray(raw.selected_covers) ? raw.selected_covers : [],
+    loyalty:raw.loyalty || 'yes',
+    multi:raw.multi || 'no'
+  };
+}
+
+function bandPercent(record, kind, value) {
+  const rows = Array.isArray(record?.bands?.[kind]) ? record.bands[kind] : [];
+  if (!rows.length) return 0;
+
+  let row;
+  if (kind === 'driver') row = value < 25 ? rows[0] : value < 70 ? rows[Math.min(1,rows.length-1)] : rows[Math.min(2,rows.length-1)];
+  if (kind === 'vehicle') row = value <= 3 ? rows[0] : value <= 8 ? rows[Math.min(1,rows.length-1)] : rows[Math.min(2,rows.length-1)];
+  if (kind === 'location') row = rows[{metro:0,town:1,rural:2}[value] ?? Math.min(1,rows.length-1)];
+  if (kind === 'use') row = rows[{personal:0,commute:1,business:2}[value] ?? 0];
+
+  if (!row || row.action === 'same') return 0;
+  const n = Number(row.value) || 0;
+  return row.action === 'reduce' ? -n : n;
+}
+
+function compareValue(actual, operator, expected) {
+  const na = Number(actual), ne = Number(expected);
+  const numeric = !Number.isNaN(na) && !Number.isNaN(ne);
+  const a = numeric ? na : String(actual);
+  const b = numeric ? ne : String(expected);
+  if (operator === 'eq') return a === b;
+  if (operator === 'neq') return a !== b;
+  if (operator === 'lt') return a < b;
+  if (operator === 'lte') return a <= b;
+  if (operator === 'gt') return a > b;
+  if (operator === 'gte') return a >= b;
+  return false;
+}
+
+function calculateDynamicPremium(values) {
+  const record = getRatingRecord();
+  const base = getBasePrice();
+  let subtotal = base;
+  const items = [];
+
+  const addPercent = (label, percent, stage='Risk adjustments') => {
+    if (!percent) return;
+    const amount = Math.round((base * percent / 100 + Number.EPSILON) * 100) / 100;
+    subtotal += amount;
+    items.push({stage,label,amount,detail:`${Math.abs(percent)}% ${percent > 0 ? 'increase' : 'reduction'}`});
+  };
+
+  if (record?.bands) {
+    addPercent('Driver age', bandPercent(record,'driver',values.driverAge));
+    addPercent('Vehicle age', bandPercent(record,'vehicle',values.vehicleAge));
+    addPercent('Where the vehicle is kept', bandPercent(record,'location',values.location));
+    addPercent('How the vehicle is used', bandPercent(record,'use',values.use));
+  }
+
+  if (values.claims > 0) addPercent('Recent claims', Math.min(40, values.claims * 12));
+  if (values.convictions === 'yes') addPercent('Driving convictions', 20);
+
+  if (record?.customRules) {
+    record.customRules
+      .filter(rule => rule.enabled !== false)
+      .forEach(rule => {
+        const actual = values[rule.field];
+        if (!compareValue(actual,rule.operator,rule.value)) return;
+        const n = Number(rule.amount) || 0;
+        const amount = rule.action === 'fixed'
+          ? n
+          : Math.round((subtotal * n / 100 + Number.EPSILON) * 100) / 100 * (rule.action === 'reduce' ? -1 : 1);
+        subtotal += amount;
+        items.push({stage:'Risk adjustments',label:rule.name,amount,detail:'Custom pricing rule matched'});
+      });
+  }
+
+  /* Central discounts, when available. */
+  const central = getCentralPricingState();
+  const discountIds = [
+    ['claimFree','discount-claim-free'],
+    ['loyalty','discount-loyalty'],
+    ['multi','discount-multi']
+  ];
+
+  discountIds.forEach(([localKey,id]) => {
+    const local = record?.discounts?.[localKey];
+    const source = central?.discounts?.find?.(x => x.id === id && x.status !== 'inactive');
+    if (!local?.enabled || !source) return;
+
+    let percent = Number(source.value) || 0;
+    if (localKey === 'claimFree') {
+      const bands = Array.isArray(source.bands) ? source.bands : [];
+      const eligible = bands.filter(x => values.claimFreeYears >= Number(x.years))
+        .sort((a,b) => Number(b.years)-Number(a.years))[0];
+      if (!eligible) return;
+      percent = Number(eligible.value) || 0;
+    } else if (localKey === 'loyalty' && values.loyalty !== 'yes') return;
+    else if (localKey === 'multi' && values.multi !== 'yes') return;
+
+    if (!percent) return;
+    const amount = -Math.round((subtotal * percent / 100 + Number.EPSILON) * 100) / 100;
+    subtotal += amount;
+    items.push({stage:'Savings',label:source.name || local.name || localKey,amount,detail:`${percent}% saving`});
+  });
+
+  if (record?.charges) {
+    ['admin','stamp'].forEach(id => {
+      const charge = record.charges[id];
+      if (!charge || charge.enabled === false) return;
+      const amount = Number(charge.value) || 0;
+      subtotal += amount;
+      items.push({stage:'Fees & taxes',label:charge.name || id,amount,detail:'Required charge'});
+    });
+
+    const tax = record.charges.tax;
+    if (tax?.enabled !== false) {
+      const percent = Number(tax?.value) || 0;
+      const amount = Math.round((subtotal * percent / 100 + Number.EPSILON) * 100) / 100;
+      subtotal += amount;
+      items.push({stage:'Fees & taxes',label:tax.name || 'Insurance tax',amount,detail:`${percent}% tax`});
+    }
+  }
+
+  return {
+    base,
+    total:Math.round((subtotal + Number.EPSILON) * 100) / 100,
+    monthly:Math.round((subtotal / 12 + Number.EPSILON) * 100) / 100,
+    items,
+    liveConfig:Boolean(record),
+    record
+  };
+}
+
+function evaluateEligibility(values) {
+  const failures = [];
+  if (values.driverAge < 21) failures.push('Minimum driver age is 21');
+  if (values.vehicleAge > 15) failures.push('Maximum vehicle age is 15 years');
+  return {
+    decision:failures.length ? 'Ineligible' : 'Eligible',
+    failures
+  };
+}
+
+function evaluateUnderwriting(values, eligibility) {
+  if (eligibility.decision !== 'Eligible') return {decision:'Skip', triggered:[]};
+  const triggered = [];
+
+  if (values.convictionCount >= 2) triggered.push({id:'UW-DYN-001',reason:'Serious conviction history',decision:'Decline'});
+  else if (values.vehicleValue >= 50000) triggered.push({id:'UW-DYN-002',reason:'High insured value',decision:'Refer'});
+  else if (values.convictionCount === 1) triggered.push({id:'UW-DYN-003',reason:'Minor conviction history',decision:'Load'});
+
+  return {
+    decision:triggered[0]?.decision || 'Accept',
+    triggered
+  };
+}
+
+function runSimulation(raw) {
+  const values = normalizeInputs(raw);
+  const eligibility = evaluateEligibility(values);
+  const underwriting = evaluateUnderwriting(values,eligibility);
+  const premium = eligibility.decision === 'Eligible' ? calculateDynamicPremium(values) : null;
+
+  return {
+    values,
+    eligibility,
+    underwriting,
+    premium,
+    timestamp:new Date().toISOString(),
+    durationMs:Math.floor(20 + Math.random()*80)
+  };
+}
+
+function expectedPremiumForTest(test) {
+  const result = runSimulation(test.inputs || {});
+  return result.premium?.total ?? null;
+}
+
+function formatMoney(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return 'N/A';
+  return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(Number(value));
+}
+
+function variancePercent(expected, actual) {
+  if (expected === null || actual === null || expected === 0) return null;
+  return ((actual - expected) / expected) * 100;
+}
+
+function resultPasses(test, result) {
+  const expected = test.expected || {};
+  if (expected.eligibility && result.eligibility.decision !== expected.eligibility) return false;
+  if (expected.uw && result.underwriting.decision !== expected.uw) return false;
+  if (expected.premium !== undefined && expected.premium !== null) {
+    const actual = result.premium?.total;
+    if (actual === null || actual === undefined) return false;
+    const tolerance = Number(expected.tolerance ?? 0.01);
+    if (Math.abs(variancePercent(Number(expected.premium),actual)) > tolerance) return false;
+  }
+  return true;
+}
+
+function renderTests() {
+  const tbody = document.getElementById('test-table-body');
+  if (!tbody) return;
+
+  const search = document.querySelector('#tab-suite input[placeholder="Search test cases..."]')?.value?.toLowerCase() || '';
+  const cat = document.querySelector('#tab-suite select[data-admin-key="simulationCategories"]')?.value || '';
+  const resultFilter = document.querySelector('#tab-suite select[data-admin-key="simulationResults"]')?.value || '';
+
+  const filtered = TESTS.filter(t => {
+    const last = lastRunResults[t.id];
+    const pass = last ? last.pass : true;
+    return (!search || t.name.toLowerCase().includes(search))
+      && (!cat || t.cat === cat)
+      && (!resultFilter || (resultFilter === 'Passed' ? pass : !pass));
+  });
+
+  tbody.innerHTML = filtered.map(t => {
+    const r = lastRunResults[t.id];
+    const result = r ? (r.pass ? 'pass' : 'fail') : 'skip';
+    const label = r ? (r.pass ? '✓ PASSED' : '✕ FAILED') : 'NOT RUN';
+    const expectedPremium = t.expected?.premium ?? null;
+    const actualPremium = r?.result?.premium?.total ?? null;
+    const variance = expectedPremium !== null && actualPremium !== null ? variancePercent(expectedPremium,actualPremium) : null;
+
+    return `
+      <tr class="row-expandable" onclick="toggleDrawer(${t.id})">
+        <td>${t.id}</td>
+        <td><strong>${esc(t.name)}</strong></td>
+        <td>${esc(t.cat)}</td>
+        <td>${esc(t.expected?.eligibility || '')}${t.expected?.uw && t.expected.uw !== 'Skip' ? `, ${esc(t.expected.uw)}` : ''}</td>
+        <td><span class="status-badge ${result}">${label}</span></td>
+        <td style="font-family:'IBM Plex Mono',monospace">${formatMoney(expectedPremium)}</td>
+        <td style="font-family:'IBM Plex Mono',monospace">${formatMoney(actualPremium)}</td>
+        <td style="font-family:'IBM Plex Mono',monospace">${variance === null ? '—' : `${variance >= 0 ? '+' : ''}${variance.toFixed(2)}%`}</td>
+      </tr>
+      <tr>
+        <td colspan="8" style="padding:0;border:none">
+          <div class="detail-drawer" id="drawer-${t.id}">
+            ${testDrawerHtml(t,r)}
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function testDrawerHtml(test, run) {
+  const result = run?.result;
+  const values = test.inputs || {};
+  const premium = result?.premium;
+  const trace = result ? buildTrace(result) : 'Test has not been run yet.';
+
+  return `
+    <div class="drawer-grid">
+      <div class="drawer-box">
+        <div class="drawer-title">Input Risk Profile</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--color-ink);line-height:1.5;white-space:pre-wrap">
+driver_age:              ${esc(values.driver_age)}
+vehicle_year:            ${esc(values.vehicle_year)}
+vehicle_make:            ${esc(values.vehicle_make || '')}
+insured_value:           ${esc(values.insured_value)}
+territory_zone:          ${esc(values.territory_zone)}
+claims_free_years:       ${esc(values.claims_free_years)}
+conviction_count:        ${esc(values.conviction_count)}
+selected_covers:         ${esc((values.selected_covers || []).join(', '))}
+        </div>
+      </div>
+      <div class="drawer-box">
+        <div class="drawer-title">Actual Results</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--color-ink);line-height:1.5;white-space:pre-wrap">
+Eligibility:             <span style="color:${result?.eligibility.decision === 'Eligible' ? 'var(--color-success)' : 'var(--color-danger)'}">${esc(result?.eligibility.decision || 'Not run')}</span>
+Rules Evaluated:         ${result ? 'Dynamic' : '—'}
+Rules Triggered:         ${result ? result.underwriting.triggered.length : '—'}
+
+UW Decision:             <span style="color:${result?.underwriting.decision === 'Accept' ? 'var(--color-success)' : 'var(--color-danger)'}">${esc(result?.underwriting.decision || 'Not run')}</span>
+
+Premium:                 <span style="color:var(--color-success)">${premium ? formatMoney(premium.total) : 'N/A'}</span>
+Engine:                  ${premium?.liveConfig ? 'Live Rating Guide configuration' : 'Fallback configuration'}
+        </div>
+      </div>
+      <div class="drawer-box">
+        <div class="drawer-title">Actions</div>
+        <button class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:8px" onclick="event.stopPropagation();openEditTestModal(${test.id})">Edit Test Case</button>
+        <button class="btn btn-secondary btn-sm" style="width:100%;margin-bottom:8px" onclick="event.stopPropagation();openTrace(${test.id})">View Full Rule Trace</button>
+        <button class="btn btn-primary btn-sm" style="width:100%" onclick="event.stopPropagation();runOneTest(${test.id})">Run This Test Only</button>
+      </div>
+    </div>
+    ${result ? `<div style="margin-top:var(--space-4);font-weight:600;font-size:13px">Rule Trace Engine Log</div><div class="rule-trace">${trace}</div>` : ''}
+  `;
+}
+
+function buildTrace(result) {
+  const now = new Date();
+  const stamp = now.toTimeString().slice(0,8);
+  const lines = [
+    ['trace-head','ELIGIBILITY ENGINE START'],
+    ['trace-msg',`driver_age=${result.values.driverAge} ≥ 21 → ${result.eligibility.driverAge < 21 ? 'FAIL' : 'PASS'}`],
+    ['trace-msg',`vehicle_age=${result.values.vehicleAge} ≤ 15 → ${result.values.vehicleAge <= 15 ? 'PASS' : 'FAIL'}`],
+    ['trace-head',`ELIGIBILITY RESULT: ${result.eligibility.decision.toUpperCase()}`]
+  ];
+
+  if (result.premium) {
+    lines.push(['trace-head','RATING ENGINE START']);
+    lines.push(['trace-msg',`BASE_RATE: ${formatMoney(result.premium.base)}`]);
+    result.premium.items.forEach(item => {
+      const sign = item.amount >= 0 ? '+' : '';
+      lines.push(['trace-msg',`${item.label}: ${sign}${formatMoney(item.amount)} (${item.detail})`]);
+    });
+    lines.push(['trace-head',`PAYABLE_PREMIUM: ${formatMoney(result.premium.total)}`]);
+  }
+
+  lines.push(['trace-head','UW ENGINE START']);
+  result.underwriting.triggered.forEach(rule => lines.push(['trace-msg',`${rule.id}: ${rule.reason} → ${rule.decision}`]));
+  lines.push(['trace-head',`UW DECISION: ${result.underwriting.decision.toUpperCase()}`]);
+  lines.push(['trace-head','SIMULATION COMPLETE']);
+
+  return lines.map(([type,msg]) => `<div class="rule-trace-line"><span class="trace-time">[${stamp}]</span><span class="${type}">${esc(msg)}</span></div>`).join('');
+}
+
+function updateSuiteSummary() {
+  const results = Object.values(lastRunResults);
+  const passed = results.filter(r => r.pass).length;
+  const failed = results.filter(r => !r.pass).length;
+  const total = TESTS.length;
+  const fill = document.getElementById('main-progress');
+  if (fill) fill.style.width = total ? `${(passed/total)*100}%` : '0%';
+
+  const header = document.querySelector('.studio-context-bar > span:nth-of-type(3)');
+  if (header) header.innerHTML = `${total} test cases &nbsp;·&nbsp; ${passed} passed &nbsp;·&nbsp; ${failed} failed`;
+
+  const badge = document.querySelector('.studio-context-bar .status-badge');
+  if (badge) {
+    badge.className = `status-badge ${failed ? 'fail' : 'pass'}`;
+    badge.textContent = failed ? 'TESTS FAILED' : (results.length ? 'ALL TESTS PASSED' : 'NOT RUN');
+  }
+
+  const progressHeader = document.querySelector('.progress-header');
+  if (progressHeader) {
+    progressHeader.innerHTML = `<span>${total} Test Cases</span><span><span style="color:var(--color-success)">${passed} Passed</span> &nbsp; <span style="color:var(--color-danger)">${failed} Failed</span> &nbsp; <span style="color:var(--color-muted)">${Math.max(0,total-results.length)} Not Run</span></span>`;
+  }
+
+  const footer = document.querySelector('.progress-footer');
+  if (footer) footer.innerHTML = `<span>Last Run: ${results.length ? new Date().toLocaleString() : 'Not run yet'}</span><span>${results.length ? `${results.length} completed` : '—'}</span>`;
+}
+
+function runOneTest(id) {
+  const test = TESTS.find(t => t.id === id);
+  if (!test) return;
+
+  const result = runSimulation(test.inputs || {});
+  const pass = resultPasses(test,result);
+  lastRunResults[id] = {pass,result};
+  saveRun({testId:id,testName:test.name,pass,result});
+  renderTests();
+  updateSuiteSummary();
+
+  setTimeout(() => {
+    const drawer = document.getElementById(`drawer-${id}`);
+    if (drawer) drawer.classList.add('open');
+  }, 0);
+
+  PS.actionResult(pass ? 'success' : 'error',
+    pass ? 'Test Passed' : 'Test Failed',
+    `${test.name}: ${result.eligibility.decision} / ${result.underwriting.decision}${result.premium ? ` / ${formatMoney(result.premium.total)}` : ''}`);
+}
+
+function runAllTests() {
+  const fill = document.getElementById('main-progress');
+  if (fill) {
+    fill.style.width = '0%';
+    fill.classList.add('running');
+  }
+
+  let index = 0;
+  const started = performance.now();
+
+  const next = () => {
+    if (index >= TESTS.length) {
+      if (fill) {
+        fill.style.width = '100%';
+        fill.classList.remove('running');
+      }
+      renderTests();
+      updateSuiteSummary();
+      PS.actionResult('success','Dynamic Test Suite Complete',`${TESTS.length} configured scenarios were evaluated against the current product configuration in ${Math.round(performance.now()-started)}ms.`);
+      return;
+    }
+
+    const test = TESTS[index++];
+    const result = runSimulation(test.inputs || {});
+    lastRunResults[test.id] = {pass:resultPasses(test,result),result};
+
+    if (fill) fill.style.width = `${Math.round((index/TESTS.length)*100)}%`;
+    renderTests();
+    updateSuiteSummary();
+    setTimeout(next,60);
+  };
+
+  next();
+}
+
+function runIndividual() {
+  const raw = readIndividualInputs();
+  const result = runSimulation(raw);
+  const expected = {
+    eligibility:document.querySelector('[data-sim-expected-eligibility]')?.value || '',
+    uw:document.querySelector('[data-sim-expected-uw]')?.value || ''
+  };
+
+  renderIndividualResult(result,expected,raw);
+  saveRun({testId:null,testName:'Individual Simulation',pass:true,result});
+}
+
+function readIndividualInputs() {
+  const selected = [...document.querySelectorAll('[data-sim-field="selected_covers"] option:checked')].map(o => o.value);
+  const get = field => document.querySelector(`[data-sim-field="${field}"]`)?.value ?? '';
+
+  return {
+    driver_age:get('driver_age'),
+    vehicle_year:get('vehicle_year'),
+    vehicle_make:get('vehicle_make'),
+    insured_value:get('insured_value'),
+    territory_zone:get('territory_zone'),
+    claims_free_years:get('claims_free_years'),
+    conviction_count:get('conviction_count'),
+    selected_covers:selected,
+    vehicle_use:get('vehicle_use'),
+    claims:get('claims'),
+    loyalty:get('loyalty'),
+    multi:get('multi')
+  };
+}
+
+function renderIndividualResult(result,expected,raw) {
+  const out = document.getElementById('run-output');
+  const expectedPass = (!expected.eligibility || expected.eligibility === result.eligibility.decision)
+    && (!expected.uw || expected.uw === result.underwriting.decision);
+
+  out.innerHTML = `
+    <div class="run-header">
+      <div style="font-weight:600;font-size:14px">Simulation Results</div>
+      <span class="status-badge ${expectedPass ? 'pass' : 'fail'}">${expectedPass ? '✓ PASSED' : '✕ FAILED'}</span>
+    </div>
+
+    <div style="display:flex;gap:var(--space-4);margin-bottom:var(--space-4)">
+      <div style="flex:1;background:var(--color-surface);padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);text-align:center">
+        <div style="font-size:11px;font-weight:700;color:var(--color-muted);text-transform:uppercase;margin-bottom:4px">Eligibility</div>
+        <div style="font-size:14px;font-weight:600;color:${result.eligibility.decision === 'Eligible' ? 'var(--color-success)' : 'var(--color-danger)'}">${esc(result.eligibility.decision)}</div>
+      </div>
+      <div style="flex:1;background:var(--color-surface);padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);text-align:center">
+        <div style="font-size:11px;font-weight:700;color:var(--color-muted);text-transform:uppercase;margin-bottom:4px">UW Decision</div>
+        <div style="font-size:14px;font-weight:600;color:${result.underwriting.decision === 'Accept' ? 'var(--color-success)' : 'var(--color-danger)'}">${esc(result.underwriting.decision)}</div>
+      </div>
+      <div style="flex:1;background:var(--color-surface);padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);text-align:center">
+        <div style="font-size:11px;font-weight:700;color:var(--color-muted);text-transform:uppercase;margin-bottom:4px">Premium</div>
+        <div style="font-size:16px;font-weight:700;color:var(--color-brand);font-family:'IBM Plex Mono',monospace">${result.premium ? formatMoney(result.premium.total) : 'N/A'}</div>
+      </div>
+    </div>
+
+    <div style="font-weight:600;font-size:13px;margin-bottom:var(--space-2)">Rule Trace Engine Log</div>
+    <div class="rule-trace">${buildTrace(result)}</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-4)">
+      <span style="font-size:11px;color:var(--color-muted)">${result.premium?.liveConfig ? 'Using live Rating Guide configuration' : 'Using fallback rating configuration'}</span>
+      <button class="btn btn-secondary" onclick='saveCurrentIndividualAsTest(${JSON.stringify(raw).replace(/'/g,"&#39;")})'>Save as Test Case</button>
+    </div>
+  `;
+}
+
+function saveCurrentIndividualAsTest(raw) {
+  const name = `Ad hoc simulation — ${new Date().toLocaleString()}`;
+  const nextId = TESTS.reduce((m,t) => Math.max(m,Number(t.id)||0),0) + 1;
+  const result = runSimulation(raw);
+  TESTS.push({
+    id:nextId,
+    name,
+    cat:'Rating',
+    inputs:raw,
+    expected:{eligibility:result.eligibility.decision,uw:result.underwriting.decision,premium:result.premium?.total ?? null,tolerance:0.01}
+  });
+  saveSimulationTests();
+  renderTests();
+  updateSuiteSummary();
+  PS.actionResult('success','Test Case Saved',`${name} was added to the dynamic suite.`);
+}
+
+function populateIndividualProfile() {
+  const profile = document.querySelector('[data-sim-profile]');
+  if (!profile) return;
+
+  profile.innerHTML = `
+    <option value="">Load profile...</option>
+    <option value="standard">Standard Risk</option>
+    <option value="young">Young Driver</option>
+    <option value="highvalue">High Value</option>
+    <option value="claims">Claims / Convictions</option>
+  `;
+
+  profile.addEventListener('change', () => {
+    const profiles = {
+      standard:DEFAULT_TESTS[0].inputs,
+      young:DEFAULT_TESTS[1].inputs,
+      highvalue:DEFAULT_TESTS[4].inputs,
+      claims:DEFAULT_TESTS[3].inputs
+    };
+    const data = profiles[profile.value];
+    if (!data) return;
+    Object.entries(data).forEach(([field,value]) => {
+      if (field === 'selected_covers') {
+        document.querySelectorAll('[data-sim-field="selected_covers"] option').forEach(o => o.selected = value.includes(o.value));
+      } else {
+        const el = document.querySelector(`[data-sim-field="${field}"]`);
+        if (el) el.value = value;
+      }
+    });
+  });
+}
+
+function wireSimulationFilters() {
+  const search = document.querySelector('#tab-suite input[placeholder="Search test cases..."]');
+  const category = document.querySelector('#tab-suite select[data-admin-key="simulationCategories"]');
+  const results = document.querySelector('#tab-suite select[data-admin-key="simulationResults"]');
+  [search,category,results].forEach(el => el?.addEventListener('input',renderTests));
+  [category,results].forEach(el => el?.addEventListener('change',renderTests));
+}
+
+function toggleDrawer(id) {
+  const d = document.getElementById(`drawer-${id}`);
+  if (!d) return;
+  if (d.classList.contains('open')) d.classList.remove('open');
+  else {
+    document.querySelectorAll('.detail-drawer').forEach(el=>el.classList.remove('open'));
+    d.classList.add('open');
+  }
+}
+
+function openTrace(id) {
+  const run = lastRunResults[id]?.result;
+  if (!run) {
+    runOneTest(id);
+    return;
+  }
+  PS.openModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">Full Rule Trace</h2>
+      <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body"><div class="rule-trace">${buildTrace(run)}</div></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="PS.closeModal()">Close</button></div>
+  `);
+}
+
+function openAddTestModal(editId=null) {
+  const test = editId ? TESTS.find(t => t.id === editId) : null;
+  const input = test?.inputs || {
+    driver_age:35,
+    vehicle_year:new Date().getFullYear()-5,
+    vehicle_make:'Toyota Fortuner',
+    insured_value:28000,
+    territory_zone:'town',
+    claims_free_years:3,
+    conviction_count:0,
+    selected_covers:['Own Damage','Third Party']
+  };
+
+  PS.openModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">${test ? 'Edit Test Case' : 'Add Test Case'}</h2>
+      <button class="btn btn-icon" onclick="PS.closeModal()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Test Case Name</label>
+          <input id="sim-test-name" type="text" class="form-control" value="${esc(test?.name || '')}" placeholder="e.g. Standard Risk - Metric Override">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="sim-test-cat" class="form-control">
+            ${['Rating','Eligibility','Underwriting','Boundary'].map(c => `<option ${test?.cat===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Driver Age</label>
+          <input id="sim-driver-age" type="number" class="form-control" value="${esc(input.driver_age)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vehicle Year</label>
+          <input id="sim-vehicle-year" type="number" class="form-control" value="${esc(input.vehicle_year)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Insured Value ($)</label>
+          <input id="sim-insured-value" type="number" class="form-control" value="${esc(input.insured_value)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Territory</label>
+          <select id="sim-territory" class="form-control">
+            ${[['metro','Large city'],['town','Town or small city'],['rural','Rural area']].map(([v,l]) => `<option value="${v}" ${input.territory_zone===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Claims Free Years</label>
+          <input id="sim-claims-free" type="number" class="form-control" value="${esc(input.claims_free_years)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Convictions</label>
+          <input id="sim-convictions" type="number" min="0" class="form-control" value="${esc(input.conviction_count)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expected Eligibility</label>
+          <select id="sim-exp-eligibility" class="form-control">
+            ${['Eligible','Ineligible'].map(v => `<option ${test?.expected?.eligibility===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expected UW Decision</label>
+          <select id="sim-exp-uw" class="form-control">
+            ${['Accept','Decline','Refer','Load','Skip'].map(v => `<option ${test?.expected?.uw===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Expected Premium ($) — optional</label>
+          <input id="sim-exp-premium" type="number" step="0.01" class="form-control" value="${test?.expected?.premium ?? ''}" placeholder="Leave blank to validate eligibility/UW only">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSimulationTest(${editId || 'null'})">${test ? 'Update Test Case' : 'Save Test Case'}</button>
+    </div>
+  `);
+}
+
+function openEditTestModal(id) { openAddTestModal(id); }
+
+function saveSimulationTest(editId) {
+  const name = document.getElementById('sim-test-name')?.value.trim();
+  if (!name) {
+    PS.actionResult('error','Test Case Required','Enter a test case name.');
+    return;
+  }
+
+  const test = {
+    id:editId || (TESTS.reduce((m,t)=>Math.max(m,Number(t.id)||0),0)+1),
+    name,
+    cat:document.getElementById('sim-test-cat').value,
+    inputs:{
+      driver_age:Number(document.getElementById('sim-driver-age').value),
+      vehicle_year:Number(document.getElementById('sim-vehicle-year').value),
+      vehicle_make:'Toyota Fortuner',
+      insured_value:Number(document.getElementById('sim-insured-value').value),
+      territory_zone:document.getElementById('sim-territory').value,
+      claims_free_years:Number(document.getElementById('sim-claims-free').value),
+      conviction_count:Number(document.getElementById('sim-convictions').value),
+      selected_covers:['Own Damage','Third Party']
+    },
+    expected:{
+      eligibility:document.getElementById('sim-exp-eligibility').value,
+      uw:document.getElementById('sim-exp-uw').value,
+      premium:document.getElementById('sim-exp-premium').value === '' ? null : Number(document.getElementById('sim-exp-premium').value),
+      tolerance:0.01
+    }
+  };
+
+  const index = TESTS.findIndex(t => t.id === test.id);
+  if (index >= 0) TESTS[index] = test;
+  else TESTS.push(test);
+
+  saveSimulationTests();
+  delete lastRunResults[test.id];
+  PS.closeModal();
+  renderTests();
+  updateSuiteSummary();
+  PS.actionResult('success',editId ? 'Test Case Updated' : 'Test Case Added',`${name} is now part of the dynamic test suite.`);
+}
+
+function saveSimulationTestLegacy() {
+  /* Kept as a compatibility hook for older buttons. */
+  openAddTestModal();
+}
+
+function esc(value) {
+  return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+</script>
+<script src="assets/studio-help.js"></script>
+<script src="assets/prototype-app.js"></script>
+</body>
+</html>
