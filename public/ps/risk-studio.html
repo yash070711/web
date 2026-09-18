@@ -1623,14 +1623,24 @@ function rcEsc(v) {
 
 function productCoversFlat() {
   const app = window.PS?.prototypeApp;
+  const productId = PS.studioHub?.productId || app?.context?.()?.productId || '';
   const bundle = app?.getProductBundle?.(
-    PS.studioHub?.productId || '',
+    productId,
     PS.studioHub?.productVersion || ''
   );
-  const source = Array.isArray(bundle?.covers) ? bundle.covers : [];
+  const raw = Array.isArray(bundle?.covers) ? bundle.covers : [];
+  const source = typeof app?.distributionScopedCovers === 'function'
+    ? app.distributionScopedCovers(productId, raw)
+    : raw;
   return source.map(item => ({
     id: String(item?.id || item?.coverageId || item?.code || item?.name || '').trim(),
-    name: String(item?.name || item?.label || item?.title || item?.coverageName || '').trim()
+    name: String(item?.name || item?.label || item?.title || item?.coverageName || '').trim(),
+    children: [...new Set((Array.isArray(item?.insuredItems)
+      ? item.insuredItems.slice(1)
+      : Array.isArray(item?.childCoverages)
+        ? item.childCoverages
+        : Array.isArray(item?.children) ? item.children : []
+    ).map(child => String(typeof child === 'string' ? child : (child?.type || child?.name || child?.label || '')).trim()).filter(Boolean))]
   })).filter(c => c.id && c.name);
 }
 
@@ -1645,20 +1655,6 @@ const RISK_CONDITION_OPERATORS = {
 const RATING_IMPACT_OPTIONS = [
   ['none', 'No rating impact'],
   ['apply', 'Apply factor']
-];
-
-const UNDERWRITING_ACTIONS = [
-  ['none', 'No underwriting action', 'No referral when this condition matches.'],
-  ['refer', 'Refer to underwriter', 'This condition refers the submission to underwriting review.'],
-  ['decline', 'Decline', 'This condition declines the submission outright.']
-];
-
-const NO_MATCH_PRESETS = [
-  ['none-1', 'No risk; factor 1.00', 'Low', 1.00],
-  ['low-1.25', 'Low risk; factor 1.25', 'Low', 1.25],
-  ['medium-1.5', 'Medium risk; factor 1.50', 'Medium', 1.50],
-  ['high-2', 'High risk; factor 2.00', 'High', 2.00],
-  ['refer', 'Refer to underwriter', 'Refer', null]
 ];
 
 function riskConditionOperatorType(r) {
@@ -1683,8 +1679,7 @@ function newRiskCondition() {
     value2: '',
     riskLevel: 'Medium',
     ratingImpact: 'apply',
-    ratingFactor: '',
-    underwritingAction: 'none'
+    ratingFactor: ''
   };
 }
 
@@ -1694,7 +1689,7 @@ function ensureRiskConditions(r) {
   if (!r.riskConditions.length) r.riskConditions.push(newRiskCondition());
   if (r.coverageMode !== 'all' && r.coverageMode !== 'specific') r.coverageMode = 'all';
   if (!Array.isArray(r.coverIds)) r.coverIds = [];
-  if (!r.noMatchPreset) r.noMatchPreset = 'none-1';
+  if (!r.coverageChildSelections || typeof r.coverageChildSelections !== 'object') r.coverageChildSelections = {};
   return r.riskConditions;
 }
 
@@ -1750,15 +1745,7 @@ function riskConditionCardHtml(r, cond, index, disabled) {
       <input class="form-control" type="number" step="0.01" min="0" data-rc-field="ratingFactor" value="${rcEsc(cond.ratingFactor)}" ${disabled ? 'disabled' : ''} oninput="patchRiskCondition(${index}, 'ratingFactor', this.value)" placeholder="e.g. 3.00">
     </div>` : '';
 
-  const underwritingField = `
-    <div class="form-group">
-      <label class="form-label">Underwriting action</label>
-      <select class="form-control" ${disabled ? 'disabled' : ''} onchange="patchRiskCondition(${index}, 'underwritingAction', this.value)">
-        ${UNDERWRITING_ACTIONS.map(([v, l]) => `<option value="${rcEsc(v)}" ${(cond.underwritingAction || 'none') === v ? 'selected' : ''}>${rcEsc(l)}</option>`).join('')}
-      </select>
-    </div>`;
-
-  const row2Items = ratingFactorField ? [ratingFactorField, underwritingField] : [underwritingField];
+  const row2Items = ratingFactorField ? [ratingFactorField] : [];
 
   return `
     <div class="section-card" style="padding:14px;margin-bottom:12px" data-rc-index="${index}">
@@ -1769,9 +1756,9 @@ function riskConditionCardHtml(r, cond, index, disabled) {
       <div style="display:grid;grid-template-columns:repeat(${row1Items.length},minmax(0,1fr));gap:var(--space-4) var(--space-6)">
         ${row1Items.join('')}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(${row2Items.length},minmax(0,1fr));gap:var(--space-4) var(--space-6);margin-top:var(--space-4)">
+      ${row2Items.length ? `<div style="display:grid;grid-template-columns:repeat(${row2Items.length},minmax(0,1fr));gap:var(--space-4) var(--space-6);margin-top:var(--space-4)">
         ${row2Items.join('')}
-      </div>
+      </div>` : ''}
     </div>`;
 }
 
@@ -1781,7 +1768,7 @@ function patchRiskCondition(index, key, value) {
   const conditions = ensureRiskConditions(r);
   if (!conditions[index]) return;
   conditions[index][key] = value;
-  if (key === 'underwritingAction' || key === 'operator' || key === 'ratingImpact') loadRisk(activeRiskId);
+  if (key === 'operator' || key === 'ratingImpact') loadRisk(activeRiskId);
 }
 
 function addRiskCondition() {
@@ -1803,12 +1790,6 @@ function removeRiskCondition(index) {
   loadRisk(activeRiskId);
 }
 
-function patchRiskNoMatch(value) {
-  const r = RISKS.find(x => x.id === activeRiskId);
-  if (!r) return;
-  r.noMatchPreset = value;
-}
-
 function setRiskCoverageMode(mode) {
   const r = RISKS.find(x => x.id === activeRiskId);
   if (!r) return;
@@ -1823,6 +1804,7 @@ function toggleRiskCoverageSelection(el) {
   const set = new Set((r.coverIds || []).map(String));
   if (el.checked) set.add(id); else set.delete(id);
   r.coverIds = Array.from(set);
+  if (!el.checked && r.coverageChildSelections) delete r.coverageChildSelections[id];
   const dd = document.getElementById('rk-cov-dd');
   const covers = productCoversFlat();
   const selectedNames = covers.filter(c => set.has(String(c.id))).map(c => c.name);
@@ -1831,6 +1813,20 @@ function toggleRiskCoverageSelection(el) {
     labelEl.textContent = selectedNames.length ? selectedNames.join(', ') : 'Select coverages';
     labelEl.classList.toggle('rating-coverage-placeholder', !selectedNames.length);
   }
+  loadRisk(activeRiskId);
+  setTimeout(() => document.getElementById('rk-cov-dd')?.classList.add('open'), 0);
+}
+
+function toggleRiskCoverageChild(el) {
+  const r = RISKS.find(x => x.id === activeRiskId);
+  if (!r) return;
+  ensureRiskConditions(r);
+  const parentId = String(el.dataset.parent || '');
+  const child = String(el.dataset.child || '');
+  if (!parentId || !child) return;
+  const selected = new Set((r.coverageChildSelections[parentId] || []).map(String));
+  if (el.checked) selected.add(child); else selected.delete(child);
+  r.coverageChildSelections[parentId] = Array.from(selected);
 }
 
 function riskCoverageDropdownHtml(r, disabled) {
@@ -1845,7 +1841,14 @@ function riskCoverageDropdownHtml(r, disabled) {
     </button>
     <div class="rating-coverage-dropdown-menu">
       <div class="rating-coverage-menu-list">
-        ${covers.length ? covers.map(c => `<label class="rating-coverage-option"><input type="checkbox" value="${rcEsc(c.id)}" ${selected.has(String(c.id)) ? 'checked' : ''} ${disabled ? 'disabled' : ''} onchange="toggleRiskCoverageSelection(this)"><span>${rcEsc(c.name)}</span></label>`).join('') : '<div style="padding:8px;color:var(--color-muted);font-size:12px">No coverages configured yet.</div>'}
+        ${covers.length ? covers.map(c => {
+          const parentSelected = selected.has(String(c.id));
+          const selectedChildren = new Set((r.coverageChildSelections?.[c.id] || []).map(String));
+          return `<div class="rating-coverage-group">
+            <label class="rating-coverage-option"><input type="checkbox" value="${rcEsc(c.id)}" ${parentSelected ? 'checked' : ''} ${disabled ? 'disabled' : ''} onchange="toggleRiskCoverageSelection(this)"><span>${rcEsc(c.name)}</span>${c.children.length ? `<small style="margin-left:auto;color:var(--color-muted)">${c.children.length} child${c.children.length === 1 ? '' : 'ren'}</small>` : ''}</label>
+            ${parentSelected && c.children.length ? `<div style="padding:4px 8px 8px 28px;display:grid;gap:6px">${c.children.map(child => `<label class="rating-coverage-option" style="padding:4px 6px"><input type="checkbox" data-parent="${rcEsc(c.id)}" data-child="${rcEsc(child)}" ${selectedChildren.has(String(child)) ? 'checked' : ''} ${disabled ? 'disabled' : ''} onchange="toggleRiskCoverageChild(this)"><span>${rcEsc(child)}</span></label>`).join('')}</div>` : ''}
+          </div>`;
+        }).join('') : '<div style="padding:8px;color:var(--color-muted);font-size:12px">No coverages configured yet.</div>'}
       </div>
     </div>
   </div>`;
@@ -1950,7 +1953,6 @@ function loadRisk(id) {
 
   const conditions = ensureRiskConditions(r);
   const productName = PS.studioHub?.productName || PS.studioHub?.productId || 'Product';
-  const noMatch = NO_MATCH_PRESETS.find(p2 => p2[0] === r.noMatchPreset) || NO_MATCH_PRESETS[0];
 
   p.innerHTML = `
     <div class="section-card rating-factors-section">
@@ -2018,13 +2020,6 @@ function loadRisk(id) {
 
         <div id="risk-conditions-list">
           ${conditions.map((c, i) => riskConditionCardHtml(r, c, i, disabled)).join('')}
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">If no condition matches</label>
-          <select class="form-control" ${disabled ? 'disabled' : ''} onchange="patchRiskNoMatch(this.value)">
-            ${NO_MATCH_PRESETS.map(([key, label]) => `<option value="${key}" ${(r.noMatchPreset || 'none-1') === key ? 'selected' : ''}>${rcEsc(label)}</option>`).join('')}
-          </select>
         </div>
 
         <div style="margin:20px 0 8px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#6F685D">UNDERWRITING RATIONALE</div>

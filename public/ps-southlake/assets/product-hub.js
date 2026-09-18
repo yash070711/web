@@ -192,7 +192,7 @@ function buildHubStudios() {
       description: 'How the product is sold: web, broker, API.',
       count: liveOrDetailCount(
         'distribution',
-        (bundle.channels || []).length
+        PS.prototypeApp?.distributionChannelCount?.(currentProduct.id) || (bundle.channels || []).length
       ),
       noun: ['Channel', 'Channels'],
       expected: 2,
@@ -586,6 +586,7 @@ function buildHubStudios() {
     const selected = studios.filter(s => enabledIds.has(s.id));
     const available = studios.filter(s => !enabledIds.has(s.id));
     const summary = hubSummary(selected);
+    const allSelectedStudiosComplete = selected.length > 0 && selected.every(studio => studio.pct >= 100);
     const activity = productActivity();
    const firstOpen =
   selected.find(
@@ -664,15 +665,17 @@ function buildHubStudios() {
         </div>
         <div class="ph-actions">
           <button class="btn btn-secondary" type="button" onclick="openProductEditor()">Edit Product</button>
-          ${status === 'draft' ? `<button class="btn btn-secondary" type="button" onclick="handleSubmitReview()">Submit for Review</button>` : ''}
-          <a class="btn btn-secondary" href="${esc((PS.customerViewHref || PS.prototypeApp?.customerViewHref || function(){return '#';})(p.id, activeVersion))}">Customer View</a>
-          <a class="btn btn-secondary" href="simulation-studio.html?id=${encodeURIComponent(p.id)}&product=${encodeURIComponent(p.id)}&version=${encodeURIComponent(activeVersion || '')}">Simulate</a>
-          <button class="btn btn-secondary" type="button" onclick="viewFullProductJson()">View JSON</button>
-          <button class="btn btn-secondary" type="button" onclick="downloadFullProductJson()">Download JSON</button>
-          <a class="btn btn-primary" href="${esc(firstOpen?.href || studioHref('coverage-studio.html'))}">
-            Open ${esc(firstOpen?.title || 'Class of Business Guide')}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden><path d="M7 17 17 7M8 7h9v9"/></svg>
-          </a>
+          ${allSelectedStudiosComplete ? `
+            ${status === 'draft' ? `<button class="btn btn-secondary" type="button" onclick="handleSubmitReview()">Submit for Review</button>` : ''}
+            <a class="btn btn-secondary" href="${esc((PS.customerViewHref || PS.prototypeApp?.customerViewHref || function(){return '#';})(p.id, activeVersion))}">Customer View</a>
+            <a class="btn btn-secondary" href="simulation-studio.html?id=${encodeURIComponent(p.id)}&product=${encodeURIComponent(p.id)}&version=${encodeURIComponent(activeVersion || '')}">Simulate</a>
+            <button class="btn btn-secondary" type="button" onclick="viewFullProductJson()">View JSON</button>
+            <button class="btn btn-secondary" type="button" onclick="downloadFullProductJson()">Download JSON</button>
+            <a class="btn btn-primary" href="${esc(firstOpen?.href || studioHref('coverage-studio.html'))}">
+              Open ${esc(firstOpen?.title || 'Class of Business Guide')}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden><path d="M7 17 17 7M8 7h9v9"/></svg>
+            </a>
+          ` : ''}
         </div>
       </div>
 

@@ -2120,7 +2120,10 @@ function productCovers() {
   }
   productCoverVersionCandidates().forEach(ver => addList(app?.getProductBundle?.(pid, ver)?.covers));
   if (!byKey.size) return [];
-  return Array.from(byKey.values());
+  const covers = Array.from(byKey.values());
+  return typeof app?.distributionScopedCovers === 'function'
+    ? app.distributionScopedCovers(pid, covers)
+    : covers;
 }
 
 function coverDdSummary(covers, selected) {

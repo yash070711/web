@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Product Workspace — MGA Workspace</title>
+<link rel="stylesheet" href="/ps/assets/style.css">
+<link rel="stylesheet" href="assets/mga-theme.css">
+</head><body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="catalogue.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" aria-label="Breadcrumb" id="topbar-breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+
+  <main class="main-content">
+    <div class="page-inner" id="page-root">
+      <div class="mga-empty">Loading product workspace…</div>
+    </div>
+  </main>
+</div>
+
+<script src="/ps/assets/data.js"></script>
+<script src="/ps/assets/trucking-questionnaire-seed.js"></script>
+<script src="/ps/assets/product-seeds.js"></script>
+<script src="/ps/assets/admin-catalog.js"></script>
+<script src="/ps/assets/prototype-app.js"></script>
+<script src="assets/mga-data.js"></script>
+<script src="assets/mga-shell.js"></script>
+<script>
+try { localStorage.setItem('ps-profile', 'nta'); } catch (e) {}
+MgaShell.render('catalogue', 'Product Workspace');
+
+const MGA_NAME = MgaData.MGA_NAME;
+const MGA_TYPE = MgaData.MGA_TYPE;
+const CONFIG_MENU = MgaData.CONFIG_SECTIONS.map(s => Object.assign({}, s, { statusKey: s.id === 'overview' ? null : s.id }));
+
+let activeTab = 'overview';
+
+const escapeHtml = MgaData.escapeHtml.bind(MgaData);
+const studioStatusLabel = MgaData.statusLabel.bind(MgaData);
+const statusBadgeClass = MgaData.statusBadgeClass.bind(MgaData);
+const studioHref = MgaData.studioHref.bind(MgaData);
+
+function params() {
+  const p = new URLSearchParams(location.search);
+  return { productId: p.get('id') || p.get('product') || '', version: p.get('version') || '' };
+}
+
+function renderNotAssigned(product) {
+  document.getElementById('page-root').innerHTML = `
+    <a class="mga-back" href="catalogue.html">← Back to Product Catalogue</a>
+    <div class="mga-empty">
+      <strong>${product ? escapeHtml(product.name) + ' is not assigned to NTA' : 'Product not found'}</strong>
+      ${product ? 'Ask the product owner to assign NTA as a distribution channel in the Distribution Guide before it appears in this workspace.' : 'This product does not exist or has been removed.'}
+    </div>`;
+}
+
+function duplicateProduct(productId) {
+  try {
+    const result = PS.prototypeApp.cloneProduct(productId, {});
+    window.location.href = `/ps/product-detail.html?id=${encodeURIComponent(result.id)}&version=${encodeURIComponent(result.version)}`;
+  } catch (err) {
+    PS.prototypeApp.showResult ? PS.prototypeApp.showResult('Could not duplicate product', err.message, { type: 'error' }) : alert(err.message);
+  }
+}
+
+function renderWorkspace() {
+  const { productId, version } = params();
+  const app = PS.prototypeApp;
+  const product = app.productById(productId);
+  if (!product) return renderNotAssigned(null);
+
+  const effectiveVersion = version || product.version;
+  const assignment = app.mgaChannelAssignment(productId, MGA_NAME, MGA_TYPE);
+  if (!assignment) return renderNotAssigned(product);
+
+  MgaShell.rememberProduct(productId, version || product.version);
+
+  const bc = document.querySelector('.topbar-breadcrumb');
+  if (bc) bc.innerHTML = `<a href="catalogue.html">Product Catalogue</a><span class="sep">›</span><span class="current">${escapeHtml(product.name)}</span>`;
+
+  const status = app.getProductConfigurationStatus(productId, effectiveVersion) || {};
+  const bundle = app.getProductBundle(productId, effectiveVersion) || {};
+  const jurRows = app.jurisdictionSetupFor(productId) || [];
+  const jurisdictionCount = jurRows.length || (Array.isArray(product.jurisdictions) ? product.jurisdictions.length : 0);
+  const jurisdictionLabel = (Array.isArray(product.jurisdictions) && product.jurisdictions.length === 1) ? product.jurisdictions[0] : 'United States';
+  const lob = product.family || product.lineOfBusiness || 'General';
+  const rawStatus = String(product.status || 'draft').toLowerCase();
+
+  const grantedCovers = assignment.classes.map(cls => {
+    const full = (bundle.covers || []).find(c => String(c.id) === String(cls.id));
+    return Object.assign({ id: cls.id, name: cls.name, code: cls.code }, full || {});
+  });
+
+  const root = document.getElementById('page-root');
+  root.innerHTML = `
+    <a class="mga-back" href="catalogue.html">← Back to Product Catalogue</a>
+
+    <div class="page-header mga-heading">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <h1 class="page-title" style="margin:0">${escapeHtml(product.name)}</h1>
+          <span class="badge badge-${rawStatus}">${escapeHtml(rawStatus)}</span>
+        </div>
+        <p class="page-subtitle">${escapeHtml(product.id)} · v${escapeHtml(effectiveVersion)} · ${escapeHtml(lob)} · ${escapeHtml(jurisdictionLabel)}</p>
+      </div>
+      <div class="mga-actions">
+        <button class="btn btn-secondary" onclick="duplicateProduct('${escapeHtml(productId)}')">Duplicate</button>
+        <a class="btn btn-secondary" href="/ps/product-detail.html?id=${encodeURIComponent(productId)}&version=${encodeURIComponent(effectiveVersion)}">Edit Product</a>
+        ${MgaData.hasNtaDistribution(productId)
+          ? `<a class="btn btn-primary" href="/ps/product-detail.html?id=${encodeURIComponent(productId)}&version=${encodeURIComponent(effectiveVersion)}#versions">Submit for Approval</a>`
+          : `<a class="btn btn-primary" href="${MgaData.studioHref('distribution-studio.html', productId, effectiveVersion)}" title="Configure NTA's own downstream distribution before submitting">Distribution</a>`}
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      ${['overview','configuration','versions','activity'].map(t => `<button class="tab-btn ${activeTab === t ? 'active' : ''}" onclick="activeTab='${t}';renderWorkspace()">${t[0].toUpperCase()}${t.slice(1)}</button>`).join('')}
+    </div>
+
+    <div class="mga-workspace-body">
+      <nav class="mga-config-menu">
+        <div class="heading">Product Configuration</div>
+        ${CONFIG_MENU.map(item => {
+          const dotClass = item.statusKey ? (status[item.statusKey] || 'not_configured') : '';
+          const href = item.file ? studioHref(item.file, productId, effectiveVersion) : '#';
+          const onclick = item.file ? '' : `onclick="activeTab='overview';renderWorkspace();return false;"`;
+          return `<a class="mga-config-link" href="${href}" ${onclick}>
+            <span>${escapeHtml(item.label)}</span>
+            ${item.statusKey ? `<span class="dot ${dotClass}" title="${studioStatusLabel(dotClass)}"></span>` : ''}
+          </a>`;
+        }).join('')}
+      </nav>
+
+      <div id="tab-content"></div>
+    </div>
+  `;
+
+  const content = document.getElementById('tab-content');
+  if (activeTab === 'overview') content.innerHTML = overviewHtml(product, effectiveVersion, status, jurisdictionCount, jurisdictionLabel, grantedCovers, productId, rawStatus);
+  else if (activeTab === 'configuration') content.innerHTML = configurationHtml(status, productId, effectiveVersion);
+  else if (activeTab === 'versions') content.innerHTML = versionsHtml(productId);
+  else if (activeTab === 'activity') content.innerHTML = activityHtml(productId);
+}
+
+function overviewHtml(product, version, status, jurisdictionCount, jurisdictionLabel, grantedCovers, productId, rawStatus) {
+  const cards = [
+    ['Coverages', grantedCovers.length, 'Granted to NTA'],
+    ['Risk Factors', status.counts ? status.counts.risk : 0, 'From Risk Studio'],
+    ['Eligibility', studioStatusLabel(status.eligibility), ''],
+    ['Rating', studioStatusLabel(status.ratingPricing), '']
+  ];
+  const coverageBlock = grantedCovers.length
+    ? grantedCovers.map(c => `
+        <div class="mga-coverage-item">
+          <div>
+            <div style="font-weight:600">${escapeHtml(c.name)}</div>
+            <div class="meta">${escapeHtml(c.type || 'Coverage')} · ${c.availability === 'mandatory' ? 'Core' : 'Optional'} · ${escapeHtml(rawStatus)}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="badge ${c.complete ? 'badge-published' : 'badge-draft'}">${c.complete ? 'Configured' : 'Incomplete'}</div>
+            <div><a class="mga-open-link" href="${studioHref('coverage-studio.html', productId, version)}&cover=${encodeURIComponent(c.id)}">View Coverage →</a></div>
+          </div>
+        </div>`).join('')
+    : `<div class="mga-empty"><strong>No Coverage Configured</strong>Ask the product owner to grant NTA coverage in the Distribution Guide, or add coverage in Class of Business Studio.</div>`;
+
+  return `
+    <div class="mga-cards">
+      ${cards.map(([label, value, sub]) => `<div class="card"><div class="card-subtitle">${label}</div><div class="value">${escapeHtml(String(value))}</div>${sub ? `<div class="mga-muted" style="font-size:12px">${sub}</div>` : ''}</div>`).join('')}
+    </div>
+
+    <div class="card" style="padding:22px;margin-top:20px">
+      <h2 class="card-title">Product Overview</h2>
+      <div class="mga-row"><span class="mga-muted">Product ID</span><strong>${escapeHtml(product.id)}</strong></div>
+      <div class="mga-row"><span class="mga-muted">Version</span><strong>v${escapeHtml(version)}</strong></div>
+      <div class="mga-row"><span class="mga-muted">Line of Business</span><strong>${escapeHtml(product.family || product.lineOfBusiness || 'General')}</strong></div>
+      <div class="mga-row"><span class="mga-muted">Jurisdiction</span><strong>${escapeHtml(jurisdictionLabel)} · ${jurisdictionCount} jurisdiction${jurisdictionCount === 1 ? '' : 's'}</strong></div>
+      <div class="mga-row"><span class="mga-muted">Status</span><strong>${escapeHtml(rawStatus)}</strong></div>
+    </div>
+
+    <div class="card" style="padding:22px;margin-top:20px">
+      <h2 class="card-title">Coverage granted to NTA</h2>
+      ${coverageBlock}
+    </div>
+  `;
+}
+
+function configurationHtml(status, productId, version) {
+  const rows = CONFIG_MENU.filter(i => i.statusKey);
+  return `
+    <div class="card" style="padding:22px">
+      <h2 class="card-title">Configuration status</h2>
+      ${rows.map(item => {
+        const value = status[item.statusKey] || 'not_configured';
+        return `<div class="mga-row">
+          <span>${escapeHtml(item.label)}</span>
+          <span style="display:flex;align-items:center;gap:10px">
+            <span class="badge ${statusBadgeClass(value)}">${studioStatusLabel(value)}</span>
+            <a class="mga-open-link" href="${studioHref(item.file, productId, version)}">Open →</a>
+          </span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function versionsHtml(productId) {
+  const detail = PS.prototypeApp.state.productDetails[productId] || {};
+  const versions = Array.isArray(detail.versions) ? detail.versions : [];
+  if (!versions.length) {
+    return `<div class="mga-empty"><strong>No version history recorded</strong>This product has no recorded version history in the existing product data yet.</div>`;
+  }
+  return `<div class="card" style="padding:22px">
+    <h2 class="card-title">Versions</h2>
+    ${versions.map(v => `<div class="mga-row">
+      <span>v${escapeHtml(v.label)}</span>
+      <span class="mga-muted">${escapeHtml(v.status || '')} · ${escapeHtml(v.from || '—')} → ${escapeHtml(v.to || '—')}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function activityHtml(productId) {
+  const audit = (PS.prototypeApp.state.audit || []).filter(e => e.productId === productId).slice(0, 30);
+  if (!audit.length) {
+    return `<div class="mga-empty"><strong>No activity recorded</strong>No audit history exists for this product yet in the existing product data.</div>`;
+  }
+  return `<div class="card" style="padding:22px">
+    <h2 class="card-title">Activity</h2>
+    ${audit.map(e => `<div class="mga-row">
+      <span>${escapeHtml(e.action)} — ${escapeHtml(e.description || '')}</span>
+      <span class="mga-muted">${escapeHtml(new Date(e.at).toLocaleString())}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+document.addEventListener('DOMContentLoaded', renderWorkspace);
+document.addEventListener('ps-page-ready', renderWorkspace);
+</script>
+</body></html>

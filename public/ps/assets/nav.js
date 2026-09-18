@@ -206,26 +206,32 @@ PS.nav = {
 
   profiles: [
     { key: 'vikram',    label: 'Futuristic',    href: '/ps/index.html' },
-    { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/index.html' }
+    { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/index.html' },
+    { key: 'nta',       label: 'NTA',        href: '/ps-nta/dashboard.html' }
   ],
 
   activeProfileKey() {
-    // On a raw static path (/ps/... or /ps-southlake/...) the URL is ground
-    // truth, so sync localStorage from it. Elsewhere this script is running
-    // inside a Next.js pretty route (e.g. /catalogue) loaded via HtmlAppPage,
-    // where the pathname carries no profile info — trust localStorage instead
-    // of clobbering it back to the default.
+    // On a raw static path (/ps/... or /ps-southlake/... or /ps-nta/...) the
+    // URL is ground truth, so sync localStorage from it. Elsewhere this
+    // script is running inside a Next.js pretty route (e.g. /catalogue)
+    // loaded via HtmlAppPage, where the pathname carries no profile info —
+    // trust localStorage instead of clobbering it back to the default.
     const path = window.location.pathname;
     if (path.startsWith('/ps-southlake/')) {
       try { localStorage.setItem('ps-profile', 'southlake'); } catch (e) {}
       return 'southlake';
+    }
+    if (path.startsWith('/ps-nta/')) {
+      try { localStorage.setItem('ps-profile', 'nta'); } catch (e) {}
+      return 'nta';
     }
     if (path.startsWith('/ps/')) {
       try { localStorage.setItem('ps-profile', 'vikram'); } catch (e) {}
       return 'vikram';
     }
     try {
-      return localStorage.getItem('ps-profile') === 'southlake' ? 'southlake' : 'vikram';
+      const stored = localStorage.getItem('ps-profile');
+      return stored === 'southlake' || stored === 'nta' ? stored : 'vikram';
     } catch (e) {
       return 'vikram';
     }

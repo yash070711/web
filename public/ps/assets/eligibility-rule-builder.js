@@ -70,6 +70,22 @@
     r.coverageMode ||= r.coverIds.length ? 'specific' : 'all';
     r.coverageChildren ||= {};
     r.affectedScope ||= 'Entire submission';
+    // The compact builder intentionally hides the legacy messaging and
+    // effective-date fields, but the shared studio-completion check still
+    // requires them. Supply stable defaults so a rule that is complete in
+    // this UI is also complete to the navigation gate. This also repairs
+    // rules created by earlier versions of this builder when they are next
+    // opened or saved.
+    r.reasonCode ||= r.id || 'ELIGIBILITY-RULE';
+    r.internalMsg ||= 'Eligibility rule triggered.';
+    if (r.outcomeType === 'hard' || r.outcomeType === 'soft') {
+      r.customerMsg ||= 'This risk does not meet eligibility requirements for this product.';
+    }
+    const dates = typeof defaultEffectiveDates === 'function'
+      ? defaultEffectiveDates()
+      : { from: '2026-01-01', to: '2099-12-31' };
+    if (typeof isPlaceholderDate !== 'function' || isPlaceholderDate(r.effectiveFrom)) r.effectiveFrom = dates.from;
+    if (typeof isPlaceholderDate !== 'function' || isPlaceholderDate(r.effectiveTo)) r.effectiveTo = dates.to;
     if (r.coverageMode === 'specific') covers().forEach(c => {
       if (r.coverIds.map(String).includes(c.id) && !Object.hasOwn(r.coverageChildren,c.id)) r.coverageChildren[c.id] = c.children.slice();
     });
@@ -185,7 +201,7 @@
     el.textContent=message;el.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.hidden=true,5000);
   }
   function newRule(name='') {
-    return {...JSON.parse(JSON.stringify(ELIGIBILITY_RULE_TEMPLATE)),id:'ELG-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name,status:'active',coverageMode:'all',coverIds:[],coverageChildren:{},logic:'and',conditions:[{field:'',op:'=',value:''}],outcomeType:'refer',affectedScope:scopes[0],internalMsg:'',customerMsg:'',referralQueue:'',allowOverride:false};
+    return {...JSON.parse(JSON.stringify(ELIGIBILITY_RULE_TEMPLATE)),id:'ELG-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name,status:'active',coverageMode:'all',coverIds:[],coverageChildren:{},logic:'and',conditions:[{field:'',op:'=',value:''}],outcomeType:'refer',affectedScope:scopes[0],internalMsg:'Eligibility rule triggered.',customerMsg:'This risk does not meet eligibility requirements for this product.',referralQueue:'',allowOverride:false};
   }
   const api = window.EligibilityBuilder = {
     choose(i) { activeRuleId=RULES[i]?.id;list();detail(); },
