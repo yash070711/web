@@ -251,7 +251,33 @@ return loaded;
     window.PS.centralPricing.replace(central, { type:'template-link', id:templateId });
   }
 
+  function validCoverageIdSet() {
+    return new Set(getCoverageOptions().map(coverage => String(coverage.id)));
+  }
+
+  function hasValidCoveragePricingIds() {
+    const validIds = validCoverageIdSet();
+    return Object.keys(record.coveragePricing || {}).every(id => validIds.has(String(id)));
+  }
+
+  function hasUniqueRiskFactorIds() {
+    const factors = Array.isArray(record.riskRatingFactors) ? record.riskRatingFactors : [];
+    const ids = factors.map(factor => String(factor?.id || '').trim());
+    return ids.every(Boolean) && new Set(ids).size === ids.length;
+  }
+
   function saveRecord(message) {
+    // Validate identifiers before either persistence path is touched. Existing
+    // values are left intact when validation fails; valid IDs are never rewritten.
+    if (!hasUniqueRiskFactorIds()) {
+      console.error('Rating configuration was not saved because Risk Rating Factor IDs must be present and unique.');
+      return false;
+    }
+    if (!hasValidCoveragePricingIds()) {
+      console.error('Rating configuration was not saved because coverage pricing contains an out-of-scope coverage ID.');
+      return false;
+    }
+
     // Keep the selected CPL template as the authoritative pricing reference.
     // Product Guide can consume this from the persisted rating record.
     const selectedTemplate = template();
@@ -269,13 +295,17 @@ return loaded;
     }));
     syncRatingBundle();
     window.PS?.prototypeApp?.addAudit('MODIFIED', message || 'Updated guided pricing setup', { productId:context.productId, version:context.version });
+    return true;
   }
 
   function syncRatingBundle() {
   const app = window.PS?.prototypeApp;
   if (!app?.persistCollection) return;
+  if (!hasUniqueRiskFactorIds()) return false;
 
   const tpl = template();
+  const validCoverageIds = validCoverageIdSet();
+  const validRiskAttributeIds = new Set(getRiskAttributeOptions().map(attribute => String(attribute.id)));
 
   /*
    * ------------------------------------------------------------
@@ -315,9 +345,11 @@ return loaded;
 
       if (!factor.coverage) return false;
       if (!factor.coverageId) return false;
+      if (!validCoverageIds.has(String(factor.coverageId))) return false;
 
       if (!factor.riskAttribute) return false;
       if (!factor.riskAttributeId) return false;
+      if (!validRiskAttributeIds.has(String(factor.riskAttributeId))) return false;
 
       if (!factor.ratingMethod) return false;
 
@@ -528,6 +560,21 @@ function syncRatingFormulas() {
       expression: 'BasePremium × RemainingFactors'
     }
   ];
+
+  const productBundle = app.getProductBundle?.(context.productId, context.version);
+  const productCoverages = Array.isArray(productBundle?.covers) ? productBundle.covers : [];
+  const hasMotorTruckCargo = productCoverages.some(coverage =>
+    String(coverage.name || '').trim().toLowerCase() === 'motor truck cargo'
+  );
+  if (hasMotorTruckCargo) {
+    formulas.push({
+      name: 'Commercial Auto — Motor Truck Cargo',
+      cob: 'Motor Truck Cargo',
+      status: 'Active',
+      tokens: ['BasePremium', 'RemainingFactors'],
+      expression: 'BasePremium × RemainingFactors'
+    });
+  }
 
   app.persistCollection('formulas', formulas);
 }
@@ -1652,11 +1699,13 @@ function getCoverageOptions() {
     const app = window.PS?.prototypeApp;
     const bundle = app?.getProductBundle?.(context.productId, context.version);
     const rules = Array.isArray(bundle?.eligibility) ? bundle.eligibility : [];
-    const hits = [];
+    const hardHits = [];
+    const referralHits = [];
     rules.forEach(rule => {
       const status = String(rule.status || 'active').toLowerCase();
       if (status === 'inactive' || status === 'disabled') return;
-      if ((rule.outcomeType || 'refer') !== 'hard') return;
+      const outcomeType = String(rule.outcomeType || 'refer').toLowerCase();
+      if (outcomeType !== 'hard' && outcomeType !== 'refer') return;
       const conditions = Array.isArray(rule.conditions) ? rule.conditions : [];
       if (!conditions.length) return;
       const results = conditions.map(c => compareRatingCondition(c.attributeId || c.field || c.sourceQuestionId || '', c.op, c.value, inputs));
@@ -1664,9 +1713,16 @@ function getCoverageOptions() {
       const logic = String(rule.logic || 'and').toLowerCase();
       const combined = logic === 'or' ? results.some(Boolean) : results.every(Boolean);
       const triggered = rule.direction === 'eligible' ? !combined : combined;
-      if (triggered) hits.push(rule);
+      if (!triggered) return;
+      if (outcomeType === 'hard') hardHits.push(rule);
+      else referralHits.push(rule);
     });
-    return { eligible: hits.length === 0, hits };
+    return {
+      eligible: hardHits.length === 0,
+      hits: hardHits,
+      referred: referralHits.length > 0,
+      referralHits
+    };
   }
 
   // Reuses the existing, unmodified Risk Rating Factor data structure
@@ -1715,9 +1771,15 @@ function getCoverageOptions() {
     const rows = currentRiskFactorRows(factor);
     if (factor.ratingMethod === 'table' && rows.length) {
       const match = rows.find(row => riskFactorConditionMatches(row, raw));
-      if (match && Number.isFinite(Number(match.factor))) return Number(match.factor);
+      if (match && Number.isFinite(Number(match.factor))) {
+        return { status:'matched', value:Number(match.factor), matchedRow:match };
+      }
     }
-    return Number.isFinite(Number(factor.amount)) ? Number(factor.amount) : 1;
+    const hasConfiguredDefault = factor.amount !== null && factor.amount !== undefined && factor.amount !== '' && Number.isFinite(Number(factor.amount));
+    if (hasConfiguredDefault) {
+      return { status:'configured-default', value:Number(factor.amount), matchedRow:null };
+    }
+    return { status:'unmatched', value:null, matchedRow:null };
   }
 
   // ------------------------------------------------------------------
@@ -1730,7 +1792,15 @@ function getCoverageOptions() {
     if (!hasBasePrice()) return { configured: false };
 
     const eligibility = evaluateEligibilityForPricing(riskInputs);
-    if (!eligibility.eligible) return { configured: true, eligible: false, hits: eligibility.hits };
+    if (!eligibility.eligible) {
+      return {
+        configured: true,
+        eligible: false,
+        hits: eligibility.hits,
+        referred: eligibility.referred,
+        referralHits: eligibility.referralHits
+      };
+    }
 
     const basePriceNum = Number(record.basePrice);
     const items = [];
@@ -1770,11 +1840,19 @@ function getCoverageOptions() {
     // Risk Rating Factors — EXISTING implementation, unmodified data.
     // Respects factor.coverageId; never applies a factor outside its
     // own coverage scope.
-    let riskMultiplier = 1; const riskDetails = [];
+    let riskMultiplier = 1; const riskDetails = []; const riskFactorResolutions = [];
     (record.riskRatingFactors || []).filter(f => f.configured && scopeIds.includes(f.coverageId)).forEach(f => {
-      const val = resolveRiskFactorValue(f, riskInputs);
-      riskMultiplier *= val;
-      riskDetails.push(`${f.name} × ${val}`);
+      const resolution = resolveRiskFactorValue(f, riskInputs);
+      riskFactorResolutions.push({
+        factorId: f.id,
+        riskAttributeId: f.riskAttributeId,
+        coverageId: f.coverageId,
+        status: resolution.status,
+        value: resolution.value
+      });
+      if (resolution.value === null) return;
+      riskMultiplier *= resolution.value;
+      riskDetails.push(`${f.name} × ${resolution.value}`);
     });
     if (riskMultiplier !== 1) {
       const before = subtotal;
@@ -1809,10 +1887,13 @@ function getCoverageOptions() {
 
     return {
       configured: true, eligible: true,
+      referred: eligibility.referred,
+      referralHits: eligibility.referralHits,
       base: basePriceNum, stateCode, stateBase,
       items: [...items, ...discounts, ...charges],
       total: round(subtotal), monthly: round(subtotal / 12),
-      values: clone(riskInputs)
+      values: clone(riskInputs),
+      riskFactorResolutions
     };
   }
 
@@ -1969,10 +2050,16 @@ function getCoverageOptions() {
     }
     if (action === 'save-coverage-pricing') {
       const id = button.dataset.coverage;
+      const cover = getCoverageOptions().find(c => String(c.id) === String(id));
+      if (!cover) {
+        console.error('Coverage pricing was not saved because the coverage is outside the current product distribution scope.');
+        return;
+      }
       const method = document.querySelector(`[data-coverage-method="${id}"]`)?.value || 'none';
       const valueEl = document.querySelector(`[data-coverage-value="${id}"]`);
       const value = valueEl ? valueEl.value : '';
-      const cover = getCoverageOptions().find(c => c.id === id);
+      const hadPrevious = Object.prototype.hasOwnProperty.call(record.coveragePricing, id);
+      const previous = hadPrevious ? clone(record.coveragePricing[id]) : null;
       if (method !== 'none') {
         const num = Number(value);
         if (value === '' || !Number.isFinite(num)) { setResult('Check the value', 'Enter a valid pricing value.', 'error'); return; }
@@ -1980,9 +2067,14 @@ function getCoverageOptions() {
       } else {
         delete record.coveragePricing[id];
       }
-      saveRecord(`Updated coverage pricing for ${cover?.name || id}`);
+      if (!saveRecord(`Updated coverage pricing for ${cover.name}`)) {
+        if (hadPrevious) record.coveragePricing[id] = previous;
+        else delete record.coveragePricing[id];
+        console.error('Coverage pricing was not saved because rating identifier validation failed.');
+        return;
+      }
       render();
-      setResult('Coverage pricing updated', `${cover?.name || id} pricing has been saved.`);
+      setResult('Coverage pricing updated', `${cover.name} pricing has been saved.`);
     }
     if (action === 'run-preview') {
       previewState = document.getElementById('preview-state-select')?.value || '';
@@ -2113,9 +2205,20 @@ if (action === 'remove-band') {
       const riskAttributeId = attrSelect.value;
       const attribute = getRiskAttributeOptions().find(item => String(item.id) === String(riskAttributeId));
       const coverageId = coverageSelect.value;
-      const coverage = coverageSelect.selectedOptions[0]?.dataset.name || coverageSelect.value;
+      const coverageOption = getCoverageOptions().find(item => String(item.id) === String(coverageId));
+      const coverage = coverageOption?.name || '';
       if (!attribute) return modalError('Choose a Risk Attribute', 'Select an attribute saved in Futuristic Risk Guide.');
-      if (!coverageId) return modalError('Choose a Coverage', 'Select a Futuristic parent coverage.');
+      if (!coverageId || !coverageOption) return modalError('Choose a Coverage', 'Select a Futuristic parent coverage.');
+
+      record.riskRatingFactors = record.riskRatingFactors || [];
+      if (!hasUniqueRiskFactorIds()) {
+        console.error('Risk Rating Factor was not saved because Factor IDs must be present and unique.');
+        return;
+      }
+      if (existingId && !record.riskRatingFactors.some(item => String(item.id) === String(existingId))) {
+        console.error('Risk Rating Factor was not saved because the existing Factor ID is no longer available.');
+        return;
+      }
 
       const rows = riskConditionRows(attribute);
       if (!rows.length) return modalError('No Risk Guide conditions', 'Add and save at least one condition for this attribute in Risk Guide first.');
@@ -2125,6 +2228,12 @@ if (action === 'remove-band') {
 
       const name = `${attribute.name} Factor`;
       const id = existingId || generateFactorId();
+      const existingFactor = existingId
+        ? record.riskRatingFactors.find(item => String(item.id) === String(existingId))
+        : null;
+      const preservedAmount = existingFactor && existingFactor.amount !== null && existingFactor.amount !== undefined && existingFactor.amount !== ''
+        ? existingFactor.amount
+        : 1;
       const tableId = `${String(attribute.id).replace(/[^a-z0-9]+/gi, '') || 'risk'}Table`;
       const next = {
         id,
@@ -2137,17 +2246,22 @@ if (action === 'remove-band') {
         riskAttributeId: attribute.id,
         riskCategory: attribute.category,
         ratingMethod: 'table',
-        amount: 1,
+        amount: preservedAmount,
         table: { id:tableId, sourceSheet:attribute.name, data:clone(rows) },
         configured: true
       };
 
-      record.riskRatingFactors = record.riskRatingFactors || [];
-      const index = record.riskRatingFactors.findIndex(item => item.id === id);
+      const index = record.riskRatingFactors.findIndex(item => String(item.id) === String(id));
+      const previousFactor = index >= 0 ? record.riskRatingFactors[index] : null;
       if (index >= 0) record.riskRatingFactors[index] = next;
       else record.riskRatingFactors.push(next);
       window.__riskFactorDraft = null;
-      saveRecord(`${index >= 0 ? 'Updated' : 'Added'} Risk Guide factor ${name}`);
+      if (!saveRecord(`${index >= 0 ? 'Updated' : 'Added'} Risk Guide factor ${name}`)) {
+        if (index >= 0) record.riskRatingFactors[index] = previousFactor;
+        else record.riskRatingFactors.pop();
+        console.error('Risk Rating Factor was not saved because rating identifier validation failed.');
+        return;
+      }
       activeStep = 'risk';
       window.PS.closeModal();
       render();
