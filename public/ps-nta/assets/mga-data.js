@@ -49,6 +49,12 @@ window.MgaData = {
   },
 
   studioHref(file, productId, version) {
+    // Distribution is the one section NTA configures itself (its own
+    // downstream sub-distribution to employees/brokers/agents), so it opens
+    // NTA's own Distribution Guide rather than Futuristic's.
+    if (file === 'distribution-studio.html') {
+      return `distribution-studio.html?product=${encodeURIComponent(productId)}&id=${encodeURIComponent(productId)}&version=${encodeURIComponent(version || '')}`;
+    }
     return `/ps/${file}?product=${encodeURIComponent(productId)}&id=${encodeURIComponent(productId)}&version=${encodeURIComponent(version || '')}`;
   },
 
@@ -142,5 +148,23 @@ window.MgaData = {
     const app = window.PS.prototypeApp;
     const ids = new Set(rows.map(r => r.product.id));
     return (app.state.audit || []).filter(e => ids.has(e.productId)).slice(0, limit);
+  },
+
+  // Whether NTA has actually saved its own downstream distribution (at
+  // least one channel with a real, validated grant) for this product. The
+  // distribution-studio.html save flow only ever persists this record after
+  // its own validation passes, so the record's existence is itself the
+  // real signal — nothing is re-derived or duplicated here.
+  hasNtaDistribution(productId) {
+    if (!productId) return false;
+    try {
+      const raw = localStorage.getItem(`veridex-nta-distribution-${productId}`);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      const configs = parsed && parsed.configs ? Object.values(parsed.configs) : [];
+      return configs.some(c => Array.isArray(c?.grants) && c.grants.some(g => g?.parent && Array.isArray(g.states) && g.states.length > 0));
+    } catch (_) {
+      return false;
+    }
   }
 };

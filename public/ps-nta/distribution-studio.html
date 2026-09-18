@@ -1,0 +1,1232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Distribution Channels — MGA Workspace</title><link rel="stylesheet" href="/ps/assets/style.css"><link rel="stylesheet" href="assets/mga-theme.css"><style>
+ :root{--p:#eea10b;--sidebar:#302b22;--active:#4b4028;--bg:#faf8f4;--text:#1f1f1d;--muted:#8a8378;--line:#e5ded3;--soft:#fff3d7;--danger:#b42318}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,sans-serif}button,input,select{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}.side{background:var(--sidebar);color:#fff;padding:22px 14px}.brand{font-size:18px;font-weight:800;padding:0 10px 24px;color:#fff}.nav{padding:9px 10px;border-radius:8px;color:#e2ddd3;margin:2px}.nav.active{background:var(--active);color:var(--p);font-weight:800}.nav.done:after{content:'✓';float:right;color:#d7b04a}.main{min-width:0}.top{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 24px}.content{max-width:1160px;margin:auto;padding:24px}.crumb,.muted{color:var(--muted)}.crumb{font-size:12px}.title h1{margin:8px 0 3px;font-size:24px}.product{display:flex;gap:35px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin:16px 0}.product span{display:block;font-size:10px;color:var(--muted)}.card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}.card-head,.card-foot{display:flex;justify-content:space-between;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line)}.card-head h2{margin:0;font-size:18px}.card-body{padding:20px}.card-foot{border:0;border-top:1px solid var(--line)}.btn{border:1px solid #d0d5dd;background:#fff;color:#40392f;border-radius:8px;padding:9px 13px;font-weight:700}.btn.primary{background:var(--p);border-color:var(--p);color:#fff}.btn.danger{color:var(--danger)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label,.label{display:block;font-size:12px;font-weight:800;color:#736b60;margin-bottom:6px}.field input,.field select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:8px;background:#fff}.section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.section h3{margin:0 0 3px;font-size:16px}.channel-picker{display:grid;grid-template-columns:180px 1fr;gap:12px;background:#fbfaf7;border:1px solid var(--line);border-radius:10px;padding:14px}.grant{border:1px solid var(--line);border-radius:10px;margin-top:12px;overflow:hidden}.grant-head{display:grid;grid-template-columns:1fr 1.2fr 150px 38px;gap:10px;align-items:end;padding:13px}.grant-body{background:#fcfbf9;border-top:1px solid var(--line);padding:13px}.scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.scope{border:1px solid var(--line);border-radius:9px;padding:12px}.scope-title{font-weight:800}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.check-grid label,.state-list label{display:flex;gap:7px;align-items:flex-start}.bind-limit{margin-top:12px}.state-toolbar{display:flex;gap:7px;margin-top:10px}.state-toolbar input{flex:1;padding:9px;border:1px solid #d0d5dd;border-radius:8px}.link{border:0;background:transparent;color:var(--p);font-weight:800;padding:4px}.state-list{display:grid;grid-template-columns:1fr 1fr;gap:3px;max-height:210px;overflow:auto;margin-top:8px}.state-list label{padding:5px;border-radius:5px}.state-list label:hover{background:#fff8ea}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.class-empty{padding:4px 0 2px}.chip span{display:inline-flex;min-width:18px;height:18px;align-items:center;justify-content:center;border-radius:999px;background:rgba(238,161,11,.14);font-size:10px}.chip{display:inline-flex;align-items:center;gap:5px;background:var(--soft);color:var(--p);padding:5px 8px;border-radius:999px;font-size:12px;font-weight:700}.chip button{border:0;background:none;color:inherit;padding:0}.area{display:grid;grid-template-columns:110px 1fr 1fr auto;gap:8px;align-items:end;border-top:1px solid var(--line);margin-top:13px;padding-top:13px}.empty{text-align:center;border:1px dashed #cbd0d9;border-radius:10px;padding:36px;color:var(--muted);margin-top:16px}.hidden{display:none!important}.toast{display:none;position:fixed;right:20px;bottom:20px;background:#332e24;color:#fff;padding:11px 15px;border-radius:8px}.toast.show{display:block}@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.grid2,.channel-picker,.scope-grid,.area,.grant-head{grid-template-columns:1fr}.grant-head .remove{justify-self:end}}
+
+.grant-head{display:flex;align-items:center;justify-content:space-between}.class-context{font-size:16px;font-weight:700}.class-context small{display:block;font-size:11px;font-weight:500;color:var(--muted)}.scope-grid{display:block}.authority-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.territory-grid{display:grid;grid-template-columns:280px 1fr;gap:14px;margin-top:12px}.territory-state{border:1px solid var(--line);border-radius:9px;padding:11px;margin-bottom:9px;background:white}.territory-state-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.territory-state select{padding:7px;border:1px solid #d0d5dd;border-radius:6px}.location-inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.grant-summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px}.grant-summary::-webkit-details-marker{display:none}.grant-summary::after{content:'+';color:var(--p);font-size:20px}.grant[open]>.grant-summary::after{content:'−'}.grant-summary .muted{font-size:12px}.inline-note{padding:9px 12px;background:var(--soft);color:var(--p);border-radius:8px;font-size:12px;margin-top:12px}.state-list{grid-template-columns:1fr;max-height:315px}.state-toolbar input{min-width:0}.coverage-context{font-size:12px;color:var(--muted);margin-top:6px}@media(max-width:900px){.authority-grid,.territory-grid,.location-inputs{grid-template-columns:1fr}}
+.step-tabs{display:flex;gap:8px;margin:0 0 15px}.step-tabs .active,.channel-tabs .active{background:var(--p);color:white;border-color:var(--p)}.channel-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}.re-row{display:grid;grid-template-columns:1fr 140px auto;gap:12px;align-items:end;padding:12px;border:1px solid var(--line);border-radius:9px;margin-bottom:10px}.risk-summary{padding:12px;background:var(--soft);color:var(--p);border-radius:9px;margin-top:15px}.all-states{display:flex;gap:7px;align-items:center;font-weight:700;margin-top:10px}@media(max-width:900px){.re-row{grid-template-columns:1fr}}
+[data-territories]{max-height:380px;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding-right:6px;min-width:0}.territory-grid{align-items:start}.add-channel-dialog{border:1px solid var(--line);border-radius:12px;padding:22px;max-width:480px;width:calc(100% - 32px);color:var(--text);box-shadow:0 20px 60px #10182833}.add-channel-dialog::backdrop{background:#332e2488}.dialog-heading h3{margin:0 0 6px;font-size:19px}.dialog-heading p{margin:0 0 18px}.dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}.channel-added{animation:channelAdded 2.2s ease-out}@keyframes channelAdded{0%,35%{box-shadow:0 0 0 3px #f0d49a;background:#fff5df}100%{box-shadow:none}}
+
+/* Screenshot-matched Southlake Carrier palette. Functionality and flow are unchanged. */
+.side{background:#302b22}
+.nav{color:#e2ddd3}
+.nav.active{background:#4b4028;color:#eea10b}
+.btn.primary{background:#eea10b;border-color:#eea10b;color:#fff}
+.step-tabs .active,.channel-tabs .active{background:#eea10b;color:#fff;border-color:#eea10b}
+.chip{background:#fff3d7;color:#9b6500}
+.inline-note,.risk-summary{background:#fff3d7;color:#815600}
+.link{color:#c27b00}
+body{background:#faf8f4}
+</style>
+<style id="create-flow-additions">
+  .section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+  .section h3{margin:0 0 3px;font-size:16px}
+  .re-row{display:grid;grid-template-columns:1fr 140px auto;gap:12px;align-items:end;padding:12px;border:1px solid var(--line);border-radius:9px;margin-bottom:10px}
+  .risk-summary{padding:12px;background:var(--soft);color:var(--p);border-radius:9px;margin-top:15px}
+  .channel-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+  .channel-tabs .active{background:var(--p);color:#fff;border-color:var(--p)}
+  .class-context{font-size:16px;font-weight:700}
+  .class-context small{display:block;font-size:11px;font-weight:500;color:var(--muted)}
+  .authority-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  .territory-grid{display:grid;grid-template-columns:280px 1fr;gap:14px;margin-top:12px}
+  .territory-state{border:1px solid var(--line);border-radius:9px;padding:11px;margin-bottom:9px;background:#fff}
+  .territory-state-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .territory-state select{padding:7px;border:1px solid #d0d5dd;border-radius:6px}
+  .location-inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+  .state-toolbar{display:flex;gap:7px;margin-top:10px}
+  .state-toolbar input{flex:1;padding:9px;border:1px solid #d0d5dd;border-radius:8px}
+  .state-list{display:grid;grid-template-columns:1fr;gap:3px;max-height:315px;overflow:auto;margin-top:8px}
+  .state-list label{display:flex;gap:7px;align-items:flex-start;padding:5px;border-radius:5px}
+  .state-list label:hover{background:#fff8ea}
+  .all-states{display:flex;gap:7px;align-items:center;font-weight:700;margin-top:10px}
+  .link{border:0;background:transparent;color:var(--p);font-weight:800;padding:4px}
+  .scope{border:1px solid var(--line);border-radius:9px;padding:12px}
+  .scope-title{font-weight:800}
+  .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+  .check-grid label{display:flex;gap:7px;align-items:flex-start}
+  .grant{border:1px solid var(--line);border-radius:10px;margin-top:12px;overflow:hidden}
+  .grant-head{display:flex;align-items:center;justify-content:space-between;padding:13px;gap:12px}
+  .grant-body{background:#fcfbf9;border-top:1px solid var(--line);padding:13px}
+  .inline-note{padding:9px 12px;background:var(--soft);color:var(--p);border-radius:8px;font-size:12px;margin-top:12px}
+  .coverage-context{font-size:12px;color:var(--muted);margin-top:6px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.class-empty{padding:4px 0 2px}.chip span{display:inline-flex;min-width:18px;height:18px;align-items:center;justify-content:center;border-radius:999px;background:rgba(238,161,11,.14);font-size:10px}
+  .chip{display:inline-flex;align-items:center;gap:5px;background:var(--soft);color:var(--p);padding:5px 8px;border-radius:999px;font-size:12px;font-weight:700}
+  .toast{display:none;position:fixed;right:20px;bottom:20px;background:#332e24;color:#fff;padding:11px 15px;border-radius:8px;z-index:2000}
+  .toast.show{display:block}
+  .data-table{width:100%;border-collapse:collapse;font-size:13px}
+  .data-table th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);background:var(--surface)}
+  .data-table td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .data-table tr:last-child td{border-bottom:none}
+  .dc-factor-actions{display:flex;gap:4px;align-items:center}
+  .dc-empty-cell{text-align:center;color:var(--muted);padding:24px!important}
+  @media(max-width:900px){
+    .authority-grid,.territory-grid,.location-inputs,.re-row{grid-template-columns:1fr}
+    .check-grid{grid-template-columns:1fr}
+  }
+</style>
+
+<style id="old-shared-shell-compat">
+  .shell{min-height:100vh}
+  .dc-page{max-width:1440px}
+  .main-content{min-width:0;min-height:100vh}
+  .dc-page .content{max-width:1160px;margin:auto;padding:24px}
+</style>
+
+<style id="southlake-theme-override">
+  :root{
+    --color-brand:#eea10b !important;
+    --color-on-brand:#ffffff !important;
+    --color-bg:#faf8f4 !important;
+    --color-panel:#ffffff !important;
+    --color-surface:#f7f3ec !important;
+    --color-border:#e5ded3 !important;
+    --color-ink:#1f1f1d !important;
+    --color-text:#1f1f1d !important;
+    --color-muted:#8a8378 !important;
+    --color-success:#16864a !important;
+    --color-danger:#b42318 !important;
+  }
+
+  html,body{
+    background:#faf8f4 !important;
+    color:#1f1f1d !important;
+  }
+
+  body,
+  .shell,
+  .main-content,
+  .page-inner,
+  .dc-page{
+    background:#faf8f4 !important;
+    color:#1f1f1d !important;
+  }
+
+  /* Shared sidebar — keep the existing nav.js structure unchanged. */
+  .sidenav{
+    background:#302b22 !important;
+    color:#e2ddd3 !important;
+    border-right:1px solid #403a30 !important;
+  }
+
+  .sidenav .nav-item{
+    color:#e2ddd3 !important;
+  }
+
+  .sidenav .nav-item.active{
+    background:#4b4028 !important;
+    color:#eea10b !important;
+  }
+
+  .sidenav .nav-group-label{
+    color:#d2cbc0 !important;
+  }
+
+  .sidenav .role-badge{
+    color:#8a8378;
+  }
+
+  /* Shared topbar */
+  .topbar{
+    background:#ffffff !important;
+    border-bottom:1px solid #e5ded3 !important;
+    color:#1f1f1d !important;
+  }
+
+  .topbar-breadcrumb,
+  .topbar-breadcrumb a,
+  .topbar-breadcrumb .current{
+    color:#8a8378 !important;
+  }
+
+  .topbar-breadcrumb a{
+    color:#c27b00 !important;
+  }
+
+  .topbar-search{
+    background:#ffffff !important;
+    border-color:#e5ded3 !important;
+  }
+
+  .topbar-search input{
+    color:#1f1f1d !important;
+  }
+
+  .topbar-user-name,
+  .topbar-user-role{
+    color:#1f1f1d !important;
+  }
+
+  /* Main page */
+  .page-title,
+  .title h1,
+  .card-title,
+  .dc-card-title,
+  .dc-section-title,
+  h1,h2,h3{
+    color:#1f1f1d !important;
+  }
+
+  .page-subtitle,
+  .muted,
+  .dc-section-help,
+  .dc-card-help,
+  .form-help,
+  .form-help-inline,
+  .coverage-context{
+    color:#8a8378 !important;
+  }
+
+  /* Cards / panels */
+  .dc-card,
+  .dc-factors-card,
+  .card,
+  .product,
+  .scope,
+  .grant,
+  .dc-state-block{
+    background:#ffffff !important;
+    border-color:#e5ded3 !important;
+    color:#1f1f1d !important;
+  }
+
+  .dc-card-head,
+  .card-head,
+  .card-foot,
+  .dc-factors-card .card-header{
+    background:#ffffff !important;
+    border-color:#e5ded3 !important;
+  }
+
+  .product{
+    box-shadow:0 1px 3px rgba(16,24,40,.05) !important;
+  }
+
+  .product span,
+  .dc-info-label,
+  .form-label,
+  .field label{
+    color:#736b60 !important;
+  }
+
+  /* Inputs / selects */
+  input,
+  select,
+  textarea,
+  .form-control{
+    background:#ffffff !important;
+    color:#1f1f1d !important;
+    border-color:#d0d5dd !important;
+  }
+
+  input::placeholder{
+    color:#a29a8e !important;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus,
+  .form-control:focus{
+    border-color:#eea10b !important;
+    box-shadow:0 0 0 2px rgba(238,161,11,.12) !important;
+    outline:none !important;
+  }
+
+  /* Primary / step buttons */
+  .btn-primary,
+  .btn.primary,
+  .step-tabs .active,
+  .channel-tabs .active{
+    background:#eea10b !important;
+    border-color:#eea10b !important;
+    color:#ffffff !important;
+  }
+
+  .btn-secondary,
+  .btn:not(.btn-primary):not(.primary):not(.active){
+    background:#ffffff !important;
+    color:#40392f !important;
+    border-color:#d0d5dd !important;
+  }
+
+  .btn:hover{
+    filter:none !important;
+  }
+
+  /* Warm chips/info */
+  .chip,
+  .ms-chip,
+  .jur-chip,
+  .inline-note,
+  .risk-summary,
+  .dc-info-panel{
+    background:#fff3d7 !important;
+    color:#9b6500 !important;
+    border-color:#efd8ad !important;
+  }
+
+  .link{
+    color:#c27b00 !important;
+  }
+
+  /* Table */
+  .data-table th{
+    background:#f7f3ec !important;
+    color:#756d62 !important;
+    border-color:#e5ded3 !important;
+  }
+
+  .data-table td{
+    background:#ffffff !important;
+    color:#1f1f1d !important;
+    border-color:#e5ded3 !important;
+  }
+
+  .dc-factors-foot{
+    background:#f7f3ec !important;
+    color:#8a8378 !important;
+    border-color:#e5ded3 !important;
+  }
+
+  /* Remove any accidental dark page overlay/theme backgrounds */
+  .main-content *,
+  .page-inner *{
+    scrollbar-color:#d2c9bb transparent;
+  }
+
+  .toast{
+    background:#302b22 !important;
+    color:#ffffff !important;
+  }
+</style>
+
+<style id="distribution-dependencies-css">
+  .dep-block{margin-top:22px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+  .dep-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .dep-title{font-size:16px;font-weight:800}
+  .dep-sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .dep-body{padding:16px 18px}
+  .dep-row{display:grid;grid-template-columns:140px minmax(180px,1fr) minmax(220px,1.4fr) auto;gap:10px;align-items:end;padding:12px;border:1px solid var(--line);border-radius:9px;background:#fcfbf9;margin-bottom:9px}
+  .dep-empty{padding:18px;border:1px dashed #cbd0d9;border-radius:9px;color:var(--muted);text-align:center}
+  .dep-rule-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:var(--soft);color:#9b6500;font-size:11px;font-weight:800}
+  .dep-footnote{margin-top:10px;padding:9px 12px;background:var(--soft);border-radius:8px;color:#815600;font-size:12px}
+  @media(max-width:900px){.dep-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell" id="app-shell">
+  <header class="topbar">
+    <a href="dashboard.html" class="topbar-logo" id="topbar-logo"></a>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-breadcrumb" id="topbar-breadcrumb" aria-label="Breadcrumb"></nav>
+    <div class="topbar-right" id="topbar-right"></div>
+  </header>
+  <nav class="sidenav" id="sidenav" aria-label="Primary navigation"></nav>
+
+  <main class="main-content" id="main-content">
+    <div class="page-inner dc-page">
+      <div class="content">
+
+      <div class="title">
+        <h1>Create Distribution Channel</h1>
+        <div class="muted">Configure product & coverage, MGA, state, and commission.</div>
+      </div>
+
+      <div class="product">
+        <div><span>PRODUCT</span><b id="productName">Loading product...</b></div>
+        <div><span>CARRIER</span><b id="carrierName">SouthLake Carrier</b></div>
+      </div>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2 id="mainHeading">Channel Configuration</h2>
+            <div class="muted" id="mainHelp">Choose channel, set commission, then grant Class of Business authority.</div>
+          </div>
+        </div>
+        <div id="body" class="card-body"></div>
+        <div class="card-foot">
+          <span id="status" class="muted"></span>
+          <div style="display:flex;gap:8px">
+            <button id="cancelBtn" class="btn">Cancel</button>
+            <button id="saveChannel" class="btn primary">Save Channel</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="dependenciesSection" aria-label="Dependencies"></section>
+
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="/ps/assets/data.js"></script>
+<script src="/ps/assets/prototype-app.js"></script>
+<script src="/ps/assets/distribution-create-data.js"></script>
+<script src="assets/mga-data.js"></script>
+<script src="assets/mga-shell.js"></script>
+<script>
+try { localStorage.setItem('ps-profile', 'nta'); } catch (e) {}
+document.addEventListener('DOMContentLoaded', function () {
+  MgaShell.render('distribution', 'Distribution');
+
+(() => {
+  "use strict";
+
+  const STATE_LIST = `
+    AL Alabama|AK Alaska|AZ Arizona|AR Arkansas|CA California|CO Colorado|CT Connecticut|DE Delaware|FL Florida|GA Georgia|HI Hawaii|ID Idaho|IL Illinois|IN Indiana|IA Iowa|KS Kansas|KY Kentucky|LA Louisiana|ME Maine|MD Maryland|MA Massachusetts|MI Michigan|MN Minnesota|MS Mississippi|MO Missouri|MT Montana|NE Nebraska|NV Nevada|NH New Hampshire|NJ New Jersey|NM New Mexico|NY New York|NC North Carolina|ND North Dakota|OH Ohio|OK Oklahoma|OR Oregon|PA Pennsylvania|RI Rhode Island|SC South Carolina|SD South Dakota|TN Tennessee|TX Texas|UT Utah|VT Vermont|VA Virginia|WA Washington|WV West Virginia|WI Wisconsin|WY Wyoming|DC District of Columbia`
+    .trim().split("|").map(x => ({code:x.slice(0,2), name:x.slice(3)}));
+
+  // NTA's own downstream directory. NTA can only sub-distribute what it was
+  // itself granted by the product owner (Futuristic) via the real
+  // Distribution Guide — there is no MGU/MGA tier here because NTA is the
+  // MGA, not the product owner.
+  const DIRECTORY = {
+    Employee:["New Employee"],
+    Broker:["Roadway Brokers LLC","TruckSure Brokerage"],
+    Agent:["Roadway Agency","Fleet Insurance Partners"]
+  };
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  const app = {
+    productId:"",
+    productName:"",
+    productVersion:"",
+    carrier:"SouthLake Carrier",
+    classes:[],
+    assigned:[{type:"Employee", name:DIRECTORY.Employee[0]}],
+    activeIndex:0,
+    configs:{},
+    factors:[],
+    dependencies:[]
+  };
+
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+
+  function productIdFromPage(){
+    const p = new URLSearchParams(location.search);
+    const ctx = window.PS?.prototypeApp?.context?.() || {};
+    return p.get("productId") || p.get("product") || p.get("id") ||
+      ctx.productId || window.productId || document.body.dataset.productId || "";
+  }
+
+  function productRecords(){
+    const proto = window.PS?.prototypeApp;
+    const products = Array.isArray(proto?.state?.products) ? proto.state.products :
+      (Array.isArray(window.PS?.data?.products) ? window.PS.data.products : []);
+    const details = proto?.state?.productDetails || {};
+    return [
+      ...products.map(p => ({...p, __source:"product"})),
+      ...Object.entries(details).map(([id,d]) => ({...(d || {}), id:d?.id || id, __source:"detail"}))
+    ];
+  }
+
+  // NTA can only configure downstream distribution for products it was
+  // actually assigned by the product owner — resolved from the real
+  // Distribution Guide assignment (PS.prototypeApp.productsAssignedToChannel),
+  // never from an unrelated hard-coded id or arbitrary product.
+  function ntaAssignedProductIds(){
+    const proto = window.PS?.prototypeApp;
+    return (proto?.productsAssignedToChannel?.("NTA", "MGA") || []).map(row => String(row.product.id));
+  }
+
+  function resolveProductId(){
+    const requested = productIdFromPage();
+    const assignedIds = ntaAssignedProductIds();
+    if(requested && assignedIds.includes(String(requested))) return requested;
+
+    const ctx = window.PS?.prototypeApp?.context?.() || {};
+    if(ctx.productId && assignedIds.includes(String(ctx.productId))) return ctx.productId;
+
+    return assignedIds[0] || "";
+  }
+
+  function normalizeClasses(value){
+    // Class of Business Guide persists its configured classes as the coverage
+    // objects themselves. It may also be wrapped in { coverages: [...] } or a
+    // product/detail object, so unwrap all supported forms first.
+    if(value && !Array.isArray(value) && typeof value === "object"){
+      value = value.coverages || value.classes || value.classOfBusiness ||
+        value.classesOfBusiness || value.businessClasses || value.items || [];
+    }
+    if(!Array.isArray(value)) return [];
+
+    return value.filter(Boolean).map((item,i)=>({
+      id:item.id || item.code || `class-${i}`,
+      name:item.name || item.label || item.title || item.className || `Class of Business ${i+1}`,
+      code:item.code || `CLASS-${String(i+1).padStart(3,"0")}`,
+      // Class of Business stores the parent at index 0; only subsequent rows are children.
+      insuredItems:(Array.isArray(item.insuredItems) ? item.insuredItems.slice(1) :
+        Array.isArray(item.children) ? item.children :
+        Array.isArray(item.childClasses) ? item.childClasses :
+        Array.isArray(item.childBusinessClasses) ? item.childBusinessClasses : [])
+        .filter(Boolean).map((child,j)=>({
+          id:child.id || child.code || `${item.id || `class-${i}`}-child-${j}`,
+          name:child.type || child.name || child.label || child.title || child.className || `Child Class ${j+1}`
+        }))
+    }));
+  }
+
+  function classSources(){
+    const proto = window.PS?.prototypeApp;
+    const product = proto?.productById?.(app.productId) || {};
+    const detail = proto?.ensureProductDetail?.(app.productId) || proto?.state?.productDetails?.[app.productId] || {};
+    const bundle = proto?.getProductBundle?.(app.productId, app.productVersion || undefined) || {};
+    const collections = proto?.state?.collections || {};
+    const collectionCovers = [];
+
+    // IMPORTANT:
+    // In the current Class of Business Guide, the items shown under
+    // "COVERS" (for example Auto Liability, Physical Damage and
+    // Motor Truck Cargo) are the configured parent objects that this
+    // Distribution screen needs to use for authority configuration.
+    // They are persisted by the studio as the product's "covers" collection.
+    for(const [key, value] of Object.entries(collections)){
+      const k = String(key).toLowerCase();
+      const pid = String(app.productId || "").toLowerCase();
+      if(pid && k.startsWith(pid + "::") && k.endsWith("::covers") && Array.isArray(value)){
+        collectionCovers.push(value);
+      }
+    }
+
+    return [
+      // Existing Class of Business sources.
+      product.classOfBusiness, product.classesOfBusiness, product.businessClasses, product.classes,
+      detail.classOfBusiness, detail.classesOfBusiness, detail.businessClasses, detail.classes,
+      bundle.product?.classOfBusiness, bundle.product?.classesOfBusiness, bundle.product?.businessClasses, bundle.product?.classes,
+      bundle.classOfBusiness, bundle.classesOfBusiness, bundle.businessClasses, bundle.classes,
+      proto?.state?.classOfBusiness?.[app.productId],
+      proto?.state?.classesOfBusiness?.[app.productId],
+      proto?.state?.businessClasses?.[app.productId],
+
+      // Product covers are the actual configured parent/child hierarchy
+      // visible in the Class of Business Guide "COVERS" panel.
+      product.covers,
+      detail.covers,
+      bundle.covers,
+      bundle.product?.covers,
+      ...collectionCovers
+    ].filter(Boolean);
+  }
+
+  function loadClasses(){
+    if (!app.productId) return [];
+
+    const tryValue = value => {
+      const classes = normalizeClasses(value);
+      return classes.length ? classes : null;
+    };
+
+    // 1. Exact product-scoped Class of Business Guide collection.
+    try{
+      const exactKeys = [
+        `veridex-class-of-business-${app.productId}`,
+        `class-of-business-${app.productId}`,
+        `classOfBusiness-${app.productId}`,
+        `${app.productId}-class-of-business`
+      ];
+      for(const key of exactKeys){
+        const raw=localStorage.getItem(key);
+        if(!raw) continue;
+        const classes=tryValue(JSON.parse(raw));
+        if(classes) return classes;
+      }
+    }catch{}
+
+    // 2. Prototype-app state / product bundle.
+    for(const source of classSources()){
+      const classes=tryValue(source);
+      if(classes) return classes;
+    }
+
+    // 3. Recover the product's persisted "covers" collection.
+    // The Class of Business Guide saves its visible COVERS hierarchy as:
+    //   <productId>::<version>::covers
+    // in prototypeApp.state.collections. Some older prototype builds also
+    // expose a product-scoped localStorage value, so support both forms.
+    try{
+      const proto = window.PS?.prototypeApp;
+      const collections = proto?.state?.collections || {};
+      const pid = String(app.productId || "").toLowerCase();
+
+      for(const [key, value] of Object.entries(collections)){
+        const k = String(key).toLowerCase();
+        if(pid && k.startsWith(pid + "::") && k.endsWith("::covers")){
+          const covers = tryValue(value);
+          if(covers) return covers;
+        }
+      }
+
+      const coverKeys = [
+        `veridex-covers-${app.productId}`,
+        `covers-${app.productId}`,
+        `${app.productId}-covers`
+      ];
+
+      for(const key of coverKeys){
+        const raw = localStorage.getItem(key);
+        if(!raw) continue;
+        const covers = tryValue(JSON.parse(raw));
+        if(covers) return covers;
+      }
+    }catch{}
+
+    // 4. Recover any product-scoped class collection. This is important when
+    // the Distribution page was opened without ?product=... but the upstream
+    // Class of Business Guide was saved against the real product id.
+    try{
+      const candidates=[];
+      for(let i=0;i<localStorage.length;i++){
+        const key=localStorage.key(i)||"";
+        if(!/^veridex-class-of-business-.+/i.test(key)) continue;
+        const raw=localStorage.getItem(key);
+        if(!raw) continue;
+        try{
+          const parsed=JSON.parse(raw);
+          const classes=tryValue(parsed);
+          if(classes) candidates.push({key,classes});
+        }catch{}
+      }
+
+      if(candidates.length){
+        const exact=candidates.find(x=>x.key.toLowerCase()===`veridex-class-of-business-${String(app.productId).toLowerCase()}`);
+        if(exact) return exact.classes;
+
+        const records=productRecords();
+        const current=records.find(p=>String(p.id)===String(app.productId));
+        const hay=`${current?.name||""} ${current?.family||""} ${current?.productType||""}`.toLowerCase();
+        if(hay.includes("commercial auto") || hay.includes("trucking")) return candidates[0].classes;
+
+        if(candidates.length===1) return candidates[0].classes;
+      }
+    }catch{}
+
+    return [];
+  }
+
+  function childrenFor(parent){
+    return Array.isArray(parent?.insuredItems) ? parent.insuredItems : [];
+  }
+
+  function currentChannel(){
+    return app.assigned[app.activeIndex] || app.assigned[0];
+  }
+
+  function currentConfig(){
+    const ch = currentChannel();
+    const key = `${ch?.type || "MGA"}|${ch?.name || ""}`;
+    if(!app.configs[key]){
+      const parent = app.classes[0];
+      app.configs[key] = {
+        commission:12,
+        commissionBasis:"Written Premium",
+        grants:[{
+          id:Date.now(),
+          parent:parent?.id || "",
+          children:[],
+          authority:"Brokerage",
+          bindingLimit:"",
+          states:[],
+          territory:{}
+        }]
+      };
+    }
+    return app.configs[key];
+  }
+
+  function activeGrant(){
+    const c = currentConfig();
+    return c.grants[0] || null;
+  }
+
+  // NTA's own downstream distribution record is stored under a distinct
+  // key from Futuristic's `veridex-distribution-*` (which encodes the
+  // product owner's assignment TO NTA) so this page can never read or
+  // overwrite that record — it only ever writes NTA's own sub-assignments.
+  function persist(){
+    if(!app.productId) return false;
+    try{
+      localStorage.setItem(`veridex-nta-distribution-${app.productId}`, JSON.stringify(app));
+      return true;
+    }catch{return false;}
+  }
+
+  function toast(msg){
+    const el=$("#toast");
+    el.textContent=msg;
+    el.classList.add("show");
+    clearTimeout(window.__psToast);
+    window.__psToast=setTimeout(()=>el.classList.remove("show"),2400);
+  }
+
+  function classContext(){
+    if(!app.classes.length) return `<div class="class-empty">
+      <div><strong>No Class of Business is configured for this product yet.</strong></div>
+      <div class="muted">Classes / covers configured in Class of Business Guide will appear here automatically.</div>
+    </div>`;
+    return `
+      <div class="class-context">${app.classes.length} class${app.classes.length===1?"":"es"} of business configured
+        <small>Dynamic data from Class of Business Guide</small>
+      </div>
+      <div class="chips">
+        ${app.classes.map(c=>`
+          <span class="chip">${esc(c.name)} <span>${childrenFor(c).length}</span></span>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderGrant(g){
+    const parent=app.classes.find(x=>x.id===g.parent) || app.classes[0];
+    if(!parent) return `<article class="grant"><div class="grant-body"><div class="empty">No Class of Business is available for authority configuration.</div></div></article>`;
+    const children=childrenFor(parent);
+    return `
+      <article class="grant">
+        <div class="grant-head">
+          <div class="field" style="width:100%">
+            <label>Parent Class of Business</label>
+            <div class="coverage-context">${esc(parent.name)}</div>
+          </div>
+          <button class="btn danger" data-delete="${g.id}">Remove</button>
+        </div>
+        <div class="grant-body">
+          <div class="scope">
+            <div class="scope-title">Child Classes</div>
+            <div class="muted">Only child classes belonging to the selected parent are displayed.</div>
+            <div class="check-grid">
+              ${children.length ? children.map(ch=>`
+                <label><input type="checkbox" data-child="${g.id}" value="${esc(ch.name)}" ${g.children.includes(ch.name)?"checked":""}>${esc(ch.name)}</label>
+              `).join("") : `<div class="muted">No child classes have been added to this Class of Business.</div>`}
+            </div>
+          </div>
+
+          <div class="authority-grid" style="margin-top:16px">
+            <div class="field">
+              <label>Authority</label>
+              <select data-authority="${g.id}">
+                <option ${g.authority==="Brokerage"?"selected":""}>Brokerage</option>
+                <option ${g.authority==="Binding"?"selected":""}>Binding</option>
+              </select>
+              <div class="coverage-context">Brokerage permits submission, not binding.</div>
+            </div>
+            <div class="field ${g.authority==="Binding"?"":"hidden"}" data-limitbox="${g.id}">
+              <label>Maximum Binding Limit ($)</label>
+              <input type="number" min="1" data-limit="${g.id}" value="${esc(g.bindingLimit)}" placeholder="Enter limit">
+              <div class="coverage-context">Applied to this Class of Business authority grant.</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Permitted Territory</h3>
+            <div class="muted">The same authority, limit and territory apply to selected child classes in this grant.</div>
+            <div class="territory-grid">
+              <div class="scope">
+                <div class="state-toolbar">
+                  <input data-search="${g.id}" placeholder="Search state">
+                  <button data-clear="${g.id}" class="link">Clear</button>
+                </div>
+                <label class="all-states">
+                  <input data-all-states="${g.id}" type="checkbox" ${g.states.length===STATE_LIST.length?"checked":""}>
+                  Select all states
+                </label>
+                <div class="state-list">
+                  ${STATE_LIST.map(st=>`
+                    <label data-state-label="${g.id}">
+                      <input data-state="${g.id}" type="checkbox" value="${st.code}" ${g.states.includes(st.code)?"checked":""}>
+                      ${st.name} (${st.code})
+                    </label>`).join("")}
+                </div>
+              </div>
+              <div data-territories="${g.id}">
+                ${territories(g)}
+              </div>
+            </div>
+            <div class="inline-note">Entire state: allow all. Allow selected: block everything else. Exclude selected: allow everything else.</div>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  function territoryHint(mode){
+    return mode==="exclude"
+      ? "All remaining cities and counties permitted. Listed cities or counties excluded."
+      : mode==="local"
+        ? "Only listed cities or counties permitted. All remaining territory excluded."
+        : "Entire state permitted. No local exclusions.";
+  }
+
+  function territories(g){
+    if(!g.states.length) return `<div class="empty">Select permitted states from list.</div>`;
+    return g.states.map(code=>{
+      const st=STATE_LIST.find(x=>x.code===code);
+      const t=g.territory[code] || {mode:"state",cities:"",counties:""};
+      return `
+        <div class="territory-state">
+          <div class="territory-state-head">
+            <b>${esc(st?.name || code)}</b>
+            <select data-scope="${g.id}" data-code="${code}">
+              <option value="state" ${t.mode==="state"?"selected":""}>Entire state</option>
+              <option value="local" ${t.mode==="local"?"selected":""}>Allow selected cities / counties only</option>
+              <option value="exclude" ${t.mode==="exclude"?"selected":""}>Exclude selected cities / counties</option>
+            </select>
+          </div>
+          <div class="location-inputs ${t.mode==="state"?"hidden":""}" data-location="${g.id}-${code}">
+            <div class="field">
+              <label>${t.mode==="exclude"?"Restricted":"Permitted"} cities</label>
+              <input data-cities="${g.id}" data-code="${code}" value="${esc(t.cities)}" placeholder="Dallas, Fort Worth">
+            </div>
+            <div class="field">
+              <label>${t.mode==="exclude"?"Restricted":"Permitted"} counties</label>
+              <input data-counties="${g.id}" data-code="${code}" value="${esc(t.counties)}" placeholder="Dallas, Tarrant">
+            </div>
+          </div>
+          <div class="coverage-context">${territoryHint(t.mode)}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function channelTabs(){
+    return `<div class="channel-tabs">${app.assigned.map((ch,i)=>`
+      <button class="btn ${i===app.activeIndex?"active":""}" data-channel="${i}">${i+1}. ${esc(ch.name)} (${esc(ch.type)})</button>
+    `).join("")}</div>`;
+  }
+
+  function renderChannelConfiguration(){
+    if($("#mainHeading")) $("#mainHeading").textContent="Channel Configuration";
+    if($("#mainHelp")) $("#mainHelp").textContent="Choose channel, set commission, then grant Class of Business authority.";
+    if($("#saveChannel")) $("#saveChannel").textContent="Save Channel";
+
+    const c=currentConfig();
+
+    $("#body").innerHTML=`
+      ${channelTabs()}
+
+      <div class="channel-picker">
+        <div class="field">
+          <label>Channel Type</label>
+          <select id="channelType">${Object.keys(DIRECTORY).map(t=>`<option ${t===currentChannel().type?"selected":""}>${t}</option>`).join("")}</select>
+        </div>
+        <div class="field">
+          <label>${currentChannel().type === "Employee" ? "Employee Name" : "Approved Channel Organization"}</label>
+          ${currentChannel().type === "Employee"
+            ? `<input id="channelName" placeholder="Enter employee name" value="${esc(currentChannel().name)}">`
+            : `<select id="channelName">${DIRECTORY[currentChannel().type].map(n=>`<option ${n===currentChannel().name?"selected":""}>${esc(n)}</option>`).join("")}</select>`}
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Channel Commission</h3>
+        <div class="grid2" style="margin-top:10px">
+          <div class="field"><label>Commission %</label><input id="commission" type="number" min="0" max="100" value="${esc(c.commission)}"></div>
+          <div class="field"><label>Commission Basis</label><select id="commissionBasis">
+            ${["Written Premium","Collected Premium","Earned Premium"].map(v=>`<option ${v===c.commissionBasis?"selected":""}>${v}</option>`).join("")}
+          </select></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Grant Authority</h3>
+        <div class="muted">Grant authority dynamically against the Class of Business and its child classes configured upstream.</div>
+
+        <div class="scope" style="margin-top:12px">
+          <div class="scope-title">Available Classes of Business</div>
+          ${classContext()}
+        </div>
+
+        <div class="scope" style="margin-top:12px">
+          <div class="scope-title">Select Classes of Business</div>
+          <div class="muted">Select one or more parent classes, then choose any children to include below.</div>
+          <div class="check-grid">
+            ${app.classes.map(p=>`<label><input type="checkbox" data-parent-choice value="${esc(p.id)}" ${c.grants.some(g=>g.parent===p.id)?"checked":""}>${esc(p.name)}</label>`).join("")}
+          </div>
+        </div>
+        <div id="grants">${c.grants.map(renderGrant).join("")}</div>
+      </div>
+
+      <button id="addAnotherChannel" class="btn" style="margin-top:22px">＋ Add Another Channel</button>
+    `;
+
+    wireChannel();
+  }
+
+  function selectGrantParent(parentId, selected){
+    const config=currentConfig();
+    const parent=app.classes.find(p=>String(p.id)===String(parentId));
+    if(!parent)return;
+    if(!selected){
+      config.grants=config.grants.filter(g=>g.parent!==parent.id);
+      return;
+    }
+    if(config.grants.some(g=>g.parent===parent.id))return;
+    let id=Date.now();
+    while(config.grants.some(g=>String(g.id)===String(id)))id++;
+    config.grants.push({id,parent:parent.id,children:[],authority:"Brokerage",bindingLimit:"",states:[],territory:{}});
+  }
+
+  function wireChannel(){
+    $$("[data-channel]").forEach(el=>el.onclick=()=>{
+      app.activeIndex=Number(el.dataset.channel); render();
+    });
+
+    if($("#channelType")) $("#channelType").onchange=e=>{
+      const type=e.target.value;
+      app.assigned[app.activeIndex]={type,name:DIRECTORY[type][0]};
+      render();
+    };
+
+    if($("#channelName")){
+      if(currentChannel().type === "Employee"){
+        // Free-text employee name: update silently while typing, only
+        // re-render (which refreshes the channel tab label) on blur so the
+        // input doesn't lose focus/cursor position on every keystroke.
+        $("#channelName").oninput=e=>{ app.assigned[app.activeIndex]={type:currentChannel().type,name:e.target.value}; };
+        $("#channelName").onblur=()=>render();
+      }else{
+        $("#channelName").onchange=e=>{
+          app.assigned[app.activeIndex]={type:currentChannel().type,name:e.target.value};
+          render();
+        };
+      }
+    }
+
+    if($("#commission")) $("#commission").oninput=e=>{currentConfig().commission=Number(e.target.value||0);};
+    if($("#commissionBasis")) $("#commissionBasis").onchange=e=>{currentConfig().commissionBasis=e.target.value;};
+
+    $$("[data-parent-choice]").forEach(el=>el.onchange=()=>{
+      selectGrantParent(el.value, el.checked);
+      render();
+    });
+
+    if($("#addAnotherChannel")) $("#addAnotherChannel").onclick=()=>{
+      const choices=Object.entries(DIRECTORY).flatMap(([type,names])=>names.map(name=>({type,name})))
+        .filter(x=>!app.assigned.some(y=>y.type===x.type&&y.name===x.name));
+      if(!choices.length){toast("All predefined channels are already assigned.");return;}
+      app.assigned.push(choices[0]); app.activeIndex=app.assigned.length-1; render();
+      toast(`Channel added: ${choices[0].name}`);
+    };
+
+    $$("[data-child]").forEach(el=>el.onchange=()=>{
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.child));
+      if(!g)return;
+      if(el.checked&&!g.children.includes(el.value))g.children.push(el.value);
+      if(!el.checked)g.children=g.children.filter(x=>x!==el.value);
+    });
+
+    $$("[data-authority]").forEach(el=>el.onchange=()=>{
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.authority));
+      if(!g)return; g.authority=el.value; render();
+    });
+
+    $$("[data-limit]").forEach(el=>el.oninput=()=>{
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.limit));
+      if(g)g.bindingLimit=el.value;
+    });
+
+    $$("[data-delete]").forEach(el=>el.onclick=()=>{
+      const c=currentConfig();
+      c.grants=c.grants.filter(x=>String(x.id)!==String(el.dataset.delete));
+      render();
+    });
+
+    $$("[data-state]").forEach(el=>el.onchange=()=>{
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.state)); if(!g)return;
+      if(el.checked&&!g.states.includes(el.value))g.states.push(el.value);
+      if(!el.checked){g.states=g.states.filter(x=>x!==el.value);delete g.territory[el.value];}
+      render();
+    });
+
+    $$("[data-all-states]").forEach(el=>el.onchange=()=>{
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.allStates)); if(!g)return;
+      g.states=el.checked?STATE_LIST.map(x=>x.code):[];
+      if(!el.checked)g.territory={};
+      render();
+    });
+
+    $$("[data-search]").forEach(el=>el.oninput=()=>{
+      const q=el.value.toLowerCase();
+      $$(`[data-state-label="${el.dataset.search}"]`).forEach(label=>{
+        label.classList.toggle("hidden",!label.textContent.toLowerCase().includes(q));
+      });
+    });
+
+    $$("[data-clear]").forEach(el=>el.onclick=()=>{
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.clear));
+      if(!g)return; g.states=[]; g.territory={}; render();
+    });
+
+    wireTerritory();
+  }
+
+  function wireTerritory(){
+    $$("[data-scope]").forEach(el=>el.onchange=()=>{
+      const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset.scope));
+      if(!g)return;
+      const code=el.dataset.code;
+      g.territory[code]=g.territory[code]||{mode:"state",cities:"",counties:""};
+      g.territory[code].mode=el.value;
+      render();
+    });
+
+    ["cities","counties"].forEach(kind=>{
+      $$(`[data-${kind}]`).forEach(el=>el.oninput=()=>{
+        const g=currentConfig().grants.find(x=>String(x.id)===String(el.dataset[kind])); if(!g)return;
+        const code=el.dataset.code;
+        g.territory[code]=g.territory[code]||{mode:"state",cities:"",counties:""};
+        g.territory[code][kind]=el.value;
+      });
+    });
+  }
+
+
+  function dependencyOptions(){
+    return app.classes.length
+      ? app.classes.map(c => c.name)
+      : ["Class of Business"];
+  }
+
+  function renderDependencies(){
+    const host = document.getElementById("dependenciesSection");
+    if(!host) return;
+
+    host.innerHTML = `
+      <div class="dep-block">
+        <div class="dep-head">
+          <div>
+            <div class="dep-title">Dependencies</div>
+            <div class="dep-sub">Define conditions that determine when this distribution channel is allowed to be used.</div>
+          </div>
+          <button id="addDependency" class="btn primary">+ Add Dependency</button>
+        </div>
+        <div class="dep-body">
+          ${app.dependencies.length ? app.dependencies.map((d,i)=>`
+            <div class="dep-row">
+              <div class="field">
+                <label>Dependency Type</label>
+                <select data-dep-type="${d.id}">
+                  ${["Requires","Excludes","Depends On"].map(v=>`<option ${v===d.type?"selected":""}>${v}</option>`).join("")}
+                </select>
+              </div>
+              <div class="field">
+                <label>Depends On</label>
+                <select data-dep-target="${d.id}">
+                  <option value="">Select class / channel…</option>
+                  ${dependencyOptions().map(v=>`<option ${v===d.target?"selected":""}>${esc(v)}</option>`).join("")}
+                </select>
+              </div>
+              <div class="field">
+                <label>Condition</label>
+                <input data-dep-condition="${d.id}" value="${esc(d.condition)}" placeholder="e.g. only when this state is selected">
+              </div>
+              <button class="btn danger" data-dep-remove="${d.id}">Delete</button>
+            </div>
+          `).join("") : `
+            <div class="dep-empty">No dependencies configured. Add a dependency to control when this distribution channel may be used.</div>
+          `}
+          <div class="dep-footnote">
+            Dependencies are saved with this distribution configuration and do not replace Class of Business eligibility or underwriting rules.
+          </div>
+        </div>
+      </div>
+    `;
+
+    const add=document.getElementById("addDependency");
+    if(add) add.onclick=()=>{
+      app.dependencies.push({
+        id:Date.now()+Math.floor(Math.random()*1000),
+        type:"Requires",
+        target:"",
+        condition:""
+      });
+      renderDependencies();
+      persist();
+    };
+
+    $$("[data-dep-type]").forEach(el=>el.onchange=()=>{
+      const d=app.dependencies.find(x=>String(x.id)===String(el.dataset.depType));
+      if(d){d.type=el.value;persist();}
+    });
+
+    $$("[data-dep-target]").forEach(el=>el.onchange=()=>{
+      const d=app.dependencies.find(x=>String(x.id)===String(el.dataset.depTarget));
+      if(d){d.target=el.value;persist();}
+    });
+
+    $$("[data-dep-condition]").forEach(el=>el.oninput=()=>{
+      const d=app.dependencies.find(x=>String(x.id)===String(el.dataset.depCondition));
+      if(d){d.condition=el.value;}
+    });
+
+    $$("[data-dep-remove]").forEach(el=>el.onclick=()=>{
+      app.dependencies=app.dependencies.filter(x=>String(x.id)!==String(el.dataset.depRemove));
+      renderDependencies();
+      persist();
+    });
+  }
+
+  function renderFactors(){
+    const body=$("#factorsBody");
+    if(!body) return;
+    body.innerHTML=app.factors.length?app.factors.map((f,i)=>`
+      <tr>
+        <td><input class="form-control" value="${esc(f.name)}" data-factor-name="${f.id}" placeholder="Factor name"></td>
+        <td><select class="form-control" data-factor-type="${f.id}">
+          ${["Percentage (%)","Flat Amount","Multiplier"].map(v=>`<option ${v===f.type?"selected":""}>${v}</option>`).join("")}
+        </select></td>
+        <td><input class="form-control" value="${esc(f.value)}" data-factor-value="${f.id}" placeholder="Value"></td>
+        <td><select class="form-control" data-factor-applies="${f.id}">
+          ${["All Accounts","New Business","Renewals","Selected Class"].map(v=>`<option ${v===f.appliesTo?"selected":""}>${v}</option>`).join("")}
+        </select></td>
+        <td><input class="form-control" value="${esc(f.description)}" data-factor-desc="${f.id}" placeholder="Description"></td>
+        <td>
+          <div class="dc-factor-actions">
+            <button class="btn" data-factor-up="${f.id}" ${i===0?"disabled":""}>↑</button>
+            <button class="btn" data-factor-down="${f.id}" ${i===app.factors.length-1?"disabled":""}>↓</button>
+            <button class="btn danger" data-factor-remove="${f.id}">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join(""):`<tr><td colspan="6" class="dc-empty-cell">No account level factors yet. Click + Add Factor to create one.</td></tr>`;
+
+    $$("[data-factor-name]").forEach(el=>el.oninput=()=>{const f=app.factors.find(x=>String(x.id)===String(el.dataset.factorName));if(f)f.name=el.value;});
+    $$("[data-factor-type]").forEach(el=>el.onchange=()=>{const f=app.factors.find(x=>String(x.id)===String(el.dataset.factorType));if(f)f.type=el.value;});
+    $$("[data-factor-value]").forEach(el=>el.oninput=()=>{const f=app.factors.find(x=>String(x.id)===String(el.dataset.factorValue));if(f)f.value=el.value;});
+    $$("[data-factor-applies]").forEach(el=>el.onchange=()=>{const f=app.factors.find(x=>String(x.id)===String(el.dataset.factorApplies));if(f)f.appliesTo=el.value;});
+    $$("[data-factor-desc]").forEach(el=>el.oninput=()=>{const f=app.factors.find(x=>String(x.id)===String(el.dataset.factorDesc));if(f)f.description=el.value;});
+
+    $$("[data-factor-remove]").forEach(el=>el.onclick=()=>{
+      app.factors=app.factors.filter(x=>String(x.id)!==String(el.dataset.factorRemove));renderFactors();persist();
+    });
+    $$("[data-factor-up]").forEach(el=>el.onclick=()=>moveFactor(el.dataset.factorUp,-1));
+    $$("[data-factor-down]").forEach(el=>el.onclick=()=>moveFactor(el.dataset.factorDown,1));
+  }
+
+  function moveFactor(id,dir){
+    const i=app.factors.findIndex(x=>String(x.id)===String(id)); if(i<0)return;
+    const j=i+dir; if(j<0||j>=app.factors.length)return;
+    [app.factors[i],app.factors[j]]=[app.factors[j],app.factors[i]];
+    renderFactors();persist();
+  }
+
+  if($("#addFactor")) $("#addFactor").onclick=()=>{
+    app.factors.push({
+      id:Date.now()+Math.floor(Math.random()*1000),
+      name:"",type:"Percentage (%)",value:"",appliesTo:"All Accounts",description:""
+    });
+    renderDependencies();
+    renderFactors();
+  };
+
+  if($("#saveChannel")) $("#saveChannel").onclick=()=>{
+    const c=currentConfig();
+    if(!c.grants.length){toast("Add at least one authority grant.");return;}
+
+    for(const g of c.grants){
+      const parent=app.classes.find(x=>x.id===g.parent);
+      if(!parent){toast("Select a valid Class of Business.");return;}
+      if(!g.states.length){toast(`Select at least one state for ${parent.name}.`);return;}
+      if(g.authority==="Binding"&&!(Number(g.bindingLimit)>0)){toast(`Enter a binding limit for ${parent.name}.`);return;}
+    }
+
+    const saved = persist();
+    toast(saved ? "Distribution channel saved. Redirecting to product..." : "Browser storage unavailable; changes remain in this session.");
+
+    // After successfully saving the channel, return to the MGA Product
+    // Workspace for the same product instead of staying on this page.
+    if(saved){
+      const productId = app.productId || new URLSearchParams(location.search).get("product") || new URLSearchParams(location.search).get("id") || "";
+      const version = app.productVersion || new URLSearchParams(location.search).get("version") || "";
+
+      setTimeout(() => {
+        if(productId){
+          const query = new URLSearchParams();
+          query.set("id", productId);
+          if(version) query.set("version", version);
+          location.assign(`product-workspace.html?${query.toString()}`);
+        }else{
+          location.assign("catalogue.html");
+        }
+      }, 350);
+    }
+  };
+
+  if($("#saveDraft")) $("#saveDraft").onclick=()=>toast(persist()?"Product draft saved in this browser.":"Browser storage unavailable.");
+  if($("#cancelBtn")) $("#cancelBtn").onclick=()=>{
+    const p=new URLSearchParams(location.search).get("product")||new URLSearchParams(location.search).get("id")||"";
+    location.assign(p?`distribution-studio.html?product=${encodeURIComponent(p)}`:"distribution-studio.html");
+  };
+
+  function loadPersisted(){
+    if(!app.productId) return;
+    try{
+      const raw=localStorage.getItem(`veridex-nta-distribution-${app.productId}`);
+      const saved=raw?JSON.parse(raw):null;
+      if(!saved)return;
+      if(Array.isArray(saved.assigned)&&saved.assigned.length)app.assigned=saved.assigned;
+      if(Number.isInteger(saved.activeIndex))app.activeIndex=Math.min(saved.activeIndex,app.assigned.length-1);
+      if(saved.configs&&typeof saved.configs==="object")app.configs=saved.configs;
+      if(Array.isArray(saved.factors))app.factors=saved.factors;
+      if(Array.isArray(saved.dependencies))app.dependencies=saved.dependencies;
+    }catch{}
+  }
+
+  function syncGrantParents(){
+    Object.values(app.configs || {}).forEach(cfg=>{
+      if(!cfg || !Array.isArray(cfg.grants)) return;
+      cfg.grants.forEach(g=>{
+        const parent=app.classes.find(c=>c.id===g.parent) || app.classes[0];
+        if(!parent) return;
+        if(!app.classes.some(c=>c.id===g.parent)) g.parent=parent.id;
+        const valid=new Set(childrenFor(parent).map(x=>x.name));
+        g.children=(Array.isArray(g.children)?g.children:[]).filter(name=>valid.has(name));
+      });
+    });
+  }
+
+  function render(){
+    syncGrantParents();
+    const product = window.PS?.prototypeApp?.productById?.(app.productId);
+    const record = productRecords().find(p => String(p.id) === String(app.productId) && p.name);
+    app.productName = product?.name || record?.name || 'Product';
+    app.carrier = 'SouthLake Carrier';
+    $("#productName").textContent=app.productName;
+    $("#carrierName").textContent=app.carrier;
+    renderChannelConfiguration();
+    renderFactors();
+  }
+
+  app.productId=resolveProductId();
+
+  if(!app.productId){
+    document.querySelector(".content").innerHTML = `
+      <div class="empty">
+        <strong>No products assigned to NTA yet</strong>
+        <div class="muted">Ask the product owner to assign NTA as a distribution channel in the Distribution Guide before you can configure downstream distribution here.</div>
+      </div>`;
+    return;
+  }
+
+  app.productVersion=(new URLSearchParams(location.search).get("version")) || window.productVersion || "2026.08";
+  app.classes=loadClasses();
+
+  // NTA can only redistribute what it was actually granted by the product
+  // owner — narrow the Class of Business list down to the covers the real
+  // Distribution Guide assignment grants to the "NTA" MGA channel.
+  const ntaAssignment = window.PS?.prototypeApp?.mgaChannelAssignment?.(app.productId, "NTA", "MGA");
+  const grantedIds = new Set((ntaAssignment?.classes || []).map(c => String(c.id)));
+  app.classes = grantedIds.size ? app.classes.filter(c => grantedIds.has(String(c.id))) : [];
+
+  loadPersisted();
+  render();
+})();
+
+});
+</script>
+</body>
+</html>

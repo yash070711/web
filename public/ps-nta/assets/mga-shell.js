@@ -43,7 +43,9 @@ window.MgaShell = {
   },
 
   studioHref(file, productId, version) {
-    return `/ps/${file}?product=${encodeURIComponent(productId)}&id=${encodeURIComponent(productId)}&version=${encodeURIComponent(version || '')}`;
+    return window.MgaData
+      ? window.MgaData.studioHref(file, productId, version)
+      : `/ps/${file}?product=${encodeURIComponent(productId)}&id=${encodeURIComponent(productId)}&version=${encodeURIComponent(version || '')}`;
   },
 
   // A generic (non-product-specific) sidebar link: use the last opened

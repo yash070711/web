@@ -107,7 +107,9 @@ function renderWorkspace() {
       <div class="mga-actions">
         <button class="btn btn-secondary" onclick="duplicateProduct('${escapeHtml(productId)}')">Duplicate</button>
         <a class="btn btn-secondary" href="/ps/product-detail.html?id=${encodeURIComponent(productId)}&version=${encodeURIComponent(effectiveVersion)}">Edit Product</a>
-        <a class="btn btn-primary" href="/ps/product-detail.html?id=${encodeURIComponent(productId)}&version=${encodeURIComponent(effectiveVersion)}#versions">Submit for Approval</a>
+        ${MgaData.hasNtaDistribution(productId)
+          ? `<a class="btn btn-primary" href="/ps/product-detail.html?id=${encodeURIComponent(productId)}&version=${encodeURIComponent(effectiveVersion)}#versions">Submit for Approval</a>`
+          : `<a class="btn btn-primary" href="${MgaData.studioHref('distribution-studio.html', productId, effectiveVersion)}" title="Configure NTA's own downstream distribution before submitting">Distribution</a>`}
       </div>
     </div>
 
