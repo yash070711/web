@@ -675,8 +675,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function persist(){
+    if(!app.productId)return false;
     try{
-      localStorage.setItem(`veridex-distribution-${app.productId || "default"}`, JSON.stringify(app));
+      localStorage.setItem(`veridex-distribution-${app.productId}`, JSON.stringify(app));
       return true;
     }catch{return false;}
   }
@@ -728,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function () {
     `;
 
     $$("[data-re-name]").forEach(el=>el.onchange=()=>{
-      app.reinsurers[Number(el.dataset.reName)].name=el.value; persist();
+      app.reinsurers[Number(el.dataset.reName)].name=el.value;
     });
     $$("[data-re-risk]").forEach(el=>el.oninput=()=>{
       app.reinsurers[Number(el.dataset.reRisk)].risk=Number(el.value);
@@ -1111,17 +1112,16 @@ document.addEventListener('DOMContentLoaded', function () {
         condition:""
       });
       renderDependencies();
-      persist();
     };
 
     $$("[data-dep-type]").forEach(el=>el.onchange=()=>{
       const d=app.dependencies.find(x=>String(x.id)===String(el.dataset.depType));
-      if(d){d.type=el.value;persist();}
+      if(d)d.type=el.value;
     });
 
     $$("[data-dep-target]").forEach(el=>el.onchange=()=>{
       const d=app.dependencies.find(x=>String(x.id)===String(el.dataset.depTarget));
-      if(d){d.target=el.value;persist();}
+      if(d)d.target=el.value;
     });
 
     $$("[data-dep-condition]").forEach(el=>el.oninput=()=>{
@@ -1132,7 +1132,6 @@ document.addEventListener('DOMContentLoaded', function () {
     $$("[data-dep-remove]").forEach(el=>el.onclick=()=>{
       app.dependencies=app.dependencies.filter(x=>String(x.id)!==String(el.dataset.depRemove));
       renderDependencies();
-      persist();
     });
   }
 
@@ -1167,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $$("[data-factor-desc]").forEach(el=>el.oninput=()=>{const f=app.factors.find(x=>String(x.id)===String(el.dataset.factorDesc));if(f)f.description=el.value;});
 
     $$("[data-factor-remove]").forEach(el=>el.onclick=()=>{
-      app.factors=app.factors.filter(x=>String(x.id)!==String(el.dataset.factorRemove));renderFactors();persist();
+      app.factors=app.factors.filter(x=>String(x.id)!==String(el.dataset.factorRemove));renderFactors();
     });
     $$("[data-factor-up]").forEach(el=>el.onclick=()=>moveFactor(el.dataset.factorUp,-1));
     $$("[data-factor-down]").forEach(el=>el.onclick=()=>moveFactor(el.dataset.factorDown,1));
@@ -1177,7 +1176,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const i=app.factors.findIndex(x=>String(x.id)===String(id)); if(i<0)return;
     const j=i+dir; if(j<0||j>=app.factors.length)return;
     [app.factors[i],app.factors[j]]=[app.factors[j],app.factors[i]];
-    renderFactors();persist();
+    renderFactors();
   }
 
   if($("#addFactor")) $("#addFactor").onclick=()=>{
@@ -1237,8 +1236,9 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   function loadPersisted(){
+    if(!app.productId)return;
     try{
-      const raw=localStorage.getItem(`veridex-distribution-${app.productId||"default"}`);
+      const raw=localStorage.getItem(`veridex-distribution-${app.productId}`);
       const saved=raw?JSON.parse(raw):null;
       if(!saved)return;
       if(Array.isArray(saved.assigned)&&saved.assigned.length)app.assigned=saved.assigned;
