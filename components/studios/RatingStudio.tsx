@@ -23,7 +23,7 @@ const GROUPS: { type: string; label: string }[] = [
   { type: "loading", label: "LOADINGS" },
   { type: "discount", label: "DISCOUNTS" },
   { type: "minimum", label: "MINIMUM / MAXIMUM" },
-  { type: "fee", label: "FEES" },
+  { type: "fee", label: "TAXES & SURCHARGES" },
   { type: "tax", label: "TAXES" },
   { type: "formula", label: "FORMULA" },
 ];
@@ -34,7 +34,7 @@ const ADD_TYPES = [
   { type: "loading", name: "Loading" },
   { type: "discount", name: "Discount" },
   { type: "minimum", name: "Minimum Premium" },
-  { type: "fee", name: "Fee" },
+  { type: "fee", name: "Tax / Surcharge" },
   { type: "tax", name: "Tax" },
 ];
 
@@ -42,14 +42,14 @@ const FORMULA_GROUPS: { type: string; token: string; label: string }[] = [
   { type: "factor", token: "FACTORS", label: "Risk Factors" },
   { type: "loading", token: "LOADINGS", label: "Loadings" },
   { type: "discount", token: "DISCOUNTS", label: "Discounts" },
-  { type: "fee", token: "FEES", label: "Fees" },
+  { type: "fee", token: "FEES", label: "Taxes & Surcharges" },
   { type: "tax", token: "TAXES", label: "Taxes" },
 ];
 
 const FORMULA_OPERATORS: { symbol: string; insert: string }[] = [
   { symbol: "+", insert: "+" },
   { symbol: "−", insert: "-" },
-  { symbol: "×", insert: "*" },
+  { symbol: "×", insert: "×" },
   { symbol: "÷", insert: "/" },
   { symbol: "(", insert: "(" },
   { symbol: ")", insert: ")" },
@@ -101,12 +101,13 @@ export function RatingStudio({
   const table = table1DOf(row);
   const showTable = ["factor", "discount"].includes(str(row, "type")) || table.length > 0;
 
-  function nextComponentId(type: string) {
+  function nextComponentId(type: string): string {
     const prefix = `RAT-${type.slice(0, 3).toUpperCase()}-`;
     const used = rows
       .map((r) => str(r, "id"))
       .filter((id) => id.startsWith(prefix))
-      .map((id) => Number(id.slice(prefix.length)) || 0);
+      .map((id) => Number(id.replace(prefix, "")))
+      .filter((n) => Number.isFinite(n));
     const n = (used.length ? Math.max(...used) : 0) + 1;
     return `${prefix}${String(n).padStart(3, "0")}`;
   }
@@ -173,7 +174,7 @@ export function RatingStudio({
         </div>
       ) : null}
 
-      <ContextBar productId={productId} version={version} summary={`${rows.length} components · ${rows.filter((r) => str(r, "type") === "factor").length} factors · ${rows.filter((r) => str(r, "type") === "discount").length} discounts · ${rows.filter((r) => ["fee", "tax"].includes(str(r, "type"))).length} fees/taxes`} studioId="rating" itemCount={rows.length} />
+      <ContextBar productId={productId} version={version} summary={`${rows.length} components · ${rows.filter((r) => str(r, "type") === "factor").length} factors · ${rows.filter((r) => str(r, "type") === "discount").length} discounts · ${rows.filter((r) => ["fee", "tax"].includes(str(r, "type"))).length} taxes & surcharges`} studioId="rating" itemCount={rows.length} />
       <PublishedBanner productId={productId} studio="rating" readOnly={readOnly} />
 
       <div className="section-card mb-6">

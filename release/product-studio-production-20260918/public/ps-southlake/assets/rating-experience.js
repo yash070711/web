@@ -9,7 +9,8 @@
     { id:'risk', name:'Risk Rating', desc:'Risk rules & attributes' },
     { id:'factors', name:'Rating Factors', desc:'Driver, vehicle & commercial auto factors' },
     { id:'discounts', name:'Discounts', desc:'Approved savings' },
-    { id:'fees', name:'Fees & taxes', desc:'Required charges' },
+    { id:'fees', name:'Taxes & surcharges', desc:'State taxes, stamping fees & surcharges' },
+    { id:'formula', name:'Formula Builder', desc:'Combine factors & risk into one custom price formula' },
     { id:'preview', name:'Price Preview', desc:'Test a customer scenario' },
     { id:'review', name:'Review', desc:'Check the complete pricing setup' }
   ];
@@ -27,6 +28,32 @@
     ['DC','District of Columbia']
   ];
   function stateName(code) { return (US_STATES.find(s => s[0] === code) || [code, code])[1]; }
+
+  const DEFAULT_STATE_TAXES = {
+    CA: { taxRate: 7.25, stampingFee: 0.25, guarantyFund: 25.00, desc: 'CA Premium Tax (7.25%) + SLA Stamping Fee (0.25%) + Guaranty Fund ($25.00)' },
+    TX: { taxRate: 4.85, stampingFee: 0.15, guarantyFund: 0.50, desc: 'TX Premium Tax (4.85%) + Stamping Fee (0.15%) + Emergency Surcharge (0.50%)' },
+    FL: { taxRate: 6.00, stampingFee: 0.10, guarantyFund: 1.30, desc: 'FL Premium Tax (6.00%) + Hurricane Catastrophe Surcharge (1.30%) + FIGA (0.70%)' },
+    NY: { taxRate: 3.60, stampingFee: 0.20, guarantyFund: 10.00, desc: 'NY Fire Insurance Tax (3.60%) + Stamping Fee (0.20%) + Security Fund ($10.00)' },
+    IL: { taxRate: 3.50, stampingFee: 0.20, guarantyFund: 1.00, desc: 'IL Surplus Lines Tax (3.50%) + Fire Marshal Tax (1.00%)' },
+    GA: { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0.00, desc: 'GA Premium Tax (4.00%) + Local Municipal Tax (2.25%)' },
+    OH: { taxRate: 5.00, stampingFee: 0.00, guarantyFund: 15.00, desc: 'OH Foreign/Domestic Tax (5.00%) + Assessment Fee ($15.00)' },
+    PA: { taxRate: 3.00, stampingFee: 0.25, guarantyFund: 0.50, desc: 'PA Premium Tax (3.00%) + Guaranty Association Fee (0.50%)' },
+    NC: { taxRate: 5.00, stampingFee: 0.40, guarantyFund: 0.00, desc: 'NC Gross Receipts Tax (5.00%) + SLA Stamping Fee (0.40%)' },
+    MI: { taxRate: 2.00, stampingFee: 0.00, guarantyFund: 86.00, desc: 'MI Corporate Income Tax (2.00%) + MCCA Assessment ($86.00)' }
+  };
+
+  function ensureDefaultStateTaxes(rec) {
+    if (!rec || typeof rec !== 'object') return;
+    if (!rec.stateTaxes || typeof rec.stateTaxes !== 'object') {
+      rec.stateTaxes = JSON.parse(JSON.stringify(DEFAULT_STATE_TAXES));
+    }
+    US_STATES.forEach(([code]) => {
+      if (!rec.stateTaxes[code]) {
+        rec.stateTaxes[code] = { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: 'Standard State Premium Tax' };
+      }
+    });
+  }
+
   const FALLBACK_TEMPLATES = [
     { id:'motor-truck', family:'Trucking', match:'Commercial Truck', name:'Commercial truck · Comprehensive', base:1850, unit:'per year', source:'Trucking pricing library', evidence:'Based on 18 comparable heavy-vehicle products', updated:'12 Aug 2026', fit:'Best match' },
     { id:'cyber-sme', family:'Cyber', match:'Cyber', name:'Cyber liability · SME', base:2400, unit:'per year', source:'Cyber pricing library', evidence:'Based on 24 comparable cyber products', updated:'20 Aug 2026', fit:'Best match' },
@@ -55,8 +82,10 @@
   let record;
   let stateSearch = '';
   let stateFilter = 'all';
+  let taxStateSearch = '';
   let previewState = '';
   let previewInputs = {};
+  let formulaCaret = null;
 
   const esc = value => String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   const money = value => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:2 }).format(Number(value) || 0);
@@ -152,6 +181,7 @@
       charges:{ admin:{ enabled:true, name:'Policy administration', kind:'fixed', value:18, managed:true }, stamp:{ enabled:true, name:'Stamp duty', kind:'fixed', value:6, managed:true }, tax:{ enabled:true, name:'Insurance tax', kind:'percent', value:18, managed:true } },
       customRules:[],
       riskRatingFactors:[],
+      customFormula: '',
       basePrice: null,
       pricingBasis: 'annual',
       statePricing: {},
@@ -238,6 +268,7 @@ if (loaded.basePrice === undefined) loaded.basePrice = null;
 if (!loaded.pricingBasis) loaded.pricingBasis = 'annual';
 if (!loaded.statePricing || typeof loaded.statePricing !== 'object') loaded.statePricing = {};
 if (!loaded.coveragePricing || typeof loaded.coveragePricing !== 'object') loaded.coveragePricing = {};
+if (typeof loaded.customFormula !== 'string') loaded.customFormula = '';
 
 return loaded;
   }
@@ -627,8 +658,9 @@ function syncRatingFormulas() {
     if (stepId === 'coverage') return getCoverageOptions().some(cover => isCoverageConfigured(record.coveragePricing[cover.id]));
     if (stepId === 'risk') return true;
     if (stepId === 'factors') return (record.customRatingFactors || []).some(f => f.enabled !== false);
-    if (stepId === 'discounts') return productDiscountKeys().some(([id]) => record.discounts[id]?.enabled);
-    if (stepId === 'fees') return Object.values(record.charges).some(item => item.enabled !== false);
+    if (stepId === 'discounts') return productDiscountKeys().some(([id]) => record.discounts[id]?.enabled) || (record.customDiscounts || []).some(d => d.enabled !== false);
+    if (stepId === 'fees') return Object.values(record.charges).some(item => item.enabled !== false) || (record.customSurcharges || []).some(s => s.enabled !== false);
+    if (stepId === 'formula') return true;
     if (stepId === 'preview') return Boolean(lastEstimate);
     return stepId === 'review';
   }
@@ -707,6 +739,15 @@ function syncRatingFormulas() {
       const searchEl = document.getElementById('state-search');
       if (searchEl) { const pos = stateSearch.length; searchEl.focus(); try { searchEl.setSelectionRange(pos, pos); } catch (_) {} }
     }
+    if (activeStep === 'fees') {
+      const searchEl = document.getElementById('state-tax-search');
+      if (searchEl) { const pos = taxStateSearch.length; searchEl.focus(); try { searchEl.setSelectionRange(pos, pos); } catch (_) {} }
+    }
+    if (activeStep === 'formula' && formulaCaret !== null) {
+      const formulaEl = document.getElementById('formula-expression-input');
+      if (formulaEl) { const pos = Math.min(formulaCaret, formulaEl.value.length); formulaEl.focus(); try { formulaEl.setSelectionRange(pos, pos); } catch (_) {} }
+      formulaCaret = null;
+    }
   }
 
   function panelShell(title, copy, action, body) {
@@ -720,7 +761,8 @@ function syncRatingFormulas() {
     if (activeStep === 'risk') return renderRisk(edit);
     if (activeStep === 'factors') return renderRatingFactorsSection(edit);
     if (activeStep === 'discounts') return renderDiscounts(edit);
-    if (activeStep === 'fees') return renderFees(edit);
+    if (activeStep === 'fees') return renderTaxesAndSurcharges(edit);
+    if (activeStep === 'formula') return renderFormulaBuilder(edit);
     if (activeStep === 'preview') return renderPricePreviewStep(edit);
     return renderReview(edit);
   }
@@ -1253,10 +1295,244 @@ function renderRisk(edit) {
     return panelShell('Discounts', 'Manage conditional policy savings, renewal discounts, no-claim bonuses, and custom discounts.', action, body);
   }
 
-  function renderFees(edit) {
-    const html = Object.entries(record.charges).filter(([, item]) => item.enabled !== false).map(([id, item]) => `<div class="plain-rule"><span class="rule-icon">${id === 'tax' ? '🏛️' : '🧾'}</span><div class="plain-rule-when"><strong>${esc(item.name)}</strong><br>${item.managed ? 'Maintained by the central finance and compliance teams' : 'Maintained for this product'}</div><div class="plain-rule-then">${item.kind === 'percent' ? `${item.value}%` : money(item.value)}</div><span class="managed-badge">🔒 Centrally managed</span></div>`).join('')
-      || `<p style="font-size:13px;color:var(--color-muted);margin:0">No centrally managed charges are linked to this product.</p>`;
-    return panelShell('6. Fees & taxes', 'Required charges are brought in automatically from the approved jurisdiction setup. Product users can review them but do not need to maintain them.', libraryLink(), html);
+  function renderTaxesAndSurcharges(edit) {
+    ensureDefaultStateTaxes(record);
+    if (!Array.isArray(record.customSurcharges)) record.customSurcharges = [];
+
+    const states = getStateOptions();
+    const term = (taxStateSearch || '').trim().toLowerCase();
+    const visibleStates = states.filter(([code, name]) => !term || name.toLowerCase().includes(term) || code.toLowerCase().includes(term));
+
+    const stateTaxRows = visibleStates.map(([code, name]) => {
+      const tax = record.stateTaxes[code] || { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: '' };
+      const estTotalPct = (Number(tax.taxRate) || 0) + (Number(tax.stampingFee) || 0);
+      const isCustomized = DEFAULT_STATE_TAXES[code]
+        ? (tax.taxRate !== DEFAULT_STATE_TAXES[code].taxRate || tax.stampingFee !== DEFAULT_STATE_TAXES[code].stampingFee || tax.guarantyFund !== DEFAULT_STATE_TAXES[code].guarantyFund)
+        : (tax.taxRate !== 4.00 || tax.stampingFee !== 0.15 || tax.guarantyFund !== 0);
+
+      return `
+        <tr>
+          <td style="padding:10px 12px"><strong>${esc(name)}</strong> <span style="font-family:monospace;color:var(--color-muted)">(${esc(code)})</span></td>
+          <td style="padding:10px 12px">
+            ${edit ? `<div style="display:flex;align-items:center;gap:4px"><input class="form-control text-mono" type="number" step="0.01" style="width:100px" data-state-tax-rate="${code}" value="${tax.taxRate != null ? esc(tax.taxRate) : ''}"><span>%</span></div>` : `${esc(tax.taxRate)}%`}
+          </td>
+          <td style="padding:10px 12px">
+            ${edit ? `<div style="display:flex;align-items:center;gap:4px"><input class="form-control text-mono" type="number" step="0.01" style="width:100px" data-state-stamp-fee="${code}" value="${tax.stampingFee != null ? esc(tax.stampingFee) : ''}"><span>%</span></div>` : `${esc(tax.stampingFee)}%`}
+          </td>
+          <td style="padding:10px 12px">
+            ${edit ? `<div style="display:flex;align-items:center;gap:4px"><span>$</span><input class="form-control text-mono" type="number" step="0.01" style="width:100px" data-state-guaranty="${code}" value="${tax.guarantyFund != null ? esc(tax.guarantyFund) : ''}"></div>` : money(Number(tax.guarantyFund || 0))}
+          </td>
+          <td style="padding:10px 12px"><strong style="color:var(--color-primary,#2563eb)">${estTotalPct.toFixed(2)}%</strong> ${tax.guarantyFund > 0 ? `+ ${money(tax.guarantyFund)}` : ''}</td>
+          <td style="padding:10px 12px"><span class="badge ${isCustomized ? 'badge-published' : 'badge-draft'}">${isCustomized ? 'Customized' : 'State Default'}</span></td>
+          ${edit ? `<td style="padding:10px 12px">
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" type="button" data-rating-action="save-state-tax" data-state="${code}">Save</button>
+              ${isCustomized ? `<button class="btn btn-ghost btn-sm" type="button" data-rating-action="reset-state-tax" data-state="${code}" style="color:var(--color-muted)">Reset</button>` : ''}
+            </div>
+          </td>` : ''}
+        </tr>
+      `;
+    }).join('');
+
+    const stateTaxTableHtml = `
+      <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <input class="form-control" style="max-width:240px" id="state-tax-search" placeholder="Search state taxes..." value="${esc(taxStateSearch || '')}">
+        <div style="font-size:13px;color:var(--color-muted)">State Premium Taxes, Stamping Fees &amp; Surcharges Table · ${visibleStates.length} states</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>State Tax Rate (%)</th>
+              <th>Stamping Fee (%)</th>
+              <th>Fixed Surcharge ($)</th>
+              <th>Total Est. Rate</th>
+              <th>Status</th>
+              ${edit ? '<th>Actions</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            ${stateTaxRows || `<tr><td colspan="${edit ? 7 : 6}" style="text-align:center;color:var(--color-muted);padding:16px">No states match search.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const surcharges = record.customSurcharges;
+    const surchargeCards = surcharges.map((sur, idx) => {
+      const typeLabel = sur.type === 'flat' ? money(sur.value) : `${sur.value}%`;
+      return `
+        <article class="rule-card" style="margin-bottom:12px">
+          <div class="rule-card-top">
+            <div class="rule-icon">⚠️</div>
+            <div style="flex:1;min-width:0">
+              <div class="rule-card-name">${esc(sur.name)}</div>
+              <div class="rule-card-summary">${sur.case ? `Condition Case: <strong>${esc(sur.case)}</strong>` : '<strong>Always applies</strong>'}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+              <span class="badge ${sur.enabled ? 'badge-published' : 'badge-draft'}">${sur.enabled ? 'Active' : 'Disabled'}</span>
+              ${edit ? `
+                <button class="btn btn-secondary btn-sm" type="button" data-rating-action="toggle-custom-surcharge" data-index="${idx}">${sur.enabled ? 'Disable' : 'Enable'}</button>
+                <button class="btn btn-ghost btn-sm" type="button" data-rating-action="edit-custom-surcharge" data-index="${idx}">Edit</button>
+                <button class="btn btn-ghost btn-sm" type="button" data-rating-action="delete-custom-surcharge" data-index="${idx}" style="color:var(--color-danger,#dc2626)">Delete</button>
+              ` : ''}
+            </div>
+          </div>
+          <div class="impact-list">
+            <div class="impact-row"><span>Surcharge Amount</span><strong style="color:var(--color-danger,#dc2626);font-size:14px">+${esc(typeLabel)}</strong></div>
+            <div class="impact-row"><span>Surcharge Type</span><strong>${sur.type === 'flat' ? 'Flat Dollar Amount ($)' : 'Percentage Surcharge (%)'}</strong></div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    const surchargeAction = edit ? `<button class="btn btn-primary btn-sm" type="button" data-rating-action="add-custom-surcharge">＋ Add Custom Surcharge</button>` : '';
+    const surchargeBody = `
+      <div style="margin-bottom:14px;font-size:13px;color:var(--color-muted)">
+        Custom surcharges apply for specific risk or policy conditions (e.g. High-Risk Cargo Surcharge, Heavy Vehicle Surcharge, Emergency Risk Fee).
+      </div>
+      <div>${surchargeCards || '<div class="callout callout-info"><div class="callout-body">No custom surcharges configured yet. Click "+ Add Custom Surcharge" to create one.</div></div>'}</div>
+    `;
+
+    const managedHtml = Object.entries(record.charges).filter(([, item]) => item.enabled !== false).map(([id, item]) => `<div class="plain-rule"><span class="rule-icon">${id === 'tax' ? '🏛️' : '🧾'}</span><div class="plain-rule-when"><strong>${esc(item.name)}</strong><br>${item.managed ? 'Maintained by the central finance and compliance teams' : 'Maintained for this product'}</div><div class="plain-rule-then">${item.kind === 'percent' ? `${item.value}%` : money(item.value)}</div><span class="managed-badge">🔒 Centrally managed</span></div>`).join('')
+      || `<p style="font-size:13px;color:var(--color-muted);margin:0">No centrally managed statutory charges are linked to this product.</p>`;
+
+    const body = `
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div>${panelShell('State Taxes & Surcharges Matrix', 'Default state premium taxes, SLA stamping fees, and catastrophe/guaranty fund surcharges fetched from state jurisdiction rules. Admins can edit rates per state.', '', stateTaxTableHtml)}</div>
+        <div>${panelShell('Custom Product Surcharges', 'Conditional risk or policy surcharges added to the premium.', surchargeAction, surchargeBody)}</div>
+        <div>${panelShell('Centrally Managed Statutory Charges', 'Required statutory taxes and fees brought in automatically from central compliance.', libraryLink(), managedHtml)}</div>
+      </div>
+    `;
+
+    return panelShell('6. Taxes & surcharges', 'Configure state tax rates, stamping fees, state catastrophe funds, and custom product surcharges.', '', body);
+  }
+
+  function renderFormulaBuilder(edit) {
+    ensureDefaultRiskRatingFactors(record);
+    ensureDefaultRatingFactors(record);
+    // Every Risk Guide attribute is offered here, not just ones marked
+    // "configured" in the Risk Rating step — an unconfigured factor simply
+    // resolves to its neutral default (×1) until it's fully set up there.
+    const riskFactors = record.riskRatingFactors || [];
+    const ratingFactors = (record.customRatingFactors || []).filter(f => f.enabled !== false);
+    const coverOptions = getCoverageOptions().filter(c => isCoverageConfigured(record.coveragePricing[c.id]));
+    const expression = typeof record.customFormula === 'string' ? record.customFormula : '';
+    const usingCustom = expression.trim().length > 0;
+
+    const scopeIds = getCoverageOptions().map(c => c.id);
+    const tokenValues = buildFullFormulaTokens(Number(record.basePrice) || 0, scopeIds, previewInputs);
+    let previewValue = null; let previewError = '';
+    try {
+      previewValue = evalFormulaExpr(usingCustom ? expression : DEFAULT_FORMULA_EXPRESSION, tokenValues);
+    } catch (err) {
+      previewError = err.message;
+    }
+
+    const tokenBtn = (token, label, badge = '') => edit
+      ? `<button class="btn btn-ghost btn-sm" type="button" data-rating-action="insert-formula-token" data-token="${esc(token)}">${esc(label)}${badge}</button>`
+      : `<span class="badge">${esc(label)}</span>`;
+
+    const riskButtons = riskFactors.length
+      ? riskFactors.map(f => tokenBtn(`* ${f.id}`, f.name)).join(' ')
+      : '<span class="text-muted" style="font-size:12px">No Risk Guide attributes yet — add one in Risk Guide.</span>';
+
+    const ratingButtons = ratingFactors.length
+      ? ratingFactors.map(f => {
+          const beh = f.behavior || 'multiply';
+          const sym = beh === 'divide' ? '/' : beh === 'plus' ? '+' : beh === 'minus' ? '-' : '*';
+          const badge = ` <span class="badge" style="margin-left:4px;background:var(--color-surface-secondary,#e2e8f0);color:var(--color-text,#334155);font-size:10px">${behaviorBadgeLabel(beh)}</span>`;
+          return tokenBtn(`${sym} ${f.id}`, f.name, badge);
+        }).join(' ')
+      : '<span class="text-muted" style="font-size:12px">No Rating Factors yet — add one in Rating Factors.</span>';
+
+    const coverageButtons = coverOptions.length
+      ? [
+          tokenBtn('* COVERAGE_FACTORS', 'Coverage Pricing (Multiplier)', ' <span class="badge" style="margin-left:4px;background:var(--color-surface-secondary,#e2e8f0);color:var(--color-text,#334155);font-size:10px">All Multiply/Divide/% covers</span>'),
+          tokenBtn('+ COVERAGE_ADJUSTMENT', 'Coverage Pricing (Flat Adjustment)', ' <span class="badge" style="margin-left:4px;background:var(--color-surface-secondary,#e2e8f0);color:var(--color-text,#334155);font-size:10px">All Plus/Minus covers</span>'),
+          ...coverOptions.map(c => {
+            const cfg = record.coveragePricing[c.id];
+            const sym = cfg.method === 'divide' ? '/' : cfg.method === 'minus' ? '-' : cfg.method === 'plus' || cfg.method === 'flat' ? '+' : cfg.method === 'override' ? '' : '*';
+            return tokenBtn(sym ? `${sym} ${c.id}` : c.id, c.name);
+          })
+        ].join(' ')
+      : '<span class="text-muted" style="font-size:12px">No Coverage Pricing configured yet — add it in Coverage Pricing.</span>';
+
+    const loadingButtons = (record.customRules || [])
+      .filter(rule => rule.enabled !== false)
+      .map(rule => tokenBtn(`+ ${rule.id}`, rule.name));
+    const loadingButtonsHtml = loadingButtons.length
+      ? loadingButtons.join(' ')
+      : '<span class="text-muted" style="font-size:12px">No pricing rules yet — add one in Risk Rating.</span>';
+
+    const discountButtons = [];
+    const claimFree = centralDiscount('discount-claim-free');
+    if (record.discounts.claimFree?.enabled && claimFree && centralItemApplies(claimFree)) discountButtons.push(tokenBtn('- DISC-CLAIMFREE', claimFree.name));
+    const loyalty = centralDiscount('discount-loyalty');
+    if (record.discounts.loyalty?.enabled && loyalty && centralItemApplies(loyalty)) discountButtons.push(tokenBtn('- DISC-LOYALTY', loyalty.name));
+    const multi = centralDiscount('discount-multi');
+    if (record.discounts.multi?.enabled && multi && centralItemApplies(multi)) discountButtons.push(tokenBtn('- DISC-MULTI', multi.name));
+    (record.customDiscounts || []).forEach(disc => {
+      if (disc.enabled !== false && Number(disc.value) > 0) discountButtons.push(tokenBtn(`- ${disc.id}`, disc.name));
+    });
+    const discountButtonsHtml = discountButtons.length
+      ? discountButtons.join(' ')
+      : '<span class="text-muted" style="font-size:12px">No active discounts yet — add one in Discounts.</span>';
+
+    const feeTaxButtons = [];
+    ['admin', 'stamp'].forEach(id => {
+      const item = record.charges[id];
+      if (item.enabled) feeTaxButtons.push(tokenBtn(`+ CHARGE-${id.toUpperCase()}`, item.name));
+    });
+    (record.customSurcharges || []).forEach(sur => {
+      if (sur.enabled !== false && Number(sur.value) > 0) feeTaxButtons.push(tokenBtn(`+ ${sur.id}`, sur.name));
+    });
+    if (record.charges.tax.enabled) feeTaxButtons.push(tokenBtn('+ CHARGE-TAX', record.charges.tax.name));
+    const feeTaxButtonsHtml = feeTaxButtons.length
+      ? feeTaxButtons.join(' ')
+      : '<span class="text-muted" style="font-size:12px">No fees or taxes are currently enabled.</span>';
+
+    const operators = [['+', '+'], ['−', '-'], ['×', '*'], ['÷', '/'], ['(', '('], [')', ')']]
+      .map(([label, token]) => tokenBtn(token, label)).join(' ');
+
+    const groupLabel = text => `<div style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--color-muted);margin-bottom:6px">${esc(text)}</div>`;
+
+    const body = `
+      <div style="margin-bottom:16px;font-size:13px;color:var(--color-muted)">
+        Click Base Price, a Coverage Pricing rule, a Risk Rating Factor, a Rating Factor, a Loading, a Discount, a Fee/Tax, or a symbol on the left to add it to the formula on the right — each brings its own +, −, ×, ÷ behaviour with it, and parentheses group terms just like a rule. Once set, this formula fully replaces Coverage Pricing, Risk Rating Factors, Rating Factors, Loadings, Discounts and Fees & Taxes below with a single calculation.
+      </div>
+      <div class="formula-builder-grid">
+        <div class="formula-builder-tokens">
+          <div style="margin-bottom:14px">${groupLabel('Base Price')}<div style="display:flex;flex-wrap:wrap;gap:6px">${tokenBtn('BASE', 'Base Price')}</div></div>
+          <div style="margin-bottom:14px">${groupLabel('Coverage Pricing')}<div style="display:flex;flex-wrap:wrap;gap:6px">${coverageButtons}</div></div>
+          <div style="margin-bottom:14px">${groupLabel('Risk Rating Factors')}<div style="display:flex;flex-wrap:wrap;gap:6px">${riskButtons}</div></div>
+          <div style="margin-bottom:14px">${groupLabel('Rating Factors (behaviour inserted automatically)')}<div style="display:flex;flex-wrap:wrap;gap:6px">${ratingButtons}</div></div>
+          <div style="margin-bottom:14px">${groupLabel('Loadings (Pricing Rules)')}<div style="display:flex;flex-wrap:wrap;gap:6px">${loadingButtonsHtml}</div></div>
+          <div style="margin-bottom:14px">${groupLabel('Discounts')}<div style="display:flex;flex-wrap:wrap;gap:6px">${discountButtonsHtml}</div></div>
+          <div>${groupLabel('Fees & Taxes')}<div style="display:flex;flex-wrap:wrap;gap:6px">${feeTaxButtonsHtml}</div></div>
+        </div>
+        <div class="formula-builder-output">
+          <div style="margin-bottom:14px">${groupLabel('Symbols')}<div style="display:flex;flex-wrap:wrap;gap:6px">${operators}</div></div>
+          <div class="form-group">
+            <label class="form-label">Formula</label>
+            <textarea class="form-control text-mono" id="formula-expression-input" rows="4" ${edit ? '' : 'disabled'} placeholder="${esc(DEFAULT_FORMULA_EXPRESSION)}">${esc(expression)}</textarea>
+            <p class="form-help">Leave blank to use the default combination: <code class="text-mono">${esc(DEFAULT_FORMULA_EXPRESSION)}</code></p>
+          </div>
+          ${previewError
+            ? `<div class="callout callout-warning" style="margin-top:10px"><div class="callout-body">${esc(previewError)} — the default combination is used until this is fixed.</div></div>`
+            : `<div class="rating-panel-copy" style="margin-top:10px">Live result with the current preview inputs: <strong>${money(previewValue)}</strong></div>`}
+          ${edit && usingCustom ? `<button class="btn btn-ghost btn-sm" type="button" style="margin-top:10px" data-rating-action="reset-formula">Reset to default combination</button>` : ''}
+        </div>
+      </div>
+    `;
+
+    return panelShell(
+      '7. Formula Builder',
+      "Starts from the standard actuarial formula — Base Premium × Rating Factors + Loadings − Discounts + Fees + Taxes — edit it below or click tokens to build your own.",
+      '',
+      body
+    );
   }
 
   function renderPricePreviewStep() {
@@ -1271,7 +1547,7 @@ function renderRisk(edit) {
       <button class="btn btn-primary" type="button" style="margin-top:16px" data-rating-action="run-preview">Calculate price</button>
       <div id="preview-result" style="margin-top:20px">${lastEstimate ? previewResultHtml(lastEstimate) : ''}</div>
     `;
-    return panelShell('7. Price Preview', 'Test a customer scenario using the configured base price, state pricing, coverage pricing, and risk rating factors.', '', body);
+    return panelShell('8. Price Preview', 'Test a customer scenario using the configured base price, state pricing, coverage pricing, and risk rating factors.', '', body);
   }
 
   function renderReview(edit) {
@@ -1299,7 +1575,7 @@ function renderRisk(edit) {
     const list = rows.map(([label, value]) => `<div class="review-check"><div class="review-check-icon">${String(value).startsWith('⚠') ? '⚠' : '✓'}</div><div><div class="review-check-title">${esc(label)}</div><div class="review-check-copy">${esc(value)}</div></div></div>`).join('');
     const warnHtml = warnings.length ? `<div class="callout callout-warning" style="margin-top:14px">${warnings.map(w => `<div class="callout-body">⚠ ${esc(w)}</div>`).join('')}</div>` : '';
     const actions = `<div style="display:flex;gap:9px;margin-top:18px;flex-wrap:wrap"><button class="btn btn-primary" type="button" data-rating-action="preview">Preview a customer price</button><button class="btn btn-secondary" type="button" data-rating-action="download-summary">Download pricing summary</button>${edit ? '<button class="btn btn-secondary" type="button" data-rating-action="save">Save changes</button>' : ''}</div>`;
-    return panelShell('8. Review the complete pricing setup', 'Everything below is written as a business decision, so product, operations, and compliance teams can review it together.', '', list + warnHtml + actions);
+    return panelShell('9. Review the complete pricing setup', 'Everything below is written as a business decision, so product, operations, and compliance teams can review it together.', '', list + warnHtml + actions);
   }
 
   function openTemplateModal() {
@@ -2047,6 +2323,62 @@ function getCoverageOptions() {
   }
   window.openCustomDiscountModal = openCustomDiscountModal;
 
+  function openCustomSurchargeModal(editIndex) {
+    const isEdit = editIndex !== undefined && editIndex !== null && !isNaN(Number(editIndex)) && Number(editIndex) >= 0;
+    const sur = isEdit && record.customSurcharges?.[Number(editIndex)]
+      ? record.customSurcharges[Number(editIndex)]
+      : { name: '', case: '', type: 'percent', value: 10, enabled: true };
+
+    window.PS.openModal(`
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">${isEdit ? 'Edit Surcharge' : 'Add Custom Surcharge'}</h2>
+          <div class="rating-panel-copy">Conditional charges that increase the premium — same setup as a Discount, opposite direction.</div>
+        </div>
+        <button class="btn btn-icon" data-rating-action="close-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="rating-modal-result"></div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <label class="form-label">Surcharge Name</label>
+            <input class="form-control" id="cs-name" value="${esc(sur.name || '')}" placeholder="e.g. High-Risk Cargo Surcharge">
+          </div>
+
+          <div>
+            <label class="form-label">Condition Case Scenario <span class="text-muted" style="font-weight:400">(optional)</span></label>
+            <input class="form-control" id="cs-case" value="${esc(sur.case || '')}" placeholder="e.g. Hazardous Goods Carried or Late Payment History — leave blank to always apply">
+          </div>
+
+          <div class="form-grid-2">
+            <div>
+              <label class="form-label">Surcharge Type</label>
+              <select class="form-control" id="cs-type">
+                <option value="percent" ${sur.type === 'percent' ? 'selected' : ''}>Percentage Surcharge (%)</option>
+                <option value="flat" ${sur.type === 'flat' ? 'selected' : ''}>Flat Dollar Amount ($)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Surcharge Value</label>
+              <input class="form-control" id="cs-value" type="number" min="0.01" step="any" value="${sur.value !== undefined ? sur.value : 10}" placeholder="e.g. 10 or 100">
+            </div>
+          </div>
+
+          <div class="callout callout-warning">
+            <div class="callout-body">
+              Surcharges increase the premium — a flat dollar addition ($) or a percentage loading (%) applied during calculation, the same way Discounts reduce it.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-rating-action="close-modal">Cancel</button>
+        <button class="btn btn-primary" data-rating-action="save-custom-surcharge" data-edit-index="${isEdit ? editIndex : ''}">${isEdit ? 'Save Changes' : 'Add Surcharge'}</button>
+      </div>
+    `);
+  }
+  window.openCustomSurchargeModal = openCustomSurchargeModal;
+
   const COMMERCIAL_RATING_FACTOR_LIBRARY = [
     {
       id: 'lib-driver-age',
@@ -2609,6 +2941,244 @@ function getCoverageOptions() {
   }
 
   // ------------------------------------------------------------------
+  // Formula Builder (section 18 — Formula Builder step, inserted just
+  // before Price Preview). Lets the user compose a single expression over
+  // Base Price, Coverage Pricing, Risk Rating Factors, Rating Factors
+  // (with their own behaviour), Discounts and Fees & Taxes. When set, this
+  // one expression replaces the whole Coverage Pricing → Fees & Taxes span
+  // of calculateFinalPrice below — never layered on top of it — so nothing
+  // is ever double-applied.
+  // ------------------------------------------------------------------
+  // Standard actuarial form: Gross Premium = Base Premium × Rating Factors
+  // + Loadings − Discounts + Fees + Taxes (Coverage Pricing and the
+  // Risk/Rating factor split are this product's own further breakdown of
+  // "Rating Factors").
+  const DEFAULT_FORMULA_EXPRESSION = '(BASE * COVERAGE_FACTORS + COVERAGE_ADJUSTMENT) * RISK_FACTORS * RATING_FACTORS + RATING_ADJUSTMENT + LOADINGS - DISCOUNTS + FEES + TAXES';
+
+  // Resolved value of every configured Risk Rating Factor and Rating Factor,
+  // plus BASE and the RISK_FACTORS / RATING_FACTORS / RATING_ADJUSTMENT
+  // aggregates (product of multiply/divide factors, sum of plus/minus ones)
+  // so the default expression reproduces the fixed pipeline exactly.
+  function buildFormulaTokenValues(baseValue, scopedRiskFactors, riskFactorResolutions, riskInputs) {
+    const tokens = { BASE: Number(baseValue) || 0 };
+
+    let riskAgg = 1;
+    scopedRiskFactors.forEach((f, idx) => {
+      const resolution = riskFactorResolutions[idx];
+      const val = resolution && resolution.value !== null ? Number(resolution.value) : 1;
+      tokens[f.id] = val;
+      riskAgg *= val;
+    });
+    tokens.RISK_FACTORS = riskAgg;
+
+    ensureDefaultRatingFactors(record);
+    let ratingAgg = 1; let ratingFlat = 0;
+    (record.customRatingFactors || []).filter(f => f.enabled !== false).forEach(f => {
+      const userVal = riskInputs[f.field] ?? riskInputs[f.id] ?? '';
+      const bandMatch = matchFactorBand(f, userVal);
+      const beh = f.behavior || 'multiply';
+      const matched = bandMatch && Number.isFinite(Number(bandMatch.mult));
+      const val = matched ? Number(bandMatch.mult) : (beh === 'plus' || beh === 'minus' ? 0 : 1);
+      tokens[f.id] = val;
+      if (beh === 'divide') { if (val !== 0) ratingAgg /= val; }
+      else if (beh === 'plus') { ratingFlat += val; }
+      else if (beh === 'minus') { ratingFlat -= val; }
+      else { ratingAgg *= val; }
+    });
+    tokens.RATING_FACTORS = ratingAgg;
+    tokens.RATING_ADJUSTMENT = ratingFlat;
+    return tokens;
+  }
+
+  // Extends buildFormulaTokenValues with Coverage Pricing, Custom Pricing
+  // Rules, Discounts and Fees & Taxes tokens, computed the same way the
+  // standard (non-formula) pipeline computes them below — so the default
+  // expression reproduces that pipeline exactly, and every button the
+  // Formula Builder offers always resolves to a real number. When a custom
+  // formula is active it takes over this entire span (Coverage Pricing
+  // through Fees & Taxes) in one step, so nothing here is double-applied.
+  function buildFullFormulaTokens(stateBase, scopeIds, riskInputs) {
+    let coverageMultiplier = 1; let coverageFlat = 0;
+    const coverageTokens = {};
+    scopeIds.forEach(id => {
+      const cfg = record.coveragePricing[id];
+      if (!isCoverageConfigured(cfg)) return;
+      const val = Number(cfg.value);
+      const m = cfg.method;
+      if (m === 'multiplier' || m === 'multi') { coverageMultiplier *= val; coverageTokens[id] = val; }
+      else if (m === 'divide') { if (val !== 0) coverageMultiplier /= val; coverageTokens[id] = val; }
+      else if (m === 'plus' || m === 'flat') { coverageFlat += val; coverageTokens[id] = val; }
+      else if (m === 'minus') { coverageFlat -= val; coverageTokens[id] = val; }
+      else if (m === 'percentage') { const factor = 1 + val / 100; coverageMultiplier *= factor; coverageTokens[id] = factor; }
+      else if (m === 'override') { coverageTokens[id] = val; }
+    });
+
+    const allRiskFactors = record.riskRatingFactors || [];
+    const allRiskFactorResolutions = allRiskFactors.map(f => resolveRiskFactorValue(f, riskInputs));
+    const tokens = buildFormulaTokenValues(stateBase, allRiskFactors, allRiskFactorResolutions, riskInputs);
+    Object.assign(tokens, coverageTokens);
+    // Coverage Pricing is one group made of two accumulators, because
+    // multiple covers can each independently be multiplicative (Multiply /
+    // Divide / Percentage) or flat (Plus / Minus): COVERAGE_FACTORS is every
+    // multiplicative cover combined into one multiplier; COVERAGE_ADJUSTMENT
+    // is every flat cover combined into one dollar amount. Together —
+    // BASE * COVERAGE_FACTORS + COVERAGE_ADJUSTMENT — they are "coverage
+    // pricing" applied to the base price.
+    tokens.COVERAGE_FACTORS = coverageMultiplier;
+    tokens.COVERAGE_ADJUSTMENT = coverageFlat;
+
+    // Reference subtotal only — used to size %-based rules/discounts/tax the
+    // same way the standard pipeline would, regardless of what a custom
+    // formula actually does with BASE/COVERAGE/RISK/RATING.
+    let referenceSubtotal = (stateBase * coverageMultiplier + coverageFlat) * tokens.RISK_FACTORS * tokens.RATING_FACTORS + tokens.RATING_ADJUSTMENT;
+
+    // "Additional rules" are this product's Loadings — conditional
+    // surcharges/credits applied on top of the rated premium.
+    let loadings = 0;
+    (record.customRules || []).filter(rule => rule.enabled !== false && compare(riskInputs[rule.field], rule.operator, rule.value)).forEach(rule => {
+      const amount = rule.action === 'fixed' ? Number(rule.amount) : round(referenceSubtotal * Number(rule.amount) / 100) * (rule.action === 'reduce' ? -1 : 1);
+      tokens[rule.id] = amount;
+      loadings += amount;
+    });
+    tokens.LOADINGS = loadings;
+    referenceSubtotal += loadings;
+
+    let discountsAgg = 0;
+    const addDiscount = (id, amount) => { tokens[id] = amount; discountsAgg += amount; };
+    const claimFree = centralDiscount('discount-claim-free');
+    if (record.discounts.claimFree?.enabled && claimFree && centralItemApplies(claimFree)) {
+      const eligibleBand = (claimFree.bands || []).filter(b => Number(riskInputs.claimFreeYears || 0) >= b.years).sort((a, b) => b.years - a.years)[0];
+      if (eligibleBand) addDiscount('DISC-CLAIMFREE', round(referenceSubtotal * eligibleBand.value / 100));
+    }
+    const loyalty = centralDiscount('discount-loyalty');
+    if (record.discounts.loyalty?.enabled && riskInputs.loyalty === 'yes' && loyalty && centralItemApplies(loyalty)) addDiscount('DISC-LOYALTY', round(referenceSubtotal * loyalty.value / 100));
+    const multi = centralDiscount('discount-multi');
+    if (record.discounts.multi?.enabled && riskInputs.multi === 'yes' && multi && centralItemApplies(multi)) addDiscount('DISC-MULTI', round(referenceSubtotal * multi.value / 100));
+    (record.customDiscounts || []).forEach(disc => {
+      if (disc.enabled === false) return;
+      const val = Number(disc.value) || 0;
+      if (val <= 0) return;
+      addDiscount(disc.id, disc.type === 'flat' ? val : round(referenceSubtotal * val / 100));
+    });
+    tokens.DISCOUNTS = discountsAgg;
+    referenceSubtotal -= discountsAgg;
+
+    let feesAgg = 0;
+    ['admin', 'stamp'].forEach(id => {
+      const item = record.charges[id];
+      if (item.enabled) { tokens[`CHARGE-${id.toUpperCase()}`] = Number(item.value); feesAgg += Number(item.value); }
+    });
+    // Custom Surcharges — the mirror of Custom Discounts, added here instead.
+    (record.customSurcharges || []).forEach(sur => {
+      if (sur.enabled === false) return;
+      const val = Number(sur.value) || 0;
+      if (val <= 0) return;
+      const amount = sur.type === 'flat' ? val : round(referenceSubtotal * val / 100);
+      tokens[sur.id] = amount;
+      feesAgg += amount;
+    });
+    tokens.FEES = feesAgg;
+    referenceSubtotal += feesAgg;
+
+    let taxAgg = 0;
+    if (record.charges.tax.enabled) {
+      taxAgg = round(referenceSubtotal * record.charges.tax.value / 100);
+      tokens['CHARGE-TAX'] = taxAgg;
+    }
+    tokens.TAXES = taxAgg;
+
+    return tokens;
+  }
+
+  // Known token names (factor ids) are matched greedily before "-" is read
+  // as the subtraction operator, so hyphenated ids are never split apart.
+  function tokenizeFormulaExpr(expr, knownTokens) {
+    const sorted = Array.from(new Set(knownTokens.filter(Boolean))).sort((a, b) => b.length - a.length);
+    const tokens = [];
+    let i = 0;
+    while (i < expr.length) {
+      const ch = expr[i];
+      if (/\s/.test(ch)) { i++; continue; }
+      const known = sorted.find(t => expr.startsWith(t, i));
+      if (known) { tokens.push({ type: 'id', value: known }); i += known.length; continue; }
+      if ('+-*/()'.includes(ch)) { tokens.push({ type: 'op', value: ch }); i++; continue; }
+      if (/[0-9.]/.test(ch)) {
+        let j = i;
+        while (j < expr.length && /[0-9.]/.test(expr[j])) j++;
+        tokens.push({ type: 'num', value: expr.slice(i, j) });
+        i = j;
+        continue;
+      }
+      let j = i;
+      while (j < expr.length && !/[\s+\-*/()]/.test(expr[j])) j++;
+      tokens.push({ type: 'id', value: expr.slice(i, Math.max(j, i + 1)) });
+      i = Math.max(j, i + 1);
+    }
+    return tokens;
+  }
+
+  // Small recursive-descent evaluator for +,-,*,/ and parentheses over known
+  // tokens. Deliberately not eval()/Function() — formulas are user data.
+  function evalFormulaExpr(expression, tokenValues) {
+    const raw = String(expression || '').trim();
+    if (!raw) throw new Error('Formula is empty');
+    const tokens = tokenizeFormulaExpr(raw, Object.keys(tokenValues));
+    let pos = 0;
+    const peek = () => tokens[pos];
+    const consume = () => tokens[pos++];
+
+    function parseExpr() {
+      let value = parseTerm();
+      while (peek() && peek().type === 'op' && (peek().value === '+' || peek().value === '-')) {
+        const op = consume().value;
+        const rhs = parseTerm();
+        value = op === '+' ? value + rhs : value - rhs;
+      }
+      return value;
+    }
+    function parseTerm() {
+      let value = parseUnary();
+      while (peek() && peek().type === 'op' && (peek().value === '*' || peek().value === '/')) {
+        const op = consume().value;
+        const rhs = parseUnary();
+        if (op === '/') {
+          if (rhs === 0) throw new Error('Division by zero in formula');
+          value = value / rhs;
+        } else value = value * rhs;
+      }
+      return value;
+    }
+    function parseUnary() {
+      if (peek() && peek().type === 'op' && peek().value === '-') { consume(); return -parseUnary(); }
+      if (peek() && peek().type === 'op' && peek().value === '+') { consume(); return parseUnary(); }
+      return parsePrimary();
+    }
+    function parsePrimary() {
+      const t = peek();
+      if (!t) throw new Error('Unexpected end of formula');
+      if (t.type === 'num') { consume(); return Number(t.value); }
+      if (t.type === 'id') {
+        consume();
+        if (!(t.value in tokenValues)) throw new Error(`Unknown token "${t.value}"`);
+        return tokenValues[t.value];
+      }
+      if (t.type === 'op' && t.value === '(') {
+        consume();
+        const value = parseExpr();
+        const close = consume();
+        if (!close || close.value !== ')') throw new Error('Missing closing parenthesis');
+        return value;
+      }
+      throw new Error(`Unexpected token "${t.value}"`);
+    }
+
+    const result = parseExpr();
+    if (pos < tokens.length) throw new Error(`Unexpected token "${tokens[pos].value}"`);
+    if (!Number.isFinite(result)) throw new Error('Formula did not evaluate to a number');
+    return result;
+  }
+
+  // ------------------------------------------------------------------
   // Single centralized pricing calculation (section 17). Every preview
   // must go through this function — no formulas are duplicated in the UI.
   //   Base Price -> State Pricing -> Coverage Pricing -> Risk Rating
@@ -2643,9 +3213,45 @@ function getCoverageOptions() {
 
     let subtotal = stateBase;
 
-    // Coverage Pricing — Multiply (×), Divide (/), Plus (+), Minus (-), Percentage (%), Override (=)
     const coverages = getCoverageOptions();
     const scopeIds = Array.isArray(coverageIds) && coverageIds.length ? coverageIds : coverages.map(c => c.id);
+    ensureDefaultRatingFactors(record);
+    ensureDefaultRiskRatingFactors(record);
+
+    const hasCustomFormula = typeof record.customFormula === 'string' && record.customFormula.trim().length > 0;
+    if (hasCustomFormula) {
+      // Formula Builder is active: it owns Coverage Pricing through Fees &
+      // Taxes as one expression — none of those steps run separately below,
+      // so nothing here is ever double-applied.
+      const tokens = buildFullFormulaTokens(stateBase, scopeIds, riskInputs);
+      let result;
+      let formulaError = '';
+      try {
+        result = evalFormulaExpr(record.customFormula, tokens);
+      } catch (err) {
+        formulaError = err.message;
+        result = evalFormulaExpr(DEFAULT_FORMULA_EXPRESSION, tokens);
+      }
+      subtotal = round(Math.max(0, result));
+      items.push(formulaError
+        ? { stage: 'Formula Builder', label: 'Custom pricing formula (error — default combination used instead)', amount: round(subtotal - stateBase), detail: formulaError }
+        : { stage: 'Formula Builder', label: 'Custom pricing formula', amount: round(subtotal - stateBase), detail: record.customFormula });
+      const riskFactorResolutions = (record.riskRatingFactors || []).map(f => {
+        const resolution = resolveRiskFactorValue(f, riskInputs);
+        return { factorId: f.id, riskAttributeId: f.riskAttributeId, coverageId: f.coverageId, status: resolution.status, value: resolution.value };
+      });
+      return {
+        configured: true, eligible: true,
+        referred: eligibility.referred, referralHits: eligibility.referralHits,
+        base: basePriceNum, stateCode, stateBase,
+        items,
+        total: round(subtotal), monthly: round(subtotal / 12),
+        values: clone(riskInputs),
+        riskFactorResolutions
+      };
+    }
+
+    // Coverage Pricing — Multiply (×), Divide (/), Plus (+), Minus (-), Percentage (%), Override (=)
     let coverageMultiplier = 1; let coverageFlat = 0; const coverageDetails = [];
     scopeIds.forEach(id => {
       const cfg = record.coveragePricing[id];
@@ -2682,16 +3288,15 @@ function getCoverageOptions() {
     // Risk Rating Factors — EXISTING implementation, unmodified data.
     // Respects factor.coverageId; never applies a factor outside its
     // own coverage scope.
-    let riskMultiplier = 1; const riskDetails = []; const riskFactorResolutions = [];
-    (record.riskRatingFactors || []).filter(f => f.configured && scopeIds.includes(f.coverageId)).forEach(f => {
+    const scopedRiskFactors = (record.riskRatingFactors || []).filter(f => f.configured && scopeIds.includes(f.coverageId));
+    const riskFactorResolutions = scopedRiskFactors.map(f => {
       const resolution = resolveRiskFactorValue(f, riskInputs);
-      riskFactorResolutions.push({
-        factorId: f.id,
-        riskAttributeId: f.riskAttributeId,
-        coverageId: f.coverageId,
-        status: resolution.status,
-        value: resolution.value
-      });
+      return { factorId: f.id, riskAttributeId: f.riskAttributeId, coverageId: f.coverageId, status: resolution.status, value: resolution.value };
+    });
+
+    let riskMultiplier = 1; const riskDetails = [];
+    scopedRiskFactors.forEach((f, idx) => {
+      const resolution = riskFactorResolutions[idx];
       if (resolution.value === null) return;
       riskMultiplier *= resolution.value;
       riskDetails.push(`${f.name} × ${resolution.value}`);
@@ -2703,7 +3308,6 @@ function getCoverageOptions() {
     }
 
     // Commercial Auto & Trucking Rating Factors (Driver Age, Vehicle Age, GVW, Operating Radius, Cargo Class, CDL Exp, etc.)
-    ensureDefaultRatingFactors(record);
     let commMultiplier = 1; let commFlat = 0; const commDetails = [];
     (record.customRatingFactors || []).filter(f => f.enabled !== false).forEach(f => {
       const userVal = riskInputs[f.field] ?? riskInputs[f.id] ?? '';
@@ -2779,10 +3383,46 @@ function getCoverageOptions() {
       });
     }
 
-    // Fees & taxes (existing Central Pricing Library integration, unchanged).
+    // Taxes & Surcharges (State Premium Taxes, State Surcharges, Custom Surcharges, Statutory Fees/Taxes).
+    ensureDefaultStateTaxes(record);
     const charges = [];
-    ['admin', 'stamp'].forEach(id => { const item = record.charges[id]; if (item.enabled) { charges.push({ stage: 'Fees & taxes', label: item.name, amount: Number(item.value), detail: 'Required charge' }); subtotal += Number(item.value); } });
-    if (record.charges.tax.enabled) { const amount = round(subtotal * record.charges.tax.value / 100); charges.push({ stage: 'Fees & taxes', label: record.charges.tax.name, amount, detail: `${record.charges.tax.value}% required tax` }); subtotal += amount; }
+
+    const stTax = stateCode ? (record.stateTaxes?.[stateCode] || { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: 'State tax' }) : null;
+    if (stTax) {
+      if (stTax.taxRate > 0) {
+        const taxAmt = round(subtotal * stTax.taxRate / 100);
+        charges.push({ stage: 'Taxes & surcharges', label: `${stateName(stateCode)} State Premium Tax`, amount: taxAmt, detail: `${stTax.taxRate}% state tax` });
+        subtotal += taxAmt;
+      }
+      if (stTax.stampingFee > 0) {
+        const stampAmt = round(subtotal * stTax.stampingFee / 100);
+        charges.push({ stage: 'Taxes & surcharges', label: `${stateName(stateCode)} SLA Stamping Fee`, amount: stampAmt, detail: `${stTax.stampingFee}% stamping fee` });
+        subtotal += stampAmt;
+      }
+      if (stTax.guarantyFund > 0) {
+        const gAmt = Number(stTax.guarantyFund);
+        charges.push({ stage: 'Taxes & surcharges', label: `${stateName(stateCode)} Guaranty / Catastrophe Fund`, amount: gAmt, detail: `${money(gAmt)} state surcharge` });
+        subtotal += gAmt;
+      }
+    }
+
+    (record.customSurcharges || []).forEach(sur => {
+      if (sur.enabled === false) return;
+      const val = Number(sur.value) || 0;
+      if (val <= 0) return;
+      const isFlat = sur.type === 'flat';
+      const amount = isFlat ? val : round(subtotal * val / 100);
+      charges.push({
+        stage: 'Taxes & surcharges',
+        label: sur.name,
+        amount,
+        detail: isFlat ? `+${money(val)} flat surcharge (${sur.case || 'Case surcharge'})` : `+${val}% surcharge (${sur.case || 'Case surcharge'})`
+      });
+      subtotal += amount;
+    });
+
+    ['admin', 'stamp'].forEach(id => { const item = record.charges[id]; if (item && item.enabled) { charges.push({ stage: 'Taxes & surcharges', label: item.name, amount: Number(item.value), detail: 'Required statutory fee' }); subtotal += Number(item.value); } });
+    if (record.charges?.tax?.enabled) { const amount = round(subtotal * record.charges.tax.value / 100); charges.push({ stage: 'Taxes & surcharges', label: record.charges.tax.name, amount, detail: `${record.charges.tax.value}% required tax` }); subtotal += amount; }
 
     return {
       configured: true, eligible: true,
@@ -2905,6 +3545,19 @@ function getCoverageOptions() {
     if (action === 'close-modal') window.PS.closeModal();
     if (action === 'explain') openExplainModal();
     if (action === 'preview') { activeStep = 'preview'; render(); }
+    if (action === 'insert-formula-token') {
+      const token = button.dataset.token || '';
+      const current = typeof record.customFormula === 'string' ? record.customFormula : '';
+      record.customFormula = `${current.trim()} ${token}`.trim();
+      formulaCaret = record.customFormula.length;
+      saveRecord('Updated the pricing formula');
+      render();
+    }
+    if (action === 'reset-formula') {
+      record.customFormula = '';
+      saveRecord('Reset the pricing formula to the default combination');
+      setResult('Formula reset', 'The default Base × Risk Factors × Rating Factors combination is now used.');
+    }
     if (action === 'change-template') openTemplateModal();
     if (action === 'apply-template') {
       const selected = document.querySelector('input[name="pricing-template"]:checked');
@@ -3144,6 +3797,8 @@ if (action === 'remove-band') {
     if (action === 'delete-rule') { const rule = record.customRules.find(item => item.id === button.dataset.rule); if (!rule) return; record.customRules = record.customRules.filter(item => item.id !== rule.id); saveRecord(`Removed pricing rule ${rule.name}`); setResult('Pricing rule removed', `${rule.name} no longer affects customer prices.`); }
     if (action === 'add-custom-discount') openCustomDiscountModal();
     if (action === 'edit-custom-discount') openCustomDiscountModal(Number(button.dataset.index));
+    if (action === 'add-custom-surcharge') openCustomSurchargeModal();
+    if (action === 'edit-custom-surcharge') openCustomSurchargeModal(Number(button.dataset.index));
     if (action === 'open-factor-library' || action === 'add-custom-factor') openRatingFactorLibraryModal();
     if (action === 'open-custom-factor-builder') openCustomFactorModal();
     if (action === 'add-library-factor') {
@@ -3292,6 +3947,92 @@ if (action === 'remove-band') {
       render();
       setResult('Discount saved', `${name} discount configured.`);
     }
+    if (action === 'toggle-custom-surcharge') {
+      const idx = Number(button.dataset.index);
+      if (record.customSurcharges?.[idx]) {
+        record.customSurcharges[idx].enabled = !record.customSurcharges[idx].enabled;
+        saveRecord(`Toggled surcharge ${record.customSurcharges[idx].name}`);
+        syncRatingBundle();
+        render();
+        setResult(`Surcharge ${record.customSurcharges[idx].enabled ? 'enabled' : 'disabled'}`, `${record.customSurcharges[idx].name} updated.`);
+      }
+    }
+    if (action === 'delete-custom-surcharge') {
+      const idx = Number(button.dataset.index);
+      if (record.customSurcharges?.[idx]) {
+        const removed = record.customSurcharges[idx];
+        record.customSurcharges.splice(idx, 1);
+        saveRecord(`Removed surcharge ${removed.name}`);
+        syncRatingBundle();
+        render();
+        setResult('Surcharge removed', `${removed.name} has been removed.`);
+      }
+    }
+    if (action === 'save-custom-surcharge') {
+      const name = document.getElementById('cs-name')?.value.trim();
+      const caseVal = document.getElementById('cs-case')?.value.trim();
+      const type = document.getElementById('cs-type')?.value || 'percent';
+      const valNum = Number(document.getElementById('cs-value')?.value);
+
+      if (!name || !Number.isFinite(valNum) || valNum <= 0) {
+        return modalError('Invalid Input', 'Surcharge name and a valid positive value are required.');
+      }
+
+      if (!Array.isArray(record.customSurcharges)) record.customSurcharges = [];
+      const editIdx = button.dataset.editIndex;
+      const id = editIdx !== '' ? record.customSurcharges[Number(editIdx)]?.id : `sur-${Date.now()}`;
+      const item = { id: id || `sur-${Date.now()}`, name, case: caseVal, type, value: valNum, enabled: true };
+
+      if (editIdx !== '' && record.customSurcharges[Number(editIdx)]) {
+        record.customSurcharges[Number(editIdx)] = item;
+      } else {
+        record.customSurcharges.push(item);
+      }
+
+      saveRecord(`Saved surcharge ${name}`);
+      syncRatingBundle();
+      window.PS.closeModal();
+      render();
+      setResult('Surcharge saved', `${name} surcharge configured.`);
+    }
+
+    if (action === 'save-state-tax') {
+      const code = button.dataset.state;
+      if (code) {
+        ensureDefaultStateTaxes(record);
+        const taxRate = Number(document.querySelector(`[data-state-tax-rate="${code}"]`)?.value) || 0;
+        const stampingFee = Number(document.querySelector(`[data-state-stamp-fee="${code}"]`)?.value) || 0;
+        const guarantyFund = Number(document.querySelector(`[data-state-guaranty="${code}"]`)?.value) || 0;
+
+        record.stateTaxes[code] = {
+          taxRate,
+          stampingFee,
+          guarantyFund,
+          desc: `${stateName(code)} custom tax rates: ${taxRate}% tax, ${stampingFee}% stamp fee, $${guarantyFund} guaranty fee`
+        };
+
+        saveRecord(`Updated state tax for ${stateName(code)}`);
+        syncRatingBundle();
+        render();
+        setResult('State tax updated', `${stateName(code)} tax rates updated: ${taxRate}% tax, ${stampingFee}% stamp fee, $${guarantyFund} guaranty fee.`);
+      }
+    }
+
+    if (action === 'reset-state-tax') {
+      const code = button.dataset.state;
+      if (code) {
+        ensureDefaultStateTaxes(record);
+        if (DEFAULT_STATE_TAXES[code]) {
+          record.stateTaxes[code] = JSON.parse(JSON.stringify(DEFAULT_STATE_TAXES[code]));
+        } else {
+          record.stateTaxes[code] = { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: 'Standard State Premium Tax' };
+        }
+        saveRecord(`Reset state tax for ${stateName(code)}`);
+        syncRatingBundle();
+        render();
+        setResult('State tax reset', `${stateName(code)} tax rates reset to standard state defaults.`);
+      }
+    }
 
     if (action === 'toggle-discount') { const item = record.discounts[button.dataset.discount]; if (item) { item.enabled = !item.enabled; saveRecord(`${item.enabled ? 'Enabled' : 'Disabled'} ${item.name}`); setResult(`Discount ${item.enabled ? 'turned on' : 'turned off'}`, `${item.name} ${item.enabled ? 'will now be considered in price previews' : 'will no longer be applied'}.`); } }
     if (action === 'save-test') saveTestCase();
@@ -3410,6 +4151,10 @@ function handleChange(event) {
       event.target.value === 'fixed' ? '$' : '%';
   }
 
+  if (event.target.id === 'formula-expression-input') {
+    saveRecord('Updated the pricing formula');
+  }
+
   if (event.target.id === 'risk-factor-attribute') {
     const attribute = getRiskAttributeOptions().find(item => String(item.id) === String(event.target.value));
     window.__riskFactorDraft = {
@@ -3468,6 +4213,11 @@ function handleChange(event) {
     document.addEventListener('change', handleChange);
     document.addEventListener('input', (event) => {
       if (event.target.id === 'state-search') { stateSearch = event.target.value; render(); }
+      if (event.target.id === 'formula-expression-input') {
+        record.customFormula = event.target.value;
+        formulaCaret = event.target.selectionStart;
+        render();
+      }
     });
     window.addEventListener('central-pricing-updated', () => {
       refreshTemplatesFromCentral();

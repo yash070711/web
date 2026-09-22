@@ -9,7 +9,7 @@
     { id:'risk', name:'Risk Rating', desc:'Risk rules & attributes' },
     { id:'factors', name:'Rating Factors', desc:'Driver, vehicle & commercial auto factors' },
     { id:'discounts', name:'Discounts', desc:'Approved savings' },
-    { id:'fees', name:'Fees & taxes', desc:'Required charges' },
+    { id:'fees', name:'Taxes & surcharges', desc:'State taxes, stamping fees & surcharges' },
     { id:'formula', name:'Formula Builder', desc:'Combine factors & risk into one custom price formula' },
     { id:'preview', name:'Price Preview', desc:'Test a customer scenario' },
     { id:'review', name:'Review', desc:'Check the complete pricing setup' }
@@ -28,6 +28,32 @@
     ['DC','District of Columbia']
   ];
   function stateName(code) { return (US_STATES.find(s => s[0] === code) || [code, code])[1]; }
+
+  const DEFAULT_STATE_TAXES = {
+    CA: { taxRate: 7.25, stampingFee: 0.25, guarantyFund: 25.00, desc: 'CA Premium Tax (7.25%) + SLA Stamping Fee (0.25%) + Guaranty Fund ($25.00)' },
+    TX: { taxRate: 4.85, stampingFee: 0.15, guarantyFund: 0.50, desc: 'TX Premium Tax (4.85%) + Stamping Fee (0.15%) + Emergency Surcharge (0.50%)' },
+    FL: { taxRate: 6.00, stampingFee: 0.10, guarantyFund: 1.30, desc: 'FL Premium Tax (6.00%) + Hurricane Catastrophe Surcharge (1.30%) + FIGA (0.70%)' },
+    NY: { taxRate: 3.60, stampingFee: 0.20, guarantyFund: 10.00, desc: 'NY Fire Insurance Tax (3.60%) + Stamping Fee (0.20%) + Security Fund ($10.00)' },
+    IL: { taxRate: 3.50, stampingFee: 0.20, guarantyFund: 1.00, desc: 'IL Surplus Lines Tax (3.50%) + Fire Marshal Tax (1.00%)' },
+    GA: { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0.00, desc: 'GA Premium Tax (4.00%) + Local Municipal Tax (2.25%)' },
+    OH: { taxRate: 5.00, stampingFee: 0.00, guarantyFund: 15.00, desc: 'OH Foreign/Domestic Tax (5.00%) + Assessment Fee ($15.00)' },
+    PA: { taxRate: 3.00, stampingFee: 0.25, guarantyFund: 0.50, desc: 'PA Premium Tax (3.00%) + Guaranty Association Fee (0.50%)' },
+    NC: { taxRate: 5.00, stampingFee: 0.40, guarantyFund: 0.00, desc: 'NC Gross Receipts Tax (5.00%) + SLA Stamping Fee (0.40%)' },
+    MI: { taxRate: 2.00, stampingFee: 0.00, guarantyFund: 86.00, desc: 'MI Corporate Income Tax (2.00%) + MCCA Assessment ($86.00)' }
+  };
+
+  function ensureDefaultStateTaxes(rec) {
+    if (!rec || typeof rec !== 'object') return;
+    if (!rec.stateTaxes || typeof rec.stateTaxes !== 'object') {
+      rec.stateTaxes = JSON.parse(JSON.stringify(DEFAULT_STATE_TAXES));
+    }
+    US_STATES.forEach(([code]) => {
+      if (!rec.stateTaxes[code]) {
+        rec.stateTaxes[code] = { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: 'Standard State Premium Tax' };
+      }
+    });
+  }
+
   const FALLBACK_TEMPLATES = [
     { id:'motor-truck', family:'Trucking', match:'Commercial Truck', name:'Commercial truck · Comprehensive', base:1850, unit:'per year', source:'Trucking pricing library', evidence:'Based on 18 comparable heavy-vehicle products', updated:'12 Aug 2026', fit:'Best match' },
     { id:'cyber-sme', family:'Cyber', match:'Cyber', name:'Cyber liability · SME', base:2400, unit:'per year', source:'Cyber pricing library', evidence:'Based on 24 comparable cyber products', updated:'20 Aug 2026', fit:'Best match' },
@@ -56,6 +82,7 @@
   let record;
   let stateSearch = '';
   let stateFilter = 'all';
+  let taxStateSearch = '';
   let previewState = '';
   let previewInputs = {};
   let formulaCaret = null;
@@ -712,6 +739,10 @@ function syncRatingFormulas() {
       const searchEl = document.getElementById('state-search');
       if (searchEl) { const pos = stateSearch.length; searchEl.focus(); try { searchEl.setSelectionRange(pos, pos); } catch (_) {} }
     }
+    if (activeStep === 'fees') {
+      const searchEl = document.getElementById('state-tax-search');
+      if (searchEl) { const pos = taxStateSearch.length; searchEl.focus(); try { searchEl.setSelectionRange(pos, pos); } catch (_) {} }
+    }
     if (activeStep === 'formula' && formulaCaret !== null) {
       const formulaEl = document.getElementById('formula-expression-input');
       if (formulaEl) { const pos = Math.min(formulaCaret, formulaEl.value.length); formulaEl.focus(); try { formulaEl.setSelectionRange(pos, pos); } catch (_) {} }
@@ -730,7 +761,7 @@ function syncRatingFormulas() {
     if (activeStep === 'risk') return renderRisk(edit);
     if (activeStep === 'factors') return renderRatingFactorsSection(edit);
     if (activeStep === 'discounts') return renderDiscounts(edit);
-    if (activeStep === 'fees') return renderFees(edit);
+    if (activeStep === 'fees') return renderTaxesAndSurcharges(edit);
     if (activeStep === 'formula') return renderFormulaBuilder(edit);
     if (activeStep === 'preview') return renderPricePreviewStep(edit);
     return renderReview(edit);
@@ -1264,13 +1295,71 @@ function renderRisk(edit) {
     return panelShell('Discounts', 'Manage conditional policy savings, renewal discounts, no-claim bonuses, and custom discounts.', action, body);
   }
 
-  function renderFees(edit) {
+  function renderTaxesAndSurcharges(edit) {
+    ensureDefaultStateTaxes(record);
     if (!Array.isArray(record.customSurcharges)) record.customSurcharges = [];
+
+    const states = getStateOptions();
+    const term = (taxStateSearch || '').trim().toLowerCase();
+    const visibleStates = states.filter(([code, name]) => !term || name.toLowerCase().includes(term) || code.toLowerCase().includes(term));
+
+    const stateTaxRows = visibleStates.map(([code, name]) => {
+      const tax = record.stateTaxes[code] || { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: '' };
+      const estTotalPct = (Number(tax.taxRate) || 0) + (Number(tax.stampingFee) || 0);
+      const isCustomized = DEFAULT_STATE_TAXES[code]
+        ? (tax.taxRate !== DEFAULT_STATE_TAXES[code].taxRate || tax.stampingFee !== DEFAULT_STATE_TAXES[code].stampingFee || tax.guarantyFund !== DEFAULT_STATE_TAXES[code].guarantyFund)
+        : (tax.taxRate !== 4.00 || tax.stampingFee !== 0.15 || tax.guarantyFund !== 0);
+
+      return `
+        <tr>
+          <td style="padding:10px 12px"><strong>${esc(name)}</strong> <span style="font-family:monospace;color:var(--color-muted)">(${esc(code)})</span></td>
+          <td style="padding:10px 12px">
+            ${edit ? `<div style="display:flex;align-items:center;gap:4px"><input class="form-control text-mono" type="number" step="0.01" style="width:100px" data-state-tax-rate="${code}" value="${tax.taxRate != null ? esc(tax.taxRate) : ''}"><span>%</span></div>` : `${esc(tax.taxRate)}%`}
+          </td>
+          <td style="padding:10px 12px">
+            ${edit ? `<div style="display:flex;align-items:center;gap:4px"><input class="form-control text-mono" type="number" step="0.01" style="width:100px" data-state-stamp-fee="${code}" value="${tax.stampingFee != null ? esc(tax.stampingFee) : ''}"><span>%</span></div>` : `${esc(tax.stampingFee)}%`}
+          </td>
+          <td style="padding:10px 12px">
+            ${edit ? `<div style="display:flex;align-items:center;gap:4px"><span>$</span><input class="form-control text-mono" type="number" step="0.01" style="width:100px" data-state-guaranty="${code}" value="${tax.guarantyFund != null ? esc(tax.guarantyFund) : ''}"></div>` : money(Number(tax.guarantyFund || 0))}
+          </td>
+          <td style="padding:10px 12px"><strong style="color:var(--color-primary,#2563eb)">${estTotalPct.toFixed(2)}%</strong> ${tax.guarantyFund > 0 ? `+ ${money(tax.guarantyFund)}` : ''}</td>
+          <td style="padding:10px 12px"><span class="badge ${isCustomized ? 'badge-published' : 'badge-draft'}">${isCustomized ? 'Customized' : 'State Default'}</span></td>
+          ${edit ? `<td style="padding:10px 12px">
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" type="button" data-rating-action="save-state-tax" data-state="${code}">Save</button>
+              ${isCustomized ? `<button class="btn btn-ghost btn-sm" type="button" data-rating-action="reset-state-tax" data-state="${code}" style="color:var(--color-muted)">Reset</button>` : ''}
+            </div>
+          </td>` : ''}
+        </tr>
+      `;
+    }).join('');
+
+    const stateTaxTableHtml = `
+      <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <input class="form-control" style="max-width:240px" id="state-tax-search" placeholder="Search state taxes..." value="${esc(taxStateSearch || '')}">
+        <div style="font-size:13px;color:var(--color-muted)">State Premium Taxes, Stamping Fees &amp; Surcharges Table · ${visibleStates.length} states</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>State Tax Rate (%)</th>
+              <th>Stamping Fee (%)</th>
+              <th>Fixed Surcharge ($)</th>
+              <th>Total Est. Rate</th>
+              <th>Status</th>
+              ${edit ? '<th>Actions</th>' : ''}
+            </tr>
+          </thead>
+          <tbody>
+            ${stateTaxRows || `<tr><td colspan="${edit ? 7 : 6}" style="text-align:center;color:var(--color-muted);padding:16px">No states match search.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    `;
+
     const surcharges = record.customSurcharges;
-
-    const managedHtml = Object.entries(record.charges).filter(([, item]) => item.enabled !== false).map(([id, item]) => `<div class="plain-rule"><span class="rule-icon">${id === 'tax' ? '🏛️' : '🧾'}</span><div class="plain-rule-when"><strong>${esc(item.name)}</strong><br>${item.managed ? 'Maintained by the central finance and compliance teams' : 'Maintained for this product'}</div><div class="plain-rule-then">${item.kind === 'percent' ? `${item.value}%` : money(item.value)}</div><span class="managed-badge">🔒 Centrally managed</span></div>`).join('')
-      || `<p style="font-size:13px;color:var(--color-muted);margin:0">No centrally managed charges are linked to this product.</p>`;
-
     const surchargeCards = surcharges.map((sur, idx) => {
       const typeLabel = sur.type === 'flat' ? money(sur.value) : `${sur.value}%`;
       return `
@@ -1301,17 +1390,23 @@ function renderRisk(edit) {
     const surchargeAction = edit ? `<button class="btn btn-primary btn-sm" type="button" data-rating-action="add-custom-surcharge">＋ Add Custom Surcharge</button>` : '';
     const surchargeBody = `
       <div style="margin-bottom:14px;font-size:13px;color:var(--color-muted)">
-        Surcharges work exactly like Discounts, using the same flat ($) or percentage (%) case-based setup — but they add to the premium instead of reducing it. Use them for conditions that increase risk or cost (e.g. high-risk cargo, late payment, additional inspections).
+        Custom surcharges apply for specific risk or policy conditions (e.g. High-Risk Cargo Surcharge, Heavy Vehicle Surcharge, Emergency Risk Fee).
       </div>
-      <div>${surchargeCards || '<div class="callout callout-info"><div class="callout-body">No surcharges configured yet. Click "+ Add Custom Surcharge" to create one.</div></div>'}</div>
+      <div>${surchargeCards || '<div class="callout callout-info"><div class="callout-body">No custom surcharges configured yet. Click "+ Add Custom Surcharge" to create one.</div></div>'}</div>
     `;
+
+    const managedHtml = Object.entries(record.charges).filter(([, item]) => item.enabled !== false).map(([id, item]) => `<div class="plain-rule"><span class="rule-icon">${id === 'tax' ? '🏛️' : '🧾'}</span><div class="plain-rule-when"><strong>${esc(item.name)}</strong><br>${item.managed ? 'Maintained by the central finance and compliance teams' : 'Maintained for this product'}</div><div class="plain-rule-then">${item.kind === 'percent' ? `${item.value}%` : money(item.value)}</div><span class="managed-badge">🔒 Centrally managed</span></div>`).join('')
+      || `<p style="font-size:13px;color:var(--color-muted);margin:0">No centrally managed statutory charges are linked to this product.</p>`;
 
     const body = `
-      ${managedHtml}
-      <div style="margin-top:20px">${panelShell('Custom Surcharges', 'Conditional charges you define, added to the premium the same way Discounts are subtracted from it.', surchargeAction, surchargeBody)}</div>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div>${panelShell('State Taxes & Surcharges Matrix', 'Default state premium taxes, SLA stamping fees, and catastrophe/guaranty fund surcharges fetched from state jurisdiction rules. Admins can edit rates per state.', '', stateTaxTableHtml)}</div>
+        <div>${panelShell('Custom Product Surcharges', 'Conditional risk or policy surcharges added to the premium.', surchargeAction, surchargeBody)}</div>
+        <div>${panelShell('Centrally Managed Statutory Charges', 'Required statutory taxes and fees brought in automatically from central compliance.', libraryLink(), managedHtml)}</div>
+      </div>
     `;
 
-    return panelShell('6. Fees & taxes', 'Required charges are brought in automatically from the approved jurisdiction setup. Product users can review them but do not need to maintain them.', libraryLink(), body);
+    return panelShell('6. Taxes & surcharges', 'Configure state tax rates, stamping fees, state catastrophe funds, and custom product surcharges.', '', body);
   }
 
   function renderFormulaBuilder(edit) {
@@ -3288,13 +3383,29 @@ function getCoverageOptions() {
       });
     }
 
-    // Fees & taxes (existing Central Pricing Library integration, unchanged).
+    // Taxes & Surcharges (State Premium Taxes, State Surcharges, Custom Surcharges, Statutory Fees/Taxes).
+    ensureDefaultStateTaxes(record);
     const charges = [];
-    ['admin', 'stamp'].forEach(id => { const item = record.charges[id]; if (item.enabled) { charges.push({ stage: 'Fees & taxes', label: item.name, amount: Number(item.value), detail: 'Required charge' }); subtotal += Number(item.value); } });
 
-    // Custom Surcharges — the mirror of Custom Discounts: same flat ($) /
-    // percentage (%) case-based setup, but added to the premium instead of
-    // subtracted from it.
+    const stTax = stateCode ? (record.stateTaxes?.[stateCode] || { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: 'State tax' }) : null;
+    if (stTax) {
+      if (stTax.taxRate > 0) {
+        const taxAmt = round(subtotal * stTax.taxRate / 100);
+        charges.push({ stage: 'Taxes & surcharges', label: `${stateName(stateCode)} State Premium Tax`, amount: taxAmt, detail: `${stTax.taxRate}% state tax` });
+        subtotal += taxAmt;
+      }
+      if (stTax.stampingFee > 0) {
+        const stampAmt = round(subtotal * stTax.stampingFee / 100);
+        charges.push({ stage: 'Taxes & surcharges', label: `${stateName(stateCode)} SLA Stamping Fee`, amount: stampAmt, detail: `${stTax.stampingFee}% stamping fee` });
+        subtotal += stampAmt;
+      }
+      if (stTax.guarantyFund > 0) {
+        const gAmt = Number(stTax.guarantyFund);
+        charges.push({ stage: 'Taxes & surcharges', label: `${stateName(stateCode)} Guaranty / Catastrophe Fund`, amount: gAmt, detail: `${money(gAmt)} state surcharge` });
+        subtotal += gAmt;
+      }
+    }
+
     (record.customSurcharges || []).forEach(sur => {
       if (sur.enabled === false) return;
       const val = Number(sur.value) || 0;
@@ -3302,7 +3413,7 @@ function getCoverageOptions() {
       const isFlat = sur.type === 'flat';
       const amount = isFlat ? val : round(subtotal * val / 100);
       charges.push({
-        stage: 'Fees & taxes',
+        stage: 'Taxes & surcharges',
         label: sur.name,
         amount,
         detail: isFlat ? `+${money(val)} flat surcharge (${sur.case || 'Case surcharge'})` : `+${val}% surcharge (${sur.case || 'Case surcharge'})`
@@ -3310,7 +3421,8 @@ function getCoverageOptions() {
       subtotal += amount;
     });
 
-    if (record.charges.tax.enabled) { const amount = round(subtotal * record.charges.tax.value / 100); charges.push({ stage: 'Fees & taxes', label: record.charges.tax.name, amount, detail: `${record.charges.tax.value}% required tax` }); subtotal += amount; }
+    ['admin', 'stamp'].forEach(id => { const item = record.charges[id]; if (item && item.enabled) { charges.push({ stage: 'Taxes & surcharges', label: item.name, amount: Number(item.value), detail: 'Required statutory fee' }); subtotal += Number(item.value); } });
+    if (record.charges?.tax?.enabled) { const amount = round(subtotal * record.charges.tax.value / 100); charges.push({ stage: 'Taxes & surcharges', label: record.charges.tax.name, amount, detail: `${record.charges.tax.value}% required tax` }); subtotal += amount; }
 
     return {
       configured: true, eligible: true,
@@ -3882,6 +3994,44 @@ if (action === 'remove-band') {
       window.PS.closeModal();
       render();
       setResult('Surcharge saved', `${name} surcharge configured.`);
+    }
+
+    if (action === 'save-state-tax') {
+      const code = button.dataset.state;
+      if (code) {
+        ensureDefaultStateTaxes(record);
+        const taxRate = Number(document.querySelector(`[data-state-tax-rate="${code}"]`)?.value) || 0;
+        const stampingFee = Number(document.querySelector(`[data-state-stamp-fee="${code}"]`)?.value) || 0;
+        const guarantyFund = Number(document.querySelector(`[data-state-guaranty="${code}"]`)?.value) || 0;
+
+        record.stateTaxes[code] = {
+          taxRate,
+          stampingFee,
+          guarantyFund,
+          desc: `${stateName(code)} custom tax rates: ${taxRate}% tax, ${stampingFee}% stamp fee, $${guarantyFund} guaranty fee`
+        };
+
+        saveRecord(`Updated state tax for ${stateName(code)}`);
+        syncRatingBundle();
+        render();
+        setResult('State tax updated', `${stateName(code)} tax rates updated: ${taxRate}% tax, ${stampingFee}% stamp fee, $${guarantyFund} guaranty fee.`);
+      }
+    }
+
+    if (action === 'reset-state-tax') {
+      const code = button.dataset.state;
+      if (code) {
+        ensureDefaultStateTaxes(record);
+        if (DEFAULT_STATE_TAXES[code]) {
+          record.stateTaxes[code] = JSON.parse(JSON.stringify(DEFAULT_STATE_TAXES[code]));
+        } else {
+          record.stateTaxes[code] = { taxRate: 4.00, stampingFee: 0.15, guarantyFund: 0, desc: 'Standard State Premium Tax' };
+        }
+        saveRecord(`Reset state tax for ${stateName(code)}`);
+        syncRatingBundle();
+        render();
+        setResult('State tax reset', `${stateName(code)} tax rates reset to standard state defaults.`);
+      }
     }
 
     if (action === 'toggle-discount') { const item = record.discounts[button.dataset.discount]; if (item) { item.enabled = !item.enabled; saveRecord(`${item.enabled ? 'Enabled' : 'Disabled'} ${item.name}`); setResult(`Discount ${item.enabled ? 'turned on' : 'turned off'}`, `${item.name} ${item.enabled ? 'will now be considered in price previews' : 'will no longer be applied'}.`); } }
