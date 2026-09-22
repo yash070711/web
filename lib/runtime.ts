@@ -1,5 +1,3 @@
-import { PREMIUM_FORMULA } from "./blueprint";
-
 export type Answers = Record<string, string | number | boolean | null | undefined>;
 export type ConfigRow = Record<string, unknown>;
 
@@ -190,61 +188,234 @@ function moneyAmount(value: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+const COND_OPERATORS = ["!=", ">=", "<=", "==", "=", "<", ">"];
+
+function parseSimpleCondition(cond: string): { field: string; op: string; value: string } | null {
+  const trimmed = cond.trim();
+  if (!trimmed) return null;
+  for (const op of COND_OPERATORS) {
+    const idx = trimmed.indexOf(op);
+    if (idx > 0) return { field: trimmed.slice(0, idx).trim(), op, value: trimmed.slice(idx + op.length).trim() };
+  }
+  return null;
+}
+
+function conditionApplies(row: ConfigRow, answers: Answers): boolean {
+  const cond = asStr(row.condition);
+  if (!cond) return true;
+  const parsed = parseSimpleCondition(cond);
+  if (!parsed) return true;
+  return evalCondition(answers[parsed.field], parsed.op, parsed.value);
+}
+
+function behaviorApply(acc: number, behavior: string, value: number): number {
+  if (behavior === "divide") return value === 0 ? acc : acc / value;
+  if (behavior === "plus") return acc + value;
+  if (behavior === "minus") return acc - value;
+  return acc * value;
+}
+
+function behaviorSymbol(behavior: string): string {
+  if (behavior === "divide") return "÷";
+  if (behavior === "plus") return "+";
+  if (behavior === "minus") return "−";
+  return "×";
+}
+
+// Tokens available to a custom formula: BASE, FACTORS, LOADINGS, DISCOUNTS, ADDONS, FEES, TAXES
+// (each an aggregate of its component type) plus every component's own id for fine-grained formulas.
+export const DEFAULT_PREMIUM_EXPRESSION = "BASE * FACTORS + LOADINGS - DISCOUNTS + ADDONS + FEES + TAXES";
+
+type FormulaToken = { type: "num" | "id" | "op"; value: string };
+
+// Known token names (component ids, e.g. "RAT-CT-FAC-001") are matched greedily before "-" is
+// treated as the subtraction operator, so hyphenated ids never get split apart.
+function tokenizeFormula(expr: string, knownTokens: string[]): FormulaToken[] {
+  const sorted = [...new Set(knownTokens.filter(Boolean))].sort((a, b) => b.length - a.length);
+  const tokens: FormulaToken[] = [];
+  let i = 0;
+  while (i < expr.length) {
+    const ch = expr[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    const known = sorted.find((t) => expr.startsWith(t, i));
+    if (known) { tokens.push({ type: "id", value: known }); i += known.length; continue; }
+    if ("+-*/()".includes(ch)) { tokens.push({ type: "op", value: ch }); i++; continue; }
+    if (/[0-9.]/.test(ch)) {
+      let j = i;
+      while (j < expr.length && /[0-9.]/.test(expr[j])) j++;
+      tokens.push({ type: "num", value: expr.slice(i, j) });
+      i = j;
+      continue;
+    }
+    let j = i;
+    while (j < expr.length && !/[\s+\-*/()]/.test(expr[j])) j++;
+    tokens.push({ type: "id", value: expr.slice(i, Math.max(j, i + 1)) });
+    i = Math.max(j, i + 1);
+  }
+  return tokens;
+}
+
+// Small recursive-descent evaluator for +,-,*,/ and parentheses over known tokens.
+// Deliberately not eval()/Function() — formulas are user-authored data, not trusted code.
+export function evalFormula(expression: string, tokenValues: Record<string, number>): number {
+  const raw = (expression || "").trim();
+  if (!raw) throw new Error("Formula is empty");
+  const tokens = tokenizeFormula(raw, Object.keys(tokenValues));
+  let pos = 0;
+  const peek = () => tokens[pos];
+  const consume = () => tokens[pos++];
+
+  function parseExpr(): number {
+    let value = parseTerm();
+    while (peek() && peek().type === "op" && (peek().value === "+" || peek().value === "-")) {
+      const op = consume().value;
+      const rhs = parseTerm();
+      value = op === "+" ? value + rhs : value - rhs;
+    }
+    return value;
+  }
+  function parseTerm(): number {
+    let value = parseUnary();
+    while (peek() && peek().type === "op" && (peek().value === "*" || peek().value === "/")) {
+      const op = consume().value;
+      const rhs = parseUnary();
+      if (op === "/") {
+        if (rhs === 0) throw new Error("Division by zero in formula");
+        value = value / rhs;
+      } else value = value * rhs;
+    }
+    return value;
+  }
+  function parseUnary(): number {
+    if (peek()?.type === "op" && peek().value === "-") { consume(); return -parseUnary(); }
+    if (peek()?.type === "op" && peek().value === "+") { consume(); return parseUnary(); }
+    return parsePrimary();
+  }
+  function parsePrimary(): number {
+    const t = peek();
+    if (!t) throw new Error("Unexpected end of formula");
+    if (t.type === "num") { consume(); return Number(t.value); }
+    if (t.type === "id") {
+      consume();
+      if (!(t.value in tokenValues)) throw new Error(`Unknown token "${t.value}"`);
+      return tokenValues[t.value];
+    }
+    if (t.type === "op" && t.value === "(") {
+      consume();
+      const value = parseExpr();
+      const close = consume();
+      if (!close || close.value !== ")") throw new Error("Missing closing parenthesis");
+      return value;
+    }
+    throw new Error(`Unexpected token "${t.value}"`);
+  }
+
+  const result = parseExpr();
+  if (pos < tokens.length) throw new Error(`Unexpected token "${tokens[pos].value}"`);
+  if (!Number.isFinite(result)) throw new Error("Formula did not evaluate to a number");
+  return result;
+}
+
 export function rateQuote(components: ConfigRow[], answers: Answers, addonCount = 0) {
   const trail: { id: string; name: string; type: string; effect: string }[] = [];
+  const tokens: Record<string, number> = {};
+
   const baseRow = components.find((c) => asStr(c.type) === "base");
-  const base = moneyAmount(baseRow?.amount) || 0;
-  if (baseRow) trail.push({ id: asStr(baseRow.id), name: asStr(baseRow.name), type: "base", effect: `$${base}` });
+  let base = moneyAmount(baseRow?.amount) || 0;
+  if (baseRow) {
+    const stateMode = asStr(baseRow.stateMode, "uniform");
+    const userState = asStr(answers.state || answers.jurisdiction || answers.operating_state).toUpperCase();
+    if (stateMode === "multi_state" && Array.isArray(baseRow.stateRates)) {
+      const stateRates = baseRow.stateRates as ConfigRow[];
+      const matched = stateRates.find((r) => asStr(r.state).toUpperCase() === userState) || stateRates.find((r) => asStr(r.state).toUpperCase() === "DEFAULT");
+      if (matched && moneyAmount(matched.amount)) {
+        base = moneyAmount(matched.amount);
+        trail.push({ id: asStr(baseRow.id), name: `${asStr(baseRow.name)} (${asStr(matched.name || matched.state)} Base Rate)`, type: "base", effect: `$${base}` });
+      } else {
+        trail.push({ id: asStr(baseRow.id), name: `${asStr(baseRow.name)} (Default Uniform Rate)`, type: "base", effect: `$${base}` });
+      }
+    } else {
+      trail.push({ id: asStr(baseRow.id), name: asStr(baseRow.name), type: "base", effect: `$${base}` });
+    }
+    tokens[asStr(baseRow.id)] = base;
+  }
+  tokens.BASE = base;
 
   let factor = 1;
   for (const row of components.filter((c) => asStr(c.type) === "factor")) {
     const lookup = asStr(row.field) || asStr(row.lookupAttr);
     const mult = parseMultiplier(asStr(row.bands), answers[lookup], row.table1D);
-    factor *= mult;
-    trail.push({ id: asStr(row.id), name: asStr(row.name), type: "factor", effect: `×${mult}` });
+    const behavior = asStr(row.behavior, "multiply");
+    factor = behaviorApply(factor, behavior, mult);
+    tokens[asStr(row.id)] = mult;
+    trail.push({ id: asStr(row.id), name: asStr(row.name), type: "factor", effect: `${behaviorSymbol(behavior)}${mult}` });
   }
+  tokens.FACTORS = factor;
 
   let loading = 0;
   for (const row of components.filter((c) => asStr(c.type) === "loading")) {
-    const cond = asStr(row.condition);
-    const field = cond.split("=")[0]?.trim();
-    const expected = cond.split("=")[1]?.trim();
-    const applies = !cond || (expected ? String(answers[field]).toLowerCase() === expected.toLowerCase() : true);
-    if (!applies) continue;
+    if (!conditionApplies(row, answers)) continue;
     const amt = asStr(row.amount);
-    if (amt.includes("%")) loading += base * factor * (moneyAmount(amt) / 100);
-    else loading += moneyAmount(amt);
+    const value = amt.includes("%") ? base * factor * (moneyAmount(amt) / 100) : moneyAmount(amt);
+    loading += value;
+    tokens[asStr(row.id)] = value;
     trail.push({ id: asStr(row.id), name: asStr(row.name), type: "loading", effect: `+${amt}` });
   }
+  tokens.LOADINGS = loading;
 
   let discount = 0;
   for (const row of components.filter((c) => asStr(c.type) === "discount")) {
+    if (!conditionApplies(row, answers)) continue;
     const amt = asStr(row.amount);
-    if (amt.includes("%")) discount += base * factor * (moneyAmount(amt) / 100);
-    else discount += moneyAmount(amt);
+    const value = amt.includes("%") ? base * factor * (moneyAmount(amt) / 100) : moneyAmount(amt);
+    discount += value;
+    tokens[asStr(row.id)] = value;
     trail.push({ id: asStr(row.id), name: asStr(row.name), type: "discount", effect: `−${amt}` });
   }
+  tokens.DISCOUNTS = discount;
 
   const addons = Math.round(base * factor * addonCount * 0.1);
+  tokens.ADDONS = addons;
   if (addonCount) trail.push({ id: "ADDONS", name: "Optional add-ons", type: "addon", effect: `+$${addons}` });
 
   let fees = 0;
   for (const row of components.filter((c) => asStr(c.type) === "fee")) {
-    fees += moneyAmount(row.amount);
-    trail.push({ id: asStr(row.id), name: asStr(row.name), type: "fee", effect: `+$${moneyAmount(row.amount)}` });
+    const value = moneyAmount(row.amount);
+    fees += value;
+    tokens[asStr(row.id)] = value;
+    trail.push({ id: asStr(row.id), name: asStr(row.name), type: "fee", effect: `+$${value}` });
   }
+  tokens.FEES = fees;
 
-  const subtotal = Math.max(0, base * factor + loading - discount + addons + fees);
+  const preTax = Math.max(0, base * factor + loading - discount + addons + fees);
+
   let tax = 0;
   for (const row of components.filter((c) => asStr(c.type) === "tax")) {
     const amt = asStr(row.amount);
-    tax += amt.includes("%") ? subtotal * (moneyAmount(amt) / 100) : moneyAmount(amt);
-    trail.push({ id: asStr(row.id), name: asStr(row.name), type: "tax", effect: amt.includes("%") ? amt : `+$${moneyAmount(amt)}` });
+    const value = amt.includes("%") ? preTax * (moneyAmount(amt) / 100) : moneyAmount(amt);
+    tax += value;
+    tokens[asStr(row.id)] = value;
+    trail.push({ id: asStr(row.id), name: asStr(row.name), type: "tax", effect: amt.includes("%") ? amt : `+$${value}` });
+  }
+  tokens.TAXES = tax;
+
+  const formulaRow = components.find((c) => asStr(c.type) === "formula");
+  const expression = asStr(formulaRow?.expression) || DEFAULT_PREMIUM_EXPRESSION;
+  let payable: number;
+  let formulaError: string | undefined;
+  try {
+    payable = Math.round(Math.max(0, evalFormula(expression, tokens)));
+  } catch (err) {
+    formulaError = err instanceof Error ? err.message : "Invalid formula";
+    try {
+      payable = Math.round(Math.max(0, evalFormula(DEFAULT_PREMIUM_EXPRESSION, tokens)));
+    } catch {
+      payable = 0;
+    }
   }
 
-  const payable = Math.round(subtotal + tax);
   return {
-    formula: PREMIUM_FORMULA,
+    formula: expression,
     base,
     factor: Number(factor.toFixed(3)),
     loading: Math.round(loading),
@@ -254,6 +425,8 @@ export function rateQuote(components: ConfigRow[], answers: Answers, addonCount 
     tax: Math.round(tax),
     payable,
     trail,
+    tokens,
+    formulaError,
   };
 }
 

@@ -17,6 +17,12 @@ import {
 const SOURCES = ["Question", "Library", "Manual"];
 const LEVELS = ["High", "Medium", "Low"];
 const TYPES = ["Text", "Number", "Select", "Multi-select", "Boolean"];
+const RATING_FACTORS = [
+  { value: "+", label: "+ Additive (+)" },
+  { value: "-", label: "- Subtractive (-)" },
+  { value: "*", label: "* Multiplicative (*)" },
+  { value: "/", label: "/ Divisive (/)" },
+];
 
 export function RiskStudio({
   productId,
@@ -67,6 +73,7 @@ export function RiskStudio({
                     source: "Manual",
                     riskLevel: "Medium",
                     type: "Text",
+                    ratingFactor: "*",
                     questionGroup: "Operations",
                     status: "draft",
                   }];
@@ -83,7 +90,9 @@ export function RiskStudio({
               <div key={str(item, "id", String(i))} className={`cover-item ${i === active ? "active" : ""}`} onClick={() => setActive(i)}>
                 <div>
                   <div className="cover-item-name">{str(item, "name", "Attribute")}</div>
-                  <div className="mono" style={{ fontSize: 11, color: "var(--color-muted)" }}>{str(item, "id")}</div>
+                  <div className="mono" style={{ fontSize: 11, color: "var(--color-muted)" }}>
+                    {str(item, "id")} {item.ratingFactor ? `· Factor (${str(item, "ratingFactor")})` : ""}
+                  </div>
                 </div>
               </div>
             ))}
@@ -113,6 +122,13 @@ export function RiskStudio({
                   <Field label="Field type">
                     <select className="form-control" value={str(row, "type", "Text")} disabled={readOnly} onChange={(e) => update("type", e.target.value)}>
                       {TYPES.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Rating Factor">
+                    <select className="form-control" value={str(row, "ratingFactor", "*")} disabled={readOnly} onChange={(e) => update("ratingFactor", e.target.value)}>
+                      {RATING_FACTORS.map((f) => (
+                        <option key={f.value} value={f.value}>{f.label}</option>
+                      ))}
                     </select>
                   </Field>
                   <Field label="Question Group" span>

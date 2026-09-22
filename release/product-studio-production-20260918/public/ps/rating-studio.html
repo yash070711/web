@@ -611,13 +611,204 @@ function renderIdentity(c) {
 }
 
 function renderBaseConfig(c) {
-  return `<div class="form-grid-2">
-    ${rof('Basis', c.basis)}
-    <div class="form-group"><label class="form-label">Base Rate Value</label>
-      <div style="font-size:22px;font-weight:700;color:var(--color-brand);padding:4px 0">$${c.amount}</div>
+  const isMultiState = c.stateMode === 'multi_state';
+  const stateRates = Array.isArray(c.stateRates) ? c.stateRates : [
+    { state: 'CA', name: 'California', amount: '2150.00' },
+    { state: 'TX', name: 'Texas', amount: '1950.00' },
+    { state: 'FL', name: 'Florida', amount: '2100.00' },
+    { state: 'NY', name: 'New York', amount: '2400.00' },
+    { state: 'IL', name: 'Illinois', amount: '1850.00' },
+    { state: 'DEFAULT', name: 'All Other States', amount: c.amount || '1850.00' }
+  ];
+
+  return `
+    <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:14px;margin-bottom:var(--space-4)">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--color-muted);margin-bottom:8px">Jurisdiction Base Rate Mode</div>
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer">
+          <input type="radio" name="baseStateMode_${c.id}" value="uniform" ${!isMultiState ? 'checked' : ''} onchange="toggleBaseStateMode('${c.id}', 'uniform')">
+          <span>All States Same (Uniform National Base Rate)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer">
+          <input type="radio" name="baseStateMode_${c.id}" value="multi_state" ${isMultiState ? 'checked' : ''} onchange="toggleBaseStateMode('${c.id}', 'multi_state')">
+          <span>Multiple States Have Different Rates (State-by-State Matrix)</span>
+        </label>
+      </div>
     </div>
-    ${rof('Currency', c.currency)}
-  </div>`;
+
+    ${!isMultiState ? `
+      <div class="form-grid-2">
+        ${rof('Basis', c.basis || 'Per Vehicle / Per Year')}
+        <div class="form-group">
+          <label class="form-label">Uniform Base Rate Value (All States)</label>
+          <div style="font-size:22px;font-weight:700;color:var(--color-brand);padding:4px 0">$${c.amount || '1,850.00'}</div>
+        </div>
+        ${rof('Currency', c.currency || 'USD')}
+      </div>
+    ` : `
+      <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:600">Per-State Base Rate Matrix</div>
+          <div style="font-size:12px;color:var(--color-muted)">Configure individual starting base premiums for each US state jurisdiction.</div>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openAddStateBaseRateModal('${c.id}')">+ Add State Rate</button>
+      </div>
+
+      <table class="rate-table">
+        <thead>
+          <tr>
+            <th>State Code</th>
+            <th>State Name</th>
+            <th class="rate-cell">Base Rate Amount ($)</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${stateRates.map((r, i) => `
+            <tr>
+              <td><span style="font-family:'IBM Plex Mono',monospace;font-weight:700;padding:2px 6px;background:var(--color-brand-light);color:var(--color-brand);border-radius:4px">${r.state}</span></td>
+              <td style="font-weight:600">${r.name}</td>
+              <td class="rate-cell" style="font-size:14px;font-weight:700;color:var(--color-brand)">$${Number(r.amount).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+              <td style="text-align:right">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="editStateBaseRate('${c.id}', ${i})">Edit</button>
+                ${r.state !== 'DEFAULT' ? `<button type="button" class="btn btn-ghost btn-sm" style="color:var(--color-danger,#dc2626)" onclick="removeStateBaseRate('${c.id}', ${i})">Remove</button>` : ''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `}
+  `;
+}
+
+function toggleBaseStateMode(componentId, mode) {
+  const c = ratingItems().find(x => x.id === componentId);
+  if (!c) return;
+  c.stateMode = mode;
+  if (mode === 'multi_state' && (!Array.isArray(c.stateRates) || !c.stateRates.length)) {
+    c.stateRates = [
+      { state: 'CA', name: 'California', amount: '2150.00' },
+      { state: 'TX', name: 'Texas', amount: '1950.00' },
+      { state: 'FL', name: 'Florida', amount: '2100.00' },
+      { state: 'NY', name: 'New York', amount: '2400.00' },
+      { state: 'IL', name: 'Illinois', amount: '1850.00' },
+      { state: 'DEFAULT', name: 'All Other States', amount: c.amount || '1850.00' }
+    ];
+  }
+  persistRatingComponents();
+  renderDetail(c);
+  PS.actionResult('success', 'Base Rate Mode Updated', `Switched to ${mode === 'multi_state' ? 'State-by-State' : 'Uniform All States'} configuration.`);
+}
+
+function openAddStateBaseRateModal(componentId) {
+  const c = ratingItems().find(x => x.id === componentId);
+  if (!c) return;
+  const states = [
+    { abbr: "AL", name: "Alabama" }, { abbr: "AK", name: "Alaska" }, { abbr: "AZ", name: "Arizona" }, { abbr: "AR", name: "Arkansas" },
+    { abbr: "CA", name: "California" }, { abbr: "CO", name: "Colorado" }, { abbr: "CT", name: "Connecticut" }, { abbr: "DE", name: "Delaware" },
+    { abbr: "FL", name: "Florida" }, { abbr: "GA", name: "Georgia" }, { abbr: "HI", name: "Hawaii" }, { abbr: "ID", name: "Idaho" },
+    { abbr: "IL", name: "Illinois" }, { abbr: "IN", name: "Indiana" }, { abbr: "IA", name: "Iowa" }, { abbr: "KS", name: "Kansas" },
+    { abbr: "KY", name: "Kentucky" }, { abbr: "LA", name: "Louisiana" }, { abbr: "ME", name: "Maine" }, { abbr: "MD", name: "Maryland" },
+    { abbr: "MA", name: "Massachusetts" }, { abbr: "MI", name: "Michigan" }, { abbr: "MN", name: "Minnesota" }, { abbr: "MS", name: "Mississippi" },
+    { abbr: "MO", name: "Missouri" }, { abbr: "MT", name: "Montana" }, { abbr: "NE", name: "Nebraska" }, { abbr: "NV", name: "Nevada" },
+    { abbr: "NH", name: "New Hampshire" }, { abbr: "NJ", name: "New Jersey" }, { abbr: "NM", name: "New Mexico" }, { abbr: "NY", name: "New York" },
+    { abbr: "NC", name: "North Carolina" }, { abbr: "ND", name: "North Dakota" }, { abbr: "OH", name: "Ohio" }, { abbr: "OK", name: "Oklahoma" },
+    { abbr: "OR", name: "Oregon" }, { abbr: "PA", name: "Pennsylvania" }, { abbr: "RI", name: "Rhode Island" }, { abbr: "SC", name: "South Carolina" },
+    { abbr: "SD", name: "South Dakota" }, { abbr: "TN", name: "Tennessee" }, { abbr: "TX", name: "Texas" }, { abbr: "UT", name: "Utah" },
+    { abbr: "VT", name: "Vermont" }, { abbr: "VA", name: "Virginia" }, { abbr: "WA", name: "Washington" }, { abbr: "WV", name: "West Virginia" },
+    { abbr: "WI", name: "Wisconsin" }, { abbr: "WY", name: "Wyoming" }
+  ];
+
+  PS.openModal(`
+    <div class="modal-header">
+      <h2 class="modal-title">Add State Base Rate</h2>
+      <button class="btn btn-icon" onclick="PS.closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Select State <span class="required">*</span></label>
+        <select id="sbr-state" class="form-control">
+          ${states.map(s => `<option value="${s.abbr}">${s.name} (${s.abbr})</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Base Rate Amount ($) <span class="required">*</span></label>
+        <input id="sbr-amount" type="number" step="0.01" class="form-control" value="1850.00" placeholder="e.g. 2100.00">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="PS.closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStateBaseRate('${componentId}')">Add State Rate</button>
+    </div>
+  `, 'modal-md');
+}
+
+function saveStateBaseRate(componentId, editIndex) {
+  const c = ratingItems().find(x => x.id === componentId);
+  if (!c) return;
+  const stateCode = document.getElementById('sbr-state')?.value;
+  const amt = Number(document.getElementById('sbr-amount')?.value || 0);
+  if (!stateCode || !amt || amt <= 0) {
+    PS.actionResult('error', 'Invalid Input', 'State and valid base rate amount are required.');
+    return;
+  }
+
+  const states = [
+    { abbr: "AL", name: "Alabama" }, { abbr: "AK", name: "Alaska" }, { abbr: "AZ", name: "Arizona" }, { abbr: "AR", name: "Arkansas" },
+    { abbr: "CA", name: "California" }, { abbr: "CO", name: "Colorado" }, { abbr: "CT", name: "Connecticut" }, { abbr: "DE", name: "Delaware" },
+    { abbr: "FL", name: "Florida" }, { abbr: "GA", name: "Georgia" }, { abbr: "HI", name: "Hawaii" }, { abbr: "ID", name: "Idaho" },
+    { abbr: "IL", name: "Illinois" }, { abbr: "IN", name: "Indiana" }, { abbr: "IA", name: "Iowa" }, { abbr: "KS", name: "Kansas" },
+    { abbr: "KY", name: "Kentucky" }, { abbr: "LA", name: "Louisiana" }, { abbr: "ME", name: "Maine" }, { abbr: "MD", name: "Maryland" },
+    { abbr: "MA", name: "Massachusetts" }, { abbr: "MI", name: "Michigan" }, { abbr: "MN", name: "Minnesota" }, { abbr: "MS", name: "Mississippi" },
+    { abbr: "MO", name: "Missouri" }, { abbr: "MT", name: "Montana" }, { abbr: "NE", name: "Nebraska" }, { abbr: "NV", name: "Nevada" },
+    { abbr: "NH", name: "New Hampshire" }, { abbr: "NJ", name: "New Jersey" }, { abbr: "NM", name: "New Mexico" }, { abbr: "NY", name: "New York" },
+    { abbr: "NC", name: "North Carolina" }, { abbr: "ND", name: "North Dakota" }, { abbr: "OH", name: "Ohio" }, { abbr: "OK", name: "Oklahoma" },
+    { abbr: "OR", name: "Oregon" }, { abbr: "PA", name: "Pennsylvania" }, { abbr: "RI", name: "Rhode Island" }, { abbr: "SC", name: "South Carolina" },
+    { abbr: "SD", name: "South Dakota" }, { abbr: "TN", name: "Tennessee" }, { abbr: "TX", name: "Texas" }, { abbr: "UT", name: "Utah" },
+    { abbr: "VT", name: "Vermont" }, { abbr: "VA", name: "Virginia" }, { abbr: "WA", name: "Washington" }, { abbr: "WV", name: "West Virginia" },
+    { abbr: "WI", name: "Wisconsin" }, { abbr: "WY", name: "Wyoming" }
+  ];
+  const stateObj = states.find(s => s.abbr === stateCode) || { abbr: stateCode, name: stateCode };
+
+  if (!Array.isArray(c.stateRates)) c.stateRates = [];
+  const existingIdx = c.stateRates.findIndex(r => r.state === stateCode);
+  if (existingIdx >= 0 && existingIdx !== editIndex) {
+    c.stateRates[existingIdx].amount = amt.toFixed(2);
+  } else if (editIndex != null && c.stateRates[editIndex]) {
+    c.stateRates[editIndex].amount = amt.toFixed(2);
+  } else {
+    c.stateRates.unshift({ state: stateCode, name: stateObj.name, amount: amt.toFixed(2) });
+  }
+
+  persistRatingComponents();
+  renderDetail(c);
+  PS.closeModal();
+  PS.actionResult('success', 'State Rate Saved', `Base rate for ${stateObj.name} set to $${amt.toFixed(2)}.`);
+}
+
+function editStateBaseRate(componentId, index) {
+  const c = ratingItems().find(x => x.id === componentId);
+  if (!c || !c.stateRates?.[index]) return;
+  const item = c.stateRates[index];
+  openAddStateBaseRateModal(componentId);
+  setTimeout(() => {
+    const sel = document.getElementById('sbr-state');
+    const amt = document.getElementById('sbr-amount');
+    if (sel) sel.value = item.state;
+    if (amt) amt.value = item.amount;
+    const btn = document.querySelector('.modal-footer .btn-primary');
+    if (btn) btn.setAttribute('onclick', `saveStateBaseRate('${componentId}', ${index})`);
+  }, 50);
+}
+
+function removeStateBaseRate(componentId, index) {
+  const c = ratingItems().find(x => x.id === componentId);
+  if (!c || !c.stateRates?.[index]) return;
+  const name = c.stateRates[index].name;
+  c.stateRates.splice(index, 1);
+  persistRatingComponents();
+  renderDetail(c);
+  PS.actionResult('success', 'State Rate Removed', `Removed base rate override for ${name}.`);
 }
 
 function renderFactorTable(c) {

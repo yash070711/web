@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PREMIUM_FORMULA } from "@/lib/blueprint";
-import { rateQuote, type Answers } from "@/lib/runtime";
+import { DEFAULT_PREMIUM_EXPRESSION, rateQuote, type Answers } from "@/lib/runtime";
 import { bandsFromTable, table1DOf } from "@/lib/studio-data";
 import {
   Accordion,
@@ -37,6 +36,23 @@ const ADD_TYPES = [
   { type: "minimum", name: "Minimum Premium" },
   { type: "fee", name: "Fee" },
   { type: "tax", name: "Tax" },
+];
+
+const FORMULA_GROUPS: { type: string; token: string; label: string }[] = [
+  { type: "factor", token: "FACTORS", label: "Risk Factors" },
+  { type: "loading", token: "LOADINGS", label: "Loadings" },
+  { type: "discount", token: "DISCOUNTS", label: "Discounts" },
+  { type: "fee", token: "FEES", label: "Fees" },
+  { type: "tax", token: "TAXES", label: "Taxes" },
+];
+
+const FORMULA_OPERATORS: { symbol: string; insert: string }[] = [
+  { symbol: "+", insert: "+" },
+  { symbol: "−", insert: "-" },
+  { symbol: "×", insert: "*" },
+  { symbol: "÷", insert: "/" },
+  { symbol: "(", insert: "(" },
+  { symbol: ")", insert: ")" },
 ];
 
 export function RatingStudio({
@@ -85,12 +101,53 @@ export function RatingStudio({
   const table = table1DOf(row);
   const showTable = ["factor", "discount"].includes(str(row, "type")) || table.length > 0;
 
+  function nextComponentId(type: string) {
+    const prefix = `RAT-${type.slice(0, 3).toUpperCase()}-`;
+    const used = rows
+      .map((r) => str(r, "id"))
+      .filter((id) => id.startsWith(prefix))
+      .map((id) => Number(id.slice(prefix.length)) || 0);
+    const n = (used.length ? Math.max(...used) : 0) + 1;
+    return `${prefix}${String(n).padStart(3, "0")}`;
+  }
+
   function add(type: string, name: string) {
     if (readOnly) return;
-    const next = [...rows, { id: `RAT-${type.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`, name, type, amount: type === "base" ? 1850 : type === "tax" ? "18%" : "0", field: "", bands: "", condition: "", unit: "per year" }];
+    const next = [...rows, { id: nextComponentId(type), name, type, amount: type === "base" ? 1850 : type === "tax" ? "18%" : "0", field: "", bands: "", condition: "", unit: "per year" }];
     setRows(next);
     setActive(next.length - 1);
     setAddOpen(false);
+  }
+
+  const formulaRow = rows.find((r) => str(r, "type") === "formula");
+  const formulaExpr = str(formulaRow, "expression") || DEFAULT_PREMIUM_EXPRESSION;
+
+  function setFormulaExpression(expr: string) {
+    if (readOnly) return;
+    const idx = rows.findIndex((r) => str(r, "type") === "formula");
+    if (idx >= 0) {
+      setRows(patchRow(rows, idx, "expression", expr));
+    } else {
+      setRows([...rows, { id: "RAT-FORMULA", name: "Payable Premium Formula", type: "formula", expression: expr }]);
+    }
+  }
+
+  function insertFormulaToken(token: string) {
+    setFormulaExpression(`${formulaExpr.trim()} ${token}`.trim());
+  }
+
+  function formulaTokenGroups() {
+    return [
+      { label: "Base Premium", items: [{ token: "BASE", name: "Base Premium" }] },
+      ...FORMULA_GROUPS.map((g) => ({
+        label: g.label,
+        items: [
+          { token: g.token, name: `All ${g.label}` },
+          ...rows.filter((r) => str(r, "type") === g.type).map((r) => ({ token: str(r, "id"), name: str(r, "name") || str(r, "id") })),
+        ],
+      })),
+      { label: "Add-ons", items: [{ token: "ADDONS", name: "Optional Add-ons" }] },
+    ];
   }
 
   return (
@@ -119,9 +176,65 @@ export function RatingStudio({
       <ContextBar productId={productId} version={version} summary={`${rows.length} components · ${rows.filter((r) => str(r, "type") === "factor").length} factors · ${rows.filter((r) => str(r, "type") === "discount").length} discounts · ${rows.filter((r) => ["fee", "tax"].includes(str(r, "type"))).length} fees/taxes`} studioId="rating" itemCount={rows.length} />
       <PublishedBanner productId={productId} studio="rating" readOnly={readOnly} />
 
+      <div className="section-card mb-6">
+        <div className="section-inner">
+          <div className="flex" style={{ justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+            <div>
+              <div className="card-title">Formula Builder</div>
+              <p className="text-muted" style={{ fontSize: 13, marginTop: 4 }}>
+                Build the exact expression used to calculate the payable premium, from this product&apos;s Base Premium, Risk Factors, Loadings, Discounts, Fees and Taxes.
+              </p>
+            </div>
+            <div className="quote-price" style={{ fontSize: 22, fontWeight: 700, color: quote.formulaError ? "var(--color-danger, #EF4444)" : undefined }}>
+              {quote.formulaError ? "Formula error" : `$${quote.payable.toLocaleString("en-US")}`}
+            </div>
+          </div>
+
+          {formulaTokenGroups().map((g) => (
+            <div key={g.label} style={{ marginTop: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".5px", textTransform: "uppercase", color: "var(--color-muted)", marginBottom: 6 }}>{g.label}</div>
+              <div className="flex gap-2" style={{ flexWrap: "wrap" }}>
+                {g.items.map((it) => (
+                  <button key={it.token} type="button" className="btn btn-ghost btn-sm" disabled={readOnly} onClick={() => insertFormulaToken(it.token)}>{it.name}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".5px", textTransform: "uppercase", color: "var(--color-muted)", marginBottom: 6 }}>Operators</div>
+            <div className="flex gap-2">
+              {FORMULA_OPERATORS.map((op) => (
+                <button key={op.insert} type="button" className="btn btn-ghost btn-sm" disabled={readOnly} onClick={() => insertFormulaToken(op.insert)}>{op.symbol}</button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: 14 }}>
+            <Field label="Formula expression" span help="Click tokens above to build the formula, or type component IDs and operators directly.">
+              <textarea
+                className="form-control text-mono"
+                rows={2}
+                disabled={readOnly}
+                value={formulaExpr}
+                onChange={(e) => setFormulaExpression(e.target.value)}
+              />
+            </Field>
+            {quote.formulaError ? (
+              <p style={{ color: "var(--color-danger, #EF4444)", fontSize: 12, marginTop: 4 }}>
+                {quote.formulaError} — showing the default formula result above until this is fixed.
+              </p>
+            ) : null}
+            <button className="btn btn-ghost btn-sm" type="button" disabled={readOnly} style={{ marginTop: 8 }} onClick={() => setFormulaExpression(DEFAULT_PREMIUM_EXPRESSION)}>
+              Reset to default formula
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="rule-preview-box mb-6">
         <div className="rp-title">Deterministic calculation graph</div>
-        <div className="rp-line">{PREMIUM_FORMULA}</div>
+        <div className="rp-line">{formulaExpr}</div>
       </div>
 
       <div className="studio-layout">
@@ -177,11 +290,58 @@ export function RatingStudio({
                   </Field>
                   <Field label="Amount / Rate"><input className="form-control" disabled={readOnly} value={str(row, "amount")} onChange={(e) => update("amount", e.target.value)} /></Field>
                   <Field label="Unit"><input className="form-control" disabled={readOnly} value={str(row, "unit")} onChange={(e) => update("unit", e.target.value)} /></Field>
+                  {str(row, "type") === "base" ? (
+                    <Field label="Jurisdiction Base Rate Mode">
+                      <select className="form-control" disabled={readOnly} value={str(row, "stateMode", "uniform")} onChange={(e) => update("stateMode", e.target.value)}>
+                        <option value="uniform">All States Same (Uniform National Rate)</option>
+                        <option value="multi_state">Multiple States Have Different Rates (State-by-State Matrix)</option>
+                      </select>
+                    </Field>
+                  ) : null}
+                  {str(row, "type") === "factor" ? (
+                    <Field label="Rating Factor Behavior">
+                      <select className="form-control" disabled={readOnly} value={str(row, "behavior", "multiply")} onChange={(e) => update("behavior", e.target.value)}>
+                        <option value="multiply">Multiply (× Multiplier)</option>
+                        <option value="divide">Divide (/ Divisor)</option>
+                        <option value="plus">Plus (+ Flat Amount)</option>
+                        <option value="minus">Minus (- Credit Amount)</option>
+                      </select>
+                    </Field>
+                  ) : null}
+                  {str(row, "type") === "discount" ? (
+                    <>
+                      <Field label="Discount Calculation Mode">
+                        <select className="form-control" disabled={readOnly} value={str(row, "discountType", str(row, "amount").includes("%") ? "Percentage" : "Flat")} onChange={(e) => {
+                          const mode = e.target.value;
+                          const val = str(row, "discountValue", "10");
+                          update("discountType", mode);
+                          update("amount", mode === "Percentage" ? `${val}%` : `$${val}`);
+                        }}>
+                          <option value="Percentage">Percentage Discount (%)</option>
+                          <option value="Flat">Flat Amount Discount ($)</option>
+                        </select>
+                      </Field>
+                      <Field label="Discount Condition Case Preset">
+                        <select className="form-control" disabled={readOnly} value={str(row, "casePreset", "custom")} onChange={(e) => {
+                          const p = e.target.value;
+                          update("casePreset", p);
+                          if (p === "renewal") { update("condition", "is_renewed_policy = Yes"); update("name", "Policy Renewal Discount"); }
+                          else if (p === "noclaim") { update("condition", "no_claim = Yes"); update("name", "No-Claim Bonus Discount"); }
+                          else if (p === "loyalty") { update("condition", "active_policies > 1"); update("name", "Multi-Policy Discount"); }
+                        }}>
+                          <option value="custom">Custom Condition Case</option>
+                          <option value="renewal">Policy Renewal (is_renewed_policy = Yes)</option>
+                          <option value="noclaim">No-Claim Bonus (no_claim = Yes)</option>
+                          <option value="loyalty">Multi-Policy Savings (active_policies &gt; 1)</option>
+                        </select>
+                      </Field>
+                    </>
+                  ) : null}
                   <Field label="Lookup field"><input className="form-control text-mono" disabled={readOnly} value={str(row, "field") || str(row, "lookupAttr")} onChange={(e) => update("field", e.target.value)} /></Field>
                   <Field label="Cover / condition"><input className="form-control" disabled={readOnly} value={str(row, "cover") || str(row, "condition")} onChange={(e) => update(str(row, "type") === "loading" || str(row, "type") === "discount" ? "condition" : "cover", e.target.value)} /></Field>
                   {str(row, "type") === "formula" ? (
-                    <Field label="Expression" span>
-                      <textarea className="form-control" rows={3} disabled={readOnly} value={str(row, "expression", PREMIUM_FORMULA)} onChange={(e) => update("expression", e.target.value)} />
+                    <Field label="Expression" span help="Also editable from the Formula Builder section above.">
+                      <textarea className="form-control" rows={3} disabled={readOnly} value={str(row, "expression", DEFAULT_PREMIUM_EXPRESSION)} onChange={(e) => update("expression", e.target.value)} />
                     </Field>
                   ) : null}
                 </div>

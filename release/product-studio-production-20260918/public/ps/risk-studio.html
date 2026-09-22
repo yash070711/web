@@ -1679,7 +1679,8 @@ function newRiskCondition() {
     value2: '',
     riskLevel: 'Medium',
     ratingImpact: 'apply',
-    ratingFactor: ''
+    ratingFactor: '',
+    ratingFactorBehavior: '*'
   };
 }
 
@@ -1745,7 +1746,18 @@ function riskConditionCardHtml(r, cond, index, disabled) {
       <input class="form-control" type="number" step="0.01" min="0" data-rc-field="ratingFactor" value="${rcEsc(cond.ratingFactor)}" ${disabled ? 'disabled' : ''} oninput="patchRiskCondition(${index}, 'ratingFactor', this.value)" placeholder="e.g. 3.00">
     </div>` : '';
 
-  const row2Items = ratingFactorField ? [ratingFactorField] : [];
+  const ratingFactorBehaviorField = ratingImpact === 'apply' ? `
+    <div class="form-group">
+      <label class="form-label">Factor behavior</label>
+      <select class="form-control" data-rc-field="ratingFactorBehavior" ${disabled ? 'disabled' : ''} onchange="patchRiskCondition(${index}, 'ratingFactorBehavior', this.value)">
+        <option value="*" ${(!cond.ratingFactorBehavior || cond.ratingFactorBehavior === '*') ? 'selected' : ''}>* Multiplicative (*)</option>
+        <option value="+" ${cond.ratingFactorBehavior === '+' ? 'selected' : ''}>+ Additive (+)</option>
+        <option value="-" ${cond.ratingFactorBehavior === '-' ? 'selected' : ''}>- Subtractive (-)</option>
+        <option value="/" ${cond.ratingFactorBehavior === '/' ? 'selected' : ''}>/ Divisive (/)</option>
+      </select>
+    </div>` : '';
+
+  const row2Items = ratingImpact === 'apply' ? [ratingFactorField, ratingFactorBehaviorField] : [];
 
   return `
     <div class="section-card" style="padding:14px;margin-bottom:12px" data-rc-index="${index}">
@@ -1768,7 +1780,7 @@ function patchRiskCondition(index, key, value) {
   const conditions = ensureRiskConditions(r);
   if (!conditions[index]) return;
   conditions[index][key] = value;
-  if (key === 'operator' || key === 'ratingImpact') loadRisk(activeRiskId);
+  if (key === 'operator' || key === 'ratingImpact' || key === 'ratingFactorBehavior') loadRisk(activeRiskId);
 }
 
 function addRiskCondition() {
