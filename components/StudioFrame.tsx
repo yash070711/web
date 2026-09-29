@@ -16,8 +16,14 @@ export async function StudioFrame({
   const workspace = loadWorkspace(session);
   const productId = session.productId || TRUCK_ID || workspace.products[0]?.id;
   const version = session.version || TRUCK_VERSION || workspace.products.find((p) => p.id === productId)?.version;
+  let user = session;
+  if (session.context === "parent") {
+    const parent =
+      workspace.parentCompanies.find((p) => p.id === session.parentCompanyId) || workspace.parentCompanies[0];
+    if (parent) user = { ...session, name: parent.name };
+  }
   return (
-    <Shell user={session} active={active} crumbs={crumbs} productId={productId} version={version}>
+    <Shell user={user} active={active} crumbs={crumbs} productId={productId} version={version}>
       {children}
     </Shell>
   );

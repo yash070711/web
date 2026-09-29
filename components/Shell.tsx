@@ -81,11 +81,7 @@ export function Shell({
               <form action={switchRoleAction}>
                 <select className="form-control" name="role" defaultValue={user.role} style={{ margin: 8, width: "calc(100% - 16px)" }}>
                   <option>Product Manager</option>
-                  <option>Pricing Actuary</option>
-                  <option>Underwriting Manager</option>
-                  <option>Compliance Officer</option>
-                  <option>Publisher</option>
-                  <option>Administrator</option>
+                  <option>Parent Company Admin</option>
                 </select>
                 <button className="dropdown-item" type="submit" style={{ width: "100%" }}>Switch role</button>
               </form>

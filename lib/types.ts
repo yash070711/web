@@ -136,6 +136,81 @@ export type Quote = {
   at: string;
 };
 
+export type OrganizationType =
+  | "risk-carrier"
+  | "mgu"
+  | "mga"
+  | "broker"
+  | "market-company"
+  | "ceding-company"
+  | "courtesy-filing"
+  | "finance-company"
+  | "inspection-company"
+  | "risk-company"
+  | "tax-entity";
+
+export type OrganizationStatus = "active" | "inactive";
+
+export type OrganizationContact = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
+export type RiskCarrierDetails = {
+  naicNumber: string;
+  licensedStates: string[];
+  linesOfBusiness: string[];
+  insuranceClasses: string[];
+  financialRating: string;
+};
+
+export type ProductAssignment = {
+  productId: string;
+  productName: string;
+  role: string;
+  status: OrganizationStatus;
+  since: string;
+};
+
+export type OrganizationFieldValue = string | string[] | boolean | Record<string, string[]>;
+
+export type OrganizationConfig = Record<string, OrganizationFieldValue>;
+
+export type Organization = {
+  id: string;
+  name: string;
+  code: string;
+  legalName: string;
+  type: OrganizationType;
+  status: OrganizationStatus;
+  parentCompanyId: string;
+  contact: OrganizationContact;
+  address: string;
+  notes: string;
+  config: OrganizationConfig;
+  assignedProducts: ProductAssignment[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ParentCompanyUser = {
+  name: string;
+  email: string;
+  role: string;
+  passwordHash?: string;
+};
+
+export type ParentCompany = {
+  id: string;
+  name: string;
+  code: string;
+  status: OrganizationStatus;
+  users: ParentCompanyUser[];
+  organizationIds: string[];
+  createdAt: string;
+};
+
 export type Workspace = {
   products: Product[];
   details: Record<string, ProductDetail>;
@@ -147,6 +222,8 @@ export type Workspace = {
   glossary: GlossaryTerm[];
   quotes: Quote[];
   webhooks: { id: string; name: string; url: string; events: string; status: string }[];
+  parentCompanies: ParentCompany[];
+  organizations: Organization[];
   settings: Record<string, unknown>;
 };
 
@@ -166,4 +243,6 @@ export type SessionUser = {
   role: string;
   productId?: string;
   version?: string;
+  context?: "product" | "parent";
+  parentCompanyId?: string;
 };

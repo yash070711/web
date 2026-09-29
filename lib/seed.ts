@@ -1,7 +1,22 @@
-import type { Product, ProductDetail, Workspace } from "./types";
+import type {
+  Organization,
+  OrganizationConfig,
+  OrganizationType,
+  ParentCompany,
+  Product,
+  ProductAssignment,
+  ProductDetail,
+  Workspace,
+} from "./types";
 import { nowIso, displayDate, todayIso } from "./format";
 import { TRUCK_DESCRIPTION, TRUCK_ID, truckCollections } from "./truck-demo";
 import { privateCarQuestionGroups, truckingQuestionGroups } from "./questionnaire-seed";
+import {
+  DEFAULT_PARENT_ADMIN_EMAIL,
+  DEFAULT_PARENT_COMPANY_ID,
+  DEFAULT_PARENT_COMPANY_NAME,
+  PARENT_COMPANY_ADMIN_ROLE,
+} from "./organizations";
 
 const CATALOGUE: Array<Partial<Product> & { id: string; name: string; family: string; version: string; status: Product["status"]; owner: string }> = [
   { id: "PRD-015", name: "Commercial Truck Comprehensive", family: "Trucking", version: "2026.08", status: "published", owner: "Sunita Pillai", effectiveFrom: "01-Aug-2026", effectiveTo: "31-Jul-2027" },
@@ -199,6 +214,361 @@ export function applyTruckDemo(workspace: Workspace) {
   return workspace;
 }
 
+const SOUTHLAKE_DEMO_HASH =
+  "b98a638163dccba051e48e8f48c04a3a:bde1b92a975ff0c5e67d21da1b90fabff93cb3eb5b7e48b2050e22086561676aa1267ff7b123221e5fdb53b87ed670b42b3934abc204d871511a64aa0feb0205";
+
+function carrierConfig(
+  naicNumber: string,
+  domicileState: string,
+  licensedStates: string[],
+  linesOfBusiness: string[],
+  insuranceClasses: string[],
+  financialRating: string
+): OrganizationConfig {
+  return {
+    naicNumber,
+    domicileState,
+    admissionStatus: "admitted",
+    regulatoryStatus: "active",
+    licenseType: "certificate-of-authority",
+    licenseStatus: "active",
+    licensedStates,
+    linesOfBusiness,
+    insuranceClasses,
+    authorizedProductTypes: ["Commercial Auto", "Commercial Property"],
+    financialRating,
+    ratingAgency: "am-best",
+    ratingOutlook: "stable",
+    riskAppetite: "moderate",
+    targetBusinessTypes: ["Small Fleet", "Mid-Market Fleet"],
+    targetClasses: insuranceClasses,
+    ownershipType: "wholly-owned",
+    ownershipPercentage: "100",
+    capacityCurrency: "USD",
+    approvalStatus: "approved",
+    studioPermissions: {
+      "product-definition": ["view", "configure"],
+      "coverage-studio": ["view", "configure"],
+      "question-studio": ["view", "configure"],
+      "risk-studio": ["view", "configure"],
+      "underwriting-studio": ["view", "configure", "submit"],
+      "eligibility-studio": ["view"],
+      "rating-pricing-studio": ["view", "configure"],
+      "document-studio": ["view"],
+      "distribution-studio": ["view"],
+    },
+  };
+}
+
+function org(
+  id: string,
+  name: string,
+  code: string,
+  legalName: string,
+  type: OrganizationType,
+  contactName: string,
+  contactEmail: string,
+  config?: OrganizationConfig
+): Organization {
+  return {
+    id,
+    name,
+    code,
+    legalName,
+    type,
+    status: "active",
+    parentCompanyId: DEFAULT_PARENT_COMPANY_ID,
+    contact: { name: contactName, email: contactEmail, phone: "+1 800 555 0199" },
+    address: "1200 Commerce Drive, New York, NY 10001",
+    notes: `${name} operates as a ${type.replace(/-/g, " ")} under ${DEFAULT_PARENT_COMPANY_NAME}.`,
+    config: config ?? {},
+    assignedProducts: [],
+    createdAt: "2026-01-05T09:00:00.000Z",
+    updatedAt: nowIso(),
+  };
+}
+
+function cedingConfig(): OrganizationConfig {
+  return {
+    countryOfIncorporation: "United States",
+    legalEntityType: "Corporation",
+    licenseNumber: "RE-LIC-8821",
+    regulator: "Delaware Insurance Department",
+    naicNumber: "10008",
+    taxId: "88-7712345",
+    authorizedTerritories: ["DE", "NY", "NJ", "PA", "Canada", "UK"],
+    reinsuranceAuthorizationType: "Treaty Reinsurance",
+    linesOfBusiness: ["Trucking"],
+    classesOfBusiness: ["Auto Liability", "Cargo / Goods in Transit", "General Liability"],
+    riskTypes: ["Quota Share", "Treaty"],
+    reinsuranceType: "Treaty Reinsurance",
+    supportedCedingCompanies: "Southlake, Westkale, Nawada General",
+    supportedProducts: "Commercial Truck Comprehensive, Commercial Vehicle Fleet",
+    maximumCapacity: "25,000,000",
+    geographicCapacity: "US, Canada, UK",
+    treatyName: "Westlake Trucking Quota Share",
+    treatyNumber: "TRTY-2026-101",
+    effectiveDate: "2026-08-01",
+    expirationDate: "2027-07-31",
+    participationType: "participating",
+    riskParticipationPercent: "20",
+    premiumParticipationPercent: "20",
+    limitCapacity: "50,000,000",
+    attachmentPoint: "1,000,000",
+    reinsuranceCommissionPercent: "15",
+    cedingCommissionPercent: "5",
+    minimumPremium: "500,000",
+    maximumPremium: "10,000,000",
+    registeredAddress: "40 Water Street, Suite 2200, Wilmington, DE 19801",
+    mailingAddress: "40 Water Street, Suite 2200, Wilmington, DE 19801",
+    claimsContact: "Janet Okafor",
+    financeContact: "Priya Raman",
+    settlementCurrency: "USD",
+    settlementFrequency: "Quarterly",
+    paymentTerms: "Net 30",
+    bankPaymentDetails: "JP Morgan Chase — Wilmington, DE · A/c 7711-2200",
+    accountingReference: "WST-RE-2026",
+    taxTreatment: "US domestic reinsurer — standard",
+  };
+}
+
+function brokerConfig(): OrganizationConfig {
+  return {
+    taxId: "22-1189450",
+    form1099: false,
+    billToParent: false,
+    licenseNumber: "BRK-LIC-5541",
+    licenseType: "broker-license",
+    licensingAuthority: "New York Department of Financial Services",
+    licenseIssueDate: "2026-01-15",
+    licenseExpirationDate: "2027-01-14",
+    licensedTerritories: ["NY", "NJ", "CT", "PA", "MA"],
+    linesOfBusiness: ["Commercial Auto", "Commercial Property", "General Liability", "Workers Compensation"],
+    classesOfBusiness: ["Auto Liability", "General Liability", "Commercial Property"],
+    alternatePhone: "+1 212 555 0142",
+    fax: "+1 212 555 0143",
+    website: "https://hti.example.com",
+    mailingAddress: "220 Broad Street, Suite 900, New York, NY 10004",
+    billingAddress: "220 Broad Street, Suite 900, New York, NY 10004",
+    generalMailboxEmail: "mailroom@hti.example.com",
+    contractNumber: "BRC-2026-091",
+    contractDate: "2026-03-01",
+    effectiveDate: "2026-04-01",
+    terminationDate: "2027-03-31",
+    correspondenceAgreement: true,
+    emailAgreement: true,
+    specialAgreements: "Broker binds commercial auto under delegated authority up to $200k.",
+    numberOfEmployees: "120",
+    brokerGroup: "HTI Network",
+    brokerGrade: "gold",
+    brokerDistrict: "Northeast",
+    informationSystem: "Applied EPIC",
+    primaryOffice: "head-office",
+    coverage: "Commercial Auto, Commercial Property, General Liability",
+    billingType: "agency-bill",
+    commissionType: "flat-percent",
+    defaultCommissionPercent: "15",
+    withholdDirectBillCommission: false,
+    suppressFinanceQuote: false,
+    includeOnParentStatement: true,
+    assignedProducts: ["Commercial Truck Comprehensive"],
+    assignedCoverages: ["Own Damage — Truck & Chassis", "Third Party Liability", "Goods in Transit", "Theft & Hijack", "Loading, Unloading & Overturning"],
+    authorizedRiskCarriers: ["Southlake", "Westkale", "Nawada General"],
+    authorizedMgasMgus: ["NTA", "Futursticts"],
+    geographicRestrictions: ["NY", "NJ", "CT", "PA", "MA"],
+    productAccessStatus: "active",
+    portalAccess: "full",
+    portalAccessAllUsers: true,
+    preferredBroker: true,
+    preferredBrokerReason: "Top quartile production across commercial auto books.",
+    policyDelivery: "email",
+    brokerStatement: "monthly",
+    emailConfiguration: "binding@hti.example.com",
+  };
+}
+
+export function seedParentCompanies(): ParentCompany[] {
+  return [
+    {
+      id: DEFAULT_PARENT_COMPANY_ID,
+      name: DEFAULT_PARENT_COMPANY_NAME,
+      code: "SHH",
+      status: "active",
+      users: [
+        {
+          name: "Southlake Holdings",
+          email: DEFAULT_PARENT_ADMIN_EMAIL,
+          role: PARENT_COMPANY_ADMIN_ROLE,
+          passwordHash: SOUTHLAKE_DEMO_HASH,
+        },
+        { name: "Morgan Lee", email: "morgan@southlakeholdings.com", role: "Compliance Lead" },
+      ],
+      organizationIds: ["ORG-001", "ORG-002", "ORG-003", "ORG-004", "ORG-005", "ORG-006", "ORG-007", "ORG-008"],
+      createdAt: "2026-01-01T08:00:00.000Z",
+    },
+  ];
+}
+
+export function seedOrganizations(products: Product[]): Organization[] {
+  const truck = products.find((p) => p.id === TRUCK_ID) || products[0];
+  const organizations: Organization[] = [
+    org(
+      "ORG-001",
+      "Southlake",
+      "SLK",
+      "Southlake Insurance Company",
+      "risk-company",
+      "Diane Foster",
+      "ops@southlake.example.com",
+      carrierConfig(
+        "10001",
+        "NY",
+        ["NY", "NJ", "CT", "PA", "MA"],
+        ["Commercial Auto", "General Liability", "Property"],
+        ["Trucking", "Fleet", "Owner-Operator"],
+        "A+"
+      )
+    ),
+    org(
+      "ORG-002",
+      "Westkale",
+      "WST",
+      "Westkale Mutual Assurance",
+      "risk-company",
+      "Marcus Webb",
+      "ops@westkale.example.com",
+      carrierConfig(
+        "10002",
+        "CA",
+        ["CA", "OR", "WA", "NV", "AZ"],
+        ["Commercial Auto", "Inland Marine"],
+        ["Trucking", "Cargo", "Contractors"],
+        "A"
+      )
+    ),
+    org(
+      "ORG-003",
+      "Nawada General",
+      "NWG",
+      "Nawada General Insurance Ltd",
+      "risk-company",
+      "Priya Nair",
+      "ops@nawada.example.com",
+      carrierConfig(
+        "10003",
+        "TX",
+        ["TX", "OK", "NM", "LA", "AR"],
+        ["Commercial Auto", "Workers Compensation"],
+        ["Trucking", "Fleet", "Last-Mile Delivery"],
+        "A-"
+      )
+    ),
+    org("ORG-004", "Futursticts", "FUT", "Futursticts Underwriting Partners", "mgu", "Elena Rossi", "ops@futursticts.example.com"),
+    org("ORG-005", "NTA", "NTA", "NTA Managing Agency LLC", "mga", "Samir Khan", "ops@nta.example.com"),
+    org("ORG-006", "HTI", "HTI", "HTI Brokerage Services", "broker", "Grace Tan", "ops@hti.example.com"),
+    org("ORG-007", "LINKS", "LNK", "LINKS Insurance Brokers", "broker", "Owen Blake", "ops@links.example.com"),
+    org(
+      "ORG-008",
+      "Westlake Re",
+      "WST",
+      "Westlake Reinsurance Corporation",
+      "ceding-company",
+      "Diane Foster",
+      "reinsurance@westlake.example.com",
+      cedingConfig()
+    ),
+  ];
+  if (truck) {
+    const since = displayDate(todayIso()) || todayIso();
+    const carriers = new Set(["risk-company", "risk-carrier"]);
+    for (const organization of organizations) {
+      if (!carriers.has(organization.type)) continue;
+      const assignment: ProductAssignment = {
+        productId: truck.id,
+        productName: truck.name,
+        role: "Carrier",
+        status: "active",
+        since,
+      };
+      organization.assignedProducts.push(assignment);
+    }
+  }
+  return organizations;
+}
+
+export function applyOrgDemo(workspace: Workspace) {
+  const orgSeed = Number(workspace.settings?.orgSeed || 0);
+  if (orgSeed < 1) {
+    const products = workspace.products.length
+      ? workspace.products
+      : [{ id: TRUCK_ID, name: "Commercial Truck Comprehensive" } as Product];
+    workspace.parentCompanies = seedParentCompanies();
+    workspace.organizations = seedOrganizations(products);
+    workspace.settings = { ...workspace.settings, orgSeed: 1 };
+  }
+  if (orgSeed < 2) {
+    const products = workspace.products.length
+      ? workspace.products
+      : [{ id: TRUCK_ID, name: "Commercial Truck Comprehensive" } as Product];
+    const existing = new Set(workspace.organizations.map((o) => o.id));
+    const next = seedOrganizations(products).filter(
+      (o) => o.id === "ORG-008" && !existing.has("ORG-008") && !workspace.organizations.some((x) => x.code === o.code)
+    );
+    workspace.organizations.push(...next);
+    workspace.settings = { ...workspace.settings, orgSeed: 2 };
+  }
+  if (orgSeed < 3) {
+    const brokerIds = new Set(["ORG-006", "ORG-007"]);
+    for (const organization of workspace.organizations) {
+      if (!brokerIds.has(organization.id) || organization.type !== "broker") continue;
+      if (!organization.config || Object.keys(organization.config).length === 0) {
+        organization.config = brokerConfig();
+        organization.updatedAt = nowIso();
+      }
+    }
+    workspace.settings = { ...workspace.settings, orgSeed: 3 };
+  }
+  for (const parent of workspace.parentCompanies) {
+    for (const user of parent.users) {
+      if (user.name === "Harper Reid") user.name = DEFAULT_PARENT_COMPANY_NAME;
+    }
+  }
+  migrateOrganizations(workspace);
+  return workspace;
+}
+
+type LegacyRiskCarrier = {
+  naicNumber?: string;
+  licensedStates?: string[];
+  linesOfBusiness?: string[];
+  insuranceClasses?: string[];
+  financialRating?: string;
+};
+
+function migrateOrganizations(workspace: Workspace) {
+  for (const organization of workspace.organizations) {
+    if (!organization.config) organization.config = {};
+    if (organization.type === "risk-carrier") organization.type = "risk-company";
+    const legacy = (organization as unknown as { riskCarrier?: LegacyRiskCarrier }).riskCarrier;
+    if (legacy) {
+      const keys: Array<keyof LegacyRiskCarrier> = [
+        "naicNumber",
+        "licensedStates",
+        "linesOfBusiness",
+        "insuranceClasses",
+        "financialRating",
+      ];
+      for (const key of keys) {
+        const value = legacy[key];
+        if (value !== undefined && organization.config[key] === undefined) {
+          organization.config[key] = value;
+        }
+      }
+      delete (organization as unknown as { riskCarrier?: LegacyRiskCarrier }).riskCarrier;
+    }
+  }
+}
+
 export function emptyWorkspace(ownerName: string): Workspace {
   const products: Product[] = CATALOGUE.map((row) => ({
     ...row,
@@ -260,6 +630,8 @@ export function emptyWorkspace(ownerName: string): Workspace {
     webhooks: [
       { id: "WH-001", name: "Quote issued", url: "https://hooks.example.com/quote", events: "quote.created", status: "active" },
     ],
-    settings: { orgName: "Veridex", timezone: "Asia/Kolkata", truckSeed: 4 },
+    parentCompanies: seedParentCompanies(),
+    organizations: seedOrganizations(products),
+    settings: { orgName: "Veridex", timezone: "Asia/Kolkata", truckSeed: 4, orgSeed: 2 },
   };
 }

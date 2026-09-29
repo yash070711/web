@@ -211,7 +211,8 @@ PS.nav = {
   profiles: [
     { key: 'vikram',    label: 'Futuristic',    href: '/ps/catalogue.html' },
     { key: 'southlake', label: 'SouthLake', href: '/ps-southlake/catalogue.html' },
-    { key: 'nta',       label: 'NTA',        href: '/ps-nta/catalogue.html' }
+    { key: 'nta',       label: 'NTA',        href: '/ps-nta/catalogue.html' },
+    { key: 'parent',    label: 'Parent company admin', href: '/admin/organizations' }
   ],
 
   activeProfileKey() {

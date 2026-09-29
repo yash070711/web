@@ -28,6 +28,7 @@ export const NAV: NavItem[] = [
   { id: "audit", label: "Audit Log", href: "/audit-log", icon: "clock-counter" },
   { group: "PLATFORM" },
   { id: "admin", label: "Admin Panel", href: "/admin", icon: "sliders" },
+  { id: "organizations", label: "Organization Management", href: "/admin/organizations", icon: "tree-structure" },
   { id: "pricing-library", label: "Central Pricing Library", href: "/pricing-library", icon: "calculator" },
   { id: "integration", label: "Integration Monitor", href: "/integration", icon: "plugs" },
   { id: "roles", label: "Roles & Access Control", href: "/roles", icon: "users" },

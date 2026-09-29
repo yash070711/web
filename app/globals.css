@@ -3,6 +3,7 @@
 @import "./studio-hub.css";
 @import "./pricing-library.css";
 @import "./rating-experience.css";
+@import "./organizations.css";
 
 html, body { height: 100%; }
 body { margin: 0; }

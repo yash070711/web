@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import type { AuditEvent, SessionUser, StoredUser, Workspace } from "./types";
-import { emptyWorkspace, applyTruckDemo } from "./seed";
+import { emptyWorkspace, applyTruckDemo, applyOrgDemo } from "./seed";
 import { nowIso } from "./format";
 
 const ROOT = join(process.cwd(), "data");
@@ -52,6 +52,7 @@ export function loadWorkspace(user: SessionUser): Workspace {
     workspace = readJson<Workspace>(path, emptyWorkspace(user.name));
   }
   applyTruckDemo(workspace);
+  applyOrgDemo(workspace);
   writeJson(path, workspace);
   return workspace;
 }
