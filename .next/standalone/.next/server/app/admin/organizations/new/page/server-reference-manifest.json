@@ -1,0 +1,27 @@
+{
+  "node": {
+    "40d74f5314b1cd4559465729a24145ccae9186292f": {
+      "workers": {
+        "app/admin/organizations/new/page": {
+          "moduleId": 47071,
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "switchRoleAction",
+      "filename": "app/actions/auth.ts"
+    },
+    "4002d4146ea8b55d179722a3843e373bc989647a6a": {
+      "workers": {
+        "app/admin/organizations/new/page": {
+          "moduleId": 47071,
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "saveOrganizationAction",
+      "filename": "app/actions/organizations.ts"
+    }
+  },
+  "edge": {}
+}

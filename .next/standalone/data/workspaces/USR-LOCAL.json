@@ -1,0 +1,4111 @@
+{
+  "products": [
+    {
+      "id": "PRD-015",
+      "name": "Commercial Truck Comprehensive",
+      "family": "Trucking",
+      "version": "2026.08",
+      "status": "published",
+      "owner": "Sunita Pillai",
+      "effectiveFrom": "01-Aug-2026",
+      "effectiveTo": "31-Jul-2027",
+      "lastModified": "12-Sept-2026",
+      "lastModifiedAt": "2026-09-12T08:02:30.700Z",
+      "lastModifiedBy": "Sunita Pillai",
+      "description": "Comprehensive commercial motor cover for rigid trucks, tractor units, tippers, and tankers. Includes own damage, statutory and excess third-party liability, driver PA, goods in transit, theft/hijack, and optional trailer, breakdown, and loading/overturning extensions. GVW up to 49t. Tracker required for full theft and GIT limits.",
+      "pending": false,
+      "segment": "Commercial Lines"
+    },
+    {
+      "id": "PRD-011",
+      "name": "Commercial Vehicle Fleet",
+      "family": "Trucking",
+      "version": "2026.05-DRAFT",
+      "status": "draft",
+      "owner": "Anika Sharma",
+      "effectiveFrom": null,
+      "effectiveTo": null,
+      "lastModified": "12-Sept-2026",
+      "lastModifiedAt": "2026-09-12T08:02:30.700Z",
+      "lastModifiedBy": "Anika Sharma",
+      "description": "Commercial Vehicle Fleet — seeded into your workspace. Edit or delete any field.",
+      "pending": true
+    }
+  ],
+  "details": {
+    "PRD-015": {
+      "id": "PRD-015",
+      "name": "Commercial Truck Comprehensive",
+      "family": "Trucking",
+      "code": "TRU-2026-015",
+      "segment": "Commercial Lines",
+      "riskType": "Truck + Driver + Cargo",
+      "jurisdictions": [
+        "India",
+        "UAE",
+        "UK"
+      ],
+      "distribution": [
+        "Commercial Broker Portal",
+        "Direct (Web) — Owner Operators",
+        "Fleet TMS API"
+      ],
+      "owner": "Sunita Pillai",
+      "description": "Comprehensive commercial motor cover for rigid trucks, tractor units, tippers, and tankers. Includes own damage, statutory and excess third-party liability, driver PA, goods in transit, theft/hijack, and optional trailer, breakdown, and loading/overturning extensions. GVW up to 49t. Tracker required for full theft and GIT limits.",
+      "notes": "Version 2026.08: Commercial truck demo — 8 covers, HGV eligibility, GVW/radius rating.",
+      "status": "published",
+      "activeVersion": "2026.08",
+      "versions": [
+        {
+          "label": "2026.08",
+          "status": "published",
+          "from": "01-Aug-2026",
+          "to": "31-Jul-2027",
+          "by": "Sunita Pillai",
+          "on": "12-Sept-2026",
+          "gates": 5,
+          "sim": "Passed"
+        }
+      ],
+      "studios": [
+        {
+          "id": "coverage",
+          "name": "Coverage Studio",
+          "href": "/products/PRD-015/coverage",
+          "status": "complete",
+          "summary": "Configured"
+        },
+        {
+          "id": "questionnaire",
+          "name": "Questionnaire Studio",
+          "href": "/products/PRD-015/questionnaire",
+          "status": "complete",
+          "summary": "Configured"
+        },
+        {
+          "id": "eligibility",
+          "name": "Eligibility Studio",
+          "href": "/products/PRD-015/eligibility",
+          "status": "complete",
+          "summary": "Configured"
+        },
+        {
+          "id": "rating",
+          "name": "Rating & Pricing Studio",
+          "href": "/products/PRD-015/rating",
+          "status": "partial",
+          "summary": "Base rate set"
+        },
+        {
+          "id": "underwriting",
+          "name": "Underwriting Rules Studio",
+          "href": "/products/PRD-015/underwriting",
+          "status": "partial",
+          "summary": "Core rules"
+        },
+        {
+          "id": "distribution",
+          "name": "Distribution Studio",
+          "href": "/products/PRD-015/distribution",
+          "status": "complete",
+          "summary": "Direct + broker"
+        },
+        {
+          "id": "document",
+          "name": "Document Studio",
+          "href": "/products/PRD-015/document",
+          "status": "complete",
+          "summary": "Wording pack"
+        }
+      ],
+      "governance": [
+        {
+          "gate": "Product Owner",
+          "approver": "Sunita Pillai",
+          "action": "Approved",
+          "date": "12-Sept-2026",
+          "comment": "Approved in seeded workspace."
+        },
+        {
+          "gate": "Actuarial",
+          "approver": "Sunita Pillai",
+          "action": "Approved",
+          "date": "12-Sept-2026",
+          "comment": "Approved in seeded workspace."
+        },
+        {
+          "gate": "Underwriting",
+          "approver": "Sunita Pillai",
+          "action": "Approved",
+          "date": "12-Sept-2026",
+          "comment": "Approved in seeded workspace."
+        },
+        {
+          "gate": "Compliance",
+          "approver": "Sunita Pillai",
+          "action": "Approved",
+          "date": "12-Sept-2026",
+          "comment": "Approved in seeded workspace."
+        },
+        {
+          "gate": "Ops/Tech",
+          "approver": "Sunita Pillai",
+          "action": "Approved",
+          "date": "12-Sept-2026",
+          "comment": "Approved in seeded workspace."
+        }
+      ],
+      "checklist": [
+        {
+          "studio": "Coverage Studio",
+          "status": "done",
+          "note": "Configured"
+        },
+        {
+          "studio": "Questionnaire Studio",
+          "status": "done",
+          "note": "Configured"
+        },
+        {
+          "studio": "Eligibility Studio",
+          "status": "done",
+          "note": "Configured"
+        },
+        {
+          "studio": "Rating & Pricing Studio",
+          "status": "warn",
+          "note": "Base rate set"
+        },
+        {
+          "studio": "Underwriting Rules Studio",
+          "status": "warn",
+          "note": "Core rules"
+        },
+        {
+          "studio": "Distribution Studio",
+          "status": "done",
+          "note": "Direct + broker"
+        },
+        {
+          "studio": "Document Studio",
+          "status": "done",
+          "note": "Wording pack"
+        }
+      ],
+      "completion": 100,
+      "lastSim": null
+    },
+    "PRD-011": {
+      "id": "PRD-011",
+      "name": "Commercial Vehicle Fleet",
+      "family": "Trucking",
+      "code": "TRU-2026-011",
+      "segment": "Personal Lines",
+      "riskType": "Risk + Policyholder",
+      "jurisdictions": [
+        "India"
+      ],
+      "distribution": [
+        "Direct (Web)",
+        "Broker Portal"
+      ],
+      "owner": "Anika Sharma",
+      "description": "Commercial Vehicle Fleet — seeded into your workspace. Edit or delete any field.",
+      "notes": "Version 2026.05-DRAFT: managed in Veridex Product Studio.",
+      "status": "draft",
+      "activeVersion": "2026.05-DRAFT",
+      "versions": [
+        {
+          "label": "2026.05-DRAFT",
+          "status": "draft",
+          "from": null,
+          "to": null,
+          "by": "Anika Sharma",
+          "on": "12-Sept-2026",
+          "gates": 0,
+          "sim": "Not Run"
+        }
+      ],
+      "studios": [
+        {
+          "id": "coverage",
+          "name": "Coverage Studio",
+          "href": "/products/PRD-011/coverage",
+          "status": "complete",
+          "summary": "Configured"
+        },
+        {
+          "id": "questionnaire",
+          "name": "Questionnaire Studio",
+          "href": "/products/PRD-011/questionnaire",
+          "status": "complete",
+          "summary": "Configured"
+        },
+        {
+          "id": "eligibility",
+          "name": "Eligibility Studio",
+          "href": "/products/PRD-011/eligibility",
+          "status": "complete",
+          "summary": "Configured"
+        },
+        {
+          "id": "rating",
+          "name": "Rating & Pricing Studio",
+          "href": "/products/PRD-011/rating",
+          "status": "partial",
+          "summary": "Base rate set"
+        },
+        {
+          "id": "underwriting",
+          "name": "Underwriting Rules Studio",
+          "href": "/products/PRD-011/underwriting",
+          "status": "partial",
+          "summary": "Core rules"
+        },
+        {
+          "id": "distribution",
+          "name": "Distribution Studio",
+          "href": "/products/PRD-011/distribution",
+          "status": "complete",
+          "summary": "Direct + broker"
+        },
+        {
+          "id": "document",
+          "name": "Document Studio",
+          "href": "/products/PRD-011/document",
+          "status": "complete",
+          "summary": "Wording pack"
+        }
+      ],
+      "governance": [
+        {
+          "gate": "Product Owner",
+          "approver": "—",
+          "action": "Pending",
+          "date": "—",
+          "comment": "—"
+        },
+        {
+          "gate": "Actuarial",
+          "approver": "—",
+          "action": "Pending",
+          "date": "—",
+          "comment": "—"
+        },
+        {
+          "gate": "Underwriting",
+          "approver": "—",
+          "action": "Pending",
+          "date": "—",
+          "comment": "—"
+        },
+        {
+          "gate": "Compliance",
+          "approver": "—",
+          "action": "Pending",
+          "date": "—",
+          "comment": "—"
+        },
+        {
+          "gate": "Ops/Tech",
+          "approver": "—",
+          "action": "Pending",
+          "date": "—",
+          "comment": "—"
+        }
+      ],
+      "checklist": [
+        {
+          "studio": "Coverage Studio",
+          "status": "done",
+          "note": "Configured"
+        },
+        {
+          "studio": "Questionnaire Studio",
+          "status": "done",
+          "note": "Configured"
+        },
+        {
+          "studio": "Eligibility Studio",
+          "status": "done",
+          "note": "Configured"
+        },
+        {
+          "studio": "Rating & Pricing Studio",
+          "status": "warn",
+          "note": "Base rate set"
+        },
+        {
+          "studio": "Underwriting Rules Studio",
+          "status": "warn",
+          "note": "Core rules"
+        },
+        {
+          "studio": "Distribution Studio",
+          "status": "done",
+          "note": "Direct + broker"
+        },
+        {
+          "studio": "Document Studio",
+          "status": "done",
+          "note": "Wording pack"
+        }
+      ],
+      "completion": 35,
+      "lastSim": null
+    }
+  },
+  "collections": {
+    "PRD-015::2026.08::covers": [
+      {
+        "id": "COV-CT-001",
+        "name": "Own Damage — Truck & Chassis",
+        "code": "COV-OD-CT-001",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "First Party — Property Damage",
+        "description": "Covers accidental damage, fire, explosion, and natural peril loss to the insured truck, chassis, and permanently fitted equipment.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "180000",
+        "maxSingleLimit": "180000",
+        "subLimit": "",
+        "deductibleType": "percentage",
+        "deductibleAmount": "",
+        "deductiblePct": "2.5",
+        "minDeductible": "1000",
+        "maxDeductible": "8000",
+        "copay": "0",
+        "waitingPeriod": "None",
+        "annualAggregate": false,
+        "defaultSelected": true,
+        "mutualExclusions": "",
+        "coverVersion": "2026.08",
+        "conditionalOn": "",
+        "requiresCover": "",
+        "dependencies": [
+          {
+            "type": "Bundles with",
+            "dependsOn": "Third Party Liability",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Gross Vehicle Weight",
+            "operator": "≤",
+            "value": "49 tonnes"
+          },
+          {
+            "field": "Vehicle Age",
+            "operator": "≤",
+            "value": "20 years"
+          },
+          {
+            "field": "Body Type",
+            "operator": "is one of",
+            "value": "Rigid, Tractor Unit, Tipper, Tanker, Box, Flatbed"
+          }
+        ],
+        "lossBasis": "Per Occurrence",
+        "reinstatement": "Automatic (full limit)",
+        "benefitBasis": "Indemnity",
+        "claimsNotifPeriod": "24",
+        "claimsNotifUnit": "hours",
+        "wordingDoc": "Own Damage Clause — Standard",
+        "wordingDocs": [
+          {
+            "name": "Own Damage Clause — Standard",
+            "version": "v2026.04",
+            "code": "DOC-OD-CL-001"
+          },
+          {
+            "name": "General Exclusions Endorsement",
+            "version": "v2026.01",
+            "code": "DOC-GEN-EX-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-002",
+        "name": "Third Party Liability",
+        "code": "COV-TP-CT-001",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "Third Party Liability",
+        "description": "Statutory and excess third-party liability for death, bodily injury, and property damage arising from commercial truck use.",
+        "basisOfCoverage": "Limit of Indemnity",
+        "sumInsured": "1000000",
+        "maxSingleLimit": "1000000",
+        "subLimit": "5000000",
+        "deductibleType": "fixed",
+        "deductibleAmount": "2500",
+        "deductiblePct": "",
+        "coverVersion": "2026.08",
+        "defaultSelected": true,
+        "dependencies": [],
+        "constraints": [
+          {
+            "field": "Vehicle Registration",
+            "operator": "is",
+            "value": "Active CMV / HGV"
+          },
+          {
+            "field": "Operator Licence",
+            "operator": "is",
+            "value": "Valid"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Commercial Motor TPL Clause",
+            "version": "v2026.08",
+            "code": "DOC-TP-CT-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-003",
+        "name": "Driver & Cleaner Personal Accident",
+        "code": "COV-PA-CT-001",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "Benefit — Personal Accident",
+        "description": "Fixed benefit for accidental death or permanent disability of the named driver and cleaner while on duty.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "50000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "50000",
+        "defaultSelected": true,
+        "dependencies": [],
+        "constraints": [
+          {
+            "field": "Driver Licence Class",
+            "operator": "in",
+            "value": "HGV, CMV, Class 4/5"
+          },
+          {
+            "field": "Named Driver Age",
+            "operator": "≥",
+            "value": "25 years"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Commercial PA Schedule",
+            "version": "v2026.08",
+            "code": "DOC-PA-CT-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-004",
+        "name": "Goods in Transit",
+        "code": "COV-GIT-001",
+        "availability": "default",
+        "complete": true,
+        "type": "First Party — Cargo",
+        "description": "Covers loss or damage to lawful cargo carried on the insured truck, including loading and unloading at declared locations.",
+        "basisOfCoverage": "Declared Value",
+        "sumInsured": "250000",
+        "deductibleType": "percentage",
+        "deductiblePct": "1",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "250000",
+        "defaultSelected": true,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "requiresCover": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Goods Class",
+            "operator": "not in",
+            "value": "Class 1 explosives, radioactive"
+          },
+          {
+            "field": "Radius of Operation",
+            "operator": "≤",
+            "value": "1,500 km"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Goods in Transit Clause",
+            "version": "v2026.08",
+            "code": "DOC-GIT-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-005",
+        "name": "Trailer & Semi-Trailer",
+        "code": "COV-TRL-001",
+        "availability": "optional",
+        "complete": true,
+        "type": "First Party — Property Damage",
+        "description": "Extends own-damage and theft cover to declared trailers and semi-trailers attached to the insured tractor unit.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "80000",
+        "deductibleType": "fixed",
+        "deductibleAmount": "1500",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "80000",
+        "defaultSelected": false,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Body type is Tractor Unit"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Trailer Count",
+            "operator": "≤",
+            "value": "2"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Trailer Extension Endorsement",
+            "version": "v2026.08",
+            "code": "DOC-TRL-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-006",
+        "name": "Theft & Hijack",
+        "code": "COV-TH-CT-001",
+        "availability": "default",
+        "complete": true,
+        "type": "First Party — Crime",
+        "description": "Covers theft of the truck, trailer, or cargo following forcible entry, hijack, or armed robbery while in transit.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "180000",
+        "deductibleType": "percentage",
+        "deductiblePct": "10",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "180000",
+        "defaultSelected": true,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Tracking Device",
+            "operator": "is",
+            "value": "Fitted and active"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Theft & Hijack Clause",
+            "version": "v2026.08",
+            "code": "DOC-TH-CT-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-007",
+        "name": "Breakdown & Recovery",
+        "code": "COV-RSA-CT-001",
+        "availability": "addon",
+        "complete": true,
+        "type": "Service Benefit",
+        "description": "24/7 commercial recovery, towing to nearest authorised workshop, and roadside mechanical assistance. Up to 6 call-outs per year.",
+        "basisOfCoverage": "Service Limit",
+        "sumInsured": "Service",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "Service",
+        "defaultSelected": false,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Vehicle age ≤ 15 years"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Vehicle Age",
+            "operator": "≤",
+            "value": "15 years"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Commercial Recovery Terms",
+            "version": "v2026.08",
+            "code": "DOC-RSA-CT-001"
+          }
+        ]
+      },
+      {
+        "id": "COV-CT-008",
+        "name": "Loading, Unloading & Overturning",
+        "code": "COV-LU-001",
+        "availability": "addon",
+        "complete": true,
+        "type": "First Party — Working Risk",
+        "description": "Covers damage to the truck, trailer, or cargo caused by loading, unloading, tipping, or overturning during commercial operations.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "180000",
+        "deductibleType": "fixed",
+        "deductibleAmount": "3000",
+        "coverVersion": "2026.08",
+        "maxSingleLimit": "180000",
+        "defaultSelected": false,
+        "conditionalOn": "Own Damage — Truck & Chassis",
+        "dependencies": [
+          {
+            "type": "Requires",
+            "dependsOn": "Own Damage — Truck & Chassis",
+            "condition": "Always"
+          }
+        ],
+        "constraints": [
+          {
+            "field": "Body Type",
+            "operator": "in",
+            "value": "Tipper, Tanker, Mixer"
+          }
+        ],
+        "wordingDocs": [
+          {
+            "name": "Loading & Overturning Endorsement",
+            "version": "v2026.08",
+            "code": "DOC-LU-001"
+          }
+        ]
+      }
+    ],
+    "PRD-015::2026.08::questionGroups": [
+      {
+        "id": "grp-ops",
+        "name": "Operations",
+        "label": "Operations",
+        "open": false,
+        "bindPhase": "pre-bind",
+        "questions": [
+          {
+            "id": "QST-OPS-001",
+            "label": "Business Type",
+            "internalName": "business_type",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-002",
+            "label": "Years in Business",
+            "internalName": "years_in_business",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-003",
+            "label": "DOT Number",
+            "internalName": "dot_number",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-004",
+            "label": "MC Number",
+            "internalName": "mc_number",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-005",
+            "label": "Operating Authority",
+            "internalName": "operating_authority",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-006",
+            "label": "Interstate / Intrastate",
+            "internalName": "interstate_intrastate",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-007",
+            "label": "Operating Radius",
+            "internalName": "operating_radius",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-008",
+            "label": "Annual Mileage",
+            "internalName": "annual_mileage",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-009",
+            "label": "Annual Revenue",
+            "internalName": "annual_revenue",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 9,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-010",
+            "label": "States Operated",
+            "internalName": "states_operated",
+            "type": "multisel",
+            "typeLabel": "Multi-select",
+            "fieldType": "multisel",
+            "required": true,
+            "displayOrder": 10,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-011",
+            "label": "Primary Garaging State",
+            "internalName": "primary_garaging_state",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 11,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-012",
+            "label": "For-Hire / Private Carrier",
+            "internalName": "for_hire_private_carrier",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 12,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-013",
+            "label": "Common / Contract Carrier",
+            "internalName": "common_contract_carrier",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 13,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-014",
+            "label": "Owner Operator Usage",
+            "internalName": "owner_operator_usage",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 14,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-015",
+            "label": "Brokerage Operations",
+            "internalName": "brokerage_operations",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 15,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-OPS-016",
+            "label": "Hazmat Operations",
+            "internalName": "hazmat_operations",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 16,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-fleet",
+        "name": "Fleet",
+        "label": "Fleet",
+        "open": false,
+        "bindPhase": "pre-bind",
+        "questions": [
+          {
+            "id": "QST-FLT-001",
+            "label": "Fleet Size",
+            "internalName": "fleet_size",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-002",
+            "label": "Power Units",
+            "internalName": "power_units",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-003",
+            "label": "Trailers",
+            "internalName": "trailers",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-004",
+            "label": "Owned Vehicles",
+            "internalName": "owned_vehicles",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-005",
+            "label": "Leased Vehicles",
+            "internalName": "leased_vehicles",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-006",
+            "label": "Owner-Operator Vehicles",
+            "internalName": "owner_operator_vehicles",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-007",
+            "label": "Average Vehicle Age",
+            "internalName": "average_vehicle_age",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-008",
+            "label": "Maximum Vehicle Age",
+            "internalName": "maximum_vehicle_age",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-009",
+            "label": "Fleet Growth",
+            "internalName": "fleet_growth",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 9,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-FLT-010",
+            "label": "Vehicle Replacement Program",
+            "internalName": "vehicle_replacement_program",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 10,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-vehicle",
+        "name": "Vehicle",
+        "label": "Vehicle",
+        "open": false,
+        "bindPhase": "pre-bind",
+        "questions": [
+          {
+            "id": "QST-VEH-001",
+            "label": "VIN",
+            "internalName": "vin",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-002",
+            "label": "Year",
+            "internalName": "year",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-003",
+            "label": "Make",
+            "internalName": "make",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-004",
+            "label": "Model",
+            "internalName": "model",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-005",
+            "label": "Vehicle Type",
+            "internalName": "vehicle_type",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-006",
+            "label": "Body Type",
+            "internalName": "body_type",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-007",
+            "label": "GVW",
+            "internalName": "gvw",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-008",
+            "label": "Vehicle Value",
+            "internalName": "vehicle_value",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-009",
+            "label": "Stated Amount",
+            "internalName": "stated_amount",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 9,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-010",
+            "label": "Ownership Type",
+            "internalName": "ownership_type",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 10,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-011",
+            "label": "Lease Type",
+            "internalName": "lease_type",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 11,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-012",
+            "label": "Garaging Location",
+            "internalName": "garaging_location",
+            "type": "address",
+            "typeLabel": "Address",
+            "fieldType": "address",
+            "required": true,
+            "displayOrder": 12,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-013",
+            "label": "Annual Mileage",
+            "internalName": "annual_mileage",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 13,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-014",
+            "label": "Operating Radius",
+            "internalName": "operating_radius",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 14,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-015",
+            "label": "Primary Use",
+            "internalName": "primary_use",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 15,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-VEH-016",
+            "label": "Safety Equipment",
+            "internalName": "safety_equipment",
+            "type": "multisel",
+            "typeLabel": "Multi-select",
+            "fieldType": "multisel",
+            "required": true,
+            "displayOrder": 16,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-driver",
+        "name": "Driver",
+        "label": "Driver",
+        "open": false,
+        "bindPhase": "pre-bind",
+        "questions": [
+          {
+            "id": "QST-DRV-001",
+            "label": "Driver Name",
+            "internalName": "driver_name",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-002",
+            "label": "Date of Birth",
+            "internalName": "date_of_birth",
+            "type": "date",
+            "typeLabel": "Date",
+            "fieldType": "date",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-003",
+            "label": "License Number",
+            "internalName": "license_number",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-004",
+            "label": "License State",
+            "internalName": "license_state",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-005",
+            "label": "CDL Class",
+            "internalName": "cdl_class",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-006",
+            "label": "CDL Status",
+            "internalName": "cdl_status",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-007",
+            "label": "Years CDL Experience",
+            "internalName": "years_cdl_experience",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-008",
+            "label": "Years Trucking Experience",
+            "internalName": "years_trucking_experience",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-009",
+            "label": "Major Violations",
+            "internalName": "major_violations",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 9,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-010",
+            "label": "Minor Violations",
+            "internalName": "minor_violations",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 10,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-011",
+            "label": "At-Fault Accidents",
+            "internalName": "at_fault_accidents",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 11,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-012",
+            "label": "Suspensions",
+            "internalName": "suspensions",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 12,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-013",
+            "label": "DUI/DWI",
+            "internalName": "dui_dwi",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 13,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-014",
+            "label": "MVR Status",
+            "internalName": "mvr_status",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 14,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-DRV-015",
+            "label": "Driver Status",
+            "internalName": "driver_status",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 15,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-commodity",
+        "name": "Commodity",
+        "label": "Commodity",
+        "open": false,
+        "bindPhase": "pre-bind",
+        "questions": [
+          {
+            "id": "QST-CMD-001",
+            "label": "General Freight",
+            "internalName": "general_freight",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-002",
+            "label": "Dry Goods",
+            "internalName": "dry_goods",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-003",
+            "label": "Refrigerated Goods",
+            "internalName": "refrigerated_goods",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-004",
+            "label": "Food Products",
+            "internalName": "food_products",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-005",
+            "label": "Building Materials",
+            "internalName": "building_materials",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-006",
+            "label": "Automobiles",
+            "internalName": "automobiles",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-007",
+            "label": "Machinery",
+            "internalName": "machinery",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-008",
+            "label": "Electronics",
+            "internalName": "electronics",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-009",
+            "label": "Household Goods",
+            "internalName": "household_goods",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 9,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-010",
+            "label": "Livestock",
+            "internalName": "livestock",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 10,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-011",
+            "label": "Hazardous Materials",
+            "internalName": "hazardous_materials",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 11,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-012",
+            "label": "Explosives",
+            "internalName": "explosives",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 12,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-013",
+            "label": "Fuel",
+            "internalName": "fuel",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": false,
+            "displayOrder": 13,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-014",
+            "label": "Commodity Type",
+            "internalName": "commodity_type",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 14,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-015",
+            "label": "Percentage of Revenue",
+            "internalName": "percentage_of_revenue",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 15,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-016",
+            "label": "Maximum Load Value",
+            "internalName": "maximum_load_value",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 16,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-017",
+            "label": "Average Load Value",
+            "internalName": "average_load_value",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 17,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-018",
+            "label": "Hazardous",
+            "internalName": "hazardous",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 18,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CMD-019",
+            "label": "Refrigerated",
+            "internalName": "refrigerated",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 19,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-safety",
+        "name": "Safety",
+        "label": "Safety",
+        "open": false,
+        "bindPhase": "pre-bind",
+        "questions": [
+          {
+            "id": "QST-SAF-001",
+            "label": "DOT Safety Rating",
+            "internalName": "dot_safety_rating",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-002",
+            "label": "SAFER Score",
+            "internalName": "safer_score",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-003",
+            "label": "CSA Score",
+            "internalName": "csa_score",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-004",
+            "label": "Out-of-Service Rate",
+            "internalName": "out_of_service_rate",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-005",
+            "label": "Vehicle Inspection Rate",
+            "internalName": "vehicle_inspection_rate",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-006",
+            "label": "Driver Inspection Rate",
+            "internalName": "driver_inspection_rate",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-007",
+            "label": "ELD Used",
+            "internalName": "eld_used",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-008",
+            "label": "Telematics Used",
+            "internalName": "telematics_used",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-009",
+            "label": "Dash Cameras",
+            "internalName": "dash_cameras",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 9,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-010",
+            "label": "Driver Monitoring",
+            "internalName": "driver_monitoring",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 10,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-011",
+            "label": "Safety Program",
+            "internalName": "safety_program",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 11,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-012",
+            "label": "Drug Testing Program",
+            "internalName": "drug_testing_program",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 12,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-013",
+            "label": "Driver Training Program",
+            "internalName": "driver_training_program",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 13,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-SAF-014",
+            "label": "Maintenance Program",
+            "internalName": "maintenance_program",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 14,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-loss",
+        "name": "Loss-history",
+        "label": "Loss-history",
+        "open": false,
+        "bindPhase": "pre-bind",
+        "questions": [
+          {
+            "id": "QST-LSS-001",
+            "label": "Loss Period",
+            "internalName": "loss_period",
+            "type": "daterange",
+            "typeLabel": "Date Range",
+            "fieldType": "daterange",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-002",
+            "label": "Number of Claims",
+            "internalName": "number_of_claims",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-003",
+            "label": "Paid Losses",
+            "internalName": "paid_losses",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-004",
+            "label": "Outstanding Losses",
+            "internalName": "outstanding_losses",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-005",
+            "label": "Incurred Losses",
+            "internalName": "incurred_losses",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-006",
+            "label": "Loss Ratio",
+            "internalName": "loss_ratio",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-007",
+            "label": "Large Losses",
+            "internalName": "large_losses",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-008",
+            "label": "Fatality Claims",
+            "internalName": "fatality_claims",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-009",
+            "label": "Open Claims",
+            "internalName": "open_claims",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 9,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-010",
+            "label": "Prior Carrier",
+            "internalName": "prior_carrier",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 10,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-011",
+            "label": "Prior Premium",
+            "internalName": "prior_premium",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "displayOrder": 11,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-012",
+            "label": "Cancellation History",
+            "internalName": "cancellation_history",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 12,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-LSS-013",
+            "label": "Non-Renewal History",
+            "internalName": "non_renewal_history",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 13,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-policy",
+        "name": "Policy Administration",
+        "label": "Policy Administration",
+        "open": false,
+        "bindPhase": "post-bind",
+        "questions": [
+          {
+            "id": "QST-POL-001",
+            "label": "Billing Method",
+            "internalName": "billing_method",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-POL-002",
+            "label": "Payment Plan",
+            "internalName": "payment_plan",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-POL-003",
+            "label": "Policy Delivery Preference",
+            "internalName": "policy_delivery_preference",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-POL-004",
+            "label": "Named Insured Contact",
+            "internalName": "named_insured_contact",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-POL-005",
+            "label": "Certificate Holder Requirements",
+            "internalName": "certificate_holder_requirements",
+            "type": "textarea",
+            "typeLabel": "Textarea",
+            "fieldType": "textarea",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-claims",
+        "name": "Claims",
+        "label": "Claims",
+        "open": false,
+        "bindPhase": "post-bind",
+        "questions": [
+          {
+            "id": "QST-CLM-001",
+            "label": "Claims Contact Name",
+            "internalName": "claims_contact_name",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CLM-002",
+            "label": "Claims Contact Phone",
+            "internalName": "claims_contact_phone",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CLM-003",
+            "label": "Claims Reporting Method",
+            "internalName": "claims_reporting_method",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CLM-004",
+            "label": "Average Claim Response Time",
+            "internalName": "average_claim_response_time",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CLM-005",
+            "label": "Open Claims Count",
+            "internalName": "open_claims_count",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CLM-006",
+            "label": "Claims Made vs Occurrence",
+            "internalName": "claims_made_vs_occurrence",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CLM-007",
+            "label": "Deductible Responsibility",
+            "internalName": "deductible_responsibility",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 7,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-CLM-008",
+            "label": "Subrogation Interest",
+            "internalName": "subrogation_interest",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 8,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      },
+      {
+        "id": "grp-renewal",
+        "name": "Renewal",
+        "label": "Renewal",
+        "open": false,
+        "bindPhase": "post-bind",
+        "questions": [
+          {
+            "id": "QST-RNW-001",
+            "label": "Renewal Date",
+            "internalName": "renewal_date",
+            "type": "date",
+            "typeLabel": "Date",
+            "fieldType": "date",
+            "required": true,
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-RNW-002",
+            "label": "Renewal Notice Period",
+            "internalName": "renewal_notice_period",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-RNW-003",
+            "label": "Auto-Renewal Preference",
+            "internalName": "auto_renewal_preference",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-RNW-004",
+            "label": "Renewal Pricing Review",
+            "internalName": "renewal_pricing_review",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 4,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-RNW-005",
+            "label": "Mid-Term Change Policy",
+            "internalName": "mid_term_change_policy",
+            "type": "select",
+            "typeLabel": "Single-select",
+            "fieldType": "select",
+            "required": true,
+            "displayOrder": 5,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "QST-RNW-006",
+            "label": "Non-Renewal Notice",
+            "internalName": "non_renewal_notice",
+            "type": "boolean",
+            "typeLabel": "Boolean",
+            "fieldType": "boolean",
+            "required": true,
+            "displayOrder": 6,
+            "channels": "Web, Mobile, Agent, Api",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      }
+    ],
+    "PRD-015::2026.08::eligibilityRules": [
+      {
+        "id": "ELG-CT-001",
+        "name": "Min Driver Age — Commercial",
+        "field": "driver_age",
+        "operator": "<",
+        "value": "25",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 10,
+        "status": "active",
+        "description": "Named driver must be at least 25 years old for commercial truck cover.",
+        "customerMsg": "Commercial truck cover is only available to drivers aged 25 and over.",
+        "internalMsg": "Driver age below commercial minimum (25).",
+        "reasonCode": "ELIG-CT-MIN-AGE",
+        "direction": "ineligible",
+        "logic": "and",
+        "conditions": [
+          {
+            "field": "driver_age",
+            "op": "<",
+            "value": "25"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-002",
+        "name": "Valid HGV / CMV Licence",
+        "field": "licence_class",
+        "operator": "not in",
+        "value": "HGV, CMV, Class 4, Class 5",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 5,
+        "status": "active",
+        "description": "Primary driver must hold a valid heavy goods or commercial motor vehicle licence.",
+        "customerMsg": "A valid heavy vehicle licence is required for this product.",
+        "internalMsg": "Licence class not in HGV/CMV allowlist.",
+        "reasonCode": "ELIG-CT-LICENCE",
+        "conditions": [
+          {
+            "field": "licence_class",
+            "op": "not in",
+            "value": "HGV, CMV, Class 4, Class 5"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-003",
+        "name": "Max Vehicle Age",
+        "field": "vehicle_age",
+        "operator": ">",
+        "value": "20",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 20,
+        "status": "active",
+        "description": "Truck must be 20 years old or newer.",
+        "customerMsg": "This product is only available for trucks manufactured within the last 20 years.",
+        "reasonCode": "ELIG-CT-MAX-AGE",
+        "conditions": [
+          {
+            "field": "vehicle_age",
+            "op": ">",
+            "value": "20"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-004",
+        "name": "GVW Cap",
+        "field": "gvw_tonnes",
+        "operator": ">",
+        "value": "49",
+        "outcome": "ineligible",
+        "outcomeType": "hard",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 15,
+        "status": "active",
+        "description": "Gross vehicle weight must not exceed 49 tonnes.",
+        "customerMsg": "Vehicles above 49 tonnes require a specialist fleet product.",
+        "reasonCode": "ELIG-CT-GVW",
+        "conditions": [
+          {
+            "field": "gvw_tonnes",
+            "op": ">",
+            "value": "49"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-007",
+        "name": "Min HGV Experience",
+        "field": "hgv_experience_years",
+        "operator": "<",
+        "value": "2",
+        "outcome": "ineligible",
+        "outcomeType": "soft",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 18,
+        "status": "active",
+        "description": "Primary driver must have at least 2 years of heavy-vehicle experience.",
+        "customerMsg": "Drivers with under 2 years of HGV experience may receive a premium loading.",
+        "reasonCode": "ELIG-CT-EXP",
+        "conditions": [
+          {
+            "field": "hgv_experience_years",
+            "op": "<",
+            "value": "2"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-005",
+        "name": "Hazardous Goods Refer",
+        "field": "goods_class",
+        "operator": "in",
+        "value": "Class 1 explosives, radioactive",
+        "outcome": "refer",
+        "outcomeType": "refer",
+        "category": "Cover Eligibility",
+        "cover": "Goods in Transit",
+        "priority": 25,
+        "status": "active",
+        "description": "Class 1 explosives and radioactive cargo are referred to specialist underwriting.",
+        "customerMsg": "Hazardous cargo of this class needs a specialist review before we can quote.",
+        "reasonCode": "ELIG-CT-HAZMAT",
+        "conditions": [
+          {
+            "field": "goods_class",
+            "op": "in",
+            "value": "Class 1 explosives, radioactive"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      },
+      {
+        "id": "ELG-CT-006",
+        "name": "Tracking Device for Theft Cover",
+        "field": "tracking_fitted",
+        "operator": "=",
+        "value": "No",
+        "outcome": "ineligible",
+        "outcomeType": "soft",
+        "category": "Cover Eligibility",
+        "cover": "Theft & Hijack",
+        "priority": 30,
+        "status": "active",
+        "description": "Theft & Hijack requires an active GPS tracking device.",
+        "customerMsg": "Theft cover can be added once an approved tracking device is fitted.",
+        "reasonCode": "ELIG-CT-TRACK",
+        "conditions": [
+          {
+            "field": "tracking_fitted",
+            "op": "=",
+            "value": "No"
+          }
+        ],
+        "effectiveFrom": "01-Aug-2026",
+        "effectiveTo": "31-Jul-2027"
+      }
+    ],
+    "PRD-015::2026.08::ratingComponents": [
+      {
+        "id": "RAT-CT-BR-001",
+        "name": "Base Rate — Commercial Truck",
+        "type": "base",
+        "amount": 1850,
+        "unit": "per year",
+        "cover": "Own Damage — Truck & Chassis (primary)",
+        "value": "$1,850/yr",
+        "notes": "Commercial motor base rate validated 12-Aug-2026 against 2025 heavy-vehicle loss ratios."
+      },
+      {
+        "id": "RAT-CT-FAC-001",
+        "name": "GVW Factor",
+        "type": "factor",
+        "field": "gvw_tonnes",
+        "lookupAttr": "gvw_tonnes",
+        "table1D": [
+          {
+            "band": "≤ 7.5t",
+            "mult": "0.85",
+            "note": "Light commercial"
+          },
+          {
+            "band": "7.6–16t",
+            "mult": "1.00",
+            "note": "Base band"
+          },
+          {
+            "band": "16.1–26t",
+            "mult": "1.25",
+            "note": ""
+          },
+          {
+            "band": "26.1–40t",
+            "mult": "1.55",
+            "note": ""
+          },
+          {
+            "band": "40.1–49t",
+            "mult": "1.85",
+            "note": "Maximum GVW"
+          }
+        ],
+        "bands": "≤ 7.5t ×0.85 · 7.6–16t ×1.00 · 16.1–26t ×1.25 · 26.1–40t ×1.55 · 40.1–49t ×1.85"
+      },
+      {
+        "id": "RAT-CT-FAC-002",
+        "name": "Radius of Operation",
+        "type": "factor",
+        "field": "radius_km",
+        "lookupAttr": "radius_km",
+        "table1D": [
+          {
+            "band": "0–150 km",
+            "mult": "0.90",
+            "note": "Local"
+          },
+          {
+            "band": "151–500 km",
+            "mult": "1.00",
+            "note": "Regional"
+          },
+          {
+            "band": "501–1,000 km",
+            "mult": "1.20",
+            "note": "Long haul"
+          },
+          {
+            "band": "1,001–1,500 km",
+            "mult": "1.40",
+            "note": "Interstate"
+          }
+        ],
+        "bands": "0–150 km ×0.90 · 151–500 km ×1.00 · 501–1,000 km ×1.20 · 1,001–1,500 km ×1.40"
+      },
+      {
+        "id": "RAT-CT-FAC-003",
+        "name": "Goods Class Factor",
+        "type": "factor",
+        "field": "goods_class",
+        "lookupAttr": "goods_class",
+        "table1D": [
+          {
+            "band": "General merchandise",
+            "mult": "1.00",
+            "note": ""
+          },
+          {
+            "band": "Perishable / refrigerated",
+            "mult": "1.15",
+            "note": ""
+          },
+          {
+            "band": "Construction materials",
+            "mult": "1.10",
+            "note": ""
+          },
+          {
+            "band": "Fuel / flammable liquids",
+            "mult": "1.45",
+            "note": "ADR / hazmat"
+          },
+          {
+            "band": "Chemicals (non-explosive)",
+            "mult": "1.35",
+            "note": ""
+          }
+        ],
+        "bands": "General merchandise ×1.00 · Perishable / refrigerated ×1.15 · Construction materials ×1.10 · Fuel / flammable liquids ×1.45 · Chemicals (non-explosive) ×1.35"
+      },
+      {
+        "id": "RAT-CT-FAC-004",
+        "name": "Driver Experience Factor",
+        "type": "factor",
+        "field": "hgv_experience_years",
+        "lookupAttr": "hgv_experience_years",
+        "table1D": [
+          {
+            "band": "2–4 years",
+            "mult": "1.30",
+            "note": "Inexperienced loading"
+          },
+          {
+            "band": "5–9 years",
+            "mult": "1.10",
+            "note": ""
+          },
+          {
+            "band": "10–14 years",
+            "mult": "1.00",
+            "note": "Base"
+          },
+          {
+            "band": "15+ years",
+            "mult": "0.90",
+            "note": "Preferred"
+          }
+        ],
+        "bands": "2–4 years ×1.30 · 5–9 years ×1.10 · 10–14 years ×1.00 · 15+ years ×0.90"
+      },
+      {
+        "id": "RAT-CT-LOAD-001",
+        "name": "Night Operations Loading",
+        "type": "loading",
+        "amount": "18%",
+        "condition": "night_operations = Yes",
+        "loadingType": "Percentage",
+        "loadingValue": "18"
+      },
+      {
+        "id": "RAT-CT-LOAD-002",
+        "name": "Inexperienced Driver",
+        "type": "loading",
+        "amount": "20%",
+        "condition": "hgv_experience_years < 2",
+        "loadingType": "Percentage",
+        "loadingValue": "20"
+      },
+      {
+        "id": "RAT-CT-DISC-001",
+        "name": "Tracker discount",
+        "type": "discount",
+        "amount": "5%",
+        "condition": "tracking_fitted = Yes"
+      },
+      {
+        "id": "RAT-CT-MIN-001",
+        "name": "Minimum premium",
+        "type": "minimum",
+        "amount": 1200,
+        "unit": "per year"
+      },
+      {
+        "id": "RAT-CT-FEE-001",
+        "name": "Policy Admin Fee",
+        "type": "fee",
+        "amount": 45,
+        "feeType": "Fixed"
+      },
+      {
+        "id": "RAT-CT-TAX-001",
+        "name": "GST / Insurance Tax",
+        "type": "tax",
+        "amount": "18%",
+        "taxType": "Percentage"
+      },
+      {
+        "id": "RAT-CT-FOR-001",
+        "name": "Payable premium formula",
+        "type": "formula",
+        "expression": "Base Premium × Risk Factors + Loadings − Discounts + Add-ons + Fees + Taxes = Payable Premium"
+      }
+    ],
+    "PRD-015::2026.08::underwritingRules": [
+      {
+        "id": "UW-CT-DCL-001",
+        "name": "Disqualified HGV licence",
+        "outcome": "decline",
+        "field": "licence_status",
+        "operator": "in",
+        "value": "Suspended, Revoked, Disqualified",
+        "conditions": [
+          {
+            "field": "licence_status",
+            "op": "in",
+            "value": "Suspended, Revoked, Disqualified"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-DCL-002",
+        "name": "Explosives / radioactive cargo",
+        "outcome": "decline",
+        "field": "goods_class",
+        "operator": "in",
+        "value": "Class 1 explosives, radioactive",
+        "conditions": [
+          {
+            "field": "goods_class",
+            "op": "in",
+            "value": "Class 1 explosives, radioactive"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-REF-001",
+        "name": "High GVW or high value",
+        "outcome": "refer",
+        "field": "gvw_tonnes",
+        "operator": ">",
+        "value": "40",
+        "conditions": [
+          {
+            "field": "gvw_tonnes",
+            "op": ">",
+            "value": "40"
+          },
+          {
+            "connector": "OR",
+            "field": "vehicle_insured_value",
+            "op": ">",
+            "value": "250000"
+          }
+        ],
+        "logic": "or"
+      },
+      {
+        "id": "UW-CT-REF-002",
+        "name": "Fuel tanker / night haul",
+        "outcome": "refer",
+        "field": "body_type",
+        "operator": "=",
+        "value": "Tanker",
+        "conditions": [
+          {
+            "field": "body_type",
+            "op": "=",
+            "value": "Tanker"
+          },
+          {
+            "connector": "OR",
+            "field": "night_operations",
+            "op": "=",
+            "value": "Yes"
+          }
+        ],
+        "logic": "or"
+      },
+      {
+        "id": "UW-CT-LOAD-001",
+        "name": "Recent at-fault commercial claim",
+        "outcome": "load",
+        "field": "at_fault_claims_24m",
+        "operator": ">=",
+        "value": "1",
+        "loading": "20%",
+        "conditions": [
+          {
+            "field": "at_fault_claims_24m",
+            "op": ">=",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-RSTR-001",
+        "name": "Cap GIT without tracker",
+        "outcome": "restrict",
+        "field": "tracking_fitted",
+        "operator": "=",
+        "value": "No",
+        "restriction": "GIT limit $50,000",
+        "conditions": [
+          {
+            "field": "tracking_fitted",
+            "op": "=",
+            "value": "No"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-EVD-001",
+        "name": "Require inspection for high SI",
+        "outcome": "evidence",
+        "field": "vehicle_insured_value",
+        "operator": ">",
+        "value": "250000",
+        "description": "Request physical inspection and tracker certificate before bind.",
+        "conditions": [
+          {
+            "field": "vehicle_insured_value",
+            "op": ">",
+            "value": "250000"
+          }
+        ]
+      },
+      {
+        "id": "UW-CT-ACC-001",
+        "name": "Standard commercial accept",
+        "outcome": "accept",
+        "description": "Accept if no decline, refer, load, or restrict rule has fired.",
+        "conditions": []
+      }
+    ],
+    "PRD-015::2026.08::channels": [
+      {
+        "id": "CHAN-CT-B01",
+        "name": "Commercial Broker Portal",
+        "accessModel": "Restricted Access",
+        "commission": "18%",
+        "comm": "18%",
+        "status": "active",
+        "description": "Appointed commercial motor brokers. Bind up to $200k OD SI.",
+        "territories": [
+          {
+            "j": "India",
+            "p": "Yes",
+            "n": "All zones"
+          },
+          {
+            "j": "UAE",
+            "p": "Yes",
+            "n": "Zones A, B, D"
+          },
+          {
+            "j": "UK",
+            "p": "Yes",
+            "n": "HGV licensed operators"
+          }
+        ],
+        "commConfig": {
+          "type": "Percentage of Gross Premium (excluding taxes)",
+          "rate": "18%",
+          "code": "COMM-CT-BROKER"
+        }
+      },
+      {
+        "id": "CHAN-CT-D01",
+        "name": "Direct (Web) — Owner Operators",
+        "accessModel": "Open Access",
+        "commission": "0%",
+        "comm": "0%",
+        "status": "active",
+        "description": "Self-serve quotes for single-truck owner-operators.",
+        "territories": [
+          {
+            "j": "India",
+            "p": "Yes",
+            "n": "All zones"
+          },
+          {
+            "j": "UAE",
+            "p": "No",
+            "n": "Broker only"
+          }
+        ]
+      },
+      {
+        "id": "CHAN-CT-API01",
+        "name": "Fleet TMS API",
+        "accessModel": "API Partners Only",
+        "commission": "8%",
+        "comm": "8%",
+        "status": "active",
+        "description": "Headless quoting for transport-management systems.",
+        "territories": [
+          {
+            "j": "India",
+            "p": "Yes",
+            "n": "Connected TMS operators"
+          }
+        ]
+      }
+    ],
+    "PRD-015::2026.08::documents": [
+      {
+        "id": "DOC-CT-WORD-001",
+        "name": "Commercial Truck Policy Wording",
+        "type": "Core",
+        "version": "2026.08",
+        "ver": "v2026.08",
+        "status": "approved",
+        "identity": {
+          "type": "Core — Policy Wording",
+          "format": "PDF",
+          "lang": "English (UK)",
+          "jur": "India, UAE, UK",
+          "author": "David Okonkwo"
+        },
+        "vars": [
+          {
+            "tok": "{{policy_number}}",
+            "src": "Policy System",
+            "ex": "POL-CT-2026-00811"
+          },
+          {
+            "tok": "{{operator_name}}",
+            "src": "Risk data",
+            "ex": "Singh Logistics Pvt Ltd"
+          }
+        ]
+      },
+      {
+        "id": "DOC-CT-SCH-001",
+        "name": "Commercial Truck Schedule",
+        "type": "Core",
+        "version": "2026.08",
+        "status": "approved",
+        "identity": {
+          "type": "Core — Policy Schedule",
+          "format": "PDF (dynamic fields)",
+          "lang": "English (UK)",
+          "jur": "India, UAE, UK"
+        },
+        "vars": [
+          {
+            "tok": "{{vehicle_make_model}}",
+            "src": "Risk data",
+            "ex": "Tata Prima 4928.S"
+          },
+          {
+            "tok": "{{gvw_tonnes}}",
+            "src": "Risk data",
+            "ex": "49"
+          }
+        ]
+      },
+      {
+        "id": "DOC-CT-CERT-001",
+        "name": "Certificate of Insurance (CMV)",
+        "type": "Core",
+        "version": "2026.08",
+        "status": "approved"
+      },
+      {
+        "id": "DOC-CT-END-001",
+        "name": "Goods in Transit Endorsement",
+        "type": "Endorsement",
+        "version": "2026.08",
+        "status": "approved",
+        "vars": [
+          {
+            "tok": "{{git_limit}}",
+            "src": "Coverage",
+            "ex": "$250,000"
+          }
+        ]
+      },
+      {
+        "id": "DOC-CT-END-002",
+        "name": "Trailer Extension Endorsement",
+        "type": "Endorsement",
+        "version": "2026.08",
+        "status": "approved"
+      }
+    ],
+    "PRD-015::2026.08::testCases": [
+      {
+        "id": "TEST-CT-001",
+        "name": "Standard rigid 16t — 12yr HGV driver",
+        "expected": "Accept",
+        "premium": 3240,
+        "result": "pass",
+        "answers": {
+          "driver_age": 38,
+          "licence_class": "HGV",
+          "vehicle_age": 8,
+          "gvw_tonnes": 16,
+          "goods_class": "General merchandise",
+          "tracking_fitted": "Yes",
+          "hgv_experience_years": 12,
+          "night_operations": "No",
+          "body_type": "Rigid"
+        }
+      },
+      {
+        "id": "TEST-CT-002",
+        "name": "Long-haul 40t tractor — 800 km radius",
+        "expected": "Accept, higher premium",
+        "premium": 5110,
+        "result": "pass",
+        "answers": {
+          "driver_age": 42,
+          "licence_class": "HGV",
+          "vehicle_age": 5,
+          "gvw_tonnes": 40,
+          "radius_km": 800,
+          "goods_class": "Construction materials",
+          "tracking_fitted": "Yes",
+          "hgv_experience_years": 14,
+          "night_operations": "No"
+        }
+      },
+      {
+        "id": "TEST-CT-003",
+        "name": "Driver age 23",
+        "expected": "Ineligible (hard block)",
+        "premium": 0,
+        "result": "pass",
+        "answers": {
+          "driver_age": 23,
+          "licence_class": "HGV",
+          "gvw_tonnes": 16,
+          "tracking_fitted": "Yes",
+          "hgv_experience_years": 3
+        }
+      },
+      {
+        "id": "TEST-CT-004",
+        "name": "Class 1 explosives cargo",
+        "expected": "Decline",
+        "premium": 0,
+        "result": "pass",
+        "answers": {
+          "driver_age": 35,
+          "licence_class": "HGV",
+          "gvw_tonnes": 18,
+          "goods_class": "Class 1 explosives",
+          "tracking_fitted": "Yes",
+          "hgv_experience_years": 8
+        }
+      },
+      {
+        "id": "TEST-CT-005",
+        "name": "Fuel tanker night operations",
+        "expected": "Refer (operations)",
+        "premium": 6480,
+        "result": "pass",
+        "answers": {
+          "driver_age": 40,
+          "licence_class": "HGV",
+          "gvw_tonnes": 26,
+          "body_type": "Tanker",
+          "night_operations": "Yes",
+          "tracking_fitted": "Yes",
+          "hgv_experience_years": 10,
+          "goods_class": "Fuel / flammable liquids"
+        }
+      },
+      {
+        "id": "TEST-CT-006",
+        "name": "No tracker — GIT selected",
+        "expected": "Restrict GIT to $50k",
+        "premium": 3390,
+        "result": "pass",
+        "answers": {
+          "driver_age": 36,
+          "licence_class": "HGV",
+          "gvw_tonnes": 16,
+          "tracking_fitted": "No",
+          "hgv_experience_years": 7,
+          "goods_class": "General merchandise"
+        }
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::covers": [
+      {
+        "id": "COV-AL",
+        "name": "Auto Liability",
+        "code": "COV-AL",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "Commercial Auto Liability",
+        "description": "Third-party bodily injury and property damage for commercial auto use.",
+        "basisOfCoverage": "Limit of Indemnity",
+        "sumInsured": "1000000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "defaultSelected": true
+      },
+      {
+        "id": "COV-UIM",
+        "name": "Uninsured / Underinsured Motorist",
+        "code": "COV-UIM",
+        "availability": "default",
+        "complete": true,
+        "type": "Third Party Liability",
+        "description": "Protection when the other driver lacks adequate insurance.",
+        "basisOfCoverage": "Limit of Indemnity",
+        "sumInsured": "1000000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "defaultSelected": true
+      },
+      {
+        "id": "COV-MP",
+        "name": "Medical Payments / PIP",
+        "code": "COV-MP",
+        "availability": "default",
+        "complete": true,
+        "type": "Benefit — Personal Accident",
+        "description": "Medical expenses and personal injury protection for occupants.",
+        "basisOfCoverage": "Agreed Value",
+        "sumInsured": "25000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "defaultSelected": true
+      },
+      {
+        "id": "COV-MTC",
+        "name": "Motor Truck Cargo",
+        "code": "COV-MTC",
+        "availability": "default",
+        "complete": true,
+        "type": "First Party — Cargo",
+        "description": "Loss or damage to lawful cargo while in transit.",
+        "basisOfCoverage": "Declared Value",
+        "sumInsured": "250000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "defaultSelected": true
+      },
+      {
+        "id": "COV-TI",
+        "name": "Trailer Interchange",
+        "code": "COV-TI",
+        "availability": "optional",
+        "complete": true,
+        "type": "First Party — Property Damage",
+        "description": "Damage to non-owned trailers under interchange agreements.",
+        "basisOfCoverage": "Stated Amount",
+        "sumInsured": "80000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "defaultSelected": true
+      },
+      {
+        "id": "COV-NTL",
+        "name": "Non-Trucking Liability",
+        "code": "COV-NTL",
+        "availability": "addon",
+        "complete": true,
+        "type": "Commercial Auto Liability",
+        "description": "Liability when operating without a trailer, not under dispatch.",
+        "basisOfCoverage": "Limit of Indemnity",
+        "sumInsured": "1000000",
+        "deductibleType": "none",
+        "deductibleAmount": "0",
+        "defaultSelected": false
+      },
+      {
+        "id": "COV-PD",
+        "name": "Physical Damage",
+        "code": "COV-PD",
+        "availability": "mandatory",
+        "complete": true,
+        "type": "First Party — Property Damage",
+        "description": "Collision and comprehensive damage to insured vehicles.",
+        "basisOfCoverage": "Stated Amount",
+        "sumInsured": "180000",
+        "deductibleType": "fixed",
+        "deductibleAmount": "1000",
+        "defaultSelected": true
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::questionGroups": [
+      {
+        "id": "GRP-001",
+        "name": "Risk details",
+        "label": "Risk details",
+        "questions": [
+          {
+            "id": "Q-001",
+            "label": "Full name",
+            "type": "text",
+            "typeLabel": "Text",
+            "fieldType": "text",
+            "required": true,
+            "internalName": "full_name",
+            "displayOrder": 1,
+            "channels": "Web, Mobile, Agent, API",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "Q-002",
+            "label": "Age",
+            "type": "number",
+            "typeLabel": "Number",
+            "fieldType": "number",
+            "required": true,
+            "internalName": "age",
+            "displayOrder": 2,
+            "channels": "Web, Mobile, Agent, API",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          },
+          {
+            "id": "Q-003",
+            "label": "Sum insured",
+            "type": "currency",
+            "typeLabel": "Currency",
+            "fieldType": "currency",
+            "required": true,
+            "internalName": "sum_insured",
+            "displayOrder": 3,
+            "channels": "Web, Mobile, Agent, API",
+            "validations": [],
+            "conditions": [],
+            "evidence": []
+          }
+        ]
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::eligibilityRules": [
+      {
+        "id": "ELG-001",
+        "name": "Minimum age",
+        "field": "driver_age",
+        "operator": "<",
+        "value": "18",
+        "outcome": "ineligible",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 10,
+        "status": "active",
+        "description": "Policyholder must be at least 18.",
+        "conditions": [
+          {
+            "field": "driver_age",
+            "op": "<",
+            "value": "18"
+          }
+        ],
+        "reasonCode": "ELIG-MIN-AGE",
+        "effectiveFrom": "01-Apr-2026",
+        "effectiveTo": "30-Sep-2026"
+      },
+      {
+        "id": "ELG-002",
+        "name": "Maximum age",
+        "field": "driver_age",
+        "operator": ">",
+        "value": "70",
+        "outcome": "refer",
+        "category": "Product Eligibility",
+        "cover": "All Covers",
+        "priority": 20,
+        "status": "active",
+        "description": "Drivers over 70 are referred.",
+        "conditions": [
+          {
+            "field": "driver_age",
+            "op": ">",
+            "value": "70"
+          }
+        ],
+        "reasonCode": "ELIG-MAX-AGE",
+        "effectiveFrom": "01-Apr-2026",
+        "effectiveTo": "30-Sep-2026"
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::ratingComponents": [
+      {
+        "id": "RATE-001",
+        "name": "Base premium",
+        "type": "base",
+        "amount": 350,
+        "unit": "per year"
+      },
+      {
+        "id": "RATE-002",
+        "name": "Age factor",
+        "type": "factor",
+        "field": "Age",
+        "amount": 1
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::underwritingRules": [
+      {
+        "id": "UW-001",
+        "name": "High sum insured refer",
+        "field": "sum_insured",
+        "operator": ">",
+        "value": "100000",
+        "outcome": "refer",
+        "conditions": [
+          {
+            "field": "sum_insured",
+            "op": ">",
+            "value": "100000"
+          }
+        ]
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::channels": [
+      {
+        "id": "CHAN-001",
+        "name": "Direct (Web)",
+        "accessModel": "Open Access",
+        "status": "active"
+      },
+      {
+        "id": "CHAN-002",
+        "name": "Broker Portal",
+        "accessModel": "Restricted",
+        "status": "active"
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::documents": [
+      {
+        "id": "DOC-001",
+        "name": "Policy Wording",
+        "type": "wording",
+        "version": "2026.05-DRAFT"
+      },
+      {
+        "id": "DOC-002",
+        "name": "Certificate of Insurance",
+        "type": "certificate",
+        "version": "2026.05-DRAFT"
+      }
+    ],
+    "PRD-011::2026.05-DRAFT::testCases": [
+      {
+        "id": "TEST-001",
+        "name": "Standard quote",
+        "expected": "accept",
+        "premium": 350,
+        "result": "not-run"
+      }
+    ]
+  },
+  "audit": [
+    {
+      "id": "EVT-1789988696918",
+      "at": "2026-09-21T11:04:56.918Z",
+      "user": "Anika Sharma",
+      "role": "Product Manager",
+      "action": "SIGNED_IN",
+      "page": "organizations",
+      "description": "Harper Reid signed in to Southlake Holdings console"
+    },
+    {
+      "id": "EVT-seed",
+      "at": "2026-09-12T08:02:30.706Z",
+      "user": "Anika Sharma",
+      "role": "Product Manager",
+      "action": "SEEDED",
+      "page": "workspace",
+      "description": "Workspace created with Commercial Truck Comprehensive as the featured demo."
+    }
+  ],
+  "notifications": [
+    {
+      "id": "NTF-welcome",
+      "title": "Commercial truck demo is live",
+      "detail": "Open Coverage Studio and Questionnaire (risk) on Commercial Truck Comprehensive — 8 covers, GVW, HGV licence, cargo class.",
+      "href": "/products/PRD-015/coverage",
+      "read": false,
+      "at": "2026-09-12T08:02:30.706Z"
+    }
+  ],
+  "team": [
+    {
+      "id": "U001",
+      "name": "Anika Sharma",
+      "email": "",
+      "role": "Product Manager",
+      "status": "ACTIVE",
+      "products": [
+        "PRD-015",
+        "PRD-011"
+      ]
+    },
+    {
+      "id": "U002",
+      "name": "Rajan Mehta",
+      "email": "rajan@veridex.local",
+      "role": "Pricing Actuary",
+      "status": "ACTIVE",
+      "products": [
+        "PRD-015",
+        "PRD-020"
+      ]
+    },
+    {
+      "id": "U003",
+      "name": "Sunita Pillai",
+      "email": "sunita@veridex.local",
+      "role": "Underwriting Manager",
+      "status": "ACTIVE",
+      "products": [
+        "PRD-015"
+      ]
+    }
+  ],
+  "pricing": [
+    {
+      "id": "TPL-001",
+      "name": "Commercial truck · Comprehensive",
+      "family": "Trucking",
+      "base": 1850,
+      "unit": "per year",
+      "status": "active"
+    },
+    {
+      "id": "TPL-002",
+      "name": "Cyber liability · SME",
+      "family": "Cyber",
+      "base": 2400,
+      "unit": "per year",
+      "status": "active"
+    }
+  ],
+  "glossary": [
+    {
+      "id": "GLS-001",
+      "term": "Effective From",
+      "definition": "The first date the version may be sold.",
+      "category": "Lifecycle"
+    },
+    {
+      "id": "GLS-002",
+      "term": "Deductible",
+      "definition": "Amount the insured pays before the insurer pays a claim.",
+      "category": "Coverage"
+    },
+    {
+      "id": "GLS-003",
+      "term": "Refer",
+      "definition": "Underwriting outcome that requires a human decision.",
+      "category": "Underwriting"
+    }
+  ],
+  "quotes": [],
+  "webhooks": [
+    {
+      "id": "WH-001",
+      "name": "Quote issued",
+      "url": "https://hooks.example.com/quote",
+      "events": "quote.created",
+      "status": "active"
+    }
+  ],
+  "settings": {
+    "orgName": "Veridex",
+    "timezone": "Asia/Kolkata",
+    "truckSeed": 6,
+    "carSeed": 1,
+    "orgSeed": 3
+  },
+  "parentCompanies": [
+    {
+      "id": "PTC-001",
+      "name": "Southlake Holdings",
+      "code": "SHH",
+      "status": "active",
+      "users": [
+        {
+          "name": "Southlake Holdings",
+          "email": "admin@southlakeholdings.com",
+          "role": "Parent Company Admin",
+          "passwordHash": "southlake-demo-2026:f136711b20b8665c5a101d666a7f17f74b775185bfe0f9049bf9f0136a7b708597d0a6eaec48970037815da37aa5b197a8c6d45572448ed4209c1b7ab17c5c6b"
+        },
+        {
+          "name": "Morgan Lee",
+          "email": "morgan@southlakeholdings.com",
+          "role": "Compliance Lead"
+        }
+      ],
+      "organizationIds": [
+        "ORG-001",
+        "ORG-002",
+        "ORG-003",
+        "ORG-004",
+        "ORG-005",
+        "ORG-006",
+        "ORG-007"
+      ],
+      "createdAt": "2026-01-01T08:00:00.000Z"
+    }
+  ],
+  "organizations": [
+    {
+      "id": "ORG-001",
+      "name": "Southlake",
+      "code": "SLK",
+      "type": "risk-company",
+      "status": "active",
+      "parentCompanyId": "PTC-001",
+      "region": "North America",
+      "jurisdiction": "USA",
+      "contact": {
+        "name": "Southlake Contact",
+        "email": "ops@slk.example.com",
+        "phone": "+1 800 555 0199"
+      },
+      "address": "1200 Commerce Drive, New York, NY 10001",
+      "fein": "00-1001233",
+      "description": "Southlake operates as a risk carrier under Southlake Holdings.",
+      "assignedProducts": [
+        {
+          "productId": "PRD-015",
+          "productName": "Commercial Truck Comprehensive",
+          "role": "Carrier",
+          "status": "active",
+          "since": "01-Aug-2026"
+        },
+        {
+          "productId": "PRD-011",
+          "productName": "Commercial Vehicle Fleet",
+          "role": "Carrier",
+          "status": "inactive",
+          "since": "01-Aug-2026"
+        }
+      ],
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-09-21T10:17:20.458Z",
+      "config": {}
+    },
+    {
+      "id": "ORG-002",
+      "name": "Westkale",
+      "code": "WST",
+      "type": "risk-company",
+      "status": "active",
+      "parentCompanyId": "PTC-001",
+      "region": "North America",
+      "jurisdiction": "USA",
+      "contact": {
+        "name": "Westkale Contact",
+        "email": "ops@wst.example.com",
+        "phone": "+1 800 555 0199"
+      },
+      "address": "1200 Commerce Drive, New York, NY 10001",
+      "fein": "00-1001096",
+      "description": "Westkale operates as a risk carrier under Southlake Holdings.",
+      "assignedProducts": [
+        {
+          "productId": "PRD-015",
+          "productName": "Commercial Truck Comprehensive",
+          "role": "Carrier",
+          "status": "active",
+          "since": "01-Aug-2026"
+        },
+        {
+          "productId": "PRD-011",
+          "productName": "Commercial Vehicle Fleet",
+          "role": "Carrier",
+          "status": "inactive",
+          "since": "01-Aug-2026"
+        }
+      ],
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-09-21T10:17:20.458Z",
+      "config": {}
+    },
+    {
+      "id": "ORG-003",
+      "name": "Nawada General",
+      "code": "NWG",
+      "type": "risk-company",
+      "status": "active",
+      "parentCompanyId": "PTC-001",
+      "region": "North America",
+      "jurisdiction": "USA",
+      "contact": {
+        "name": "Nawada General Contact",
+        "email": "ops@nwg.example.com",
+        "phone": "+1 800 555 0199"
+      },
+      "address": "1200 Commerce Drive, New York, NY 10001",
+      "fein": "00-1001918",
+      "description": "Nawada General operates as a risk carrier under Southlake Holdings.",
+      "assignedProducts": [
+        {
+          "productId": "PRD-015",
+          "productName": "Commercial Truck Comprehensive",
+          "role": "Carrier",
+          "status": "active",
+          "since": "01-Aug-2026"
+        },
+        {
+          "productId": "PRD-011",
+          "productName": "Commercial Vehicle Fleet",
+          "role": "Carrier",
+          "status": "inactive",
+          "since": "01-Aug-2026"
+        }
+      ],
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-09-21T10:17:20.458Z",
+      "config": {}
+    },
+    {
+      "id": "ORG-004",
+      "name": "Futursticts",
+      "code": "FUT",
+      "type": "mgu",
+      "status": "active",
+      "parentCompanyId": "PTC-001",
+      "region": "North America",
+      "jurisdiction": "USA",
+      "contact": {
+        "name": "Futursticts Contact",
+        "email": "ops@fut.example.com",
+        "phone": "+1 800 555 0199"
+      },
+      "address": "1200 Commerce Drive, New York, NY 10001",
+      "fein": "00-1001507",
+      "description": "Futursticts operates as a mgu under Southlake Holdings.",
+      "assignedProducts": [
+        {
+          "productId": "PRD-015",
+          "productName": "Commercial Truck Comprehensive",
+          "role": "MGU",
+          "status": "active",
+          "since": "01-Aug-2026"
+        },
+        {
+          "productId": "PRD-011",
+          "productName": "Commercial Vehicle Fleet",
+          "role": "MGU",
+          "status": "inactive",
+          "since": "01-Aug-2026"
+        }
+      ],
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-09-21T10:17:20.458Z",
+      "config": {}
+    },
+    {
+      "id": "ORG-005",
+      "name": "NTA",
+      "code": "NTA",
+      "type": "mga",
+      "status": "active",
+      "parentCompanyId": "PTC-001",
+      "region": "North America",
+      "jurisdiction": "USA",
+      "contact": {
+        "name": "NTA Contact",
+        "email": "ops@nta.example.com",
+        "phone": "+1 800 555 0199"
+      },
+      "address": "1200 Commerce Drive, New York, NY 10001",
+      "fein": "00-1000411",
+      "description": "NTA operates as a mga under Southlake Holdings.",
+      "assignedProducts": [
+        {
+          "productId": "PRD-015",
+          "productName": "Commercial Truck Comprehensive",
+          "role": "MGA",
+          "status": "active",
+          "since": "01-Aug-2026"
+        },
+        {
+          "productId": "PRD-011",
+          "productName": "Commercial Vehicle Fleet",
+          "role": "MGA",
+          "status": "inactive",
+          "since": "01-Aug-2026"
+        }
+      ],
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-09-21T10:17:20.458Z",
+      "config": {}
+    },
+    {
+      "id": "ORG-006",
+      "name": "HTI",
+      "code": "HTI",
+      "type": "broker",
+      "status": "active",
+      "parentCompanyId": "PTC-001",
+      "region": "North America",
+      "jurisdiction": "USA",
+      "contact": {
+        "name": "HTI Contact",
+        "email": "ops@hti.example.com",
+        "phone": "+1 800 555 0199"
+      },
+      "address": "1200 Commerce Drive, New York, NY 10001",
+      "fein": "00-1000411",
+      "description": "HTI operates as a broker under Southlake Holdings.",
+      "assignedProducts": [
+        {
+          "productId": "PRD-015",
+          "productName": "Commercial Truck Comprehensive",
+          "role": "Broker",
+          "status": "active",
+          "since": "01-Aug-2026"
+        },
+        {
+          "productId": "PRD-011",
+          "productName": "Commercial Vehicle Fleet",
+          "role": "Broker",
+          "status": "inactive",
+          "since": "01-Aug-2026"
+        }
+      ],
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-09-22T05:31:08.844Z",
+      "config": {
+        "taxId": "22-1189450",
+        "form1099": false,
+        "billToParent": false,
+        "licenseNumber": "BRK-LIC-5541",
+        "licenseType": "broker-license",
+        "licensingAuthority": "New York Department of Financial Services",
+        "licenseIssueDate": "2026-01-15",
+        "licenseExpirationDate": "2027-01-14",
+        "licensedTerritories": [
+          "NY",
+          "NJ",
+          "CT",
+          "PA",
+          "MA"
+        ],
+        "linesOfBusiness": [
+          "Commercial Auto",
+          "Commercial Property",
+          "General Liability",
+          "Workers Compensation"
+        ],
+        "classesOfBusiness": [
+          "Auto Liability",
+          "General Liability",
+          "Commercial Property"
+        ],
+        "alternatePhone": "+1 212 555 0142",
+        "fax": "+1 212 555 0143",
+        "website": "https://hti.example.com",
+        "mailingAddress": "220 Broad Street, Suite 900, New York, NY 10004",
+        "billingAddress": "220 Broad Street, Suite 900, New York, NY 10004",
+        "generalMailboxEmail": "mailroom@hti.example.com",
+        "contractNumber": "BRC-2026-091",
+        "contractDate": "2026-03-01",
+        "effectiveDate": "2026-04-01",
+        "terminationDate": "2027-03-31",
+        "correspondenceAgreement": true,
+        "emailAgreement": true,
+        "specialAgreements": "Broker binds commercial auto under delegated authority up to $200k.",
+        "numberOfEmployees": "120",
+        "brokerGroup": "HTI Network",
+        "brokerGrade": "gold",
+        "brokerDistrict": "Northeast",
+        "informationSystem": "Applied EPIC",
+        "primaryOffice": "head-office",
+        "coverage": "Commercial Auto, Commercial Property, General Liability",
+        "billingType": "agency-bill",
+        "commissionType": "flat-percent",
+        "defaultCommissionPercent": "15",
+        "withholdDirectBillCommission": false,
+        "suppressFinanceQuote": false,
+        "includeOnParentStatement": true,
+        "assignedProducts": [
+          "Commercial Truck Comprehensive"
+        ],
+        "assignedCoverages": [
+          "Auto Liability",
+          "Motor Truck Cargo",
+          "Physical Damage",
+          "Trailer Interchange",
+          "Non-Trucking Liability"
+        ],
+        "authorizedRiskCarriers": [
+          "Southlake",
+          "Westkale",
+          "Nawada General"
+        ],
+        "authorizedMgasMgus": [
+          "NTA",
+          "Futursticts"
+        ],
+        "geographicRestrictions": [
+          "NY",
+          "NJ",
+          "CT",
+          "PA",
+          "MA"
+        ],
+        "productAccessStatus": "active",
+        "portalAccess": "full",
+        "portalAccessAllUsers": true,
+        "preferredBroker": true,
+        "preferredBrokerReason": "Top quartile production across commercial auto books.",
+        "policyDelivery": "email",
+        "brokerStatement": "monthly",
+        "emailConfiguration": "binding@hti.example.com"
+      }
+    },
+    {
+      "id": "ORG-007",
+      "name": "LINKS",
+      "code": "LNK",
+      "type": "broker",
+      "status": "active",
+      "parentCompanyId": "PTC-001",
+      "region": "North America",
+      "jurisdiction": "USA",
+      "contact": {
+        "name": "LINKS Contact",
+        "email": "ops@lnk.example.com",
+        "phone": "+1 800 555 0199"
+      },
+      "address": "1200 Commerce Drive, New York, NY 10001",
+      "fein": "00-1000685",
+      "description": "LINKS operates as a broker under Southlake Holdings.",
+      "assignedProducts": [
+        {
+          "productId": "PRD-015",
+          "productName": "Commercial Truck Comprehensive",
+          "role": "Broker",
+          "status": "active",
+          "since": "01-Aug-2026"
+        },
+        {
+          "productId": "PRD-011",
+          "productName": "Commercial Vehicle Fleet",
+          "role": "Broker",
+          "status": "inactive",
+          "since": "01-Aug-2026"
+        }
+      ],
+      "createdAt": "2026-01-05T09:00:00.000Z",
+      "updatedAt": "2026-09-22T05:31:08.844Z",
+      "config": {
+        "taxId": "22-1189450",
+        "form1099": false,
+        "billToParent": false,
+        "licenseNumber": "BRK-LIC-5541",
+        "licenseType": "broker-license",
+        "licensingAuthority": "New York Department of Financial Services",
+        "licenseIssueDate": "2026-01-15",
+        "licenseExpirationDate": "2027-01-14",
+        "licensedTerritories": [
+          "NY",
+          "NJ",
+          "CT",
+          "PA",
+          "MA"
+        ],
+        "linesOfBusiness": [
+          "Commercial Auto",
+          "Commercial Property",
+          "General Liability",
+          "Workers Compensation"
+        ],
+        "classesOfBusiness": [
+          "Auto Liability",
+          "General Liability",
+          "Commercial Property"
+        ],
+        "alternatePhone": "+1 212 555 0142",
+        "fax": "+1 212 555 0143",
+        "website": "https://hti.example.com",
+        "mailingAddress": "220 Broad Street, Suite 900, New York, NY 10004",
+        "billingAddress": "220 Broad Street, Suite 900, New York, NY 10004",
+        "generalMailboxEmail": "mailroom@hti.example.com",
+        "contractNumber": "BRC-2026-091",
+        "contractDate": "2026-03-01",
+        "effectiveDate": "2026-04-01",
+        "terminationDate": "2027-03-31",
+        "correspondenceAgreement": true,
+        "emailAgreement": true,
+        "specialAgreements": "Broker binds commercial auto under delegated authority up to $200k.",
+        "numberOfEmployees": "120",
+        "brokerGroup": "HTI Network",
+        "brokerGrade": "gold",
+        "brokerDistrict": "Northeast",
+        "informationSystem": "Applied EPIC",
+        "primaryOffice": "head-office",
+        "coverage": "Commercial Auto, Commercial Property, General Liability",
+        "billingType": "agency-bill",
+        "commissionType": "flat-percent",
+        "defaultCommissionPercent": "15",
+        "withholdDirectBillCommission": false,
+        "suppressFinanceQuote": false,
+        "includeOnParentStatement": true,
+        "assignedProducts": [
+          "Commercial Truck Comprehensive"
+        ],
+        "assignedCoverages": [
+          "Auto Liability",
+          "Motor Truck Cargo",
+          "Physical Damage",
+          "Trailer Interchange",
+          "Non-Trucking Liability"
+        ],
+        "authorizedRiskCarriers": [
+          "Southlake",
+          "Westkale",
+          "Nawada General"
+        ],
+        "authorizedMgasMgus": [
+          "NTA",
+          "Futursticts"
+        ],
+        "geographicRestrictions": [
+          "NY",
+          "NJ",
+          "CT",
+          "PA",
+          "MA"
+        ],
+        "productAccessStatus": "active",
+        "portalAccess": "full",
+        "portalAccessAllUsers": true,
+        "preferredBroker": true,
+        "preferredBrokerReason": "Top quartile production across commercial auto books.",
+        "policyDelivery": "email",
+        "brokerStatement": "monthly",
+        "emailConfiguration": "binding@hti.example.com"
+      }
+    }
+  ]
+}
