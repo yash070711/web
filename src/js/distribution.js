@@ -31,7 +31,6 @@ const dom = {
   modalHint: el('addChannelHint'),
   modalNote: el('addChannelNote'),
   toast: el('toast'),
-  sidebar: el('sidebar'),
 };
 
 const COMMISSION_DEFAULT = { MGU: 12, MGA: 10, Broker: 8, Agent: 6 };
@@ -683,9 +682,6 @@ dom.form.addEventListener('submit', addChannel);
 el('addChannelClose').addEventListener('click', () => dom.modal.close());
 el('addChannelCancel').addEventListener('click', () => dom.modal.close());
 dom.modal.addEventListener('close', clearErrors);
-
-window.toggleCollapse = () => dom.sidebar.classList.toggle('collapsed');
-window.toggleMobile = () => dom.sidebar.classList.toggle('open');
 
 const load = async () => {
   try {

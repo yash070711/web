@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VeriDex · Product Studio</title>
 <link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/acord.css">
 </head>
 <body>
 <header class="topbar">
@@ -12,14 +13,8 @@
   <div class="top-right"><span class="notif">◌</span><div class="avatar">YS</div><div class="account">Yash Gaur · Admin</div></div>
 </header>
 <div class="app">
-<aside class="sidebar" id="sidebar">
-  <div class="nav-heading">Product Studio</div>
-  <a class="nav-item selected" href="http://localhost:3000/#products"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
-  <a class="nav-item" href="/coverage.html"><span class="nav-icon">◫</span><span class="nav-label">Coverage</span></a>
-  <a class="nav-item" href="#class-of-business"><span class="nav-icon">▤</span><span class="nav-label">Class of Business</span></a>
-  <a class="nav-item" href="/distribution.html"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
-</aside>
-<main>
+<aside class="sidebar" id="sidebar" aria-label="Product Studio navigation"></aside>
+<main id="view-catalogue">
   <div class="breadcrumb">Product Studio / Product Catalogue / Commercial Auto</div>
   <div class="page-header">
     <div><div class="eyebrow">Product Configuration</div><h1>Commercial Auto</h1><p>Commercial trucking product configuration and rating setup.</p></div>
@@ -67,10 +62,17 @@
   </div>
   <div class="footer"><span>VeriDex Product Studio · Commercial Auto</span><span>Configuration workspace</span></div>
 </main>
+<main id="view-acord" hidden></main>
+<main id="view-cob" hidden></main>
 </div>
 <script>
-function toggleCollapse(){document.getElementById('sidebar').classList.toggle('collapsed')}
-function toggleMobile(){document.getElementById('sidebar').classList.toggle('open')}
+const views={'':'view-catalogue',products:'view-catalogue',acord:'view-acord','class-of-business':'view-cob'};
+function route(){const id=views[location.hash.slice(1)]||'view-catalogue';
+document.querySelectorAll('main').forEach(m=>m.hidden=m.id!==id)}
+addEventListener('hashchange',route);route();
 </script>
+<script type="module" src="/js/nav.js"></script>
+<script type="module" src="/js/acord.js"></script>
+<script type="module" src="/js/cob.js"></script>
 </body>
 </html>

@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Truck",
+    "description": "Test",
+    "forms": [
+      {
+        "formId": "acord-99",
+        "excluded": []
+      }
+    ],
+    "id": "362ef87e-0417-4d65-88a9-357999ea64d7"
+  },
+  {
+    "name": "hh",
+    "description": "",
+    "forms": [
+      {
+        "formId": "acord-99",
+        "excluded": []
+      }
+    ],
+    "id": "0f06941f-6ded-4392-afa7-f4ef35dd8382"
+  }
+]
