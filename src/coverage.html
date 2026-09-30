@@ -20,7 +20,7 @@
       <h1>Coverage</h1>
     </div>
     <div class="tools">
-      <button class="btn primary" id="addBtn" type="button">New Coverage</button>
+      <a class="btn primary" id="addBtn" href="/coverage-form.html">New Coverage</a>
     </div>
   </div>
 
@@ -56,6 +56,7 @@
         <thead><tr>
           <th>Coverage</th>
           <th>Coverage Lines</th>
+          <th>Coverage Type</th>
           <th>Class of Business</th>
           <th>Status</th>
           <th class="right">Actions</th>
@@ -73,72 +74,6 @@
   <div class="footer"><span>VeriDex Product Studio · Coverage</span><span>Configuration workspace</span></div>
 </main>
 </div>
-
-<dialog class="modal" id="coverageModal" aria-labelledby="modalTitle">
-  <form id="coverageForm" novalidate>
-    <div class="modal-head">
-      <div>
-        <div class="modal-title" id="modalTitle">Add New Coverage</div>
-      </div>
-      <button type="button" class="icon-btn" id="modalClose" aria-label="Close dialog">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="field">
-        <label for="fName">Coverage Name <span class="req">*</span></label>
-        <input class="input" id="fName" name="name" maxlength="80" placeholder="e.g. Auto Liability" autocomplete="off">
-        <div class="err" data-err="name"></div>
-      </div>
-      <div class="field">
-        <label for="fDescription">Description</label>
-        <textarea class="input" id="fDescription" name="description" rows="3" maxlength="300" placeholder="What this coverage protects"></textarea>
-        <div class="err" data-err="description"></div>
-      </div>
-      <div class="field">
-        <label for="fStatus">Status <span class="req">*</span></label>
-        <select class="input" id="fStatus" name="status">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="fLines">Coverage Lines <span class="req">*</span></label>
-        <select class="input" id="fLines" name="coverageLines"></select>
-        <div class="err" data-err="coverageLines"></div>
-      </div>
-      <div class="field">
-        <label for="fCob">Class of Business <span class="req">*</span></label>
-        <div class="select-row">
-          <select class="input" id="fCob" name="classOfBusiness"></select>
-          <button type="button" class="icon-btn" id="cobEye" title="View forms attached to this class of business" aria-label="View forms attached to this class of business" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-        <div class="err" data-err="classOfBusiness"></div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <div class="tools">
-        <button type="button" class="btn" id="modalCancel">Cancel</button>
-        <button type="submit" class="btn primary" id="modalSubmit">Save Coverage</button>
-      </div>
-    </div>
-  </form>
-</dialog>
-
-<dialog class="modal wide" id="cobFormsModal" aria-labelledby="cobFormsTitle">
-  <div class="modal-head">
-    <div>
-      <div class="eyebrow">Class of Business</div>
-      <div class="modal-title" id="cobFormsTitle">Attached forms</div>
-    </div>
-    <button type="button" class="icon-btn" id="cobFormsClose" aria-label="Close dialog">&times;</button>
-  </div>
-  <div class="modal-body" id="cobFormsBody"></div>
-  <div class="modal-foot">
-    <div class="modal-note">Preview only. Fields removed for this class of business are hidden.</div>
-    <div class="tools"><button type="button" class="btn" id="cobFormsDone">Close</button></div>
-  </div>
-</dialog>
 
 <dialog class="modal view" id="viewModal" aria-labelledby="viewTitle">
   <div class="modal-head">

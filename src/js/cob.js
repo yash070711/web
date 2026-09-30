@@ -1,5 +1,7 @@
 import { api } from './api.js';
 import { esc, renderPreviewSection, renderInstance, numberInstances } from './form-render.js';
+import { openBuilder } from './form-builder.js';
+import { createFormPicker } from './form-picker.js';
 
 const cobs = api('class_of_business');
 const acordForms = api('acord_forms');
@@ -13,15 +15,9 @@ let forms = [];
 let coverages = [];
 let draft = null; // COB being edited; null = list view
 let error = '';
-const PAGE_SIZE = 5;
-let picker = { q: '', filter: 'all', page: 1, open: new Set() };
 let view = null; // { cob, forms: [filtered forms], active }
 
 const attachment = (formId) => draft.forms.find((a) => a.formId === formId);
-const includedCount = (f) => {
-  const a = attachment(f.id);
-  return allQuestions(f).filter((q) => !a.excluded.includes(q.id)).length;
-};
 
 const LIST_PAGE_SIZE = 8;
 let lv = { q: '', filter: 'all', form: '', page: 1 };
@@ -97,56 +93,27 @@ function renderList() {
   renderListBody();
 }
 
-const resetPicker = () => { picker = { q: '', filter: 'all', page: 1, open: new Set() }; };
-
-function filteredForms() {
-  const q = picker.q.trim().toLowerCase();
-  return forms.filter((f) => {
-    const on = !!attachment(f.id);
-    if (picker.filter === 'selected' && !on) return false;
-    if (picker.filter === 'unselected' && on) return false;
-    return !q || `${f.name} ${f.description || ''} ${f.status}`.toLowerCase().includes(q);
+function editForm(existing) {
+  const usedBy = existing ? list.filter((c) => c.id !== draft.id && c.forms.some((a) => a.formId === existing.id)).length : 0;
+  openBuilder({
+    form: existing,
+    returnTo: root,
+    notice: existing ? `Changes to this form apply everywhere it is used${usedBy ? ` (also attached to ${usedBy} other class${usedBy === 1 ? '' : 'es'} of business)` : ''}.` : '',
+    onSaved: async (saved) => {
+      forms = await acordForms.list();
+      if (!existing && !attachment(saved.id)) draft.forms.push({ formId: saved.id, excluded: [] });
+    },
+    onExit: render,
   });
 }
 
-function renderFormRow(f) {
-  const a = attachment(f.id);
-  const total = allQuestions(f).length;
-  const open = a && picker.open.has(f.id);
-  return `
-    <div class="cob-row${a ? ' on' : ''}" data-form="${f.id}">
-      <div class="cob-row-main">
-        <input type="checkbox" data-attach aria-label="Add ${esc(f.name)}"${a ? ' checked' : ''}>
-        <div class="cob-row-info">
-          <div class="cob-row-name">${esc(f.name)} <span class="badge draft">${esc(f.status)}</span></div>
-          <div class="ac-hint">${f.sections.length} section${f.sections.length === 1 ? '' : 's'} · <span data-count>${a ? `${includedCount(f)} of ${total} fields included` : `${total} fields`}</span></div>
-        </div>
-        ${a ? `<button type="button" class="btn sm" data-act="toggle-open" data-id="${f.id}">${open ? 'Hide fields' : 'Customize fields'}</button>` : ''}
-      </div>
-      ${open ? `<div class="cob-fields">
-        <div class="cob-fields-tools"><button type="button" class="ac-icon" data-act="fields-all" data-id="${f.id}">Select all</button><button type="button" class="ac-icon" data-act="fields-none" data-id="${f.id}">Clear all</button></div>
-        ${f.sections.map((s) => `<div class="cob-sec"><div class="cob-sec-title">${esc(s.title)}</div>
-          <div class="cob-sec-fields">${s.questions.map((q) => `<label class="ac-choice"><input type="checkbox" data-field="${q.id}"${a.excluded.includes(q.id) ? '' : ' checked'}> ${esc(q.label)}</label>`).join('')}</div></div>`).join('')}
-      </div>` : ''}
-    </div>`;
-}
-
-function renderPicker() {
-  const rows = filteredForms();
-  const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
-  picker.page = Math.min(picker.page, pages);
-  const start = (picker.page - 1) * PAGE_SIZE;
-  root.querySelector('#picker-summary').textContent = `${draft.forms.length} of ${forms.length} selected`;
-  root.querySelector('#picker-list').innerHTML = rows.length
-    ? rows.slice(start, start + PAGE_SIZE).map(renderFormRow).join('')
-    : '<div class="ac-empty">No Acord forms match your search.</div>';
-  root.querySelector('#picker-pager').innerHTML = rows.length ? `
-    <span class="ac-hint">Showing ${start + 1}–${Math.min(start + PAGE_SIZE, rows.length)} of ${rows.length}</span>
-    <div class="cob-pages">
-      <button type="button" class="btn sm" data-act="page" data-p="${picker.page - 1}"${picker.page === 1 ? ' disabled' : ''}>Prev</button>
-      ${Array.from({ length: pages }, (_, i) => `<button type="button" class="btn sm${i + 1 === picker.page ? ' dark' : ''}" data-act="page" data-p="${i + 1}">${i + 1}</button>`).join('')}
-      <button type="button" class="btn sm" data-act="page" data-p="${picker.page + 1}"${picker.page === pages ? ' disabled' : ''}>Next</button>
-    </div>` : '';
+function mountPicker() {
+  createFormPicker(root.querySelector('#picker-host'), {
+    forms,
+    selected: draft.forms,
+    onCreateForm: () => editForm(null),
+    onEditForm: (f) => editForm(f),
+  }).render();
 }
 
 function renderEditor() {
@@ -161,17 +128,8 @@ function renderEditor() {
       <div class="ac-field"><label>Name<span class="req">*</span></label><input class="ac-input" data-top="name" value="${esc(draft.name)}"></div>
       <div class="ac-field" style="margin:0"><label>Description</label><textarea class="ac-textarea" data-top="description">${esc(draft.description)}</textarea></div>
     </section>
-    <section class="card">
-      <div class="card-header"><div><div class="card-title">Acord forms</div><div class="card-subtitle">Tick the forms that apply. Use “Customize fields” to leave out any field for this class of business.</div></div><span class="badge info" id="picker-summary"></span></div>
-      <div class="toolbar">
-        <input class="ac-input" id="picker-search" style="flex:1;min-width:200px;width:auto" type="search" placeholder="Search Acord forms…" value="${esc(picker.q)}">
-        <select class="ac-select" id="picker-filter" style="width:170px">
-          ${[['all', 'All forms'], ['selected', 'Selected'], ['unselected', 'Not selected']].map(([v, l]) => `<option value="${v}"${picker.filter === v ? ' selected' : ''}>${l}</option>`).join('')}
-        </select>
-      </div>
-      <div id="picker-list"></div>
-      <div class="cob-pager" id="picker-pager"></div>
-    </section>`;
+    <section class="card" id="picker-host"></section>`;
+  mountPicker();
 }
 
 function renderPreview() {
@@ -191,7 +149,8 @@ function renderPreview() {
 
 const render = () => {
   if (view) renderPreview();
-  else if (draft) { renderEditor(); renderPicker(); } else renderList();
+  else if (draft) renderEditor();
+  else renderList();
 };
 
 async function refresh() {
@@ -212,29 +171,13 @@ async function save() {
 
 root.addEventListener('input', (e) => {
   if (e.target.id === 'cob-search') { lv.q = e.target.value; lv.page = 1; return renderListBody(); }
-  if (!draft) return;
-  if (e.target.id === 'picker-search') { picker.q = e.target.value; picker.page = 1; return renderPicker(); }
-  if (e.target.dataset.top) draft[e.target.dataset.top] = e.target.value;
+  if (draft && e.target.dataset.top) draft[e.target.dataset.top] = e.target.value;
 });
 
 root.addEventListener('change', (e) => {
   const t = e.target;
   if (t.id === 'cob-filter') { lv.filter = t.value; lv.page = 1; return renderListBody(); }
   if (t.id === 'cob-form') { lv.form = t.value; lv.page = 1; return renderListBody(); }
-  if (draft && t.id === 'picker-filter') { picker.filter = t.value; picker.page = 1; return renderPicker(); }
-  const card = t.closest('[data-form]');
-  if (!draft || !card) return;
-  const f = forms.find((x) => x.id === card.dataset.form);
-  if (t.hasAttribute('data-attach')) {
-    if (t.checked) draft.forms.push({ formId: f.id, excluded: [] });
-    else draft.forms = draft.forms.filter((a) => a.formId !== f.id);
-    if (!t.checked) picker.open.delete(f.id);
-    renderPicker();
-  } else if (t.dataset.field) {
-    const a = attachment(f.id);
-    a.excluded = t.checked ? a.excluded.filter((id) => id !== t.dataset.field) : [...a.excluded, t.dataset.field];
-    card.querySelector('[data-count]').textContent = `${includedCount(f)} of ${allQuestions(f).length} fields included`;
-  }
 });
 
 root.addEventListener('click', async (e) => {
@@ -250,14 +193,6 @@ root.addEventListener('click', async (e) => {
     return numberInstances(sec, sections);
   }
   if (act === 'lpage') { lv.page = +btn.dataset.p; return renderListBody(); }
-  if (draft && ['toggle-open', 'fields-all', 'fields-none', 'page'].includes(act)) {
-    const f = forms.find((x) => x.id === btn.dataset.id);
-    if (act === 'toggle-open') picker.open.has(f.id) ? picker.open.delete(f.id) : picker.open.add(f.id);
-    else if (act === 'fields-all') attachment(f.id).excluded = [];
-    else if (act === 'fields-none') attachment(f.id).excluded = allQuestions(f).map((q) => q.id);
-    else picker.page = +btn.dataset.p;
-    return renderPicker();
-  }
   switch (act) {
     case 'view': view = { cob, active: 0, forms: cob.forms.map((a) => {
       const f = forms.find((x) => x.id === a.formId);
@@ -265,8 +200,8 @@ root.addEventListener('click', async (e) => {
       return { ...f, sections: f.sections.map((s) => ({ ...s, questions: s.questions.filter((q) => !a.excluded.includes(q.id)) })).filter((s) => s.questions.length) };
     }).filter(Boolean) }; break;
     case 'ftab': view.active = +btn.dataset.i; break;
-    case 'new': resetPicker(); draft = { name: '', description: '', forms: [] }; error = ''; break;
-    case 'edit': resetPicker(); draft = structuredClone(cob); error = ''; break;
+    case 'new': draft = { name: '', description: '', forms: [] }; error = ''; break;
+    case 'edit': draft = structuredClone(cob); error = ''; break;
     case 'delete': {
       const n = coverageCount(cob);
       if (n) { alert(`“${cob.name}” is used by ${n} coverage${n === 1 ? '' : 's'}. Reassign or delete those coverages first.`); return; }

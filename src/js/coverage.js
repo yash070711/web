@@ -1,5 +1,4 @@
 import { api } from './api.js';
-import { renderPreviewSection, renderInstance, numberInstances } from './form-render.js';
 
 const coverages = api('coverages');
 const cobApi = api('class_of_business');
@@ -20,10 +19,6 @@ const dom = {
   fLine: el('fLine'),
   fClass: el('fClass'),
   fSize: el('fSize'),
-  modal: el('coverageModal'),
-  form: el('coverageForm'),
-  modalTitle: el('modalTitle'),
-  modalSubmit: el('modalSubmit'),
   confirmModal: el('confirmModal'),
   confirmText: el('confirmText'),
   viewModal: el('viewModal'),
@@ -38,14 +33,12 @@ const state = {
   rows: [],
   cobs: [],
   forms: [],
-  preview: null,
   q: '',
   status: '',
   line: '',
   klass: '',
   page: 1,
   size: 10,
-  editingId: null,
   deletingId: null,
   viewingId: null,
 };
@@ -133,7 +126,9 @@ const openView = (id) => {
     item('Record ID', `<span class="mono">${esc(row.id)}</span>`),
     item('Status', badge(row)),
     item('Coverage Lines', tags(row.coverageLines) || '—'),
+    item('Coverage Type', row.coverageType ? esc(row.coverageType) : '—'),
     item('Class of Business', tags(cobNames(row.classOfBusiness)) || '—'),
+    item('Acord Forms', tags(asList(row.forms).map((a) => state.forms.find((f) => f.id === a.formId)?.name ?? 'Deleted form')) || '—', true),
     item('Description', esc(row.description) || '—', true),
     item('Created', formatDate(row.createdAt)),
     item('Last Updated', formatDate(row.updatedAt)),
@@ -145,7 +140,7 @@ const openView = (id) => {
 
 const renderTable = (rows) => {
   if (!rows.length) {
-    dom.body.innerHTML = `<tr><td colspan="5"><div class="empty">No coverages match the current search and filters.<br><button class="btn sm" type="button" data-action="reset">Clear filters</button></div></td></tr>`;
+    dom.body.innerHTML = `<tr><td colspan="6"><div class="empty">No coverages match the current search and filters.<br><button class="btn sm" type="button" data-action="reset">Clear filters</button></div></td></tr>`;
     return;
   }
   dom.body.innerHTML = rows
@@ -153,6 +148,7 @@ const renderTable = (rows) => {
       (row) => `<tr>
         <td><strong>${esc(row.name)}</strong><div class="sub mono">${esc(row.id)}</div></td>
         <td><div class="tags">${tags(row.coverageLines)}</div></td>
+        <td>${row.coverageType ? `<span class="badge info">${esc(row.coverageType)}</span>` : '—'}</td>
         <td><div class="tags">${tags(cobNames(row.classOfBusiness))}</div></td>
         <td>${badge(row)}</td>
         <td class="right nowrap">
@@ -225,94 +221,6 @@ const toast = (message, kind = 'ok') => {
   toastTimer = setTimeout(() => {
     dom.toast.className = 'toast';
   }, 2800);
-};
-
-const clearErrors = () => {
-  dom.form.querySelectorAll('.err').forEach((node) => {
-    node.textContent = '';
-  });
-  dom.form.querySelectorAll('.input.invalid').forEach((node) => node.classList.remove('invalid'));
-};
-
-const setError = (name, message) => {
-  const slot = dom.form.querySelector(`[data-err="${name}"]`);
-  if (slot) slot.textContent = message;
-  const input = dom.form.elements[name];
-  if (input && input.classList.contains('input')) input.classList.add('invalid');
-};
-
-const optionsHtml = (values, placeholder) =>
-  [`<option value="">${esc(placeholder)}</option>`, ...values.map((value) => `<option value="${esc(value)}">${esc(value)}</option>`)].join('');
-
-const selectValue = (select, values) => {
-  const first = asList(values)[0] ?? '';
-  select.value = [...select.options].some((option) => option.value === first) ? first : '';
-};
-
-const openModal = (row) => {
-  clearErrors();
-  state.editingId = row ? row.id : null;
-  dom.modalTitle.textContent = row ? `Edit ${row.name}` : 'Add New Coverage';
-  dom.modalSubmit.textContent = row ? 'Save Changes' : 'Save Coverage';
-  dom.form.elements.name.value = row?.name ?? '';
-  dom.form.elements.description.value = row?.description ?? '';
-  dom.form.elements.status.value = row ? normalise(row.status) || 'active' : 'active';
-  dom.form.elements.coverageLines.innerHTML = optionsHtml(lineOptions(), 'Select coverage line');
-  dom.form.elements.classOfBusiness.innerHTML = [
-    '<option value="">Select class of business</option>',
-    ...state.cobs.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`),
-  ].join('');
-  selectValue(dom.form.elements.coverageLines, row?.coverageLines);
-  selectValue(dom.form.elements.classOfBusiness, row?.classOfBusiness);
-  el('cobEye').disabled = !dom.form.elements.classOfBusiness.value;
-  dom.modal.showModal();
-  dom.form.elements.name.focus();
-};
-
-const readForm = () => ({
-  name: dom.form.elements.name.value.trim(),
-  description: dom.form.elements.description.value.trim(),
-  status: dom.form.elements.status.value,
-  coverageLines: [dom.form.elements.coverageLines.value].filter(Boolean),
-  classOfBusiness: [dom.form.elements.classOfBusiness.value].filter(Boolean),
-});
-
-const validate = (payload) => {
-  clearErrors();
-  const errors = {};
-  if (!payload.name) errors.name = 'Coverage name is required.';
-  const duplicate = state.rows.find(
-    (row) => row.id !== state.editingId && normalise(row.name) === normalise(payload.name),
-  );
-  if (payload.name && duplicate) errors.name = `A coverage named “${duplicate.name}” already exists.`;
-  if (!payload.coverageLines.length) errors.coverageLines = 'Select at least one coverage line.';
-  if (!payload.classOfBusiness.length) errors.classOfBusiness = 'Select at least one class of business.';
-  Object.entries(errors).forEach(([name, message]) => setError(name, message));
-  return Object.keys(errors).length === 0;
-};
-
-const save = async (event) => {
-  event.preventDefault();
-  const payload = readForm();
-  if (!validate(payload)) return;
-  dom.modalSubmit.disabled = true;
-  const now = new Date().toISOString();
-  try {
-    if (state.editingId) {
-      const existing = state.rows.find((row) => row.id === state.editingId);
-      await coverages.update(state.editingId, { ...payload, createdAt: existing?.createdAt ?? now, updatedAt: now });
-      toast(`Coverage “${payload.name}” updated.`);
-    } else {
-      await coverages.create({ ...payload, createdAt: now, updatedAt: now });
-      toast(`Coverage “${payload.name}” added.`);
-    }
-    dom.modal.close();
-    await load();
-  } catch (err) {
-    toast(err.message, 'err');
-  } finally {
-    dom.modalSubmit.disabled = false;
-  }
 };
 
 const askDelete = (id) => {
@@ -388,7 +296,7 @@ dom.body.addEventListener('click', (event) => {
   if (!button) return;
   const { action, id } = button.dataset;
   if (action === 'view') openView(id);
-  if (action === 'edit') openModal(state.rows.find((row) => row.id === id));
+  if (action === 'edit') location.href = `/coverage-form.html?id=${encodeURIComponent(id)}`;
   if (action === 'delete') askDelete(id);
   if (action === 'reset') {
     resetFilters();
@@ -404,90 +312,28 @@ dom.pagerControls.addEventListener('click', (event) => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-el('addBtn').addEventListener('click', () => openModal(null));
-el('modalClose').addEventListener('click', () => dom.modal.close());
-el('modalCancel').addEventListener('click', () => dom.modal.close());
-dom.form.addEventListener('submit', save);
-dom.form.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && event.target.tagName === 'INPUT') event.preventDefault();
-});
 el('confirmClose').addEventListener('click', () => dom.confirmModal.close());
 el('confirmCancel').addEventListener('click', () => dom.confirmModal.close());
 el('confirmOk').addEventListener('click', remove);
 
-/* ---- preview of the forms attached to the selected class of business ---- */
-const cobFormsBody = el('cobFormsBody');
-
-const formsForCob = (cob) =>
-  cob.forms
-    .map((attached) => {
-      const form = state.forms.find((f) => f.id === attached.formId);
-      if (!form) return null;
-      const sections = form.sections
-        .map((s) => ({ ...s, questions: s.questions.filter((q) => !attached.excluded.includes(q.id)) }))
-        .filter((s) => s.questions.length);
-      return { ...form, sections };
-    })
-    .filter(Boolean);
-
-const renderCobPreview = () => {
-  const { forms, active } = state.preview;
-  if (!forms.length) {
-    cobFormsBody.innerHTML = '<div class="empty">No Acord forms are attached to this class of business.</div>';
-    return;
-  }
-  const form = forms[active];
-  cobFormsBody.innerHTML = `
-    <div class="studio-nav" role="tablist">${forms
-      .map((f, i) => `<button type="button" role="tab" aria-selected="${i === active}" class="${i === active ? 'active' : ''}" data-ftab="${i}">${esc(f.name)}</button>`)
-      .join('')}</div>
-    <form onsubmit="return false">${form.sections.map((s, i) => renderPreviewSection(s, i)).join('')}</form>`;
-  cobFormsBody.querySelectorAll('.ac-repeat').forEach((section) => numberInstances(section, form.sections));
-};
-
-const openCobForms = () => {
-  const cob = state.cobs.find((c) => c.id === dom.form.elements.classOfBusiness.value);
-  if (!cob) return;
-  el('cobFormsTitle').textContent = `${cob.name} — attached forms`;
-  state.preview = { forms: formsForCob(cob), active: 0 };
-  renderCobPreview();
-  el('cobFormsModal').showModal();
-};
-
-el('cobEye').addEventListener('click', openCobForms);
-dom.form.elements.classOfBusiness.addEventListener('change', (event) => {
-  el('cobEye').disabled = !event.target.value;
-});
-el('cobFormsClose').addEventListener('click', () => el('cobFormsModal').close());
-el('cobFormsDone').addEventListener('click', () => el('cobFormsModal').close());
-cobFormsBody.addEventListener('click', (event) => {
-  const tab = event.target.closest('[data-ftab]');
-  if (tab) {
-    state.preview.active = Number(tab.dataset.ftab);
-    return renderCobPreview();
-  }
-  const btn = event.target.closest('[data-act]');
-  if (!btn) return;
-  const section = btn.closest('.ac-repeat');
-  const sections = state.preview.forms[state.preview.active].sections;
-  if (btn.dataset.act === 'inst-add') {
-    section.querySelector('.ac-instances').insertAdjacentHTML('beforeend', renderInstance(sections[section.dataset.si], true));
-  } else if (btn.dataset.act === 'inst-del') {
-    btn.closest('.ac-instance').remove();
-  } else return;
-  numberInstances(section, sections);
-});
-
 el('viewClose').addEventListener('click', () => dom.viewModal.close());
 el('viewCancel').addEventListener('click', () => dom.viewModal.close());
 el('viewEdit').addEventListener('click', () => {
-  const row = state.rows.find((item) => item.id === state.viewingId);
+  const id = state.viewingId;
   dom.viewModal.close();
-  if (row) openModal(row);
+  if (id) location.href = `/coverage-form.html?id=${encodeURIComponent(id)}`;
 });
 dom.viewModal.addEventListener('close', () => {
   state.viewingId = null;
 });
 
+
+try {
+  const flash = sessionStorage.getItem('coverageToast');
+  if (flash) {
+    sessionStorage.removeItem('coverageToast');
+    toast(flash);
+  }
+} catch { /* storage unavailable */ }
 
 load();
