@@ -2,6 +2,7 @@
 const ITEMS = [
   { label: 'Product Catalogue', icon: '▦', href: '/', match: (p, h) => p === '/' && (h === '' || h === 'products') },
   { label: 'Coverage', icon: '◫', href: '/coverage.html', match: (p) => p === '/coverage.html' || p === '/coverage-form.html' },
+  { label: 'Class of Business', icon: '▤', href: '/#class-of-business', match: (p, h) => p === '/' && h === 'class-of-business' },
   { label: 'Distribution', icon: '⇄', href: '/#distribution', match: (p, h) => p === '/' && h === 'distribution' },
   { label: 'Acord', icon: '▥', href: '/#acord', match: (p, h) => p === '/' && h === 'acord' },
 ];
