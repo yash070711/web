@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VeriDex · Product Studio</title>
+<<<<<<< HEAD
 <style>
 *{box-sizing:border-box}body{margin:0;background:#edf0f4;color:#1b2635;font-family:Inter,Arial,sans-serif;font-size:14px}button,input,select{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}
 .topbar{height:56px;background:#fff;border-bottom:1px solid #dbe2e9;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:12px;position:sticky;top:0;z-index:10}.top-left,.top-right{display:flex;align-items:center;gap:14px}.brand{font-weight:750;font-size:18px;letter-spacing:-.8px}.brand em{font-style:normal;color:#b84804}.portal{border-left:1px solid #dbe2e9;padding-left:14px;font-size:10px;color:#607087}.avatar{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#eaf0f5;font-size:10px}.account{font-size:10px;color:#5a6a7e}.notif{font-size:14px}.hamburger{display:none;background:#fff;border:1px solid #d5dfe8;border-radius:4px;padding:5px 9px;font-size:16px}
@@ -14,6 +15,9 @@ main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width
 @media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}@media(max-width:767px){.hamburger{display:block}.portal,.account{display:none}.sidebar{display:none;position:fixed;left:0;top:56px;bottom:0;width:240px;z-index:20;box-shadow:20px 0 60px #17263855}.sidebar.open{display:flex}main{padding:16px 14px}.page-header{flex-direction:column}.metrics{grid-template-columns:1fr 1fr}.detail-list{grid-template-columns:1fr}.tbl{min-width:720px}}
 </style>
 <link rel="stylesheet" href="/css/acord.css">
+=======
+<link rel="stylesheet" href="/css/app.css">
+>>>>>>> development
 </head>
 <body>
 <header class="topbar">
@@ -24,7 +28,7 @@ main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width
 <aside class="sidebar" id="sidebar">
   <div class="nav-heading">Product Studio</div>
   <a class="nav-item selected" href="http://localhost:3000/#products"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
-  <a class="nav-item" href="#coverage"><span class="nav-icon">◫</span><span class="nav-label">Coverage</span></a>
+  <a class="nav-item" href="/coverage.html"><span class="nav-icon">◫</span><span class="nav-label">Coverage</span></a>
   <a class="nav-item" href="#class-of-business"><span class="nav-icon">▤</span><span class="nav-label">Class of Business</span></a>
   <a class="nav-item" href="#distribution"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
   <a class="nav-item" href="#acord"><span class="nav-icon">▥</span><span class="nav-label">Acord</span></a>
@@ -35,7 +39,7 @@ main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width
     <div><div class="eyebrow">Product Configuration</div><h1>Commercial Auto</h1><p>Commercial trucking product configuration and rating setup.</p></div>
     <div class="tools"><button class="btn">Save Draft</button><button class="btn">Validate</button><button class="btn primary">Publish</button></div>
   </div>
-  <div class="studio-nav"><button class="active">Overview</button><button>Product</button><button>Risk</button><button>Coverage</button><button>Rules</button><button>Operations</button></div>
+  <div class="studio-nav"><button class="active">Overview</button><button>Product</button><button>Risk</button><a href="/coverage.html">Coverage</a><button>Rules</button><button>Operations</button></div>
   <section class="metrics">
     <div class="card"><div class="metric-label">Product Status</div><div class="metric-num" style="font-size:20px">Draft</div><span class="badge draft">Needs validation</span></div>
     <div class="card"><div class="metric-label">Coverages</div><div class="metric-num">7</div><div class="metric-sub">Configured for product</div></div>
@@ -58,7 +62,7 @@ main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width
         </dl>
       </section>
       <section class="card" style="margin-top:16px">
-        <div class="card-header"><div><div class="section-label">Coverage</div><div class="card-title">Configured Coverages</div></div><button class="btn sm">Configure Coverage</button></div>
+        <div class="card-header"><div><div class="section-label">Coverage</div><div class="card-title">Configured Coverages</div></div><a class="btn sm" href="/coverage.html">Configure Coverage</a></div>
         <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Coverage</th><th>Limit / Basis</th><th>Deductible</th><th>Status</th><th>Rating source</th></tr></thead><tbody>
           <tr><td><strong>Auto Liability</strong></td><td>$100,000</td><td>$1,000</td><td><span class="badge live">Configured</span></td><td>CA_Liab_LC + factors</td></tr>
           <tr><td><strong>Auto Physical Damage</strong></td><td>$100,000 TIV</td><td>$1,000</td><td><span class="badge live">Configured</span></td><td>PhysDamRatesByTIV</td></tr>
