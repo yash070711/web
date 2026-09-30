@@ -62,3 +62,8 @@ a.btn{display:inline-block}
 .select-row .icon-btn{width:34px;height:34px;display:grid;place-items:center}
 .select-row .icon-btn:disabled{opacity:.4;cursor:not-allowed}
 .modal.wide{width:min(940px,96vw)}
+
+/* --- Add / edit coverage page --- */
+.form-card{max-width:900px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;padding-top:16px;border-top:1px solid #eef1f5}
+.breadcrumb a{color:#68798e}.breadcrumb a:hover{color:#b84804}

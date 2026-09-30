@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VeriDex · Coverage</title>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/acord.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="top-left"><button class="hamburger" onclick="toggleMobile()" aria-label="Toggle navigation">☰</button><div class="brand">Veri<em>Dex</em></div><div class="portal">PRODUCT STUDIO</div></div>
+  <div class="top-right"><span class="notif">◌</span><div class="avatar">YS</div><div class="account">Yash Gaur · Admin</div></div>
+</header>
+<div class="app">
+<aside class="sidebar" id="sidebar" aria-label="Product Studio navigation"></aside>
+<main id="formPage">
+  <div class="breadcrumb"><a href="/coverage.html">Coverage</a> / <span id="crumb">New Coverage</span></div>
+  <div class="page-header">
+    <div>
+      <div class="eyebrow">Coverage</div>
+      <h1 id="pageTitle">Add New Coverage</h1>
+      <p>Define a coverage and the class of business it belongs to.</p>
+    </div>
+  </div>
+
+  <form id="coverageForm" novalidate>
+    <section class="card form-card">
+      <div class="field">
+        <label for="fName">Coverage Name <span class="req">*</span></label>
+        <input class="input" id="fName" name="name" maxlength="80" placeholder="e.g. Auto Liability" autocomplete="off">
+        <div class="err" data-err="name"></div>
+      </div>
+      <div class="field">
+        <label for="fDescription">Description</label>
+        <textarea class="input" id="fDescription" name="description" rows="4" maxlength="300" placeholder="What this coverage protects"></textarea>
+        <div class="err" data-err="description"></div>
+      </div>
+      <div class="field">
+        <label for="fType">Coverage Type <span class="req">*</span></label>
+        <select class="input" id="fType" name="coverageType">
+          <option value="">Select coverage type</option>
+          <option value="Main">Main</option>
+          <option value="Addition">Addition</option>
+        </select>
+        <div class="err" data-err="coverageType"></div>
+      </div>
+      <div class="field">
+        <label for="fStatus">Status <span class="req">*</span></label>
+        <select class="input" id="fStatus" name="status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fCob">Class of Business <span class="req">*</span></label>
+        <div class="select-row">
+          <select class="input" id="fCob" name="classOfBusiness"></select>
+          <button type="button" class="icon-btn" id="cobEye" title="View forms attached to this class of business" aria-label="View forms attached to this class of business" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="err" data-err="classOfBusiness"></div>
+      </div>
+    </section>
+
+    <section class="card form-card" id="picker-host" style="margin-top:16px"></section>
+
+    <div class="form-actions form-card">
+      <a class="btn" href="/coverage.html">Cancel</a>
+      <button type="submit" class="btn primary" id="submitBtn">Save Coverage</button>
+    </div>
+  </form>
+
+  <div class="footer"><span>VeriDex Product Studio · Coverage</span><span>Configuration workspace</span></div>
+</main>
+<main id="view-builder" hidden></main>
+</div>
+
+<dialog class="modal wide" id="cobFormsModal" aria-labelledby="cobFormsTitle">
+  <div class="modal-head">
+    <div>
+      <div class="eyebrow">Class of Business</div>
+      <div class="modal-title" id="cobFormsTitle">Attached forms</div>
+    </div>
+    <button type="button" class="icon-btn" id="cobFormsClose" aria-label="Close dialog">&times;</button>
+  </div>
+  <div class="modal-body" id="cobFormsBody"></div>
+  <div class="modal-foot">
+    <div class="modal-note">Preview only. Fields removed for this class of business are hidden.</div>
+    <div class="tools"><button type="button" class="btn" id="cobFormsDone">Close</button></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/js/nav.js"></script>
+<script type="module" src="/js/coverage-form.js"></script>
+</body>
+</html>
