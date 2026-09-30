@@ -3,12 +3,14 @@ import { esc, renderPreviewSection, renderInstance, numberInstances } from './fo
 
 const cobs = api('class_of_business');
 const acordForms = api('acord_forms');
+const coverageApi = api('coverages');
 const root = document.getElementById('view-cob');
 
 const allQuestions = (f) => f.sections.flatMap((s) => s.questions);
 
 let list = [];
 let forms = [];
+let coverages = [];
 let draft = null; // COB being edited; null = list view
 let error = '';
 const PAGE_SIZE = 5;
@@ -24,6 +26,7 @@ const includedCount = (f) => {
 const LIST_PAGE_SIZE = 8;
 let lv = { q: '', filter: 'all', form: '', page: 1 };
 
+const coverageCount = (cob) => coverages.filter((r) => (r.classOfBusiness || []).includes(cob.id)).length;
 const formName = (id) => forms.find((f) => f.id === id)?.name || 'Deleted form';
 const fieldTotals = (cob) => cob.forms.reduce((n, a) => {
   const f = forms.find((x) => x.id === a.formId);
@@ -53,9 +56,10 @@ function renderListBody() {
         <td>${c.forms.length ? `${c.forms.slice(0, 2).map((a) => `<span class="badge info" style="margin:0 4px 4px 0">${esc(formName(a.formId))}</span>`).join('')}${c.forms.length > 2 ? `<span class="badge draft" title="${esc(c.forms.slice(2).map((a) => formName(a.formId)).join(', '))}">+${c.forms.length - 2} more</span>` : ''}` : '<span class="ac-hint">None</span>'}</td>
         <td>${c.forms.length}</td>
         <td>${fieldTotals(c)}</td>
+        <td>${coverageCount(c)}</td>
         <td class="ac-list-actions"><button class="btn sm" data-act="view" data-id="${c.id}">Preview</button><button class="btn sm" data-act="edit" data-id="${c.id}">Edit</button><button class="btn sm" data-act="delete" data-id="${c.id}">Delete</button></td>
       </tr>`).join('')
-    : `<tr><td colspan="5" class="ac-empty">${list.length ? 'No classes of business match your search.' : 'No classes of business yet.'}</td></tr>`;
+    : `<tr><td colspan="6" class="ac-empty">${list.length ? 'No classes of business match your search.' : 'No classes of business yet.'}</td></tr>`;
   root.querySelector('#cob-pager').innerHTML = rows.length ? `
     <span class="ac-hint">Showing ${start + 1}–${Math.min(start + LIST_PAGE_SIZE, rows.length)} of ${rows.length}</span>
     <div class="cob-pages">
@@ -85,7 +89,7 @@ function renderList() {
         </select>
       </div>
       <div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>Class of business</th><th>Acord forms</th><th>Forms</th><th>Fields</th><th></th></tr></thead>
+        <thead><tr><th>Class of business</th><th>Acord forms</th><th>Forms</th><th>Fields</th><th>Coverages</th><th></th></tr></thead>
         <tbody id="cob-rows"></tbody>
       </table></div>
       <div class="cob-pager" id="cob-pager"></div>
@@ -191,7 +195,7 @@ const render = () => {
 };
 
 async function refresh() {
-  [list, forms] = await Promise.all([cobs.list(), acordForms.list()]);
+  [list, forms, coverages] = await Promise.all([cobs.list(), acordForms.list(), coverageApi.list()]);
   draft = null;
   view = null;
   render();
@@ -263,7 +267,12 @@ root.addEventListener('click', async (e) => {
     case 'ftab': view.active = +btn.dataset.i; break;
     case 'new': resetPicker(); draft = { name: '', description: '', forms: [] }; error = ''; break;
     case 'edit': resetPicker(); draft = structuredClone(cob); error = ''; break;
-    case 'delete': if (confirm('Delete this class of business?')) { await cobs.remove(cob.id); return refresh(); } return;
+    case 'delete': {
+      const n = coverageCount(cob);
+      if (n) { alert(`“${cob.name}” is used by ${n} coverage${n === 1 ? '' : 's'}. Reassign or delete those coverages first.`); return; }
+      if (confirm('Delete this class of business?')) { await cobs.remove(cob.id); return refresh(); }
+      return;
+    }
     case 'back': return refresh();
     case 'save': return save();
     default: return;

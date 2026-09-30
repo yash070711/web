@@ -1,6 +1,7 @@
 import { api } from './api.js';
 
 const coverages = api('coverages');
+const cobApi = api('class_of_business');
 
 const el = (id) => document.getElementById(id);
 const dom = {
@@ -33,6 +34,7 @@ const dom = {
 
 const state = {
   rows: [],
+  cobs: [],
   q: '',
   status: '',
   line: '',
@@ -54,6 +56,10 @@ const uniqueSorted = (values) => [...new Set(values.filter(Boolean))].sort((a, b
 const normalise = (value) => String(value ?? '').toLowerCase();
 
 const isActive = (row) => normalise(row.status) === 'active';
+
+const cobName = (id) => state.cobs.find((c) => c.id === id)?.name ?? 'Unknown class';
+const cobNames = (ids) => asList(ids).map(cobName);
+const usedCobIds = () => [...new Set(state.rows.flatMap((row) => asList(row.classOfBusiness)))];
 
 const distinct = (key) => uniqueSorted(state.rows.flatMap((row) => asList(row[key])));
 
@@ -84,14 +90,14 @@ const renderStats = () => {
   dom.statActive.textContent = state.rows.filter(isActive).length;
   dom.statInactive.textContent = state.rows.filter((row) => !isActive(row)).length;
   dom.statLines.textContent = lineOptions().length;
-  dom.statClasses.textContent = `${distinct('classOfBusiness').length} distinct classes of business`;
+  dom.statClasses.textContent = `${usedCobIds().length} of ${state.cobs.length} classes of business in use`;
 };
 
 const renderFilters = () => {
   const options = (values) => values.map((value) => `<option value="${esc(value)}">${esc(value)}</option>`).join('');
   dom.fStatus.innerHTML = '<option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option>';
   dom.fLine.innerHTML = '<option value="">All coverage lines</option>' + options(lineOptions());
-  dom.fClass.innerHTML = '<option value="">All classes of business</option>' + options(distinct('classOfBusiness'));
+  dom.fClass.innerHTML = '<option value="">All classes of business</option>' + state.cobs.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
   dom.fStatus.value = state.status;
   dom.fLine.value = state.line;
   dom.fClass.value = state.klass;
@@ -123,7 +129,7 @@ const openView = (id) => {
     item('Record ID', `<span class="mono">${esc(row.id)}</span>`),
     item('Status', badge(row)),
     item('Coverage Lines', tags(row.coverageLines) || '—'),
-    item('Class of Business', tags(row.classOfBusiness) || '—'),
+    item('Class of Business', tags(cobNames(row.classOfBusiness)) || '—'),
     item('Description', esc(row.description) || '—', true),
     item('Created', formatDate(row.createdAt)),
     item('Last Updated', formatDate(row.updatedAt)),
@@ -143,7 +149,7 @@ const renderTable = (rows) => {
       (row) => `<tr>
         <td><strong>${esc(row.name)}</strong><div class="sub mono">${esc(row.id)}</div></td>
         <td><div class="tags">${tags(row.coverageLines)}</div></td>
-        <td><div class="tags">${tags(row.classOfBusiness)}</div></td>
+        <td><div class="tags">${tags(cobNames(row.classOfBusiness))}</div></td>
         <td>${badge(row)}</td>
         <td class="right nowrap">
           <button class="btn sm" type="button" data-action="view" data-id="${esc(row.id)}">View</button>
@@ -248,7 +254,10 @@ const openModal = (row) => {
   dom.form.elements.description.value = row?.description ?? '';
   dom.form.elements.status.value = row ? normalise(row.status) || 'active' : 'active';
   dom.form.elements.coverageLines.innerHTML = optionsHtml(lineOptions(), 'Select coverage line');
-  dom.form.elements.classOfBusiness.innerHTML = optionsHtml(distinct('classOfBusiness'), 'Select class of business');
+  dom.form.elements.classOfBusiness.innerHTML = [
+    '<option value="">Select class of business</option>',
+    ...state.cobs.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`),
+  ].join('');
   selectValue(dom.form.elements.coverageLines, row?.coverageLines);
   selectValue(dom.form.elements.classOfBusiness, row?.classOfBusiness);
   dom.modal.showModal();
@@ -326,9 +335,11 @@ const remove = async () => {
 
 const load = async () => {
   try {
-    state.rows = await coverages.list();
+    [state.rows, state.cobs] = await Promise.all([coverages.list(), cobApi.list()]);
+    state.cobs.sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     state.rows = [];
+    state.cobs = [];
     toast(`Unable to load coverages: ${err.message}`, 'err');
   }
   render();
@@ -409,7 +420,5 @@ dom.viewModal.addEventListener('close', () => {
   state.viewingId = null;
 });
 
-window.toggleCollapse = () => dom.sidebar.classList.toggle('collapsed');
-window.toggleMobile = () => dom.sidebar.classList.toggle('open');
 
 load();
