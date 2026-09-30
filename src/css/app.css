@@ -55,3 +55,10 @@ a.btn{display:inline-block}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:#a3261f}
 @media(max-width:767px){.filter{max-width:none;flex:1 1 100%}.pager{justify-content:center}}
+
+/* --- Class of business form preview (coverage dialog) --- */
+.select-row{display:flex;gap:8px;align-items:center}
+.select-row .input{flex:1}
+.select-row .icon-btn{width:34px;height:34px;display:grid;place-items:center}
+.select-row .icon-btn:disabled{opacity:.4;cursor:not-allowed}
+.modal.wide{width:min(940px,96vw)}

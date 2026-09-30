@@ -1,7 +1,9 @@
 import { api } from './api.js';
+import { renderPreviewSection, renderInstance, numberInstances } from './form-render.js';
 
 const coverages = api('coverages');
 const cobApi = api('class_of_business');
+const formsApi = api('acord_forms');
 
 const el = (id) => document.getElementById(id);
 const dom = {
@@ -35,6 +37,8 @@ const dom = {
 const state = {
   rows: [],
   cobs: [],
+  forms: [],
+  preview: null,
   q: '',
   status: '',
   line: '',
@@ -260,6 +264,7 @@ const openModal = (row) => {
   ].join('');
   selectValue(dom.form.elements.coverageLines, row?.coverageLines);
   selectValue(dom.form.elements.classOfBusiness, row?.classOfBusiness);
+  el('cobEye').disabled = !dom.form.elements.classOfBusiness.value;
   dom.modal.showModal();
   dom.form.elements.name.focus();
 };
@@ -335,11 +340,12 @@ const remove = async () => {
 
 const load = async () => {
   try {
-    [state.rows, state.cobs] = await Promise.all([coverages.list(), cobApi.list()]);
+    [state.rows, state.cobs, state.forms] = await Promise.all([coverages.list(), cobApi.list(), formsApi.list()]);
     state.cobs.sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     state.rows = [];
     state.cobs = [];
+    state.forms = [];
     toast(`Unable to load coverages: ${err.message}`, 'err');
   }
   render();
@@ -408,6 +414,69 @@ dom.form.addEventListener('keydown', (event) => {
 el('confirmClose').addEventListener('click', () => dom.confirmModal.close());
 el('confirmCancel').addEventListener('click', () => dom.confirmModal.close());
 el('confirmOk').addEventListener('click', remove);
+
+/* ---- preview of the forms attached to the selected class of business ---- */
+const cobFormsBody = el('cobFormsBody');
+
+const formsForCob = (cob) =>
+  cob.forms
+    .map((attached) => {
+      const form = state.forms.find((f) => f.id === attached.formId);
+      if (!form) return null;
+      const sections = form.sections
+        .map((s) => ({ ...s, questions: s.questions.filter((q) => !attached.excluded.includes(q.id)) }))
+        .filter((s) => s.questions.length);
+      return { ...form, sections };
+    })
+    .filter(Boolean);
+
+const renderCobPreview = () => {
+  const { forms, active } = state.preview;
+  if (!forms.length) {
+    cobFormsBody.innerHTML = '<div class="empty">No Acord forms are attached to this class of business.</div>';
+    return;
+  }
+  const form = forms[active];
+  cobFormsBody.innerHTML = `
+    <div class="studio-nav" role="tablist">${forms
+      .map((f, i) => `<button type="button" role="tab" aria-selected="${i === active}" class="${i === active ? 'active' : ''}" data-ftab="${i}">${esc(f.name)}</button>`)
+      .join('')}</div>
+    <form onsubmit="return false">${form.sections.map((s, i) => renderPreviewSection(s, i)).join('')}</form>`;
+  cobFormsBody.querySelectorAll('.ac-repeat').forEach((section) => numberInstances(section, form.sections));
+};
+
+const openCobForms = () => {
+  const cob = state.cobs.find((c) => c.id === dom.form.elements.classOfBusiness.value);
+  if (!cob) return;
+  el('cobFormsTitle').textContent = `${cob.name} — attached forms`;
+  state.preview = { forms: formsForCob(cob), active: 0 };
+  renderCobPreview();
+  el('cobFormsModal').showModal();
+};
+
+el('cobEye').addEventListener('click', openCobForms);
+dom.form.elements.classOfBusiness.addEventListener('change', (event) => {
+  el('cobEye').disabled = !event.target.value;
+});
+el('cobFormsClose').addEventListener('click', () => el('cobFormsModal').close());
+el('cobFormsDone').addEventListener('click', () => el('cobFormsModal').close());
+cobFormsBody.addEventListener('click', (event) => {
+  const tab = event.target.closest('[data-ftab]');
+  if (tab) {
+    state.preview.active = Number(tab.dataset.ftab);
+    return renderCobPreview();
+  }
+  const btn = event.target.closest('[data-act]');
+  if (!btn) return;
+  const section = btn.closest('.ac-repeat');
+  const sections = state.preview.forms[state.preview.active].sections;
+  if (btn.dataset.act === 'inst-add') {
+    section.querySelector('.ac-instances').insertAdjacentHTML('beforeend', renderInstance(sections[section.dataset.si], true));
+  } else if (btn.dataset.act === 'inst-del') {
+    btn.closest('.ac-instance').remove();
+  } else return;
+  numberInstances(section, sections);
+});
 
 el('viewClose').addEventListener('click', () => dom.viewModal.close());
 el('viewCancel').addEventListener('click', () => dom.viewModal.close());
