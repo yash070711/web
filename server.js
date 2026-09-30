@@ -1,3 +1,5 @@
+import { readProducts, saveProducts, withProductLock } from './src/lib/product-store.js';
+import next from 'next';
 import http from 'node:http';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
@@ -6,8 +8,22 @@ import { randomUUID } from 'node:crypto';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
+const dev = !process.argv.includes('--production') && process.env.NODE_ENV !== 'production';
+const app = next({ dev, dir: ROOT });
+await app.prepare();
+const handleNext = app.getRequestHandler();
 const STATIC = { '/theme/': path.join(ROOT, 'theme'), '/': path.join(ROOT, 'src') };
 const DB_DIR = path.join(ROOT, 'database');
+
+// Clean URLs for the plain-HTML pages served from src/. Everything else falls through to Next.js.
+const HTML_PAGES = {
+  '/coverage': 'coverage.html',
+  '/coverage.html': 'coverage.html',
+  '/coverage-form': 'coverage-form.html',
+  '/coverage-form.html': 'coverage-form.html',
+  '/class-of-business': 'index.html',
+  '/acord': 'index.html',
+};
 
 const TYPES = {
   '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript',
@@ -27,8 +43,18 @@ const readBody = async (req) => {
 };
 
 const dbFile = (name) => path.join(DB_DIR, `${name}.json`);
-const load = async (name) => JSON.parse(await fs.readFile(dbFile(name), 'utf8'));
-const save = (name, rows) => fs.writeFile(dbFile(name), JSON.stringify(rows, null, 2) + '\n');
+const load = async (name) => name === 'products' ? readProducts() : JSON.parse(await fs.readFile(dbFile(name), 'utf8'));
+const save = (name, rows) => name === 'products' ? saveProducts(rows) : fs.writeFile(dbFile(name), JSON.stringify(rows, null, 2) + '\n');
+
+function nextProductId(rows) {
+  const BASE = 27;
+  const nums = rows
+    .map(r => r.productId || r.id)
+    .filter(Boolean)
+    .map(v => { const m = /^PRD-(\d+)$/.exec(String(v)); return m ? parseInt(m[1], 10) : 0; });
+  const max = Math.max(BASE, ...nums);
+  return `PRD-${String(max + 1).padStart(3, '0')}`;
+}
 
 async function handleApi(req, res, parts) {
   const [collection, id] = parts;
@@ -46,7 +72,18 @@ async function handleApi(req, res, parts) {
     return idx < 0 ? send(res, 404, { error: 'Not found' }) : send(res, 200, rows[idx]);
   }
   if (req.method === 'POST' && !id) {
-    const row = { ...(await readBody(req)), id: randomUUID() };
+    const body = await readBody(req);
+    const newId = randomUUID();
+    let row = { ...body, id: newId };
+    if (collection === 'products') {
+      row = {
+        ...row,
+        productId: nextProductId(rows),
+        version: body.version || '2026.01',
+        effectiveDate: body.effectiveDate || '2026 configuration',
+        href: `/products/${newId}`,
+      };
+    }
     rows.push(row);
     await save(collection, rows);
     return send(res, 201, row);
@@ -83,9 +120,24 @@ http.createServer(async (req, res) => {
   try {
     const { pathname } = new URL(req.url, 'http://localhost');
     if (pathname.startsWith('/api/')) {
-      return await handleApi(req, res, pathname.slice(5).split('/').filter(Boolean).map(decodeURIComponent));
+      const parts = pathname.slice(5).split('/').filter(Boolean).map(decodeURIComponent);
+      if (parts[0] === 'products') {
+        res.setHeader('Cache-Control', 'no-store');
+        return await withProductLock(() => handleApi(req, res, parts));
+      }
+      return await handleApi(req, res, parts);
     }
-    await handleStatic(res, decodeURIComponent(pathname));
+    if (['/theme/', '/css/', '/js/'].some(prefix => pathname.startsWith(prefix))) {
+      return await handleStatic(res, decodeURIComponent(pathname));
+    }
+    // Plain-HTML pages (Coverage, Class of Business, Acord) live in src/ and sit beside the Next.js app.
+    const page = HTML_PAGES[pathname.replace(/\/$/, '') || '/'];
+    if (page) return await handleStatic(res, `/${page}`);
+    if (pathname === '/index.html') {
+      res.writeHead(308, { Location: '/products' });
+      return res.end();
+    }
+    await handleNext(req, res);
   } catch (err) {
     send(res, 500, { error: err.message });
   }
