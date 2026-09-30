@@ -1,0 +1,38 @@
+[
+  {
+    "id": "PRD-027",
+    "name": "Commercial Auto",
+    "lineOfBusiness": "Commercial Auto",
+    "carrierId": "CAR-001",
+    "coverageIds": ["COV-0001", "COV-0002", "COV-0003", "COV-0004"],
+    "scope": "Carrier-approved commercial auto classes and coverages",
+    "status": "draft",
+    "version": "2026.08",
+    "createdAt": "2026-01-12T09:00:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "PRD-031",
+    "name": "Contractor General Liability",
+    "lineOfBusiness": "General Liability",
+    "carrierId": "CAR-002",
+    "coverageIds": ["COV-0005", "COV-0006"],
+    "scope": "Approved general liability and statutory employer liability classes",
+    "status": "draft",
+    "version": "2026.06",
+    "createdAt": "2026-01-16T13:00:00.000Z",
+    "updatedAt": "2026-02-06T09:18:00.000Z"
+  },
+  {
+    "id": "PRD-034",
+    "name": "Cyber Essentials",
+    "lineOfBusiness": "Cyber",
+    "carrierId": "CAR-003",
+    "coverageIds": ["COV-0014"],
+    "scope": "Carrier-approved cyber classes and coverages",
+    "status": "draft",
+    "version": "2026.04",
+    "createdAt": "2026-02-02T15:40:00.000Z",
+    "updatedAt": "2026-02-10T11:25:00.000Z"
+  }
+]

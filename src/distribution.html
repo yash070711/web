@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VeriDex · Distribution</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="top-left"><button class="hamburger" onclick="toggleMobile()" aria-label="Toggle navigation">☰</button><div class="brand">Veri<em>Dex</em></div><div class="portal">PRODUCT STUDIO</div></div>
+  <div class="top-right"><span class="notif">◌</span><div class="avatar">YS</div><div class="account">Yash Gaur · Admin</div></div>
+</header>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="nav-heading">Product Studio</div>
+  <a class="nav-item" href="/"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
+  <a class="nav-item" href="/coverage.html"><span class="nav-icon">◫</span><span class="nav-label">Coverage</span></a>
+  <a class="nav-item" href="/#class-of-business"><span class="nav-icon">▤</span><span class="nav-label">Class of Business</span></a>
+  <a class="nav-item selected" href="/distribution.html" aria-current="page"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
+  <button class="collapse-btn" onclick="toggleCollapse()">Collapse</button>
+</aside>
+<main>
+  <div class="page-header">
+    <div>
+      <h1>Distribution</h1>
+      <div class="product-picker">
+        <label class="picker-label" for="productSelect">Product</label>
+        <select class="filter" id="productSelect" aria-label="Select product"></select>
+      </div>
+    </div>
+  </div>
+
+  <dl class="card summary">
+    <div class="summary-item">
+      <dt>Product</dt>
+      <dd id="sumProduct">—</dd>
+      <div class="hint" id="sumProductVersion">—</div>
+    </div>
+    <div class="summary-item">
+      <dt>Carrier</dt>
+      <dd id="sumCarrier">—</dd>
+      <div class="hint" id="sumCarrierHint">—</div>
+    </div>
+    <div class="summary-item">
+      <dt>Product Scope</dt>
+      <dd id="sumScope">—</dd>
+      <div class="hint" id="sumScopeHint">—</div>
+    </div>
+  </dl>
+
+  <div class="studio-nav" role="tablist" aria-label="Distribution workflow">
+    <button class="active" type="button" data-step="1" role="tab" aria-selected="true">1. Reinsurance</button>
+    <button type="button" data-step="2" role="tab" aria-selected="false">2. Channel Configuration</button>
+  </div>
+
+  <section class="card step-panel">
+    <div class="card-header">
+      <div>
+        <div class="card-title" id="stepTitle">Reinsurance</div>
+        <div class="card-subtitle" id="stepSubtitle">Select reinsurers and allocate product risk before configuring distribution channels.</div>
+      </div>
+    </div>
+    <div class="panel-body" id="stepBody"></div>
+    <div class="panel-foot">
+      <div class="status-line" id="stepStatus"></div>
+      <div class="tools">
+        <button class="btn" id="stepCancel" type="button" hidden>Back to Reinsurance</button>
+        <button class="btn primary" id="stepSave" type="button">Save &amp; Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer"><span>VeriDex Product Studio · <span id="footerProduct">Distribution</span></span><span>Configuration workspace</span></div>
+</main>
+</div>
+
+<dialog class="modal" id="addChannelModal" aria-labelledby="addChannelTitle">
+  <form id="addChannelForm" novalidate>
+    <div class="modal-head">
+      <div>
+        <div class="eyebrow">Distribution Channel</div>
+        <div class="modal-title" id="addChannelTitle">Add Another Channel</div>
+      </div>
+      <button type="button" class="icon-btn" id="addChannelClose" aria-label="Close dialog">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" style="margin-bottom:16px">Select an approved organization to assign alongside the existing channels. Settings already configured remain unchanged.</p>
+      <div class="field">
+        <label for="addChannelType">Channel Type <span class="req">*</span></label>
+        <select class="input" id="addChannelType" name="channelType"></select>
+        <div class="err" data-err="channelType"></div>
+      </div>
+      <div class="field">
+        <label for="addChannelName">Approved Channel Organization <span class="req">*</span></label>
+        <select class="input" id="addChannelName" name="channelId"></select>
+        <div class="err" data-err="channelId"></div>
+      </div>
+      <div class="guidance" id="addChannelHint"></div>
+    </div>
+    <div class="modal-foot">
+      <div class="modal-note" id="addChannelNote"></div>
+      <div class="tools">
+        <button type="button" class="btn" id="addChannelCancel">Cancel</button>
+        <button type="submit" class="btn primary" id="addChannelSubmit">Add Channel</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/js/distribution.js"></script>
+</body>
+</html>

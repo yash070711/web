@@ -1,0 +1,58 @@
+[
+  {
+    "id": "REI-001",
+    "name": "Global Re Ltd.",
+    "status": "approved",
+    "rating": "A+",
+    "createdAt": "2026-01-12T09:00:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "REI-002",
+    "name": "Atlantic Re",
+    "status": "approved",
+    "rating": "A",
+    "createdAt": "2026-01-12T09:05:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "REI-003",
+    "name": "Continental Re",
+    "status": "approved",
+    "rating": "A+",
+    "createdAt": "2026-01-12T09:10:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "REI-004",
+    "name": "PartnerRe",
+    "status": "approved",
+    "rating": "A",
+    "createdAt": "2026-01-13T10:00:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "REI-005",
+    "name": "Hannover Re",
+    "status": "approved",
+    "rating": "AA-",
+    "createdAt": "2026-01-13T10:05:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "REI-006",
+    "name": "SCOR Global P&C",
+    "status": "approved",
+    "rating": "A",
+    "createdAt": "2026-01-13T10:10:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "REI-007",
+    "name": "Maple Ridge Re",
+    "status": "pending",
+    "rating": "A-",
+    "createdAt": "2026-01-14T11:00:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  }
+]

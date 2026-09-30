@@ -1,0 +1,37 @@
+[
+  {
+    "id": "CAR-001",
+    "name": "Falcon Risk Insurance Company",
+    "status": "active",
+    "maxBindingLimits": {
+      "COV-0001": 1000000,
+      "COV-0002": 250000,
+      "COV-0003": 250000,
+      "COV-0004": 500000
+    },
+    "createdAt": "2026-01-10T08:00:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "CAR-002",
+    "name": "Harborline Insurance Group",
+    "status": "active",
+    "maxBindingLimits": {
+      "COV-0005": 2000000,
+      "COV-0006": 1000000,
+      "COV-0009": 5000000
+    },
+    "createdAt": "2026-01-10T08:05:00.000Z",
+    "updatedAt": "2026-02-04T10:22:00.000Z"
+  },
+  {
+    "id": "CAR-003",
+    "name": "Meridian Specialty P&C",
+    "status": "active",
+    "maxBindingLimits": {
+      "COV-0014": 2000000
+    },
+    "createdAt": "2026-01-11T09:00:00.000Z",
+    "updatedAt": "2026-02-05T11:10:00.000Z"
+  }
+]

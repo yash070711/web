@@ -1,0 +1,74 @@
+[
+  {
+    "id": "CHN-001",
+    "name": "National Transport Underwriters",
+    "type": "MGU",
+    "status": "approved",
+    "createdAt": "2026-01-15T09:00:00.000Z",
+    "updatedAt": "2026-02-06T09:15:00.000Z"
+  },
+  {
+    "id": "CHN-002",
+    "name": "Fleet Risk Managers",
+    "type": "MGU",
+    "status": "approved",
+    "createdAt": "2026-01-15T09:05:00.000Z",
+    "updatedAt": "2026-02-06T09:15:00.000Z"
+  },
+  {
+    "id": "CHN-003",
+    "name": "Southwest Specialty MGA",
+    "type": "MGA",
+    "status": "approved",
+    "createdAt": "2026-01-15T09:10:00.000Z",
+    "updatedAt": "2026-02-06T09:15:00.000Z"
+  },
+  {
+    "id": "CHN-004",
+    "name": "Interstate Program Administrators",
+    "type": "MGA",
+    "status": "approved",
+    "createdAt": "2026-01-15T09:15:00.000Z",
+    "updatedAt": "2026-02-06T09:15:00.000Z"
+  },
+  {
+    "id": "CHN-005",
+    "name": "Roadway Brokers LLC",
+    "type": "Broker",
+    "status": "approved",
+    "createdAt": "2026-01-16T10:00:00.000Z",
+    "updatedAt": "2026-02-06T09:20:00.000Z"
+  },
+  {
+    "id": "CHN-006",
+    "name": "TruckSure Brokerage",
+    "type": "Broker",
+    "status": "approved",
+    "createdAt": "2026-01-16T10:05:00.000Z",
+    "updatedAt": "2026-02-06T09:20:00.000Z"
+  },
+  {
+    "id": "CHN-007",
+    "name": "Roadway Agency",
+    "type": "Agent",
+    "status": "approved",
+    "createdAt": "2026-01-16T10:10:00.000Z",
+    "updatedAt": "2026-02-06T09:25:00.000Z"
+  },
+  {
+    "id": "CHN-008",
+    "name": "Fleet Insurance Partners",
+    "type": "Agent",
+    "status": "approved",
+    "createdAt": "2026-01-16T10:15:00.000Z",
+    "updatedAt": "2026-02-06T09:25:00.000Z"
+  },
+  {
+    "id": "CHN-009",
+    "name": "Coastal Underwriting Partners",
+    "type": "MGA",
+    "status": "pending",
+    "createdAt": "2026-01-17T11:00:00.000Z",
+    "updatedAt": "2026-02-06T09:25:00.000Z"
+  }
+]
