@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VeriDex · Coverage</title>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/acord.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="top-left"><button class="hamburger" onclick="toggleMobile()" aria-label="Toggle navigation">☰</button><div class="brand">Veri<em>Dex</em></div><div class="portal">PRODUCT STUDIO</div></div>
+  <div class="top-right"><span class="notif">◌</span><div class="avatar">YS</div><div class="account">Yash Gaur · Admin</div></div>
+</header>
+<div class="app">
+<aside class="sidebar" id="sidebar" aria-label="Product Studio navigation"></aside>
+<main>
+  <div class="page-header">
+    <div>
+      <h1>Coverage</h1>
+    </div>
+    <div class="tools">
+      <a class="btn primary" id="addBtn" href="/coverage-form.html">New Coverage</a>
+    </div>
+  </div>
+
+  <section class="metrics">
+    <div class="card"><div class="metric-label">Total Coverages</div><div class="metric-num" id="statTotal">—</div><div class="metric-sub">In coverage library</div></div>
+    <div class="card"><div class="metric-label">Active</div><div class="metric-num" id="statActive">—</div><div class="metric-sub">Published and selectable</div></div>
+    <div class="card"><div class="metric-label">Inactive</div><div class="metric-num" id="statInactive">—</div><div class="metric-sub">Hidden from configuration</div></div>
+    <div class="card"><div class="metric-label">Coverage Lines</div><div class="metric-num" id="statLines">—</div><div class="metric-sub" id="statClasses">Distinct classes of business</div></div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">All Coverages</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input class="search" id="q" type="search" placeholder="Search coverage name…" autocomplete="off" aria-label="Search coverages by name">
+      <select class="filter" id="fStatus" aria-label="Filter by status"><option value="">All statuses</option></select>
+      <select class="filter" id="fLine" aria-label="Filter by coverage line"><option value="">All coverage lines</option></select>
+      <select class="filter" id="fClass" aria-label="Filter by class of business"><option value="">All classes of business</option></select>
+      <select class="filter" id="fSize" aria-label="Rows per page">
+        <option value="10">10 / page</option>
+        <option value="25">25 / page</option>
+        <option value="50">50 / page</option>
+        <option value="100">100 / page</option>
+      </select>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl" id="covTable">
+        <thead><tr>
+          <th>Coverage</th>
+          <th>Coverage Lines</th>
+          <th>Coverage Type</th>
+          <th>Class of Business</th>
+          <th>Status</th>
+          <th class="right">Actions</th>
+        </tr></thead>
+        <tbody id="covBody"></tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <div class="pager-info" id="pagerInfo">—</div>
+      <div class="pager-controls" id="pagerControls"></div>
+    </div>
+  </section>
+
+  <div class="footer"><span>VeriDex Product Studio · Coverage</span><span>Configuration workspace</span></div>
+</main>
+</div>
+
+<dialog class="modal view" id="viewModal" aria-labelledby="viewTitle">
+  <div class="modal-head">
+    <div>
+      <div class="modal-title" id="viewTitle">Coverage Details</div>
+    </div>
+    <button type="button" class="icon-btn" id="viewClose" aria-label="Close dialog">&times;</button>
+  </div>
+  <div class="modal-body">
+    <dl class="detail-list" id="viewBody"></dl>
+  </div>
+  <div class="modal-foot">
+    <div class="modal-note" id="viewNote"></div>
+    <div class="tools">
+      <button type="button" class="btn" id="viewCancel">Close</button>
+      <button type="button" class="btn primary" id="viewEdit">Edit</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal confirm" id="confirmModal" aria-labelledby="confirmTitle">
+  <div class="modal-head">
+    <div>
+      <div class="eyebrow">Delete Coverage</div>
+      <div class="modal-title" id="confirmTitle">Confirm removal</div>
+    </div>
+    <button type="button" class="icon-btn" id="confirmClose" aria-label="Close dialog">&times;</button>
+  </div>
+  <div class="modal-body">
+    <p class="confirm-text" id="confirmText"></p>
+  </div>
+  <div class="modal-foot">
+    <div class="modal-note">This permanently removes the record.</div>
+    <div class="tools">
+      <button type="button" class="btn" id="confirmCancel">Cancel</button>
+      <button type="button" class="btn danger" id="confirmOk">Delete Coverage</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="/js/nav.js"></script>
+<script type="module" src="/js/coverage.js"></script>
+</body>
+</html>

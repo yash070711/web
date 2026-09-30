@@ -1,0 +1,769 @@
+[
+  {
+    "id": "acord-99",
+    "name": "ACORD 99",
+    "description": "Insured and policy details.",
+    "status": "Draft",
+    "layout": "stacked",
+    "sections": [
+      {
+        "id": "acord99-main",
+        "title": "Insured",
+        "columns": 2,
+        "questions": [
+          {
+            "id": "insured-name",
+            "type": "text",
+            "label": "Insured Name/DBA",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "mailing-address",
+            "type": "text",
+            "label": "Mailing Address",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "mailing-city",
+            "type": "text",
+            "label": "Mailing City",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "mailing-state",
+            "type": "text",
+            "label": "Mailing State",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "mailing-zip",
+            "type": "text",
+            "label": "Mailing Zip Code",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "effective-date",
+            "type": "date",
+            "label": "Policy Effective Date",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "policy-type",
+            "type": "dropdown",
+            "label": "Policy Type",
+            "help": "",
+            "required": false,
+            "options": [
+              "New Business",
+              "Renewal"
+            ]
+          },
+          {
+            "id": "prior-carrier",
+            "type": "text",
+            "label": "Prior Carrier",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "years-in-business",
+            "type": "dropdown",
+            "label": "Years in Business",
+            "help": "",
+            "required": false,
+            "options": [
+              "New",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7+"
+            ]
+          },
+          {
+            "id": "carrier-safety-rating",
+            "type": "dropdown",
+            "label": "Carrier Safety Rating",
+            "help": "",
+            "required": false,
+            "options": [
+              "Satisfactory",
+              "None",
+              "Conditional",
+              "Unsatisfactory"
+            ]
+          },
+          {
+            "id": "fmcsa-alerts",
+            "type": "dropdown",
+            "label": "FMCSA Alerts",
+            "help": "",
+            "required": false,
+            "options": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4+"
+            ]
+          },
+          {
+            "id": "requires-icc-filing",
+            "type": "dropdown",
+            "label": "Requires ICC Filing",
+            "help": "",
+            "required": false,
+            "options": [
+              "Yes",
+              "No"
+            ]
+          },
+          {
+            "id": "dashcams",
+            "type": "dropdown",
+            "label": "Dashcams?",
+            "help": "",
+            "required": false,
+            "options": [
+              "No Dashcams",
+              "YES - Non-Preferred Vendors",
+              "YES - Preferred Vendors"
+            ]
+          },
+          {
+            "id": "oos-vehicles",
+            "type": "dropdown",
+            "label": "Out of Service Violations - Vehicles",
+            "help": "",
+            "required": false,
+            "options": [
+              "No Inspections",
+              "≤10%",
+              ">10% and ≤15%",
+              ">15% and ≤20%",
+              ">20% and ≤30%",
+              ">30% and ≤40%",
+              ">40% and ≤50%",
+              ">50%"
+            ]
+          },
+          {
+            "id": "oos-drivers",
+            "type": "dropdown",
+            "label": "Out of Service Violations - Drivers",
+            "help": "",
+            "required": false,
+            "options": [
+              "No Inspections",
+              "≤4%",
+              ">4% and ≤8%",
+              ">8% and ≤12%",
+              ">12% and ≤18%",
+              ">18% and ≤25%",
+              ">25% and ≤33%",
+              ">33%"
+            ]
+          },
+          {
+            "id": "loss-frequency",
+            "type": "dropdown",
+            "label": "Loss Frequency (Most recent 3 years)",
+            "help": "",
+            "required": false,
+            "options": [
+              "No Loss Data",
+              ">=0% and <=10% (1 to 5 Unit Account)",
+              ">=0% and <=10% (6 to 10 Unit Account)",
+              ">=0% and <=10% (11 to 25 Unit Account)",
+              ">=0% and <=10% (26 to 49 Unit Account)",
+              ">=0% and <=10% (50+ Unit Account)",
+              ">10% and <=15% (1 to 5 Unit Account)",
+              ">10% and <=15% (6 to 10 Unit Account)",
+              ">10% and <=15% (11 to 25 Unit Account)",
+              ">10% and <=15% (26 to 49 Unit Account)",
+              ">10% and <=15% (50+ Unit Account)",
+              ">15% and <=20% (1 to 5 Unit Account)",
+              ">15% and <=20% (6 to 10 Unit Account)",
+              ">15% and <=20% (11 to 25 Unit Account)",
+              ">15% and <=20% (26 to 49 Unit Account)",
+              ">15% and <=20% (50+ Unit Account)",
+              ">20% and <=24% (1 to 5 Unit Account)",
+              ">20% and <=24% (6 to 10 Unit Account)",
+              ">20% and <=24% (11 to 25 Unit Account)",
+              ">20% and <=24% (26 to 49 Unit Account)",
+              ">20% and <=24% (50+ Unit Account)",
+              ">24% and <=26% (1 to 5 Unit Account)",
+              ">24% and <=26% (6 to 10 Unit Account)",
+              ">24% and <=26% (11 to 25 Unit Account)",
+              ">24% and <=26% (26 to 49 Unit Account)",
+              ">24% and <=26% (50+ Unit Account)",
+              ">26% and <=40% (1 to 5 Unit Account)",
+              ">26% and <=40% (6 to 10 Unit Account)",
+              ">26% and <=40% (11 to 25 Unit Account)",
+              ">26% and <=40% (26 to 49 Unit Account)",
+              ">26% and <=40% (50+ Unit Account)",
+              ">40% and <=60% (1 to 5 Unit Account)",
+              ">40% and <=60% (6 to 10 Unit Account)",
+              ">40% and <=60% (11 to 25 Unit Account)",
+              ">40% and <=60% (26 to 49 Unit Account)",
+              ">40% and <=60% (50+ Unit Account)",
+              ">60% (1 to 5 Unit Account)",
+              ">60% (6 to 10 Unit Account)",
+              ">60% (11 to 25 Unit Account)",
+              ">60% (26 to 49 Unit Account)",
+              ">60% (50+ Unit Account)"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "acord99-drivers",
+        "title": "Drivers",
+        "columns": 2,
+        "repeatable": true,
+        "itemLabel": "Driver",
+        "questions": [
+          {
+            "id": "driver-age",
+            "type": "number",
+            "label": "Age",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "driver-license-state",
+            "type": "dropdown",
+            "label": "Driver License State",
+            "help": "",
+            "required": false,
+            "options": [
+              "Alabama",
+              "Alaska",
+              "Arizona",
+              "Arkansas",
+              "California",
+              "Colorado",
+              "Connecticut",
+              "Delaware",
+              "District of Columbia",
+              "Florida",
+              "Georgia",
+              "Hawaii",
+              "Idaho",
+              "Illinois",
+              "Indiana",
+              "Iowa",
+              "Kansas",
+              "Kentucky",
+              "Louisiana",
+              "Maine",
+              "Maryland",
+              "Massachusetts",
+              "Michigan",
+              "Minnesota",
+              "Mississippi",
+              "Missouri",
+              "Montana",
+              "Nebraska",
+              "Nevada",
+              "New Hampshire",
+              "New Jersey",
+              "New Mexico",
+              "New York",
+              "North Carolina",
+              "North Dakota",
+              "Ohio",
+              "Oklahoma",
+              "Oregon",
+              "Pennsylvania",
+              "Rhode Island",
+              "South Carolina",
+              "South Dakota",
+              "Tennessee",
+              "Texas",
+              "Utah",
+              "Vermont",
+              "Virginia",
+              "Washington",
+              "West Virginia",
+              "Wisconsin",
+              "Wyoming"
+            ]
+          },
+          {
+            "id": "driver-cdl-experience",
+            "type": "dropdown",
+            "label": "CDL Experience (Years)",
+            "help": "",
+            "required": false,
+            "options": [
+              "0",
+              "1",
+              "2",
+              "3+"
+            ]
+          },
+          {
+            "id": "driver-has-violations",
+            "type": "yesno",
+            "label": "Violations/Accidents in Past 36 Months?",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "driver-violation-type",
+            "type": "dropdown",
+            "label": "Violation Type",
+            "help": "",
+            "required": false,
+            "options": [
+              "Not At Fault Accident",
+              "At Fault Accident",
+              "Speeding (1-15)",
+              "Speeding (15+)",
+              "Serious Speed or (30+)",
+              "Speed on Down Grade",
+              "Coasting",
+              "Failure to Yield",
+              "Improper Turn",
+              "Driving too Slowly",
+              "Too Fast for Conditions/Unsafe speed for Condition",
+              "Following too Closely",
+              "Failure to Obey Stop Sign or Traffic Device",
+              "Improper Start From Parked Position",
+              "Block Intersection",
+              "Stopping/Parking on Freeway",
+              "Operating Left of Center",
+              "Cellphone Violation",
+              "Failure to Clear Railway/Block Railroad Crossing",
+              "Driving Wrong Way",
+              "Driving While License Suspended/Revoked/Expired",
+              "Reckless Driving/Careless Driving/Inattentive Driving/Negligent Driving/Improper Driving",
+              "Leaving the Scene of Accident",
+              "Street Racing (Speed Contest)",
+              "Drug/Alcohol Related Offenses (DUI,DWI)",
+              "Implied Consent",
+              "Other Minor Violation",
+              "Non-Moving Violation",
+              "Vehicular homicide/manslaughter"
+            ]
+          },
+          {
+            "id": "driver-violations-12",
+            "type": "number",
+            "label": "Number of Violations - In Past 12 Months",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "driver-violations-12-24",
+            "type": "number",
+            "label": "Number of Violations - In Past 12-24 Months",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "driver-violations-24-36",
+            "type": "number",
+            "label": "Number of Violations - In Past 24-36 Months",
+            "help": "",
+            "required": false,
+            "options": []
+          }
+        ]
+      },
+      {
+        "id": "acord99-vehicles",
+        "title": "Vehicles",
+        "columns": 2,
+        "repeatable": true,
+        "itemLabel": "Vehicle",
+        "questions": [
+          {
+            "id": "vehicle-type",
+            "type": "dropdown",
+            "label": "Vehicle Type",
+            "help": "",
+            "required": false,
+            "options": [
+              "Trucks, Tractors And Trailers",
+              "Private Passenger Types"
+            ]
+          },
+          {
+            "id": "vehicle-description",
+            "type": "text",
+            "label": "Vehicle Description",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "garaging-state",
+            "type": "dropdown",
+            "label": "Garaging State",
+            "help": "",
+            "required": false,
+            "options": [
+              "Alabama",
+              "Alaska",
+              "Arizona",
+              "Arkansas",
+              "California",
+              "Colorado",
+              "Connecticut",
+              "Delaware",
+              "District of Columbia",
+              "Florida",
+              "Georgia",
+              "Hawaii",
+              "Idaho",
+              "Illinois",
+              "Indiana",
+              "Iowa",
+              "Kansas",
+              "Kentucky",
+              "Louisiana",
+              "Maine",
+              "Maryland",
+              "Massachusetts",
+              "Michigan",
+              "Minnesota",
+              "Mississippi",
+              "Missouri",
+              "Montana",
+              "Nebraska",
+              "Nevada",
+              "New Hampshire",
+              "New Jersey",
+              "New Mexico",
+              "New York",
+              "North Carolina",
+              "North Dakota",
+              "Ohio",
+              "Oklahoma",
+              "Oregon",
+              "Pennsylvania",
+              "Rhode Island",
+              "South Carolina",
+              "South Dakota",
+              "Tennessee",
+              "Texas",
+              "Utah",
+              "Vermont",
+              "Virginia",
+              "Washington",
+              "West Virginia",
+              "Wisconsin",
+              "Wyoming"
+            ]
+          },
+          {
+            "id": "garaging-zip",
+            "type": "text",
+            "label": "Garaging Zip Code",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "garaging-city",
+            "type": "text",
+            "label": "Garaging City",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "model-year",
+            "type": "number",
+            "label": "Model Year",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "valuation-basis",
+            "type": "dropdown",
+            "label": "Valuation Basis",
+            "help": "",
+            "required": false,
+            "options": [
+              "Original Cost New",
+              "Stated Amount"
+            ]
+          },
+          {
+            "id": "vehicle-value",
+            "type": "currency",
+            "label": "Vehicle Value ($)",
+            "help": "",
+            "required": false,
+            "options": []
+          },
+          {
+            "id": "naics-code",
+            "type": "dropdown",
+            "label": "NAICS Code",
+            "help": "",
+            "required": false,
+            "options": [
+              "484110 -- General Freight Trucking, Local",
+              "484121 -- General Freight Trucking, Long-Distance, Truckload",
+              "484122 -- General Freight Trucking, Long-Distance, Less Than Truckload",
+              "484220 -- Specialized Freight (except Used Goods) Trucking, Local",
+              "484230 -- Specialized Freight (except Used Goods) Trucking, Long-Distance"
+            ]
+          },
+          {
+            "id": "primary-class",
+            "type": "dropdown",
+            "label": "Primary Class",
+            "help": "",
+            "required": false,
+            "options": [
+              "Light, Service, Local Truck",
+              "Light, Service, Intermediate Truck",
+              "Light, Service, Long Distance Truck",
+              "Light, Retail, Local Truck",
+              "Light, Retail, Intermediate Truck",
+              "Light, Retail, Long Distance Truck",
+              "Light, Commercial, Local Truck",
+              "Light, Commercial, Intermediate Truck",
+              "Light, Commercial, Long Distance Truck",
+              "Medium, Service, Local Truck",
+              "Medium, Service, Intermediate Truck",
+              "Medium, Retail, Local Truck",
+              "Medium, Retail, Intermediate Truck",
+              "Medium, Commercial, Local Truck",
+              "Medium, Commercial, Intermediate Truck",
+              "Heavy, Service, Local Truck",
+              "Heavy, Service, Intermediate Truck",
+              "Heavy, Retail, Local Truck",
+              "Heavy, Retail, Intermediate Truck",
+              "Heavy, Commercial, Local Truck",
+              "Heavy, Commercial, Intermediate Truck",
+              "Heavy, Service, Local Truck-Tractor",
+              "Heavy, Service, Intermediate Truck-Tractor",
+              "Heavy, Retail, Local Truck-Tractor",
+              "Heavy, Retail, Intermediate Truck-Tractor",
+              "Heavy, Commercial, Local Truck-Tractor",
+              "Heavy, Commercial, Intermediate Truck-Tractor",
+              "Extra-Heavy, Local Truck",
+              "Extra-Heavy, Intermediate Truck",
+              "Extra-Heavy, Local Truck-Tractor",
+              "Extra-Heavy, Intermediate Truck-Tractor",
+              "Semitrailer, Local",
+              "Semitrailer, Intermediate",
+              "Trailer, Local",
+              "Trailer, Intermediate",
+              "Service or Utility Trailer, Local",
+              "Service or Utility Trailer, Intermediate",
+              "Medium, Service, Long Distance Truck",
+              "Medium, Retail, Long Distance Truck",
+              "Medium, Commercial, Long Distance Truck",
+              "Heavy, Service, Long Distance Truck",
+              "Heavy, Retail, Long Distance Truck",
+              "Heavy, Commercial, Long Distance Truck",
+              "Heavy, Service, Long Distance Truck-Tractor",
+              "Heavy, Retail, Long Distance Truck-Tractor",
+              "Heavy, Commercial, Long Distance Truck-Tractor",
+              "Extra-Heavy, Long Distance Truck",
+              "Extra-Heavy, Long Distance Truck-Tractor",
+              "Semitrailer, Long Distance",
+              "Trailer, Long Distance",
+              "Service or Utility Trailer, Long Distance"
+            ]
+          },
+          {
+            "id": "trailer-type",
+            "type": "dropdown",
+            "label": "Trailer Type",
+            "help": "",
+            "required": false,
+            "options": [
+              "Reefer",
+              "All Others",
+              "Auto or Boat Hauling",
+              "Container/Intermodal Hauling",
+              "Courier-Specialized Delivery",
+              "Agricultural Goods Hauling",
+              "Dry Van or Box - Double Trailer",
+              "Dry Van or Box - Single Trailer",
+              "Sand & Gravel Dumping",
+              "Dumping - Coal",
+              "Flatbed",
+              "Livestock",
+              "Log or Pulp Hauling",
+              "Mobile Home Hauling",
+              "Refrigerated Goods",
+              "Special Type Operations - Oversize/Overweight (STP)",
+              "Tanker - Fuel",
+              "Tanker - Liquids or Compressed Gases",
+              "Towing and Recovery - Loaded GVW 20,000 or less",
+              "Towing and Recovery - Loaded GVW 20,001- 45,000",
+              "Towing and Recovery - Loaded GVW over 45,000",
+              "Waste or Garbage",
+              "Oilfield Equipment (STP)",
+              "Roll-Offs (For hire and Commercial only)",
+              "Concrete Pumpers, Redi-Mix, Mix-in-Transit (STP)",
+              "Frac Sand - Clean (STP)",
+              "Frac Sand - Dirty (STP)",
+              "Hot Shots (Dually Pickups only)",
+              "Hay, Grain, Feed Haulers",
+              "Private Fleets (Not for Hire)",
+              "Dirty Dirt"
+            ]
+          },
+          {
+            "id": "radius",
+            "type": "dropdown",
+            "label": "Radius",
+            "help": "",
+            "required": false,
+            "options": [
+              "Statewide-500",
+              "Regional-1000",
+              "Long Haul-1001+"
+            ]
+          },
+          {
+            "id": "annual-miles",
+            "type": "dropdown",
+            "label": "Annual Miles Driven",
+            "help": "",
+            "required": false,
+            "options": [
+              "0 - 25,000",
+              "25,001 - 50,000",
+              "50,001 - 75,000",
+              "75,001 - 100,000",
+              "100,001 - 125,000",
+              "125,001 - 150,000",
+              "150,001+"
+            ]
+          },
+          {
+            "id": "secondary-class",
+            "type": "dropdown",
+            "label": "Secondary Class",
+            "help": "",
+            "required": false,
+            "options": [
+              "Long Distance",
+              "Local-Intermediate"
+            ]
+          },
+          {
+            "id": "rating-class",
+            "type": "dropdown",
+            "label": "Rating Class",
+            "help": "",
+            "required": false,
+            "options": [
+              "Truckers -- Common Carriers",
+              "Truckers -- Contract Carriers (Other than Chemical or Iron and Steel Haulers)",
+              "Truckers -- Contract Carriers Hauling Chemicals",
+              "Truckers -- Contract Carriers Hauling Iron and Steel",
+              "Truckers -- Exempt Carriers (Other than Livestock Haulers)",
+              "Truckers -- Exempt Carriers Hauling Livestock",
+              "Truckers -- Carriers Engaged in both Private Carriage and Transporting Goods, Materials or Commodities for Others",
+              "Truckers -- Tow Trucks For Hire",
+              "Truckers -- Movers",
+              "Truckers -- Owned TTT that the insured leases/rents to others to use in trucking ops. and insured has agreed, in writing, to provide primary covg. and to hold the lessee harmless",
+              "Truckers -- All Other Truckers"
+            ]
+          },
+          {
+            "id": "coverage-selection",
+            "type": "dropdown",
+            "label": "Coverage Selection",
+            "help": "",
+            "required": false,
+            "options": [
+              "Yes",
+              "No"
+            ]
+          },
+          {
+            "id": "liability-occurrence-limit",
+            "type": "dropdown",
+            "label": "Liability Occurrence Limit",
+            "help": "",
+            "required": false,
+            "options": [
+              "Combined Single Limit",
+              "Property Damage Per Accident"
+            ]
+          },
+          {
+            "id": "deductible-type",
+            "type": "dropdown",
+            "label": "Deductible Type",
+            "help": "",
+            "required": false,
+            "options": [
+              "Collision & Comprehensive All Perils"
+            ]
+          },
+          {
+            "id": "deductible-liability",
+            "type": "dropdown",
+            "label": "Deductible Amount - Liability",
+            "help": "",
+            "required": false,
+            "options": [
+              "$0",
+              "$1,000",
+              "$2,500",
+              "$5,000",
+              "$10,000",
+              "$20,000",
+              "$25,000",
+              "$50,000",
+              "$75,000",
+              "$100,000"
+            ]
+          },
+          {
+            "id": "deductible-apd",
+            "type": "dropdown",
+            "label": "Deductible Amount - APD",
+            "help": "",
+            "required": false,
+            "options": [
+              "$0",
+              "$2,500",
+              "$5,000",
+              "$7,500",
+              "$10,000",
+              "$15,000",
+              "$20,000"
+            ]
+          }
+        ]
+      }
+    ],
+    "createdAt": "2026-09-29T00:00:00.000Z",
+    "updatedAt": "2026-09-29T00:00:00.000Z"
+  }
+]

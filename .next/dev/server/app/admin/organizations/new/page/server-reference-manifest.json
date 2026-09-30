@@ -1,0 +1,27 @@
+{
+  "node": {
+    "4097badbfc5046b339424dce15f2080d0c17987881": {
+      "workers": {
+        "app/admin/organizations/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/organizations/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions/organizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "saveOrganizationAction",
+      "filename": "app/actions/organizations.ts"
+    },
+    "407c80a8cec654d274332adc67b91b168dd77089b9": {
+      "workers": {
+        "app/admin/organizations/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/organizations/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions/organizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "switchRoleAction",
+      "filename": "app/actions/auth.ts"
+    }
+  },
+  "edge": {}
+}

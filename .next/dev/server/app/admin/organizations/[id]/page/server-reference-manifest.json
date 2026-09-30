@@ -1,0 +1,49 @@
+{
+  "node": {
+    "40d5f08c38cc2ead3daaaa8d43d363b9a5b0e666f6": {
+      "workers": {
+        "app/admin/organizations/[id]/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/organizations/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions/organizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "setOrganizationStatusAction",
+      "filename": "app/actions/organizations.ts"
+    },
+    "4008bb39071572868f9ae1281aa55a353be7771637": {
+      "workers": {
+        "app/admin/organizations/[id]/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/organizations/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions/organizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "deleteOrganizationAction",
+      "filename": "app/actions/organizations.ts"
+    },
+    "40d6756aa431b5b120ea69dca76513ff647b9fa260": {
+      "workers": {
+        "app/admin/organizations/[id]/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/organizations/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions/organizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "removeProductAssignmentAction",
+      "filename": "app/actions/organizations.ts"
+    },
+    "407c80a8cec654d274332adc67b91b168dd77089b9": {
+      "workers": {
+        "app/admin/organizations/[id]/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/organizations/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/actions/organizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/app/actions/auth.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "codeHash": null
+        }
+      },
+      "exportedName": "switchRoleAction",
+      "filename": "app/actions/auth.ts"
+    }
+  },
+  "edge": {}
+}

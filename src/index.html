@@ -4,15 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>VeriDex · Product Studio</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#edf0f4;color:#1b2635;font-family:Inter,Arial,sans-serif;font-size:14px}button,input,select{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}
-.topbar{height:56px;background:#fff;border-bottom:1px solid #dbe2e9;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:12px;position:sticky;top:0;z-index:10}.top-left,.top-right{display:flex;align-items:center;gap:14px}.brand{font-weight:750;font-size:18px;letter-spacing:-.8px}.brand em{font-style:normal;color:#b84804}.portal{border-left:1px solid #dbe2e9;padding-left:14px;font-size:10px;color:#607087}.avatar{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#eaf0f5;font-size:10px}.account{font-size:10px;color:#5a6a7e}.notif{font-size:14px}.hamburger{display:none;background:#fff;border:1px solid #d5dfe8;border-radius:4px;padding:5px 9px;font-size:16px}
-.app{display:flex;min-height:calc(100vh - 56px)}
-.sidebar{width:240px;flex-shrink:0;background:#1b2635;color:#dbe3ed;padding:20px 12px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column;transition:width .2s}.nav-heading{color:#a1b0c2;font-size:9px;letter-spacing:1.6px;margin:18px 10px 8px;text-transform:uppercase}.nav-item{padding:10px 12px;display:flex;gap:12px;border-radius:5px;font-size:11px;align-items:center}.nav-item.selected{background:#344257;color:#fff;border-left:3px solid #ed883e}.nav-item:not(.selected):hover{background:#253447}.nav-icon{width:14px;flex-shrink:0;opacity:.8;text-align:center}.collapse-btn{margin-top:auto;background:transparent;color:#a1b0c2;border:1px solid #3d5068;border-radius:5px;padding:9px;font-size:10px}.sidebar.collapsed{width:56px;padding:16px 6px}.sidebar.collapsed .nav-label,.sidebar.collapsed .nav-heading,.sidebar.collapsed .account-area{display:none}.sidebar.collapsed .nav-item{padding:12px;justify-content:center}.sidebar.collapsed .collapse-btn{font-size:0;padding:10px}.sidebar.collapsed .collapse-btn:after{content:'›';font-size:16px}
-main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width:100%}.breadcrumb{font-size:10px;color:#68798e;margin-bottom:18px}.page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px;flex-wrap:wrap}.eyebrow{font-size:10px;letter-spacing:2px;font-weight:700;text-transform:uppercase;color:#9b440a}.page-header h1{font-size:22px;line-height:1.3;margin:5px 0 6px;letter-spacing:-.5px}.page-header p{color:#637084;margin:0;font-size:12px}.tools{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.btn{border:1px solid #ced6e0;border-radius:6px;background:#fff;color:#26364b;padding:8px 12px;font-size:12px;font-weight:600;white-space:nowrap}.btn.primary{background:#b84804;border-color:#b84804;color:#fff}.btn.dark{background:#1b2635;border-color:#1b2635;color:#fff}.btn.sm{padding:6px 9px;font-size:10px}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.card{background:#fff;border:1px solid #dce3eb;border-radius:7px;padding:18px}.metric-label{font-size:9px;color:#66788d;text-transform:uppercase;letter-spacing:.8px}.metric-num{font-size:27px;font-weight:700;margin:9px 0 4px}.metric-sub{font-size:10px;color:#66788d}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.card-title{font-size:13px;font-weight:700}.card-subtitle{font-size:10px;color:#66788d;margin-top:4px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.search{border:1px solid #d4dde7;background:#fff;border-radius:5px;padding:8px 10px;min-width:220px;color:#718096;font-size:10px}.chip{font-size:9px;border:1px solid #d4dde7;background:#f7f9fb;border-radius:4px;padding:7px 9px;color:#4b6079}.tbl-wrap{overflow:auto}.tbl{width:100%;border-collapse:collapse;font-size:10px}.tbl th{background:#f7f9fb;color:#6b7b90;font-size:9px;padding:10px;text-align:left;border-bottom:1px solid #e7ecf2}.tbl td{padding:11px 10px;border-bottom:1px solid #f0f3f7;vertical-align:top}.tbl tr:last-child td{border-bottom:0}.badge{display:inline-block;border-radius:4px;padding:4px 7px;font-size:8px;font-weight:700}.badge.live{background:#e5f4ed;color:#276c4d}.badge.draft{background:#fff1e7;color:#8c3a0a}.badge.info{background:#edf3fa;color:#45617e}.section-label{font-size:8px;text-transform:uppercase;letter-spacing:1.3px;color:#317363;margin-bottom:8px}.detail-list{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;font-size:10px}.detail-list dt{color:#738096;font-weight:600;margin-bottom:3px}.detail-list dd{margin:0}.activity{font-size:10px}.activity-row{padding:10px 0;border-bottom:1px solid #e8edf2;line-height:1.55}.activity-row:last-child{border-bottom:0}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#b84804;margin-right:6px}.notice{background:#fff7f3;border:1px solid #f0cbb1;border-radius:6px;padding:11px 12px;font-size:10px;color:#70401f;line-height:1.6;margin-top:14px}.studio-nav{display:flex;gap:0;border-bottom:1px solid #dbe2e9;margin-bottom:16px}.studio-nav button{border:0;background:transparent;padding:10px 14px;font-size:10px;color:#6b7c90;border-bottom:2px solid transparent}.studio-nav button.active{color:#b84804;border-bottom-color:#b84804;font-weight:700}.footer{display:flex;justify-content:space-between;gap:12px;padding:20px 0;color:#6a788b;font-size:9px;border-top:1px solid #e8edf2;margin-top:18px}
-@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}@media(max-width:767px){.hamburger{display:block}.portal,.account{display:none}.sidebar{display:none;position:fixed;left:0;top:56px;bottom:0;width:240px;z-index:20;box-shadow:20px 0 60px #17263855}.sidebar.open{display:flex}main{padding:16px 14px}.page-header{flex-direction:column}.metrics{grid-template-columns:1fr 1fr}.detail-list{grid-template-columns:1fr}.tbl{min-width:720px}}
-</style>
+<link rel="stylesheet" href="/css/app.css">
+<link rel="stylesheet" href="/css/acord.css">
 </head>
 <body>
 <header class="topbar">
@@ -20,20 +13,14 @@ main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width
   <div class="top-right"><span class="notif">◌</span><div class="avatar">YS</div><div class="account">Yash Gaur · Admin</div></div>
 </header>
 <div class="app">
-<aside class="sidebar" id="sidebar">
-  <div class="nav-heading">Product Studio</div>
-  <a class="nav-item selected" href="http://localhost:3000/#products"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
-  <a class="nav-item" href="#coverage"><span class="nav-icon">◫</span><span class="nav-label">Coverage</span></a>
-  <a class="nav-item" href="#class-of-business"><span class="nav-icon">▤</span><span class="nav-label">Class of Business</span></a>
-  <a class="nav-item" href="#distribution"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
-</aside>
-<main>
+<aside class="sidebar" id="sidebar" aria-label="Product Studio navigation"></aside>
+<main id="view-catalogue">
   <div class="breadcrumb">Product Studio / Product Catalogue / Commercial Auto</div>
   <div class="page-header">
     <div><div class="eyebrow">Product Configuration</div><h1>Commercial Auto</h1><p>Commercial trucking product configuration and rating setup.</p></div>
     <div class="tools"><button class="btn">Save Draft</button><button class="btn">Validate</button><button class="btn primary">Publish</button></div>
   </div>
-  <div class="studio-nav"><button class="active">Overview</button><button>Product</button><button>Risk</button><button>Coverage</button><button>Rules</button><button>Operations</button></div>
+  <div class="studio-nav"><button class="active">Overview</button><button>Product</button><button>Risk</button><a href="/coverage.html">Coverage</a><button>Rules</button><button>Operations</button></div>
   <section class="metrics">
     <div class="card"><div class="metric-label">Product Status</div><div class="metric-num" style="font-size:20px">Draft</div><span class="badge draft">Needs validation</span></div>
     <div class="card"><div class="metric-label">Coverages</div><div class="metric-num">7</div><div class="metric-sub">Configured for product</div></div>
@@ -56,7 +43,7 @@ main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width
         </dl>
       </section>
       <section class="card" style="margin-top:16px">
-        <div class="card-header"><div><div class="section-label">Coverage</div><div class="card-title">Configured Coverages</div></div><button class="btn sm">Configure Coverage</button></div>
+        <div class="card-header"><div><div class="section-label">Coverage</div><div class="card-title">Configured Coverages</div></div><a class="btn sm" href="/coverage.html">Configure Coverage</a></div>
         <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Coverage</th><th>Limit / Basis</th><th>Deductible</th><th>Status</th><th>Rating source</th></tr></thead><tbody>
           <tr><td><strong>Auto Liability</strong></td><td>$100,000</td><td>$1,000</td><td><span class="badge live">Configured</span></td><td>CA_Liab_LC + factors</td></tr>
           <tr><td><strong>Auto Physical Damage</strong></td><td>$100,000 TIV</td><td>$1,000</td><td><span class="badge live">Configured</span></td><td>PhysDamRatesByTIV</td></tr>
@@ -75,10 +62,18 @@ main{flex:1;min-width:0;padding:22px 26px 0;max-width:1400px;margin:0 auto;width
   </div>
   <div class="footer"><span>VeriDex Product Studio · Commercial Auto</span><span>Configuration workspace</span></div>
 </main>
+<main id="view-acord" hidden></main>
+<main id="view-cob" hidden></main>
+<main id="view-builder" hidden></main>
 </div>
 <script>
-function toggleCollapse(){document.getElementById('sidebar').classList.toggle('collapsed')}
-function toggleMobile(){document.getElementById('sidebar').classList.toggle('open')}
+const views={'':'view-catalogue',products:'view-catalogue',acord:'view-acord','class-of-business':'view-cob'};
+function route(){const id=views[location.hash.slice(1)]||'view-catalogue';
+document.querySelectorAll('main').forEach(m=>m.hidden=m.id!==id)}
+addEventListener('hashchange',route);route();
 </script>
+<script type="module" src="/js/nav.js"></script>
+<script type="module" src="/js/acord.js"></script>
+<script type="module" src="/js/cob.js"></script>
 </body>
 </html>
