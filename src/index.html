@@ -68,7 +68,7 @@
 </div>
 <script>
 const views={'':'view-catalogue',products:'view-catalogue',acord:'view-acord','class-of-business':'view-cob'};
-function route(){const id=views[location.hash.slice(1)]||'view-catalogue';
+function route(){const id=views[location.pathname.replace(/^\//,'')||location.hash.slice(1)]||'view-catalogue';
 document.querySelectorAll('main').forEach(m=>m.hidden=m.id!==id)}
 addEventListener('hashchange',route);route();
 </script>

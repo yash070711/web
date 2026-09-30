@@ -15,6 +15,16 @@ const handleNext = app.getRequestHandler();
 const STATIC = { '/theme/': path.join(ROOT, 'theme'), '/': path.join(ROOT, 'src') };
 const DB_DIR = path.join(ROOT, 'database');
 
+// Clean URLs for the plain-HTML pages served from src/. Everything else falls through to Next.js.
+const HTML_PAGES = {
+  '/coverage': 'coverage.html',
+  '/coverage.html': 'coverage.html',
+  '/coverage-form': 'coverage-form.html',
+  '/coverage-form.html': 'coverage-form.html',
+  '/class-of-business': 'index.html',
+  '/acord': 'index.html',
+};
+
 const TYPES = {
   '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript',
   '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
@@ -120,6 +130,9 @@ http.createServer(async (req, res) => {
     if (['/theme/', '/css/', '/js/'].some(prefix => pathname.startsWith(prefix))) {
       return await handleStatic(res, decodeURIComponent(pathname));
     }
+    // Plain-HTML pages (Coverage, Class of Business, Acord) live in src/ and sit beside the Next.js app.
+    const page = HTML_PAGES[pathname.replace(/\/$/, '') || '/'];
+    if (page) return await handleStatic(res, `/${page}`);
     if (pathname === '/index.html') {
       res.writeHead(308, { Location: '/products' });
       return res.end();
