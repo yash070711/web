@@ -1,27 +1,25 @@
 [
   {
-    "name": "Commercial Trucking Auto",
+    "name": "Commercial Trucking Autoo",
     "carrier": "Southlake Specialty Insurance Company",
     "lineOfBusiness": "Commercial Auto",
     "arrangement": "Non-fronting",
     "selectedClasses": [
-      "Trucker"
+      "Test"
     ],
     "coverages": {
-      "Trucker": {
-        "Auto Liability": [
-          "Uninsured Motorist"
-        ],
-        "Motor Truck Cargo": [],
-        "Physical Damage": []
+      "Test": {
+        "Auto lia": [
+          "body"
+        ]
       }
     },
     "status": "Draft",
     "createdOn": "Sep 30, 2026",
-    "id": "8a0ce9fc-0d65-4b28-8261-fd5d2c5f8546",
+    "id": "00c39c15-31cf-4e58-9d1d-566b2f3a39ad",
     "productId": "PRD-028",
     "version": "2026.01",
     "effectiveDate": "2026 configuration",
-    "href": "/products/8a0ce9fc-0d65-4b28-8261-fd5d2c5f8546"
+    "href": "/products/00c39c15-31cf-4e58-9d1d-566b2f3a39ad"
   }
 ]

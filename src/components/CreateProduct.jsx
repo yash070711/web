@@ -1,40 +1,14 @@
 'use client';
 
-import { useId, useState } from "react";
+import { useId, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./CreateProduct.module.css";
 
-const classLibrary = [
-  "Trucker","Bus","Business Auto","Taxi","Limousine","Ambulance",
-  "Delivery Vehicle","Contractor Vehicle","Public Auto","School Bus",
-  "Motor Carrier","Tow Truck","Rental Vehicle","Farm Vehicle","Emergency Vehicle"
-];
-
-const coverageMap = {
-  Trucker: ["Auto Liability","Motor Truck Cargo","Physical Damage"],
-  Bus: ["Auto Liability","Physical Damage","Medical Payments"],
-  "Business Auto": ["Auto Liability","Physical Damage","Hired & Non-Owned Auto"]
-};
-
-const coverageLibrary = [
-  "Auto Liability","Motor Truck Cargo","Physical Damage","General Liability",
-  "Medical Payments","Hired & Non-Owned Auto",
-  "Trailer Interchange","Non-Trucking Liability","Garagekeepers Liability",
-  "Rental Reimbursement","Towing and Labor"
-];
-
-const additionalCoverageMap = {
-  "Auto Liability": ["Uninsured Motorist", "Underinsured Motorist", "Medical Payments", "PIP"],
-  "Motor Truck Cargo": ["Reefer Breakdown", "Earned Freight", "Debris Removal"],
-  "Physical Damage": ["Collision", "Comprehensive / Other Than Collision", "Specified Causes of Loss"],
-  "Hired & Non-Owned Auto": ["Hired Auto Liability", "Non-Owned Auto Liability", "Hired Auto Physical Damage"],
-  "Garagekeepers Liability": ["Comprehensive", "Collision", "Specified Causes of Loss"]
-};
 
 const coverageDescriptions = {
   "Auto Liability": "Third-party liability coverage",
   "Motor Truck Cargo": "Protection for cargo being transported",
-  "Physical Damage": "First-party vehicle damage"
+  "Physical Damage": "First-party vehicle damage",
 };
 
 function CoverageIcon({ coverage }) {
@@ -50,11 +24,14 @@ function CoverageIcon({ coverage }) {
   );
 }
 
-function MainCoverageCard({ className, coverage, additionalCoverages, onRemove, onAddAdditional, onRemoveAdditional, expanded, onToggle }) {
+function MainCoverageCard({ className, coverage, additionalCoverages, onRemove, onAddAdditional, onRemoveAdditional, expanded, onToggle, dbCoverages }) {
   const panelId = useId();
   const [value, setValue] = useState("");
-  const configured = additionalCoverageMap[coverage] || [];
-  const available = configured.filter((item) => !additionalCoverages.includes(item));
+
+  // Only non-Main coverages (Addition type), excluding already-added ones
+  const available = (dbCoverages || [])
+    .filter(c => c.coverageType !== 'Main' && !additionalCoverages.includes(c.name))
+    .map(c => c.name);
 
   return (
     <div className={styles.coverageCard}>
@@ -76,28 +53,26 @@ function MainCoverageCard({ className, coverage, additionalCoverages, onRemove, 
       </div>
       <div id={panelId} className={styles.coverageBody} hidden={!expanded}>
         <div className="cp-label">Additional coverages</div>
-        {configured.length ? (
-          <>
-            <div className="cp-tagwrap">
-              {additionalCoverages.length ? additionalCoverages.map((item) => (
-                <span className="cp-tag" key={item}>
-                  {item}
-                  <button type="button" aria-label={`Remove ${item} from ${coverage}`} onClick={() => onRemoveAdditional(item)}>&times;</button>
-                </span>
-              )) : <small className={styles.coverageHint}>No additional coverages selected.</small>}
-            </div>
-            <div className="cp-addcoverage">
-              <select value={value} aria-label={`Additional coverage library for ${coverage} in ${className}`} onChange={(event) => setValue(event.target.value)}>
-                <option value="">Choose additional coverage</option>
-                {available.map((item) => <option key={item}>{item}</option>)}
-              </select>
-              <button type="button" onClick={() => {
-                onAddAdditional(value);
-                setValue("");
-              }}>+ Add additional</button>
-            </div>
-          </>
-        ) : <small className={styles.coverageHint}>No additional coverages configured for this coverage.</small>}
+        <div className="cp-tagwrap">
+          {additionalCoverages.length ? additionalCoverages.map((item) => (
+            <span className="cp-tag" key={item}>
+              {item}
+              <button type="button" aria-label={`Remove ${item} from ${coverage}`} onClick={() => onRemoveAdditional(item)}>&times;</button>
+            </span>
+          )) : <small className={styles.coverageHint}>No additional coverages selected.</small>}
+        </div>
+        <div className="cp-addcoverage">
+          <select value={value} aria-label={`Additional coverage library for ${coverage} in ${className}`} onChange={(event) => setValue(event.target.value)}>
+            <option value="">Choose additional coverage</option>
+            {available.map((item) => <option key={item}>{item}</option>)}
+          </select>
+          <button type="button" disabled={!value} onClick={() => {
+            if (value) { onAddAdditional(value); setValue(""); }
+          }}>+ Add additional</button>
+        </div>
+        {available.length === 0 && additionalCoverages.length === 0 && (
+          <small className={styles.coverageHint}>No other coverages in the library to add.</small>
+        )}
       </div>
     </div>
   );
@@ -123,7 +98,29 @@ export default function CreateProduct({ onBack }) {
   const [coverageLibraryValue, setCoverageLibraryValue] = useState("");
   const [toast, setToast] = useState("");
 
+  // Database-driven class + coverage data
+  const [dbClasses, setDbClasses] = useState([]);   // [{id, name, ...}]
+  const [dbCoverages, setDbCoverages] = useState([]); // [{id, name, classOfBusiness:[id,...], ...}]
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/class_of_business').then(r => r.json()).catch(() => []),
+      fetch('/api/coverages').then(r => r.json()).catch(() => []),
+    ]).then(([cls, cov]) => {
+      setDbClasses(Array.isArray(cls) ? cls : []);
+      setDbCoverages(Array.isArray(cov) ? cov : []);
+    });
+  }, []);
+
   const selectedClasses = chosenClasses;
+
+  // Helpers to look up database records by name
+  const classByName = (n) => dbClasses.find(c => c.name === n);
+  const coveragesForClass = (className) => {
+    const cls = classByName(className);
+    if (!cls) return [];
+    return dbCoverages.filter(cov => (cov.classOfBusiness || []).includes(cls.id));
+  };
 
   const showToast = (msg) => {
     setToast(msg);
@@ -137,15 +134,16 @@ export default function CreateProduct({ onBack }) {
       showToast("Choose class from library.");
       return;
     }
-
     if (chosenClasses.includes(value)) return;
+    // Pre-populate with only Main coverages linked to this class
+    const initialCoverages = coveragesForClass(value).filter(c => c.coverageType === 'Main').map(c => c.name);
     setChosenClasses((current) => [...current, value]);
     setSelectedCoverage((current) => ({
       ...current,
-      [value]: Object.fromEntries((coverageMap[value] || []).map((coverage) => [coverage, []]))
+      [value]: Object.fromEntries(initialCoverages.map((cov) => [cov, []])),
     }));
     setCoverageLibraryValue("");
-    setExpandedCoverages((current) => ({ ...current, [value]: coverageMap[value]?.[0] || null }));
+    setExpandedCoverages((current) => ({ ...current, [value]: initialCoverages[0] || null }));
     setActiveClass(value);
     setClassLibraryValue("");
   };
@@ -179,8 +177,6 @@ export default function CreateProduct({ onBack }) {
       showToast("Choose coverage from library.");
       return;
     }
-
-    if (!coverageLibrary.includes(coverageLibraryValue)) return;
     setExpandedCoverages((current) => ({ ...current, [activeClass]: coverageLibraryValue }));
     setSelectedCoverage((current) => {
       const existing = current[activeClass] || {};
@@ -203,10 +199,7 @@ export default function CreateProduct({ onBack }) {
   };
 
   const addAdditionalCoverage = (className, coverage, additional) => {
-    if (!(additionalCoverageMap[coverage] || []).includes(additional)) {
-      showToast("Choose additional coverage from library.");
-      return;
-    }
+    if (!additional) return;
     setSelectedCoverage((current) => {
       const existing = current[className]?.[coverage];
       if (!existing || existing.includes(additional)) return current;
@@ -230,13 +223,16 @@ export default function CreateProduct({ onBack }) {
 
   const currentCoverage = Object.keys(selectedCoverage[activeClass] || {});
 
-  const availableCoverage = coverageLibrary.filter(
-    (item) => !currentCoverage.includes(item)
-  );
+  // Only show Main coverages that belong to the active class, not yet added
+  const availableCoverage = coveragesForClass(activeClass)
+    .filter(c => c.coverageType === 'Main')
+    .map(c => c.name)
+    .filter(name => !currentCoverage.includes(name));
 
-  const remainingClasses = classLibrary.filter(
-    (item) => !chosenClasses.includes(item)
-  );
+  // Only show classes that exist in the database and haven't been added yet
+  const remainingClasses = dbClasses
+    .map(c => c.name)
+    .filter(name => !chosenClasses.includes(name));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -469,6 +465,7 @@ export default function CreateProduct({ onBack }) {
                               onRemove={() => removeCoverage(activeClass, coverage)}
                               onAddAdditional={(additional) => addAdditionalCoverage(activeClass, coverage, additional)}
                               onRemoveAdditional={(additional) => removeAdditionalCoverage(activeClass, coverage, additional)}
+                              dbCoverages={dbCoverages}
                             />
                           ))
                         ) : (
