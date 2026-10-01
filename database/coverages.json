@@ -12,5 +12,23 @@
     "createdAt": "2026-09-30T06:17:21.431Z",
     "updatedAt": "2026-09-30T06:17:21.431Z",
     "id": "a2481d3d-2dce-451d-b1cb-436ce92c418d"
+  },
+  {
+    "name": "Auto Liability",
+    "description": "",
+    "coverageType": "Main",
+    "status": "active",
+    "classOfBusiness": [
+      "aaaf5e11-abc9-45f3-aa4c-0a230b2b6ab1"
+    ],
+    "forms": [
+      {
+        "formId": "acord-99",
+        "excluded": []
+      }
+    ],
+    "createdAt": "2026-10-01T06:54:13.143Z",
+    "updatedAt": "2026-10-01T06:54:13.143Z",
+    "id": "ac4e2da2-531b-42b1-b88c-0491a1bdde83"
   }
 ]

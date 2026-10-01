@@ -1,0 +1,1 @@
+export default function StudioPlaceholder({title}){return <><div className="breadcrumb">Product Studio / {title}</div><div className="page-header"><div><div className="eyebrow">Product Studio</div><h1>{title}</h1></div></div><section className="card"><div className="card-title">{title}</div><p className="card-subtitle">This workspace is not configured yet.</p></section></>;}

@@ -1,38 +1,27 @@
 [
   {
-    "id": "PRD-027",
-    "name": "Commercial Auto",
+    "name": "Commercial Trucking Auto",
+    "carrier": "Southlake Specialty Insurance Company",
     "lineOfBusiness": "Commercial Auto",
-    "carrierId": "CAR-001",
-    "coverageIds": ["COV-0001", "COV-0002", "COV-0003", "COV-0004"],
-    "scope": "Carrier-approved commercial auto classes and coverages",
-    "status": "draft",
-    "version": "2026.08",
-    "createdAt": "2026-01-12T09:00:00.000Z",
-    "updatedAt": "2026-02-04T10:22:00.000Z"
-  },
-  {
-    "id": "PRD-031",
-    "name": "Contractor General Liability",
-    "lineOfBusiness": "General Liability",
-    "carrierId": "CAR-002",
-    "coverageIds": ["COV-0005", "COV-0006"],
-    "scope": "Approved general liability and statutory employer liability classes",
-    "status": "draft",
-    "version": "2026.06",
-    "createdAt": "2026-01-16T13:00:00.000Z",
-    "updatedAt": "2026-02-06T09:18:00.000Z"
-  },
-  {
-    "id": "PRD-034",
-    "name": "Cyber Essentials",
-    "lineOfBusiness": "Cyber",
-    "carrierId": "CAR-003",
-    "coverageIds": ["COV-0014"],
-    "scope": "Carrier-approved cyber classes and coverages",
-    "status": "draft",
-    "version": "2026.04",
-    "createdAt": "2026-02-02T15:40:00.000Z",
-    "updatedAt": "2026-02-10T11:25:00.000Z"
+    "arrangement": "Non-fronting",
+    "selectedClasses": [
+      "Trucker"
+    ],
+    "coverages": {
+      "Trucker": {
+        "Auto Liability": [
+          "Uninsured Motorist"
+        ],
+        "Motor Truck Cargo": [],
+        "Physical Damage": []
+      }
+    },
+    "status": "Draft",
+    "createdOn": "Sep 30, 2026",
+    "id": "8a0ce9fc-0d65-4b28-8261-fd5d2c5f8546",
+    "productId": "PRD-028",
+    "version": "2026.01",
+    "effectiveDate": "2026 configuration",
+    "href": "/products/8a0ce9fc-0d65-4b28-8261-fd5d2c5f8546"
   }
 ]
