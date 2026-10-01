@@ -1,0 +1,62 @@
+[
+  {
+    "code": "AZ",
+    "name": "Arizona",
+    "cities": ["Phoenix", "Tucson", "Mesa", "Scottsdale", "Flagstaff", "Chandler"]
+  },
+  {
+    "code": "CA",
+    "name": "California",
+    "cities": ["Los Angeles", "San Francisco", "San Diego", "San Jose", "Fresno", "Sacramento", "Oakland"]
+  },
+  {
+    "code": "FL",
+    "name": "Florida",
+    "cities": ["Miami", "Orlando", "Tampa", "Jacksonville", "Fort Lauderdale", "Tallahassee"]
+  },
+  {
+    "code": "GA",
+    "name": "Georgia",
+    "cities": ["Atlanta", "Savannah", "Augusta", "Macon", "Columbus"]
+  },
+  {
+    "code": "IL",
+    "name": "Illinois",
+    "cities": ["Chicago", "Aurora", "Naperville", "Rockford", "Springfield"]
+  },
+  {
+    "code": "NJ",
+    "name": "New Jersey",
+    "cities": ["Newark", "Jersey City", "Trenton", "Atlantic City", "Paterson"]
+  },
+  {
+    "code": "NC",
+    "name": "North Carolina",
+    "cities": ["Charlotte", "Raleigh", "Greensboro", "Durham", "Asheville"]
+  },
+  {
+    "code": "NY",
+    "name": "New York",
+    "cities": ["New York", "Buffalo", "Rochester", "Yonkers", "Syracuse", "Albany"]
+  },
+  {
+    "code": "OH",
+    "name": "Ohio",
+    "cities": ["Columbus", "Cleveland", "Cincinnati", "Toledo", "Dayton"]
+  },
+  {
+    "code": "PA",
+    "name": "Pennsylvania",
+    "cities": ["Philadelphia", "Pittsburgh", "Allentown", "Erie", "Harrisburg"]
+  },
+  {
+    "code": "TX",
+    "name": "Texas",
+    "cities": ["Houston", "Dallas", "Austin", "San Antonio", "Fort Worth", "El Paso"]
+  },
+  {
+    "code": "WA",
+    "name": "Washington",
+    "cities": ["Seattle", "Spokane", "Tacoma", "Bellevue", "Olympia"]
+  }
+]

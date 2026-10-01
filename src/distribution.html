@@ -14,92 +14,174 @@
 <div class="app">
 <aside class="sidebar" id="sidebar" aria-label="Product Studio navigation"></aside>
 <main>
+  <div class="breadcrumb">Product Studio / <span>Distribution</span></div>
   <div class="page-header">
     <div>
-      <h1>Distribution</h1>
-      <div class="product-picker">
-        <label class="picker-label" for="productSelect">Product</label>
-        <select class="filter" id="productSelect" aria-label="Select product"></select>
-      </div>
+      <div class="eyebrow">Distribution</div>
+      <h1>Distribution Configuration</h1>
+      <p>Assign a product to an organization and define the licensed footprint, coverage scope, authority and commission.</p>
     </div>
   </div>
 
   <dl class="card summary">
     <div class="summary-item">
+      <dt>Organization</dt>
+      <dd id="sumOrg">—</dd>
+      <div class="hint" id="sumOrgHint">—</div>
+    </div>
+    <div class="summary-item">
       <dt>Product</dt>
       <dd id="sumProduct">—</dd>
-      <div class="hint" id="sumProductVersion">—</div>
+      <div class="hint" id="sumProductHint">—</div>
     </div>
     <div class="summary-item">
-      <dt>Carrier</dt>
-      <dd id="sumCarrier">—</dd>
-      <div class="hint" id="sumCarrierHint">—</div>
-    </div>
-    <div class="summary-item">
-      <dt>Product Scope</dt>
+      <dt>Coverage Scope</dt>
       <dd id="sumScope">—</dd>
       <div class="hint" id="sumScopeHint">—</div>
     </div>
   </dl>
 
-  <div class="studio-nav" role="tablist" aria-label="Distribution workflow">
-    <button class="active" type="button" data-step="1" role="tab" aria-selected="true">1. Reinsurance</button>
-    <button type="button" data-step="2" role="tab" aria-selected="false">2. Channel Configuration</button>
-  </div>
+  <form id="distributionForm" novalidate>
 
-  <section class="card step-panel">
-    <div class="card-header">
-      <div>
-        <div class="card-title" id="stepTitle">Reinsurance</div>
-        <div class="card-subtitle" id="stepSubtitle">Select reinsurers and allocate product risk before configuring distribution channels.</div>
+    <section class="card form-card" aria-labelledby="orgTitle">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="orgTitle">Organization</div>
+          <div class="card-subtitle">Choose the organization type, then the organization the product is distributed to.</div>
+        </div>
       </div>
-    </div>
-    <div class="panel-body" id="stepBody"></div>
-    <div class="panel-foot">
-      <div class="status-line" id="stepStatus"></div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="organizationType">Organization Type <span class="req">*</span></label>
+          <select class="input" id="organizationType" name="organizationType">
+            <option value="">Select organization type</option>
+          </select>
+          <div class="err" data-err="organizationType"></div>
+        </div>
+        <div class="field">
+          <label for="organizationId">Organization <span class="req">*</span></label>
+          <select class="input" id="organizationId" name="organizationId" disabled>
+            <option value="">Select organization type first</option>
+          </select>
+          <div class="err" data-err="organizationId"></div>
+        </div>
+      </div>
+      <div class="guidance" id="orgHint">Licensed states available for selection come from the selected organization.</div>
+    </section>
+
+    <section class="card form-card" aria-labelledby="productTitle">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="productTitle">Product</div>
+          <div class="card-subtitle">Products already configured in Product Studio. The arrangement is owned by the product and shown read-only.</div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="productId">Product <span class="req">*</span></label>
+          <select class="input" id="productId" name="productId">
+            <option value="">Select product</option>
+          </select>
+          <div class="err" data-err="productId"></div>
+        </div>
+        <div class="field">
+          <label for="arrangement">Arrangement</label>
+          <output class="input readonly" id="arrangement" for="productId">—</output>
+          <div class="hint" id="arrangementHint">Fronting or Non-Fronting · configured in Product Studio</div>
+        </div>
+      </div>
+      <div class="guidance" id="productHint">Coverages are loaded automatically from the selected product.</div>
+    </section>
+
+    <section class="card form-card" aria-labelledby="statesTitle">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="statesTitle">Licensed States</div>
+          <div class="card-subtitle">Select the states the organization may write this product in, then exclude any individual cities.</div>
+        </div>
+      </div>
+      <div class="split">
+        <div class="split-pane">
+          <div class="section-label">Available states</div>
+          <input class="search state-search" id="stateSearch" type="search" placeholder="Search states" autocomplete="off" aria-label="Search states">
+          <div class="state-list" id="stateList" role="group" aria-label="Licensed states"></div>
+          <div class="err" data-err="licensedStates"></div>
+        </div>
+        <div class="split-pane">
+          <div class="section-label">Selected footprint</div>
+          <div class="footprint" id="footprint" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="guidance">Excluded cities stay highlighted in red and are removed from the distributed footprint for that state.</div>
+    </section>
+
+    <section class="card form-card" aria-labelledby="scopeTitle">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="scopeTitle">Coverage Distribution</div>
+          <div class="card-subtitle">Pick the distribution level, then select exactly what is in scope.</div>
+        </div>
+      </div>
+      <div class="scope-levels" id="scopeLevels" role="radiogroup" aria-label="Distribution level"></div>
+      <div class="err" data-err="coverageScope"></div>
+      <div class="coverage-tree" id="coverageTree" aria-live="polite"></div>
+      <div class="scope-summary" id="scopeSummary"></div>
+    </section>
+
+    <section class="card form-card" aria-labelledby="authorityTitle">
+      <div class="card-header">
+        <div>
+          <div class="card-title" id="authorityTitle">Authority &amp; Commission</div>
+          <div class="card-subtitle">Authority determines the binding limit the organization may issue; commission is paid on the selected basis.</div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="authority">Authority <span class="req">*</span></label>
+          <select class="input" id="authority" name="authority">
+            <option value="">Select authority</option>
+          </select>
+          <div class="err" data-err="authority"></div>
+        </div>
+        <div class="field" id="bindingLimitField" hidden>
+          <label for="bindingLimit">Binding Limit <span class="req">*</span></label>
+          <div class="input-affix">
+            <input class="input" id="bindingLimit" name="bindingLimit" type="number" min="1" step="1000" inputmode="numeric" placeholder="0" autocomplete="off">
+            <span class="affix">USD</span>
+          </div>
+          <div class="err" data-err="bindingLimit"></div>
+        </div>
+        <div class="field">
+          <label for="commissionPercent">Commission % <span class="req">*</span></label>
+          <div class="input-affix">
+            <input class="input" id="commissionPercent" name="commissionPercent" type="number" min="0" max="100" step="0.5" inputmode="decimal" placeholder="0.00" autocomplete="off">
+            <span class="affix">%</span>
+          </div>
+          <div class="err" data-err="commissionPercent"></div>
+        </div>
+        <div class="field">
+          <label for="commissionBasis">Commission Basis <span class="req">*</span></label>
+          <select class="input" id="commissionBasis" name="commissionBasis">
+            <option value="">Select commission basis</option>
+          </select>
+          <div class="err" data-err="commissionBasis"></div>
+        </div>
+      </div>
+      <div class="guidance" id="authorityHint">Binding Limit is required whenever the organization holds binding authority.</div>
+    </section>
+
+    <div class="form-actions form-card">
+      <div class="status-line" id="formStatus" role="status" aria-live="polite"></div>
       <div class="tools">
-        <button class="btn" id="stepCancel" type="button" hidden>Back to Reinsurance</button>
-        <button class="btn primary" id="stepSave" type="button">Save &amp; Continue</button>
-      </div>
-    </div>
-  </section>
-
-  <div class="footer"><span>VeriDex Product Studio · <span id="footerProduct">Distribution</span></span><span>Configuration workspace</span></div>
-</main>
-</div>
-
-<dialog class="modal" id="addChannelModal" aria-labelledby="addChannelTitle">
-  <form id="addChannelForm" novalidate>
-    <div class="modal-head">
-      <div>
-        <div class="eyebrow">Distribution Channel</div>
-        <div class="modal-title" id="addChannelTitle">Add Another Channel</div>
-      </div>
-      <button type="button" class="icon-btn" id="addChannelClose" aria-label="Close dialog">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p class="confirm-text" style="margin-bottom:16px">Select an approved organization to assign alongside the existing channels. Settings already configured remain unchanged.</p>
-      <div class="field">
-        <label for="addChannelType">Channel Type <span class="req">*</span></label>
-        <select class="input" id="addChannelType" name="channelType"></select>
-        <div class="err" data-err="channelType"></div>
-      </div>
-      <div class="field">
-        <label for="addChannelName">Approved Channel Organization <span class="req">*</span></label>
-        <select class="input" id="addChannelName" name="channelId"></select>
-        <div class="err" data-err="channelId"></div>
-      </div>
-      <div class="guidance" id="addChannelHint"></div>
-    </div>
-    <div class="modal-foot">
-      <div class="modal-note" id="addChannelNote"></div>
-      <div class="tools">
-        <button type="button" class="btn" id="addChannelCancel">Cancel</button>
-        <button type="submit" class="btn primary" id="addChannelSubmit">Add Channel</button>
+        <button type="button" class="btn" id="resetBtn">Reset</button>
+        <button type="submit" class="btn primary" id="saveBtn">Save Distribution</button>
       </div>
     </div>
   </form>
-</dialog>
+
+  <div class="footer"><span>VeriDex Product Studio · Distribution</span><span>Configuration workspace</span></div>
+</main>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

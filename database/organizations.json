@@ -1,0 +1,112 @@
+[
+  {
+    "id": "ORG-001",
+    "name": "Falcon Risk Insurance Company",
+    "type": "Risk Carrier",
+    "status": "active",
+    "rating": "A+",
+    "source": { "collection": "carriers", "id": "CAR-001" },
+    "licensedStates": ["CA", "TX", "NY", "FL", "IL", "PA"],
+    "createdAt": "2026-01-10T08:00:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-002",
+    "name": "Harborline Insurance Group",
+    "type": "Risk Carrier",
+    "status": "active",
+    "rating": "A",
+    "source": { "collection": "carriers", "id": "CAR-002" },
+    "licensedStates": ["WA", "AZ", "NY", "NJ"],
+    "createdAt": "2026-01-10T08:05:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-003",
+    "name": "Meridian Specialty P&C",
+    "type": "Risk Carrier",
+    "status": "active",
+    "rating": "A+",
+    "source": { "collection": "carriers", "id": "CAR-003" },
+    "licensedStates": ["GA", "NC", "OH", "PA", "NJ"],
+    "createdAt": "2026-01-11T09:00:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-004",
+    "name": "National Transport Underwriters",
+    "type": "MGU",
+    "status": "approved",
+    "rating": "A",
+    "source": { "collection": "channels", "id": "CHN-001" },
+    "licensedStates": ["CA", "TX", "WA", "AZ", "IL"],
+    "createdAt": "2026-01-15T09:00:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-005",
+    "name": "Fleet Risk Managers",
+    "type": "MGU",
+    "status": "approved",
+    "rating": "A-",
+    "source": { "collection": "channels", "id": "CHN-002" },
+    "licensedStates": ["TX", "OH", "IL", "GA", "NC"],
+    "createdAt": "2026-01-15T09:05:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-006",
+    "name": "Southwest Specialty MGA",
+    "type": "MGA",
+    "status": "approved",
+    "rating": "B++",
+    "source": { "collection": "channels", "id": "CHN-003" },
+    "licensedStates": ["TX", "AZ", "CA"],
+    "createdAt": "2026-01-15T09:10:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-007",
+    "name": "Interstate Program Administrators",
+    "type": "MGA",
+    "status": "approved",
+    "rating": "A-",
+    "source": { "collection": "channels", "id": "CHN-004" },
+    "licensedStates": ["IL", "OH", "PA", "NJ"],
+    "createdAt": "2026-01-15T09:15:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-008",
+    "name": "Coastal Underwriting Partners",
+    "type": "MGA",
+    "status": "pending",
+    "rating": "B+",
+    "source": { "collection": "channels", "id": "CHN-009" },
+    "licensedStates": ["FL", "GA", "NC"],
+    "createdAt": "2026-01-17T11:00:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-009",
+    "name": "Roadway Brokers LLC",
+    "type": "Broker",
+    "status": "approved",
+    "rating": "A",
+    "source": { "collection": "channels", "id": "CHN-005" },
+    "licensedStates": ["CA", "TX", "NY", "NJ"],
+    "createdAt": "2026-01-16T10:00:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  },
+  {
+    "id": "ORG-010",
+    "name": "TruckSure Brokerage",
+    "type": "Broker",
+    "status": "approved",
+    "rating": "B+",
+    "source": { "collection": "channels", "id": "CHN-006" },
+    "licensedStates": ["TX", "IL", "OH", "WA"],
+    "createdAt": "2026-01-16T10:05:00.000Z",
+    "updatedAt": "2026-09-28T10:22:00.000Z"
+  }
+]

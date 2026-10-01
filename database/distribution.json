@@ -1,27 +1,50 @@
 [
   {
-    "productId": "PRD-027",
+    "id": "8bc2b0af-464f-4adb-ac25-34c1accd6505",
+    "status": "draft",
+    "organizationType": "Risk Carrier",
+    "organizationId": "ORG-001",
+    "organizationName": "Falcon Risk Insurance Company",
+    "productId": null,
+    "productCode": "PRD-027",
     "productName": "Commercial Auto",
     "productVersion": "2026.08",
-    "carrierId": "CAR-001",
-    "carrierName": "Falcon Risk Insurance Company",
-    "status": "draft",
-    "step": 1,
-    "reinsurance": [
-      {
-        "reinsurerId": "REI-001",
-        "name": "Global Re Ltd.",
-        "treaty": "Facultative Placement",
-        "share": 100
-      }
-    ],
-    "cededShare": 100,
-    "retainedShare": 0,
-    "channels": [],
-    "authorityLimit": 1000000,
-    "grantedLimit": 0,
-    "updatedAt": "2026-09-30T07:11:16.390Z",
+    "arrangement": "Non-Fronting",
+    "licensedStates": [],
+    "coverageScope": { "level": "", "coverages": [], "additions": [] },
+    "authority": "",
+    "bindingLimit": null,
+    "commission": { "percent": 0, "basis": "" },
     "createdAt": "2026-09-30T07:10:45.496Z",
-    "id": "8bc2b0af-464f-4adb-ac25-34c1accd6505"
+    "updatedAt": "2026-09-30T07:11:16.390Z"
+  },
+  {
+    "id": "3f7a1c64-9d20-4b6e-8f31-57ac0e9b2d74",
+    "status": "active",
+    "organizationType": "MGU",
+    "organizationId": "ORG-004",
+    "organizationName": "National Transport Underwriters",
+    "productId": "8a0ce9fc-0d65-4b28-8261-fd5d2c5f8546",
+    "productCode": "PRD-028",
+    "productName": "Commercial Trucking Auto",
+    "productVersion": "2026.01",
+    "arrangement": "Non-Fronting",
+    "licensedStates": [
+      { "code": "CA", "name": "California", "excludedCities": ["Fresno"] },
+      { "code": "TX", "name": "Texas", "excludedCities": [] },
+      { "code": "WA", "name": "Washington", "excludedCities": [] }
+    ],
+    "coverageScope": {
+      "level": "ADDITIONAL",
+      "coverages": [],
+      "additions": [
+        { "classOfBusiness": "Trucker", "coverage": "Auto Liability", "addition": "Uninsured Motorist" }
+      ]
+    },
+    "authority": "Binding",
+    "bindingLimit": 1000000,
+    "commission": { "percent": 12, "basis": "Earned Premium" },
+    "createdAt": "2026-09-28T11:04:00.000Z",
+    "updatedAt": "2026-09-29T08:41:12.000Z"
   }
 ]

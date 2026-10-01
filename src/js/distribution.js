@@ -1,56 +1,79 @@
 import { api } from './api.js';
 
+const organizationsApi = api('organizations');
 const productsApi = api('products');
-const carriersApi = api('carriers');
-const reinsurersApi = api('reinsurers');
-const channelsApi = api('channels');
-const coveragesApi = api('coverages');
+const statesApi = api('states');
 const distributionApi = api('distribution');
+
+/* ---------- option lists shared by the form ---------- */
+const ORGANIZATION_TYPES = ['Risk Carrier', 'MGU', 'MGA', 'Broker'];
+const ARRANGEMENTS = ['Fronting', 'Non-Fronting'];
+const AUTHORITIES = ['Binding', 'Binding + Rating'];
+const COMMISSION_BASES = ['Earned Premium', 'Written Premium'];
+const SCOPE_LEVELS = [
+  { value: 'ALL', label: 'All coverages', hint: 'Every coverage and additional coverage on the product.' },
+  { value: 'COVERAGE', label: 'Entire individual coverage', hint: 'Whole coverages, including all of their additional coverages.' },
+  { value: 'ADDITIONAL', label: 'Additional coverage', hint: 'Individual additional / sub-coverages under a coverage.' },
+];
+// Unit separator keeps composite keys unambiguous even when names contain dashes or colons.
+const SEP = '␟';
 
 const el = (id) => document.getElementById(id);
 const dom = {
-  productSelect: el('productSelect'),
+  form: el('distributionForm'),
+  organizationType: el('organizationType'),
+  organizationId: el('organizationId'),
+  orgHint: el('orgHint'),
+  productId: el('productId'),
+  productHint: el('productHint'),
+  arrangement: el('arrangement'),
+  arrangementHint: el('arrangementHint'),
+  stateSearch: el('stateSearch'),
+  stateList: el('stateList'),
+  footprint: el('footprint'),
+  scopeLevels: el('scopeLevels'),
+  coverageTree: el('coverageTree'),
+  scopeSummary: el('scopeSummary'),
+  authority: el('authority'),
+  bindingLimitField: el('bindingLimitField'),
+  bindingLimit: el('bindingLimit'),
+  commissionPercent: el('commissionPercent'),
+  commissionBasis: el('commissionBasis'),
+  authorityHint: el('authorityHint'),
+  status: el('formStatus'),
+  save: el('saveBtn'),
+  reset: el('resetBtn'),
+  toast: el('toast'),
+  sumOrg: el('sumOrg'),
+  sumOrgHint: el('sumOrgHint'),
   sumProduct: el('sumProduct'),
-  sumProductVersion: el('sumProductVersion'),
-  sumCarrier: el('sumCarrier'),
-  sumCarrierHint: el('sumCarrierHint'),
+  sumProductHint: el('sumProductHint'),
   sumScope: el('sumScope'),
   sumScopeHint: el('sumScopeHint'),
-  studioNav: document.querySelector('.studio-nav'),
-  stepTitle: el('stepTitle'),
-  stepSubtitle: el('stepSubtitle'),
-  stepBody: el('stepBody'),
-  stepStatus: el('stepStatus'),
-  stepCancel: el('stepCancel'),
-  stepSave: el('stepSave'),
-  footerProduct: el('footerProduct'),
-  modal: el('addChannelModal'),
-  form: el('addChannelForm'),
-  channelType: el('addChannelType'),
-  channelId: el('addChannelName'),
-  modalHint: el('addChannelHint'),
-  modalNote: el('addChannelNote'),
-  toast: el('toast'),
 };
 
-const COMMISSION_DEFAULT = { MGU: 12, MGA: 10, Broker: 8, Agent: 6 };
-const TREATIES = ['Quota Share', 'Surplus Share', 'Treaty Reinsurance', 'Retrocession', 'Facultative Placement'];
+const blankDraft = () => ({
+  organizationType: '',
+  organizationId: '',
+  productId: '',
+  licensedStates: {},
+  scopeLevel: '',
+  coverages: [],
+  additions: [],
+  authority: '',
+  bindingLimit: '',
+  commissionPercent: '',
+  commissionBasis: '',
+});
 
 const state = {
+  organizations: [],
   products: [],
-  carriers: [],
-  reinsurers: [],
-  channels: [],
-  coverages: [],
+  states: [],
+  stateByCode: new Map(),
   records: [],
-  productId: '',
-  step: 1,
-  subTab: 1,
-  activeReinsurerId: '',
-  recordId: null,
-  createdAt: null,
-  status: 'draft',
-  draft: { reinsurance: [], channels: [] },
+  search: '',
+  draft: blankDraft(),
 };
 
 const esc = (value) =>
@@ -60,9 +83,7 @@ const esc = (value) =>
 
 const asList = (value) => (Array.isArray(value) ? value : value ? [value] : []);
 const normalise = (value) => String(value ?? '').toLowerCase();
-const isApproved = (row) => normalise(row.status) === 'approved';
 const round = (value) => Math.round((Number(value) || 0) * 100) / 100;
-const clamp = (value, min, max) => Math.min(max, Math.max(min, Number(value) || 0));
 
 const money = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -70,40 +91,64 @@ const money = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 });
 const usd = (value) => money.format(Number(value) || 0);
-const percent = (value) => `${round(value)}%`;
-const today = () => new Date().toISOString().slice(0, 10);
 
-const currentProduct = () => state.products.find((row) => row.id === state.productId) ?? null;
-const currentRecord = () => state.records.find((row) => row.productId === state.productId) ?? null;
-const currentCarrier = () => {
-  const product = currentProduct();
-  return state.carriers.find((row) => row.id === product?.carrierId) ?? null;
+const covKey = (classOfBusiness, coverage) => `${classOfBusiness}${SEP}${coverage}`;
+const addKey = (classOfBusiness, coverage, addition) => `${covKey(classOfBusiness, coverage)}${SEP}${addition}`;
+const splitKey = (key) => {
+  const [classOfBusiness, coverage, addition] = key.split(SEP);
+  return { classOfBusiness, coverage, addition };
 };
-const reinsurer = (id) => state.reinsurers.find((row) => row.id === id) ?? null;
-const channel = (id) => state.channels.find((row) => row.id === id) ?? null;
 
-const cededShare = () => round(state.draft.reinsurance.reduce((sum, row) => sum + (Number(row.share) || 0), 0));
-const retainedShare = () => round(100 - cededShare());
-const grantedLimit = () => round(state.draft.channels.reduce((sum, row) => sum + (Number(row.authorityLimit) || 0), 0));
-const weightedCommission = () => {
-  const total = grantedLimit();
-  if (!total) return 0;
-  const weighted = state.draft.channels.reduce(
-    (sum, row) => sum + (Number(row.authorityLimit) || 0) * (Number(row.commission) || 0),
+/* ---------- lookups derived from the loaded JSON ---------- */
+const currentOrganization = () => state.organizations.find((row) => row.id === state.draft.organizationId) ?? null;
+const currentProduct = () => state.products.find((row) => row.id === state.draft.productId) ?? null;
+const activeProducts = () => state.products.filter((row) => normalise(row.status) !== 'archived');
+
+// Coverages are read straight off the Product Studio record: { classOfBusiness: { coverage: [additionalCoverage] } }.
+const coverageGroups = () => {
+  const map = currentProduct()?.coverages;
+  if (!map || typeof map !== 'object') return [];
+  return Object.entries(map).map(([classOfBusiness, coverages]) => ({
+    classOfBusiness,
+    coverages: Object.entries(coverages || {}).map(([coverage, additions]) => ({
+      coverage,
+      additions: asList(additions),
+    })),
+  }));
+};
+
+const coverageCount = () => coverageGroups().reduce((sum, group) => sum + group.coverages.length, 0);
+const additionCount = () =>
+  coverageGroups().reduce(
+    (sum, group) => sum + group.coverages.reduce((inner, row) => inner + row.additions.length, 0),
     0,
   );
-  return round(weighted / total);
+
+// Products own the arrangement, so it is normalised for display only and never stored from this page.
+const arrangementOf = (product) => {
+  const raw = normalise(product?.arrangement).replace(/[\s_]+/g, '-');
+  return ARRANGEMENTS.find((value) => normalise(value) === raw) ?? '';
 };
 
-const bindingLimit = () => {
-  const carrier = currentCarrier();
-  const product = currentProduct();
-  const limits = asList(product?.coverageIds)
-    .map((id) => Number(carrier?.maxBindingLimits?.[id]) || 0)
-    .filter(Boolean);
-  return limits.length ? Math.max(...limits) : 250000;
+const organizationLabel = (row) => (row.rating ? `${row.name} · ${row.rating}` : row.name);
+const productLabel = (row) =>
+  [row.productId, row.name, row.version].filter(Boolean).join(' · ');
+
+const licensedStateRows = () => {
+  const org = currentOrganization();
+  return asList(org?.licensedStates).map((code) =>
+    state.stateByCode.get(code) ?? { code, name: code, cities: [] },
+  );
 };
 
+const alreadyDistributed = (productId) =>
+  state.records.filter(
+    (row) => row.organizationId === state.draft.organizationId && row.productId === productId,
+  ).length;
+
+const isApproved = (row) => ['active', 'approved'].includes(normalise(row.status));
+
+/* ---------- feedback ---------- */
 let toastTimer;
 const toast = (message, kind = 'ok') => {
   dom.toast.textContent = message;
@@ -114,9 +159,27 @@ const toast = (message, kind = 'ok') => {
   }, 2800);
 };
 
+let statusKind = '';
 const setStatus = (message, kind = '') => {
-  dom.stepStatus.className = `status-line ${kind}`.trim();
-  dom.stepStatus.textContent = message;
+  statusKind = kind;
+  dom.status.className = `status-line ${kind}`.trim();
+  dom.status.textContent = message;
+};
+
+const clearErrors = () => {
+  dom.form.querySelectorAll('.err').forEach((node) => {
+    node.textContent = '';
+  });
+  dom.form.querySelectorAll('.invalid').forEach((node) => node.classList.remove('invalid'));
+  dom.form.querySelectorAll('.is-invalid').forEach((node) => node.classList.remove('is-invalid'));
+};
+
+const setError = (name, message) => {
+  const slot = dom.form.querySelector(`[data-err="${name}"]`);
+  if (slot) slot.textContent = message;
+  const input = dom.form.elements[name];
+  if (input && input.classList.contains('input')) input.classList.add('invalid');
+  if (slot && message) slot.classList.add('is-invalid');
 };
 
 const optionHtml = (values, placeholder) =>
@@ -125,596 +188,652 @@ const optionHtml = (values, placeholder) =>
     ...values.map((value) => `<option value="${esc(value.value ?? value)}">${esc(value.label ?? value)}</option>`),
   ].join('');
 
-const clearErrors = () => {
-  dom.form.querySelectorAll('.err').forEach((node) => {
-    node.textContent = '';
-  });
-  dom.form.querySelectorAll('.input.invalid').forEach((node) => node.classList.remove('invalid'));
+const setSelectValue = (select, value) => {
+  select.value = value ?? '';
 };
 
-const setError = (name, message) => {
-  const slot = dom.form.querySelector(`[data-err="${name}"]`);
-  if (slot) slot.textContent = message;
-  const input = dom.form.elements[name];
-  if (input && input.classList.contains('input')) input.classList.add('invalid');
+/* ---------- render: organization ---------- */
+const renderOrganizations = () => {
+  const type = dom.organizationType.value;
+  const rows = state.organizations.filter((row) => normalise(row.type) === normalise(type));
+  dom.organizationId.disabled = !type;
+  dom.organizationId.innerHTML = rows.length
+    ? optionHtml(
+        rows.map((row) => ({ value: row.id, label: organizationLabel(row) })),
+        'Select organization',
+      )
+    : `<option value="">${type ? 'No organizations of this type' : 'Select organization type first'}</option>`;
+  setSelectValue(dom.organizationId, state.draft.organizationId);
 };
 
-const renderSummary = () => {
-  const product = currentProduct();
-  const carrier = currentCarrier();
-  if (!product) {
-    dom.sumProduct.textContent = '—';
-    dom.sumProductVersion.textContent = 'Select a product to configure';
-    dom.sumCarrier.textContent = '—';
-    dom.sumCarrierHint.textContent = 'No carrier assigned';
-    dom.sumScope.textContent = '—';
-    dom.sumScopeHint.textContent = 'No coverages attached';
-    dom.footerProduct.textContent = 'Distribution';
+const renderOrgHint = () => {
+  const org = currentOrganization();
+  if (!org) {
+    dom.orgHint.textContent = 'Licensed states available for selection come from the selected organization.';
     return;
   }
-  const coverageIds = asList(product.coverageIds);
-  const names = coverageIds
-    .map((id) => state.coverages.find((row) => row.id === id)?.name)
-    .filter(Boolean);
-  const authorities = asList(product.coverageIds).filter((id) => Number(carrier?.maxBindingLimits?.[id]) > 0);
-  dom.sumProduct.textContent = product.name;
-  dom.sumProductVersion.textContent = `Version ${product.version ?? '—'} · ${state.status === 'configured' ? 'Configured' : 'Draft'} · ${product.id}`;
-  dom.sumCarrier.textContent = carrier?.name ?? 'Unassigned';
-  dom.sumCarrierHint.textContent = carrier
-    ? `${normalise(carrier.status) === 'active' ? 'Active' : 'Inactive'} · ${authorities.length} binding authority limit(s)`
-    : 'No carrier record for this product';
-  dom.sumScope.textContent = product.scope || '—';
-  dom.sumScopeHint.textContent = names.length
-    ? `${coverageIds.length} coverage(s): ${names.join(', ')}`
-    : `${coverageIds.length} coverage(s) attached`;
-  dom.footerProduct.textContent = product.name;
+  const count = asList(org.licensedStates).length;
+  const parts = [
+    `Licensed in <strong>${count}</strong> state${count === 1 ? '' : 's'}.`,
+    org.rating ? `Financial strength ${esc(org.rating)}.` : '',
+    isApproved(org) ? '' : 'Approval pending — confirm before granting binding authority.',
+  ];
+  dom.orgHint.innerHTML = parts.filter(Boolean).join(' ');
 };
 
-const allocationTotalsHtml = () => {
-  const ceded = clamp(cededShare(), 0, 100);
-  const over = cededShare() > 100;
-  return `<div class="share-bar"><i class="ceded" style="width:${ceded}%"></i><i class="retained" style="width:${100 - ceded}%"></i></div>
-    <div class="legend">
-      <span><i class="ceded" style="background:#1b2635"></i>Ceded ${percent(cededShare())}</span>
-      <span><i class="retained" style="background:#ed883e"></i>Retained ${percent(retainedShare())}</span>
-    </div>
-    <div class="totals">
-      <div>Treaties in force<strong>${state.draft.reinsurance.length}</strong></div>
-      <div>Ceded risk share<strong${over ? ' style="color:#a3261f"' : ''}>${percent(cededShare())}</strong></div>
-      <div>Carrier retained<strong${retainedShare() < 0 ? ' style="color:#a3261f"' : ''}>${percent(retainedShare())}</strong></div>
-    </div>`;
+/* ---------- render: product + arrangement ---------- */
+const renderProducts = () => {
+  const rows = activeProducts();
+  dom.productId.innerHTML = rows.length
+    ? optionHtml(rows.map((row) => ({ value: row.id, label: productLabel(row) })), 'Select product')
+    : '<option value="">No products available</option>';
+  dom.productId.disabled = !rows.length;
+  setSelectValue(dom.productId, state.draft.productId);
 };
 
-const grantTotalsHtml = () => {
-  const limit = bindingLimit();
-  const total = grantedLimit();
-  const breach = total > limit;
-  return `<div class="totals">
-    <div>Channels in authority<strong>${state.draft.channels.length}</strong></div>
-    <div>Total authority granted<strong${breach ? ' style="color:#a3261f"' : ''}>${usd(total)}</strong></div>
-    <div>Weighted commission<strong>${percent(weightedCommission())}</strong></div>
-  </div>
-  <div class="guidance" style="margin-top:14px">${esc(
-    breach
-      ? `Combined authority exceeds the carrier maximum binding limit of ${usd(limit)}. Reduce a channel limit before completing distribution.`
-      : `Carrier maximum binding limit ${usd(limit)} · ${usd(Math.max(0, limit - total))} headroom remaining.`,
-  )}</div>`;
+const renderArrangement = () => {
+  const arrangement = arrangementOf(currentProduct());
+  dom.arrangement.textContent = arrangement || '—';
+  dom.arrangementHint.textContent = arrangement
+    ? 'Read-only · configured in Product Studio'
+    : 'Fronting or Non-Fronting · not set on this product';
 };
 
-const renderReinsurance = () => {
-  const rows = state.draft.reinsurance;
-  if (!rows.some((row) => row.reinsurerId === state.activeReinsurerId)) {
-    state.activeReinsurerId = rows[0]?.reinsurerId ?? '';
+const renderProductHint = () => {
+  const product = currentProduct();
+  if (!product) {
+    dom.productHint.textContent = 'Coverages are loaded automatically from the selected product.';
+    return;
   }
-  const entry = rows.find((row) => row.reinsurerId === state.activeReinsurerId) ?? null;
-  const party = entry ? reinsurer(entry.reinsurerId) : null;
-  const label = party?.name || entry?.name || '—';
-  const used = new Set(rows.map((row) => row.reinsurerId));
-  const available = state.reinsurers.filter((row) => isApproved(row) && !used.has(row.id));
-  const sub = state.subTab;
-
-  const tabs = `<div class="sub-tabs" role="tablist" aria-label="Reinsurance allocation">
-    ${[['1', 'Insurer'], ['2', 'Treaty'], ['3', 'Risk share %']]
-      .map(([id, text]) => `<button type="button" role="tab" aria-selected="${sub === Number(id)}" data-subtab="${id}" class="${sub === Number(id) ? 'active' : ''}">${id}. ${esc(text)}</button>`)
-      .join('')}
-  </div>`;
-
-  const blank = '<div class="empty">Add an approved reinsurer in the Insurer tab to continue.<br>Treaty and risk share apply to the selected reinsurer.</div>';
-
-  const insurerPanel = `<div class="sub-row">
-      <select class="filter" id="insurerSelect" aria-label="Select approved reinsurer"${available.length ? '' : ' disabled'}>${optionHtml(
-        available.map((row) => ({ value: row.id, label: `${row.name} · ${row.rating}` })),
-        available.length ? 'Select approved reinsurer' : 'All approved reinsurers added',
-      )}</select>
-      <button class="btn sm" type="button" data-action="balance"${rows.length ? '' : ' disabled'}>Balance to 100%</button>
-      <button class="btn sm danger" type="button" data-action="clear-reinsurance"${rows.length ? '' : ' disabled'}>Clear</button>
-    </div>
-    ${rows.length
-      ? `<div class="picks">${rows
-          .map((row) => {
-            const item = reinsurer(row.reinsurerId);
-            const name = item?.name || row.name || 'Unknown reinsurer';
-            return `<div class="pick-row${row.reinsurerId === state.activeReinsurerId ? ' active' : ''}">
-              <button class="pick-main" type="button" data-action="select-reinsurer" data-id="${esc(row.reinsurerId)}">
-                <strong>${esc(name)}</strong>${item?.rating ? `<span class="tag">${esc(item.rating)}</span>` : ''}
-                <span class="pick-meta">${esc(row.treaty || 'Quota Share')} · ${percent(row.share)}</span>
-              </button>
-              <button class="btn sm danger" type="button" data-action="remove-reinsurer" data-id="${esc(row.reinsurerId)}">Remove</button>
-            </div>`;
-          })
-          .join('')}</div>`
-      : '<div class="empty">No reinsurers participating yet.</div>'}`;
-
-  const treatyPanel = entry
-    ? `<div class="sub-grid">
-        <div>
-          <span class="sub-label">Reinsurer</span>
-          <div class="sub-value">${esc(label)}</div>
-          <div class="hint">Currently ${esc(entry.treaty || 'Quota Share')} · ${percent(entry.share)} ceded</div>
-        </div>
-        <div>
-          <label class="sub-label" for="treatySelect">Treaty</label>
-          <select class="filter" id="treatySelect" aria-label="Select treaty" style="max-width:none;width:100%">${optionHtml(TREATIES, 'Select treaty')}</select>
-        </div>
-      </div>`
-    : blank;
-
-  const sharePanel = entry
-    ? `<div class="sub-grid">
-        <div>
-          <span class="sub-label">Reinsurer</span>
-          <div class="sub-value">${esc(label)}</div>
-          <div class="hint">${esc(entry.treaty || 'Quota Share')} treaty · Ceded total ${percent(cededShare())} · Carrier retained ${percent(retainedShare())}</div>
-        </div>
-        <div>
-          <label class="sub-label" for="shareInput">Risk share %</label>
-          <input class="alloc alloc-lg${Number(entry.share) > 0 ? '' : ' invalid'}" id="shareInput" type="number" min="0" max="100" step="0.5" value="${esc(entry.share ?? 0)}" data-scope="reinsurance" data-id="${esc(entry.reinsurerId)}" data-field="share" aria-label="Risk share for ${esc(label)}">
-        </div>
-      </div>`
-    : blank;
-
-  return `${tabs}<div class="sub-panel">${[insurerPanel, treatyPanel, sharePanel][sub - 1] ?? insurerPanel}</div>
-    <div id="allocationTotals">${allocationTotalsHtml()}</div>`;
+  const existing = alreadyDistributed(product.id);
+  const parts = [`${coverageCount()} coverages and ${additionCount()} additional coverages available.`];
+  if (existing) parts.push(`Already distributed to this organization in ${existing} existing configuration${existing === 1 ? '' : 's'}.`);
+  dom.productHint.textContent = parts.join(' ');
 };
 
-const renderChannels = () => {
-  const used = new Set(state.draft.channels.map((row) => row.channelId));
-  const remaining = state.channels.filter((row) => isApproved(row) && !used.has(row.id));
-  const rows = state.draft.channels;
-  const table = rows.length
-    ? `<div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>Channel</th><th>Type</th><th class="right">Authority Limit</th><th class="right">Commission</th><th>Effective</th><th>Status</th><th class="right">Actions</th></tr></thead>
-        <tbody>${rows
-          .map((row) => {
-            const party = channel(row.channelId);
-            const name = party?.name || row.name || 'Unknown channel';
-            return `<tr>
-              <td><strong>${esc(name)}</strong><div class="sub mono">${esc(row.channelId)}</div></td>
-              <td><span class="tag">${esc(row.type ?? party?.type ?? '—')}</span></td>
-              <td class="right"><input class="alloc" type="number" min="0" step="5000" value="${esc(row.authorityLimit ?? 0)}" data-scope="channels" data-id="${esc(row.channelId)}" data-field="authorityLimit" aria-label="Authority limit for ${esc(name)}"></td>
-              <td class="right"><input class="alloc" type="number" min="0" max="100" step="0.5" value="${esc(row.commission ?? 0)}" data-scope="channels" data-id="${esc(row.channelId)}" data-field="commission" aria-label="Commission for ${esc(name)}"></td>
-              <td><input class="alloc" type="date" value="${esc(row.effective ?? today())}" data-scope="channels" data-id="${esc(row.channelId)}" data-field="effective" aria-label="Effective date for ${esc(name)}"></td>
-              <td>${isApproved(row) || normalise(row.status) === 'active' ? '<span class="badge live">Granted</span>' : '<span class="badge draft">Pending</span>'}</td>
-              <td class="right nowrap"><button class="btn sm danger" type="button" data-action="remove-channel" data-id="${esc(row.channelId)}">Remove</button></td>
-            </tr>`;
-          })
-          .join('')}</tbody>
-      </table></div>`
-    : `<div class="empty">No distribution channels granted authority yet.<br>Add an approved channel to assign binding authority.</div>`;
-  return `<div class="toolbar">
-      <button class="btn sm" type="button" data-action="add-channel"${remaining.length ? '' : ' disabled'}>Add Another Channel</button>
-      <button class="btn sm danger" type="button" data-action="clear-channels"${rows.length ? '' : ' disabled'}>Clear</button>
-      <span class="hint" style="margin:0">${remaining.length} approved channel${remaining.length === 1 ? '' : 's'} available</span>
-    </div>
-    ${table}
-    <div id="grantTotals">${grantTotalsHtml()}</div>`;
+/* ---------- render: licensed states ---------- */
+const renderStateList = () => {
+  const rows = licensedStateRows();
+  if (!currentOrganization()) {
+    dom.stateList.innerHTML = '<div class="empty">Select an organization to see the states it is licensed in.</div>';
+    return;
+  }
+  const needle = state.search.trim().toLowerCase();
+  const visible = rows.filter(
+    (row) => !needle || normalise(row.name).includes(needle) || normalise(row.code).includes(needle),
+  );
+  if (!rows.length) {
+    dom.stateList.innerHTML = '<div class="empty">This organization has no licensed states on file.</div>';
+    return;
+  }
+  if (!visible.length) {
+    dom.stateList.innerHTML = '<div class="empty">No states match this search.</div>';
+    return;
+  }
+  dom.stateList.innerHTML = visible
+    .map((row) => {
+      const on = Boolean(state.draft.licensedStates[row.code]);
+      return `<label class="state-row${on ? ' checked' : ''}">
+        <input type="checkbox" data-state="${esc(row.code)}"${on ? ' checked' : ''}>
+        <span class="state-code">${esc(row.code)}</span>
+        <span class="state-name">${esc(row.name)}</span>
+        <span class="state-meta">${row.cities.length} cities</span>
+      </label>`;
+    })
+    .join('');
 };
 
-const renderStep = () => {
-  const first = state.step === 1;
-  dom.studioNav.querySelectorAll('button').forEach((button) => {
-    const active = Number(button.dataset.step) === state.step;
-    button.classList.toggle('active', active);
-    button.setAttribute('aria-selected', String(active));
+const renderFootprint = () => {
+  const selected = Object.values(state.draft.licensedStates);
+  if (!selected.length) {
+    dom.footprint.innerHTML = '<div class="empty">No states selected yet.</div>';
+    return;
+  }
+  dom.footprint.innerHTML = selected
+    .map((row) => {
+      const cities = state.stateByCode.get(row.code)?.cities ?? [];
+      const chips = cities.length
+        ? cities
+            .map((city) => {
+              const excluded = row.excludedCities.includes(city);
+              return `<button type="button" class="city-chip${excluded ? ' excluded' : ''}" data-action="toggle-city" data-state="${esc(row.code)}" data-city="${esc(city)}" aria-pressed="${excluded}">${esc(city)}</button>`;
+            })
+            .join('')
+        : '<div class="hint">No city list on file for this state.</div>';
+      const excluded = row.excludedCities.length;
+      return `<div class="footprint-state">
+        <div class="footprint-head">
+          <span class="state-code">${esc(row.code)}</span>
+          <strong>${esc(row.name)}</strong>
+          <span class="tag${excluded ? ' warn' : ''}">${excluded ? `${excluded} excluded` : 'All cities'}</span>
+          ${excluded ? `<button type="button" class="btn sm danger" data-action="reset-cities" data-state="${esc(row.code)}">Clear exclusions</button>` : ''}
+        </div>
+        <div class="city-chips">${chips}</div>
+      </div>`;
+    })
+    .join('');
+};
+
+/* ---------- render: coverage scope ---------- */
+const renderScopeLevels = () => {
+  dom.scopeLevels.innerHTML = SCOPE_LEVELS.map((level) => {
+    const on = state.draft.scopeLevel === level.value;
+    return `<button type="button" role="radio" aria-checked="${on}" class="scope-level${on ? ' active' : ''}" data-level="${level.value}">
+      <strong>${esc(level.label)}</strong>
+      <span>${esc(level.hint)}</span>
+    </button>`;
+  }).join('');
+};
+
+const coverageRow = (group, row, level) => {
+  const key = covKey(group.classOfBusiness, row.coverage);
+  const additions = row.additions.length;
+  const additionNames = additions ? row.additions.map((name) => `<span class="tag">${esc(name)}</span>`).join('') : '';
+  if (level === 'ADDITIONAL') {
+    const boxes = additions
+      ? row.additions
+          .map(
+            (name) => `<label class="addition-row">
+              <input type="checkbox" data-add="${esc(addKey(group.classOfBusiness, row.coverage, name))}">
+              <span>${esc(name)}</span>
+            </label>`,
+          )
+          .join('')
+      : '<div class="hint">This coverage has no additional coverages configured.</div>';
+    return `<div class="coverage-card">
+      <div class="coverage-head">
+        <strong>${esc(row.coverage)}</strong>
+        ${additions ? `<button type="button" class="btn sm" data-action="all-additions" data-cov="${esc(key)}">Select all</button>` : ''}
+      </div>
+      <div class="addition-list">${boxes}</div>
+    </div>`;
+  }
+  const meta =
+    level === 'COVERAGE'
+      ? `${additions} additional coverage${additions === 1 ? '' : 's'} included`
+      : `${additions} additional`;
+  return `<label class="coverage-row">
+    <input type="checkbox" data-cov="${esc(key)}"${level === 'ALL' ? ' checked disabled' : ''}>
+    <span class="coverage-main">
+      <strong>${esc(row.coverage)}</strong>
+      ${additionNames ? `<span class="tags">${additionNames}</span>` : ''}
+    </span>
+    <span class="state-meta">${meta}</span>
+  </label>`;
+};
+
+const renderCoverageTree = () => {
+  const level = state.draft.scopeLevel;
+  if (!currentProduct()) {
+    dom.coverageTree.innerHTML = '<div class="empty">Select a product to load its coverages.</div>';
+    return;
+  }
+  const groups = coverageGroups();
+  if (!groups.length) {
+    dom.coverageTree.innerHTML = '<div class="empty">This product has no coverages configured in Product Studio.</div>';
+    return;
+  }
+  if (!level) {
+    dom.coverageTree.innerHTML = '<div class="empty">Select a distribution level to choose the coverage scope.</div>';
+    return;
+  }
+  dom.coverageTree.innerHTML = groups
+    .map(
+      (group) => `<div class="coverage-group">
+        <div class="section-label">${esc(group.classOfBusiness)} · ${group.coverages.length} coverage${group.coverages.length === 1 ? '' : 's'}</div>
+        ${group.coverages.map((row) => coverageRow(group, row, level)).join('')}
+      </div>`,
+    )
+    .join('');
+  syncScopeChecks();
+};
+
+const syncScopeChecks = () => {
+  const draft = state.draft;
+  dom.coverageTree.querySelectorAll('input[data-cov]').forEach((box) => {
+    const on = draft.scopeLevel === 'ALL' || draft.coverages.includes(box.dataset.cov);
+    box.checked = on;
+    box.closest('.coverage-row')?.classList.toggle('checked', on);
   });
-  dom.stepTitle.textContent = first ? 'Reinsurance' : 'Channel Configuration';
-  dom.stepSubtitle.textContent = first
-    ? 'Select reinsurers and allocate product risk before configuring distribution channels.'
-    : 'Grant coverage authority to approved channels and confirm the ceded allocation.';
-  dom.stepSave.textContent = first ? 'Save & Continue' : 'Complete Configuration';
-  dom.stepCancel.hidden = first;
-  dom.stepBody.innerHTML = first ? renderReinsurance() : renderChannels();
+  dom.coverageTree.querySelectorAll('input[data-add]').forEach((box) => {
+    const on = draft.additions.includes(box.dataset.add);
+    box.checked = on;
+    box.closest('.addition-row')?.classList.toggle('checked', on);
+  });
+};
+
+const scopeSummaryText = () => {
+  const draft = state.draft;
+  const level = SCOPE_LEVELS.find((row) => row.value === draft.scopeLevel);
+  if (!level) return '';
+  if (draft.scopeLevel === 'ALL') {
+    return `${coverageCount()} coverages and ${additionCount()} additional coverages across ${coverageGroups().length} classes of business.`;
+  }
+  if (draft.scopeLevel === 'COVERAGE') {
+    if (!draft.coverages.length) return 'No coverage selected yet.';
+    const covered = draft.coverages.reduce((sum, key) => {
+      const parts = splitKey(key);
+      const group = coverageGroups().find((row) => row.classOfBusiness === parts.classOfBusiness);
+      const found = group?.coverages.find((row) => row.coverage === parts.coverage);
+      return sum + (found?.additions.length ?? 0);
+    }, 0);
+    return `${draft.coverages.length} of ${coverageCount()} coverages selected, carrying ${covered} additional coverages.`;
+  }
+  if (!draft.additions.length) return 'No additional coverage selected yet.';
+  const parents = new Set(draft.additions.map((key) => covKey(splitKey(key).classOfBusiness, splitKey(key).coverage)));
+  return `${draft.additions.length} additional coverage${draft.additions.length === 1 ? '' : 's'} under ${parents.size} coverage${parents.size === 1 ? '' : 's'}.`;
+};
+
+const renderScopeSummary = () => {
+  const text = scopeSummaryText();
+  dom.scopeSummary.textContent = text;
+  dom.scopeSummary.hidden = !text;
+};
+
+/* ---------- render: authority ---------- */
+const renderAuthority = () => {
+  // Both authority values grant binding, so the binding limit is always required once one is chosen.
+  const granted = Boolean(dom.authority.value);
+  dom.bindingLimitField.hidden = !granted;
+  dom.bindingLimit.required = granted;
+  dom.authorityHint.textContent = granted
+    ? `${dom.authority.value} authority — enter the permitted binding limit.`
+    : 'Binding Limit is required whenever the organization holds binding authority.';
+};
+
+/* ---------- render: summary strip ---------- */
+const renderSummary = () => {
+  const draft = state.draft;
+  const org = currentOrganization();
+  const product = currentProduct();
+
+  dom.sumOrg.textContent = org ? org.name : '—';
+  dom.sumOrgHint.textContent = org
+    ? [org.type, org.rating].filter(Boolean).join(' · ') || '—'
+    : 'Select an organization';
+
+  dom.sumProduct.textContent = product ? product.name : '—';
+  dom.sumProductHint.textContent = product
+    ? [product.productId, product.version, arrangementOf(product)].filter(Boolean).join(' · ')
+    : 'Select a product';
+
+  const level = SCOPE_LEVELS.find((row) => row.value === draft.scopeLevel);
+  dom.sumScope.textContent = level ? level.label : '—';
+  dom.sumScopeHint.textContent = level ? scopeSummaryText() : 'Select a distribution level';
+};
+
+/* ---------- master render ---------- */
+const render = () => {
+  clearErrors();
+  // Own all three selects from the draft so a Reset never depends on form.reset() alone.
+  setSelectValue(dom.organizationType, state.draft.organizationType);
+  renderOrganizations();
+  renderProducts();
+  renderOrgHint();
+  renderProductHint();
+  renderArrangement();
+  renderStateList();
+  renderFootprint();
+  renderScopeLevels();
+  renderCoverageTree();
+  renderScopeSummary();
+  renderAuthority();
+  renderSummary();
+  updateStatus();
+};
+
+// Selects and number inputs keep their value across a re-render; checkboxes live in the draft.
+const syncInputs = () => {
+  const draft = state.draft;
+  draft.organizationType = dom.organizationType.value;
+  draft.organizationId = dom.organizationId.value;
+  draft.productId = dom.productId.value;
+  draft.authority = dom.authority.value;
+  draft.bindingLimit = dom.bindingLimit.value;
+  draft.commissionPercent = dom.commissionPercent.value;
+  draft.commissionBasis = dom.commissionBasis.value;
+};
+
+/* ---------- validation ---------- */
+const collectErrors = () => {
+  const draft = state.draft;
+  const errors = {};
+
+  if (!draft.organizationType) errors.organizationType = 'Select an organization type.';
+  if (!draft.organizationId) errors.organizationId = 'Select an organization.';
+  if (!draft.productId) errors.productId = 'Select a product.';
+  if (!Object.keys(draft.licensedStates).length) {
+    errors.licensedStates = 'Select at least one licensed state.';
+  }
+
+  if (!draft.scopeLevel) {
+    errors.coverageScope = 'Select a distribution level.';
+  } else if (!coverageGroups().length) {
+    errors.coverageScope = 'The selected product has no coverages configured.';
+  } else if (draft.scopeLevel === 'COVERAGE' && !draft.coverages.length) {
+    errors.coverageScope = 'Select at least one coverage to distribute.';
+  } else if (draft.scopeLevel === 'ADDITIONAL' && !draft.additions.length) {
+    errors.coverageScope = 'Select at least one additional coverage to distribute.';
+  }
+
+  if (!draft.authority) errors.authority = 'Select an authority.';
+  if (draft.authority && !(Number(draft.bindingLimit) > 0)) {
+    errors.bindingLimit = 'Enter the permitted binding limit.';
+  }
+
+  const percent = Number(draft.commissionPercent);
+  if (draft.commissionPercent === '' || Number.isNaN(percent)) {
+    errors.commissionPercent = 'Enter a commission percentage.';
+  } else if (percent < 0 || percent > 100) {
+    errors.commissionPercent = 'Commission must be between 0 and 100.';
+  }
+  if (!draft.commissionBasis) errors.commissionBasis = 'Select a commission basis.';
+
+  return errors;
+};
+
+const validate = () => {
+  const errors = collectErrors();
+  clearErrors();
+  Object.entries(errors).forEach(([name, message]) => setError(name, message));
+  return errors;
+};
+
+// Keeps the "n fields need attention" line honest as the user works through the form.
+const updateStatus = () => {
+  if (statusKind !== 'invalid') return;
+  const count = Object.keys(collectErrors()).length;
   setStatus(
-    first
-      ? 'Step 1 of 2 · Allocation is stored as a draft until distribution is completed.'
-      : 'Step 2 of 2 · Completing distribution publishes the authority grants for this product.',
+    count
+      ? `${count} field${count === 1 ? ' needs' : 's need'} attention before saving.`
+      : 'All required fields are complete — ready to save.',
+    count ? 'invalid' : 'ok',
   );
 };
 
-const render = () => {
+// Every edit to the draft refreshes the summary strip and the live validation count.
+const refresh = () => {
   renderSummary();
-  renderStep();
+  updateStatus();
 };
 
-const refreshTotals = () => {
-  renderSummary();
-  const allocation = dom.stepBody.querySelector('#allocationTotals');
-  const grants = dom.stepBody.querySelector('#grantTotals');
-  if (allocation) allocation.innerHTML = allocationTotalsHtml();
-  if (grants) grants.innerHTML = grantTotalsHtml();
+const focusFirstError = (errors) => {
+  const [name] = Object.keys(errors);
+  const slot = dom.form.querySelector(`[data-err="${name}"]`);
+  if (slot) slot.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  const input = dom.form.elements[name];
+  if (input && typeof input.focus === 'function') input.focus({ preventScroll: true });
 };
 
-const hydrate = () => {
-  const record = currentRecord();
-  state.recordId = record?.id ?? null;
-  state.createdAt = record?.createdAt ?? new Date().toISOString();
-  state.status = record?.status ?? 'draft';
-  state.step = Math.min(2, Math.max(1, Number(record?.step) || 1));
-  state.draft = {
-    reinsurance: asList(record?.reinsurance).map((row) => ({
-      reinsurerId: row.reinsurerId,
-      name: row.name ?? '',
-      treaty: row.treaty ?? 'Quota Share',
-      share: round(row.share),
-    })),
-    channels: asList(record?.channels).map((row) => ({
-      channelId: row.channelId,
-      name: row.name ?? '',
-      type: row.type ?? '',
-      authorityLimit: round(row.authorityLimit),
-      commission: round(row.commission),
-      effective: row.effective ?? today(),
-      status: row.status ?? 'active',
-    })),
-  };
-  render();
-};
-
-const validateReinsurance = () => {
-  if (!state.draft.reinsurance.length) return 'Add at least one approved reinsurer to continue.';
-  const blank = state.draft.reinsurance.find((row) => !(Number(row.share) > 0));
-  if (blank) return `Set a participation share above 0% for ${reinsurer(blank.reinsurerId)?.name ?? blank.reinsurerId}.`;
-  if (cededShare() > 100) return `Ceded share is ${percent(cededShare())} and cannot exceed 100%.`;
-  return '';
-};
-
-const validateChannels = () => {
-  if (!state.draft.channels.length) return 'Grant authority to at least one approved channel.';
-  const missing = state.draft.channels.find((row) => !(Number(row.authorityLimit) > 0));
-  if (missing) return `Set an authority limit for ${channel(missing.channelId)?.name ?? missing.channelId}.`;
-  const commission = state.draft.channels.find((row) => clamp(row.commission, 0, 100) !== Number(row.commission));
-  if (commission) return `Commission for ${channel(commission.channelId)?.name ?? commission.channelId} must be between 0% and 100%.`;
-  if (grantedLimit() > bindingLimit()) return `Combined authority of ${usd(grantedLimit())} exceeds the carrier limit of ${usd(bindingLimit())}.`;
-  return '';
-};
-
-const validateStep = () => (state.step === 1 ? validateReinsurance() : validateChannels());
-
-const payload = () => {
+/* ---------- save ---------- */
+const buildRecord = (existing) => {
+  const draft = state.draft;
   const product = currentProduct();
-  const carrier = currentCarrier();
+  const org = currentOrganization();
   const now = new Date().toISOString();
   return {
+    ...(existing ?? {}),
+    status: 'active',
+    organizationType: draft.organizationType,
+    organizationId: org.id,
+    organizationName: org.name,
     productId: product.id,
+    productCode: product.productId ?? null,
     productName: product.name,
-    productVersion: product.version ?? '',
-    carrierId: carrier?.id ?? '',
-    carrierName: carrier?.name ?? '',
-    status: state.status,
-    step: state.step,
-    reinsurance: state.draft.reinsurance.map((row) => ({ ...row, share: round(row.share) })),
-    cededShare: cededShare(),
-    retainedShare: retainedShare(),
-    channels: state.draft.channels.map((row) => ({
-      ...row,
-      authorityLimit: round(row.authorityLimit),
-      commission: round(row.commission),
+    productVersion: product.version ?? null,
+    arrangement: arrangementOf(product),
+    licensedStates: Object.values(draft.licensedStates).map((row) => ({
+      code: row.code,
+      name: row.name,
+      excludedCities: [...row.excludedCities],
     })),
-    authorityLimit: bindingLimit(),
-    grantedLimit: grantedLimit(),
+    coverageScope: {
+      level: draft.scopeLevel,
+      coverages: draft.scopeLevel === 'COVERAGE' ? [...draft.coverages] : [],
+      additions:
+        draft.scopeLevel === 'ADDITIONAL'
+          ? draft.additions.map((key) => {
+              const parts = splitKey(key);
+              return {
+                classOfBusiness: parts.classOfBusiness,
+                coverage: parts.coverage,
+                addition: parts.addition,
+              };
+            })
+          : [],
+    },
+    authority: draft.authority,
+    bindingLimit: draft.authority ? Number(draft.bindingLimit) : null,
+    commission: {
+      percent: round(draft.commissionPercent),
+      basis: draft.commissionBasis,
+    },
+    createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
 };
 
-const persist = async () => {
-  const body = { ...payload(), createdAt: state.createdAt ?? new Date().toISOString() };
-  const saved = state.recordId
-    ? await distributionApi.update(state.recordId, body)
-    : await distributionApi.create(body);
-  state.recordId = saved.id;
-  state.createdAt = saved.createdAt ?? body.createdAt;
-  const index = state.records.findIndex((row) => row.id === saved.id);
-  if (index < 0) state.records.push(saved);
-  else state.records[index] = saved;
-  return saved;
-};
-
-const goToStep = (step) => {
-  state.step = step;
-  renderStep();
-};
-
-const saveStep = async ({ advance }) => {
-  if (!currentProduct()) {
-    toast('Select a product before saving distribution.', 'err');
+const save = async (event) => {
+  event.preventDefault();
+  syncInputs();
+  const errors = validate();
+  const count = Object.keys(errors).length;
+  if (count) {
+    setStatus(`${count} field${count === 1 ? ' needs' : 's need'} attention before saving.`, 'invalid');
+    toast('Complete the highlighted fields before saving.', 'err');
+    focusFirstError(errors);
     return;
   }
-  const error = validateStep();
-  if (error) {
-    setStatus(error, 'err');
-    toast(error, 'err');
-    return;
-  }
-  dom.stepSave.disabled = true;
+
+  const org = currentOrganization();
+  const product = currentProduct();
+  const existing = state.records.find(
+    (row) => row.organizationId === org.id && row.productId === product.id,
+  );
+  dom.save.disabled = true;
   try {
-    if (advance && state.step === 1) {
-      state.status = 'draft';
-      await persist();
-      goToStep(2);
-      setStatus('Reinsurance saved. Configure channel authority to complete distribution.', 'ok');
-      toast('Reinsurance allocation saved.');
-    } else {
-      state.status = 'configured';
-      await persist();
-      setStatus('Distribution configured and authority grants published.', 'ok');
-      renderSummary();
-      toast(`Distribution for “${currentProduct().name}” completed.`);
-    }
+    const record = await (existing
+      ? distributionApi.update(existing.id, buildRecord(existing))
+      : distributionApi.create(buildRecord(null)));
+    const index = state.records.findIndex((row) => row.id === record.id);
+    if (index < 0) state.records.push(record);
+    else state.records[index] = record;
+    const states = Object.keys(state.draft.licensedStates).length;
+    setStatus(
+      `Saved ${record.productCode ?? record.productName} to ${record.organizationName} · ${states} state${states === 1 ? '' : 's'} · ${usd(record.bindingLimit)} binding · ${record.commission.percent}% ${record.commission.basis}.`,
+      'ok',
+    );
+    toast('Distribution saved.');
+    render();
   } catch (err) {
     setStatus(`Unable to save distribution: ${err.message}`, 'err');
-    toast(err.message, 'err');
+    toast(`Unable to save distribution: ${err.message}`, 'err');
   } finally {
-    dom.stepSave.disabled = false;
+    dom.save.disabled = false;
   }
 };
 
-const addReinsurer = (id) => {
-  const party = reinsurer(id);
-  if (!party || state.draft.reinsurance.some((row) => row.reinsurerId === id)) return;
-  state.draft.reinsurance.push({
-    reinsurerId: party.id,
-    name: party.name,
-    treaty: 'Quota Share',
-    share: round(clamp(100 - cededShare(), 0, 100)),
-  });
-  state.activeReinsurerId = party.id;
-  state.subTab = 2;
-  renderStep();
-  setStatus(`${party.name} added. Confirm the treaty, then set the risk share.`, 'ok');
+/* ---------- draft transitions ---------- */
+const resetScope = () => {
+  state.draft.scopeLevel = '';
+  state.draft.coverages = [];
+  state.draft.additions = [];
 };
 
-const balance = () => {
-  const rows = state.draft.reinsurance;
-  if (!rows.length) return;
-  const even = round(100 / rows.length);
-  state.draft.reinsurance = rows.map((row, index) => ({
-    ...row,
-    share: index === rows.length - 1 ? round(100 - even * (rows.length - 1)) : even,
-  }));
-  renderStep();
-  setStatus('Participation balanced to 100% of premium across all treaties.', 'ok');
+const resetFootprint = () => {
+  state.draft.licensedStates = {};
 };
 
-const goToSubTab = (tab) => {
-  state.subTab = tab;
-  renderStep();
+const resetAll = () => {
+  state.draft = blankDraft();
+  state.search = '';
+  dom.stateSearch.value = '';
+  dom.form.reset();
+  dom.bindingLimit.value = '';
+  dom.commissionPercent.value = '';
+  render();
+  setStatus('Cleared. Select an organization type to begin.');
 };
 
-const openChannelModal = () => {
-  const used = new Set(state.draft.channels.map((row) => row.channelId));
-  const remaining = state.channels.filter((row) => isApproved(row) && !used.has(row.id));
-  if (!remaining.length) {
-    toast('Every approved channel already has authority.', 'err');
-    return;
-  }
-  clearErrors();
-  const types = [...new Set(remaining.map((row) => row.type))].sort();
-  dom.channelType.innerHTML = optionHtml(types, 'Select channel type');
-  dom.channelId.innerHTML = optionHtml([], 'Select approved organization');
-  dom.modalNote.textContent = `Adds alongside ${state.draft.channels.length} existing channel(s).`;
-  updateChannelHint();
-  dom.modal.showModal();
+/* ---------- events ---------- */
+// Selects and number inputs are the source of truth for those fields, so pull them into the
+// draft before invalidating everything downstream of the control that just changed.
+const commit = (reset) => {
+  syncInputs();
+  reset?.();
+  render();
 };
 
-const updateChannelHint = () => {
-  const used = new Set(state.draft.channels.map((row) => row.channelId));
-  const type = dom.channelType.value;
-  const available = state.channels.filter(
-    (row) => isApproved(row) && !used.has(row.id) && (!type || row.type === type),
-  );
-  dom.channelId.innerHTML = optionHtml(
-    available.map((row) => ({ value: row.id, label: `${row.name} · ${row.type}` })),
-    available.length ? 'Select approved organization' : 'No organizations for this type',
-  );
-  dom.channelId.disabled = !available.length;
-  const limit = bindingLimit();
-  dom.modalHint.textContent = available.length
-    ? `${available.length} approved organization(s) available. Authority defaults to ${usd(limit)} with a ${COMMISSION_DEFAULT[type] ?? 10}% commission.`
-    : 'No approved organization matches the selected channel type.';
-};
+dom.organizationType.addEventListener('change', () =>
+  commit(() => {
+    state.draft.organizationId = '';
+    state.draft.productId = '';
+    resetFootprint();
+    resetScope();
+  }),
+);
 
-const readChannelForm = () => ({
-  type: dom.channelType.value,
-  channelId: dom.channelId.value,
+dom.organizationId.addEventListener('change', () =>
+  commit(() => {
+    state.draft.productId = '';
+    resetFootprint();
+    resetScope();
+  }),
+);
+
+dom.productId.addEventListener('change', () => commit(resetScope));
+
+dom.stateSearch.addEventListener('input', (event) => {
+  state.search = event.target.value;
+  renderStateList();
 });
 
-const addChannel = (event) => {
-  event.preventDefault();
-  const selection = readChannelForm();
-  clearErrors();
-  const errors = {};
-  if (!selection.type) errors.channelType = 'Select a channel type.';
-  if (!selection.channelId) errors.channelId = 'Select an approved organization.';
-  if (selection.channelId && state.draft.channels.some((row) => row.channelId === selection.channelId)) {
-    errors.channelId = 'That organization already has authority on this product.';
-  }
-  if (selection.channelId && selection.type && channel(selection.channelId)?.type !== selection.type) {
-    errors.channelId = 'Selected organization does not operate as that channel type.';
-  }
-  Object.entries(errors).forEach(([name, message]) => setError(name, message));
-  if (Object.keys(errors).length) return;
-
-  const party = channel(selection.channelId);
-  state.draft.channels.push({
-    channelId: party.id,
-    name: party.name,
-    type: party.type,
-    authorityLimit: bindingLimit(),
-    commission: COMMISSION_DEFAULT[party.type] ?? 10,
-    effective: today(),
-    status: 'active',
-  });
-  dom.modal.close();
-  renderStep();
-  setStatus(`${party.name} granted authority.`, 'ok');
-  toast(`Channel “${party.name}” added.`);
-};
-
-dom.productSelect.addEventListener('change', () => {
-  state.productId = dom.productSelect.value;
-  state.step = 1;
-  state.subTab = 1;
-  state.activeReinsurerId = '';
-  hydrate();
+dom.stateList.addEventListener('change', (event) => {
+  const code = event.target.dataset.state;
+  if (!code) return;
+  const row = state.stateByCode.get(code);
+  if (event.target.checked) state.draft.licensedStates[code] = { code, name: row?.name ?? code, excludedCities: [] };
+  else delete state.draft.licensedStates[code];
+  event.target.closest('.state-row')?.classList.toggle('checked', event.target.checked);
+  setError('licensedStates', '');
+  renderFootprint();
+  refresh();
 });
 
-dom.studioNav.addEventListener('click', (event) => {
-  const button = event.target.closest('button[data-step]');
-  if (!button) return;
-  const target = Number(button.dataset.step);
-  if (target === state.step) return;
-  if (target > state.step && validateReinsurance()) {
-    setStatus(validateReinsurance(), 'err');
-    toast('Complete step 1 before configuring channels.', 'err');
-    return;
-  }
-  goToStep(target);
-});
-
-dom.stepBody.addEventListener('click', (event) => {
-  const subtab = event.target.closest('button[data-subtab]');
-  if (subtab) {
-    goToSubTab(Number(subtab.dataset.subtab));
-    return;
-  }
+dom.footprint.addEventListener('click', (event) => {
   const button = event.target.closest('button[data-action]');
-  if (!button || button.disabled) return;
-  const { action, id } = button.dataset;
-  if (action === 'select-reinsurer') {
-    state.activeReinsurerId = id;
-    renderStep();
-    return;
-  }
-  if (action === 'balance') {
-    balance();
-    return;
-  }
-  if (action === 'clear-reinsurance') {
-    state.draft.reinsurance = [];
-    state.activeReinsurerId = '';
-    state.subTab = 1;
-    renderStep();
-    setStatus('All treaty allocations cleared.', 'ok');
-    return;
-  }
-  if (action === 'remove-reinsurer') {
-    const name = reinsurer(id)?.name ?? id;
-    state.draft.reinsurance = state.draft.reinsurance.filter((row) => row.reinsurerId !== id);
-    renderStep();
-    setStatus(`${name} removed from the treaty allocation.`, 'ok');
-    return;
-  }
-  if (action === 'add-channel') {
-    openChannelModal();
-    return;
-  }
-  if (action === 'clear-channels') {
-    state.draft.channels = [];
-    renderStep();
-    setStatus('All channel authority grants cleared.', 'ok');
-    return;
-  }
-  if (action === 'remove-channel') {
-    const name = channel(id)?.name ?? id;
-    state.draft.channels = state.draft.channels.filter((row) => row.channelId !== id);
-    renderStep();
-    setStatus(`${name} authority revoked.`, 'ok');
-  }
-});
-
-dom.stepBody.addEventListener('change', (event) => {
-  const { id, value } = event.target;
-  if (id === 'insurerSelect') {
-    if (value) addReinsurer(value);
-    return;
-  }
-  if (id === 'treatySelect' && value) {
-    const entry = state.draft.reinsurance.find((row) => row.reinsurerId === state.activeReinsurerId);
-    if (!entry) return;
-    entry.treaty = value;
-    renderStep();
-    setStatus(`Treaty set to ${value}. Set the risk share in tab 3.`, 'ok');
-  }
-});
-
-dom.stepBody.addEventListener('input', (event) => {
-  const { scope, id, field } = event.target.dataset;
-  if (!scope || !field) return;
-  const list = scope === 'channels' ? state.draft.channels : state.draft.reinsurance;
-  const entry = list.find((row) => (scope === 'channels' ? row.channelId === id : row.reinsurerId === id));
+  if (!button) return;
+  const entry = state.draft.licensedStates[button.dataset.state];
   if (!entry) return;
-  entry[field] = field === 'effective' ? event.target.value : round(event.target.value);
-  if (field === 'share') event.target.classList.toggle('invalid', !(Number(entry.share) > 0));
-  const cell = event.target.closest('td')?.nextElementSibling;
-  if (field === 'share' && cell) cell.textContent = percent(entry.share);
-  refreshTotals();
+  if (button.dataset.action === 'toggle-city') {
+    const city = button.dataset.city;
+    const at = entry.excludedCities.indexOf(city);
+    if (at < 0) entry.excludedCities.push(city);
+    else entry.excludedCities.splice(at, 1);
+  }
+  if (button.dataset.action === 'reset-cities') entry.excludedCities = [];
+  renderFootprint();
+  refresh();
 });
 
-dom.stepSave.addEventListener('click', () => saveStep({ advance: true }));
-dom.stepCancel.addEventListener('click', () => goToStep(1));
-
-dom.channelType.addEventListener('change', () => {
-  setError('channelType', '');
-  setError('channelId', '');
-  updateChannelHint();
+dom.scopeLevels.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-level]');
+  if (!button) return;
+  state.draft.scopeLevel = state.draft.scopeLevel === button.dataset.level ? '' : button.dataset.level;
+  if (state.draft.scopeLevel !== 'COVERAGE') state.draft.coverages = [];
+  if (state.draft.scopeLevel !== 'ADDITIONAL') state.draft.additions = [];
+  setError('coverageScope', '');
+  render();
 });
-dom.form.addEventListener('submit', addChannel);
-el('addChannelClose').addEventListener('click', () => dom.modal.close());
-el('addChannelCancel').addEventListener('click', () => dom.modal.close());
-dom.modal.addEventListener('close', clearErrors);
 
+dom.coverageTree.addEventListener('change', (event) => {
+  const box = event.target;
+  if (box.dataset.cov) {
+    const key = box.dataset.cov;
+    const at = state.draft.coverages.indexOf(key);
+    if (box.checked && at < 0) state.draft.coverages.push(key);
+    if (!box.checked && at >= 0) state.draft.coverages.splice(at, 1);
+  }
+  if (box.dataset.add) {
+    const key = box.dataset.add;
+    const at = state.draft.additions.indexOf(key);
+    if (box.checked && at < 0) state.draft.additions.push(key);
+    if (!box.checked && at >= 0) state.draft.additions.splice(at, 1);
+  }
+  box.closest('label')?.classList.toggle('checked', box.checked);
+  setError('coverageScope', '');
+  renderScopeSummary();
+  refresh();
+});
+
+dom.coverageTree.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-action="all-additions"]');
+  if (!button) return;
+  const { classOfBusiness, coverage } = splitKey(button.dataset.cov);
+  const group = coverageGroups().find((row) => row.classOfBusiness === classOfBusiness);
+  const row = group?.coverages.find((item) => item.coverage === coverage);
+  const keys = (row?.additions ?? []).map((name) => addKey(classOfBusiness, coverage, name));
+  const complete = keys.every((key) => state.draft.additions.includes(key));
+  state.draft.additions = complete
+    ? state.draft.additions.filter((key) => !keys.includes(key))
+    : [...new Set([...state.draft.additions, ...keys])];
+  button.textContent = complete ? 'Select all' : 'Clear';
+  syncScopeChecks();
+  renderScopeSummary();
+  refresh();
+});
+
+dom.authority.addEventListener('change', () => {
+  syncInputs();
+  setError('authority', '');
+  setError('bindingLimit', '');
+  renderAuthority();
+  refresh();
+});
+
+// Group-level errors have no input to mark, so they are cleared as soon as the group becomes valid.
+[dom.bindingLimit, dom.commissionPercent].forEach((input) =>
+  input.addEventListener('input', () => {
+    syncInputs();
+    setError(input.name, '');
+    refresh();
+  }),
+);
+dom.commissionBasis.addEventListener('change', () => {
+  syncInputs();
+  setError('commissionBasis', '');
+  refresh();
+});
+
+dom.form.addEventListener('submit', save);
+dom.reset.addEventListener('click', resetAll);
+
+/* ---------- boot ---------- */
 const load = async () => {
   try {
-    const [products, carriers, reinsurers, channels, coverages, records] = await Promise.all([
+    const [organizations, products, states, records] = await Promise.all([
+      organizationsApi.list(),
       productsApi.list(),
-      carriersApi.list(),
-      reinsurersApi.list(),
-      channelsApi.list(),
-      coveragesApi.list(),
+      statesApi.list(),
       distributionApi.list(),
     ]);
+    state.organizations = organizations;
     state.products = products;
-    state.carriers = carriers;
-    state.reinsurers = reinsurers;
-    state.channels = channels;
-    state.coverages = coverages;
+    state.states = states;
     state.records = records;
+    state.stateByCode = new Map(states.map((row) => [row.code, row]));
   } catch (err) {
     toast(`Unable to load distribution data: ${err.message}`, 'err');
+    setStatus('Distribution data could not be loaded. Refresh to try again.', 'err');
+    return;
   }
-  const active = state.products.filter((row) => normalise(row.status) !== 'archived');
-  dom.productSelect.innerHTML = optionHtml(
-    active.map((row) => ({ value: row.id, label: `${row.name} · ${row.version ?? 'no version'}` })),
-    active.length ? 'Select product' : 'No products available',
-  );
-  dom.productSelect.disabled = !active.length;
-  state.productId = active[0]?.id ?? '';
-  hydrate();
-  setStatus(
-    state.productId
-      ? 'Step 1 of 2 · Allocation is stored as a draft until distribution is completed.'
-      : 'Select a product to begin configuring distribution.',
-  );
+
+  dom.organizationType.innerHTML = optionHtml(ORGANIZATION_TYPES, 'Select organization type');
+  dom.authority.innerHTML = optionHtml(AUTHORITIES, 'Select authority');
+  dom.commissionBasis.innerHTML = optionHtml(COMMISSION_BASES, 'Select commission basis');
+
+  render();
+  setStatus('Select an organization type to begin configuring distribution.');
 };
 
 load();

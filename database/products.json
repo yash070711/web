@@ -23,5 +23,52 @@
     "version": "2026.01",
     "effectiveDate": "2026 configuration",
     "href": "/products/8a0ce9fc-0d65-4b28-8261-fd5d2c5f8546"
+  },
+  {
+    "name": "Regional Property Package",
+    "carrier": "Meridian Specialty P&C",
+    "lineOfBusiness": "Property",
+    "arrangement": "Fronting",
+    "selectedClasses": [
+      "Habitational",
+      "Commercial Property"
+    ],
+    "coverages": {
+      "Habitational": {
+        "Property Damage": [
+          "Dwelling Fire",
+          "Water Backup",
+          "Vandalism"
+        ],
+        "Loss of Use": [
+          "Additional Living Expenses"
+        ],
+        "Liability": [
+          "Personal Liability",
+          "Medical Payments"
+        ]
+      },
+      "Commercial Property": {
+        "Property Damage": [
+          "Special Form",
+          "Equipment Breakdown"
+        ],
+        "Business Interruption": [
+          "Income Coverage"
+        ],
+        "Liability": [
+          "General Liability",
+          "Products Liability"
+        ]
+      }
+    },
+    "status": "Draft",
+    "createdOn": "Oct 1, 2026",
+    "lastUpdated": "Oct 1, 2026",
+    "id": "b6f1d24a-5c07-4e39-9a51-2f0c7d8b4e61",
+    "productId": "PRD-029",
+    "version": "2026.01",
+    "effectiveDate": "2026 configuration",
+    "href": "/products/b6f1d24a-5c07-4e39-9a51-2f0c7d8b4e61"
   }
 ]

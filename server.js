@@ -22,6 +22,8 @@ const HTML_PAGES = {
   '/coverage-form': 'coverage-form.html',
   '/coverage-form.html': 'coverage-form.html',
   '/class-of-business': 'index.html',
+  '/distribution': 'distribution.html',
+  '/distribution.html': 'distribution.html',
   '/acord': 'index.html',
 };
 
