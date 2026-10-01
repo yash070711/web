@@ -21,5 +21,49 @@
     "version": "2026.01",
     "effectiveDate": "2026 configuration",
     "href": "/products/00c39c15-31cf-4e58-9d1d-566b2f3a39ad"
+  },
+  {
+    "name": "New truck",
+    "carrier": "Futuristic Risk Carrier",
+    "lineOfBusiness": "Commercial Auto",
+    "arrangement": "Non-fronting",
+    "selectedClasses": [
+      "Test"
+    ],
+    "coverages": {
+      "Test": {
+        "Auto lia": [
+          "body"
+        ]
+      }
+    },
+    "status": "Draft",
+    "createdOn": "Sep 30, 2026",
+    "id": "664bee07-3c1b-403f-b08e-d26d6b5b8465",
+    "productId": "PRD-029",
+    "version": "2026.01",
+    "effectiveDate": "2026 configuration",
+    "href": "/products/664bee07-3c1b-403f-b08e-d26d6b5b8465"
+  },
+  {
+    "name": "New truck",
+    "carrier": "Southlake Specialty Insurance Company",
+    "lineOfBusiness": "Commercial Auto",
+    "arrangement": "Non-fronting",
+    "selectedClasses": [
+      "Test"
+    ],
+    "coverages": {
+      "Test": {
+        "Auto lia": []
+      }
+    },
+    "status": "Draft",
+    "createdOn": "Oct 1, 2026",
+    "id": "10df008b-7f6b-4509-8a38-f76cf7a59cce",
+    "productId": "PRD-030",
+    "version": "2026.01",
+    "effectiveDate": "2026 configuration",
+    "href": "/products/10df008b-7f6b-4509-8a38-f76cf7a59cce"
   }
 ]
