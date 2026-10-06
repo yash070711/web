@@ -1,69 +1,48 @@
 [
   {
-    "name": "Commercial Trucking Autoo",
+    "name": "PD-1",
     "carrier": "Southlake Specialty Insurance Company",
     "lineOfBusiness": "Commercial Auto",
-    "arrangement": "Non-fronting",
+    "arrangement": "Fronting",
     "selectedClasses": [
-      "Test"
+      "new test"
     ],
     "coverages": {
-      "Test": {
-        "Auto lia": [
-          "body"
+      "new test": {
+        "AL": [
+          "PD"
         ]
       }
     },
     "status": "Draft",
-    "createdOn": "Sep 30, 2026",
-    "id": "00c39c15-31cf-4e58-9d1d-566b2f3a39ad",
+    "createdOn": "Oct 6, 2026",
+    "id": "29d9edb0-40c9-4c6a-8f7a-8e0e41db9524",
     "productId": "PRD-028",
     "version": "2026.01",
     "effectiveDate": "2026 configuration",
-    "href": "/products/00c39c15-31cf-4e58-9d1d-566b2f3a39ad"
+    "href": "/products/29d9edb0-40c9-4c6a-8f7a-8e0e41db9524"
   },
   {
-    "name": "New truck",
-    "carrier": "Futuristic Risk Carrier",
+    "name": "PD-1",
+    "carrier": "Southlake Specialty Insurance Company",
     "lineOfBusiness": "Commercial Auto",
-    "arrangement": "Non-fronting",
+    "arrangement": "Fronting",
     "selectedClasses": [
-      "Test"
+      "new test"
     ],
     "coverages": {
-      "Test": {
-        "Auto lia": [
-          "body"
+      "new test": {
+        "AL": [
+          "PD"
         ]
       }
     },
     "status": "Draft",
-    "createdOn": "Sep 30, 2026",
-    "id": "664bee07-3c1b-403f-b08e-d26d6b5b8465",
+    "createdOn": "Oct 6, 2026",
+    "id": "42437197-a47a-4358-adee-327cfd16c72d",
     "productId": "PRD-029",
     "version": "2026.01",
     "effectiveDate": "2026 configuration",
-    "href": "/products/664bee07-3c1b-403f-b08e-d26d6b5b8465"
-  },
-  {
-    "name": "New truck",
-    "carrier": "Southlake Specialty Insurance Company",
-    "lineOfBusiness": "Commercial Auto",
-    "arrangement": "Non-fronting",
-    "selectedClasses": [
-      "Test"
-    ],
-    "coverages": {
-      "Test": {
-        "Auto lia": []
-      }
-    },
-    "status": "Draft",
-    "createdOn": "Oct 1, 2026",
-    "id": "10df008b-7f6b-4509-8a38-f76cf7a59cce",
-    "productId": "PRD-030",
-    "version": "2026.01",
-    "effectiveDate": "2026 configuration",
-    "href": "/products/10df008b-7f6b-4509-8a38-f76cf7a59cce"
+    "href": "/products/42437197-a47a-4358-adee-327cfd16c72d"
   }
 ]

@@ -1,11 +1,11 @@
 [
   {
-    "name": "Auto lia",
+    "name": "AL",
     "description": "",
     "coverageType": "Main",
     "status": "active",
     "classOfBusiness": [
-      "3df3dd03-4789-4f4d-bc61-d3b20bb799ba"
+      "2e5394b8-e70b-46cd-a7ee-224bcea96c6f"
     ],
     "forms": [
       {
@@ -13,17 +13,17 @@
         "excluded": []
       }
     ],
-    "createdAt": "2026-09-30T12:37:32.434Z",
-    "updatedAt": "2026-09-30T12:47:20.939Z",
-    "id": "9e7ba083-7569-4bd3-a020-8a5b71c8bf6a"
+    "createdAt": "2026-10-06T09:37:17.819Z",
+    "updatedAt": "2026-10-06T09:37:17.819Z",
+    "id": "10f00fb6-84ac-4748-a4b5-534ef29bcbfd"
   },
   {
-    "name": "body",
+    "name": "PD",
     "description": "",
     "coverageType": "Addition",
     "status": "active",
     "classOfBusiness": [
-      "3df3dd03-4789-4f4d-bc61-d3b20bb799ba"
+      "2e5394b8-e70b-46cd-a7ee-224bcea96c6f"
     ],
     "forms": [
       {
@@ -31,8 +31,8 @@
         "excluded": []
       }
     ],
-    "createdAt": "2026-09-30T12:47:39.773Z",
-    "updatedAt": "2026-09-30T12:47:39.773Z",
-    "id": "1c850581-bf8a-4287-a0f0-d81abbd5ab39"
+    "createdAt": "2026-10-06T09:37:40.141Z",
+    "updatedAt": "2026-10-06T09:37:40.141Z",
+    "id": "41a26b72-da3c-4b9f-ba27-ae703fd78a7e"
   }
 ]
