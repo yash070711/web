@@ -14,40 +14,39 @@
 <div class="app">
 <aside class="sidebar" id="sidebar" aria-label="Product Studio navigation"></aside>
 <main>
-  <div class="breadcrumb">Product Studio / <span>Distribution</span></div>
   <div class="page-header">
     <div>
       <div class="eyebrow">Distribution</div>
-      <h1>Distribution Configuration</h1>
-      <p>Assign a product to an organization and define the licensed footprint, coverage scope, authority and commission.</p>
+      <h1 id="pageTitle">My Distributions</h1>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn primary" id="configureBtn">Configure Distribution</button>
+      <button type="button" class="btn" id="backToListBtn" style="display:none">Back to List</button>
     </div>
   </div>
 
-  <dl class="card summary">
-    <div class="summary-item">
-      <dt>Organization</dt>
-      <dd id="sumOrg">—</dd>
-      <div class="hint" id="sumOrgHint">—</div>
-    </div>
-    <div class="summary-item">
-      <dt>Product</dt>
-      <dd id="sumProduct">—</dd>
-      <div class="hint" id="sumProductHint">—</div>
-    </div>
-    <div class="summary-item">
-      <dt>Coverage Scope</dt>
-      <dd id="sumScope">—</dd>
-      <div class="hint" id="sumScopeHint">—</div>
-    </div>
-  </dl>
+  <!-- List View -->
+  <section id="listView" class="list-view">
+    <section class="card distribution-list" aria-labelledby="distributionListTitle">
+      <div class="card-header"><div><div class="card-title" id="distributionListTitle">Configured Distributions</div><div class="card-subtitle" id="distributionListCount">Saved distribution configurations</div></div></div>
+      <div class="distribution-filters">
+        <input class="search" id="distributionSearch" type="search" placeholder="Search organization or product" aria-label="Search distributions">
+        <select class="filter" id="filterOrganizationType"><option value="">All organization types</option></select><select class="filter" id="filterOrganization"><option value="">All organizations</option></select><select class="filter" id="filterProduct"><option value="">All products</option></select><select class="filter" id="filterArrangement"><option value="">All arrangements</option></select><select class="filter" id="filterCoverage"><option value="">All coverage scopes</option></select><select class="filter" id="filterState"><option value="">All states</option></select><select class="filter" id="filterAuthority"><option value="">All authorities</option></select><select class="filter" id="filterCommissionBasis"><option value="">All commission bases</option></select><select class="filter" id="filterStatus"><option value="">All statuses</option></select>
+        <button class="btn sm" type="button" id="clearDistributionFilters">Clear Filters</button>
+      </div>
+      <div class="tbl-wrap"><table class="tbl distribution-table" id="distributionTable"><thead><tr><th data-sort="organizationType">Organization Type</th><th data-sort="organizationName">Organization</th><th data-sort="productName">Product</th><th data-sort="arrangement">Arrangement</th><th data-sort="coverage">Coverage Scope</th><th>Licensed States</th><th>Excluded Cities</th><th data-sort="authority">Authority</th><th data-sort="bindingLimit" class="right">Binding Limit</th><th data-sort="commission">Commission</th><th data-sort="status">Status</th><th data-sort="effectiveDate">Effective Date</th><th data-sort="updatedAt">Last Modified</th><th>Actions</th></tr></thead><tbody id="distributionRows"></tbody></table></div>
+      <div class="pager" id="distributionPager"></div>
+    </section>
+  </section>
 
-  <form id="distributionForm" novalidate>
+  <!-- Config View -->
+  <section id="configView" class="config-view" style="display:none">
+  <form id="distributionForm" class="distribution-form" novalidate>
 
     <section class="card form-card" aria-labelledby="orgTitle">
       <div class="card-header">
         <div>
           <div class="card-title" id="orgTitle">Organization</div>
-          <div class="card-subtitle">Choose the organization type, then the organization the product is distributed to.</div>
         </div>
       </div>
       <div class="form-grid">
@@ -66,14 +65,12 @@
           <div class="err" data-err="organizationId"></div>
         </div>
       </div>
-      <div class="guidance" id="orgHint">Licensed states available for selection come from the selected organization.</div>
     </section>
 
     <section class="card form-card" aria-labelledby="productTitle">
       <div class="card-header">
         <div>
           <div class="card-title" id="productTitle">Product</div>
-          <div class="card-subtitle">Products already configured in Product Studio. The arrangement is owned by the product and shown read-only.</div>
         </div>
       </div>
       <div class="form-grid">
@@ -87,7 +84,6 @@
         <div class="field">
           <label for="arrangement">Arrangement</label>
           <output class="input readonly" id="arrangement" for="productId">—</output>
-          <div class="hint" id="arrangementHint">Fronting or Non-Fronting · configured in Product Studio</div>
         </div>
       </div>
       <div class="guidance" id="productHint">Coverages are loaded automatically from the selected product.</div>
@@ -97,33 +93,37 @@
       <div class="card-header">
         <div>
           <div class="card-title" id="statesTitle">Licensed States</div>
-          <div class="card-subtitle">Select the states the organization may write this product in, then exclude any individual cities.</div>
         </div>
       </div>
       <div class="split">
         <div class="split-pane">
-          <div class="section-label">Available states</div>
           <input class="search state-search" id="stateSearch" type="search" placeholder="Search states" autocomplete="off" aria-label="Search states">
           <div class="state-list" id="stateList" role="group" aria-label="Licensed states"></div>
           <div class="err" data-err="licensedStates"></div>
         </div>
         <div class="split-pane">
-          <div class="section-label">Selected footprint</div>
           <div class="footprint" id="footprint" aria-live="polite"></div>
         </div>
       </div>
-      <div class="guidance">Excluded cities stay highlighted in red and are removed from the distributed footprint for that state.</div>
     </section>
 
     <section class="card form-card" aria-labelledby="scopeTitle">
       <div class="card-header">
         <div>
           <div class="card-title" id="scopeTitle">Coverage Distribution</div>
-          <div class="card-subtitle">Pick the distribution level, then select exactly what is in scope.</div>
+          <div class="card-subtitle">Choose a distribution level, then select exactly what is in scope.</div>
         </div>
       </div>
-      <div class="scope-levels" id="scopeLevels" role="radiogroup" aria-label="Distribution level"></div>
-      <div class="err" data-err="coverageScope"></div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="coverageScope">Distribution Level <span class="req">*</span></label>
+          <select class="input" id="coverageScope" name="coverageScope">
+            <option value="">Select distribution level</option>
+          </select>
+          <div class="guidance" id="scopeLevelHint">All coverages, entire individual coverage, or additional coverage under a particular coverage.</div>
+          <div class="err" data-err="coverageScope"></div>
+        </div>
+      </div>
       <div class="coverage-tree" id="coverageTree" aria-live="polite"></div>
       <div class="scope-summary" id="scopeSummary"></div>
     </section>
@@ -132,10 +132,16 @@
       <div class="card-header">
         <div>
           <div class="card-title" id="authorityTitle">Authority &amp; Commission</div>
-          <div class="card-subtitle">Authority determines the binding limit the organization may issue; commission is paid on the selected basis.</div>
         </div>
       </div>
       <div class="form-grid">
+        <div class="field">
+          <label for="businessType">Business Type <span class="req">*</span></label>
+          <select class="input" id="businessType" name="businessType">
+            <option value="">Select business type</option>
+          </select>
+          <div class="err" data-err="businessType"></div>
+        </div>
         <div class="field">
           <label for="authority">Authority <span class="req">*</span></label>
           <select class="input" id="authority" name="authority">
@@ -167,7 +173,18 @@
           <div class="err" data-err="commissionBasis"></div>
         </div>
       </div>
-      <div class="guidance" id="authorityHint">Binding Limit is required whenever the organization holds binding authority.</div>
+      <div class="referral-rules" id="referralRules">
+        <div class="section-label">Location-specific coverage referral rules</div>
+        <div class="referral-builder">
+          <div class="field"><label for="ruleCoverage">Coverage</label><select class="input" id="ruleCoverage"></select></div>
+          <div class="field"><label for="ruleLocation">Location</label><select class="input" id="ruleLocation"></select></div>
+          <div class="field"><label for="writtenCoverageLimit">Written Coverage Limit</label><div class="input-affix"><input class="input" id="writtenCoverageLimit" type="number" min="1" step="1000" placeholder="0"><span class="affix">USD</span></div></div>
+          <label class="refer-toggle"><input id="referToUnderwriter" type="checkbox" checked> <span>Refer to Underwriter when binding limit exceeds written limit</span></label>
+          <button class="btn dark" type="button" id="addReferralRule">Add rule</button>
+        </div>
+        <div class="err" data-err="referralRules"></div>
+        <div class="referral-summary" id="referralSummary" aria-live="polite"></div>
+      </div>
     </section>
 
     <div class="form-actions form-card">
@@ -179,11 +196,15 @@
     </div>
   </form>
 
+    </form>
+  </section>
+
   <div class="footer"><span>VeriDex Product Studio · Distribution</span><span>Configuration workspace</span></div>
 </main>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog class="modal wide" id="distributionDetailDialog"><div class="modal-head"><div class="modal-title">Distribution Details</div><button class="icon-btn" type="button" id="closeDistributionDetail" aria-label="Close">&times;</button></div><div class="modal-body" id="distributionDetailBody"></div></dialog>
 
 <script type="module" src="/js/nav.js"></script>
 <script type="module" src="/js/distribution.js"></script>

@@ -11,10 +11,17 @@
     "productVersion": "2026.08",
     "arrangement": "Non-Fronting",
     "licensedStates": [],
-    "coverageScope": { "level": "", "coverages": [], "additions": [] },
+    "coverageScope": {
+      "level": "",
+      "coverages": [],
+      "additions": []
+    },
     "authority": "",
     "bindingLimit": null,
-    "commission": { "percent": 0, "basis": "" },
+    "commission": {
+      "percent": 0,
+      "basis": ""
+    },
     "createdAt": "2026-09-30T07:10:45.496Z",
     "updatedAt": "2026-09-30T07:11:16.390Z"
   },
@@ -30,21 +37,76 @@
     "productVersion": "2026.01",
     "arrangement": "Non-Fronting",
     "licensedStates": [
-      { "code": "CA", "name": "California", "excludedCities": ["Fresno"] },
-      { "code": "TX", "name": "Texas", "excludedCities": [] },
-      { "code": "WA", "name": "Washington", "excludedCities": [] }
+      {
+        "code": "CA",
+        "name": "California",
+        "excludedCities": [
+          "Fresno"
+        ]
+      },
+      {
+        "code": "TX",
+        "name": "Texas",
+        "excludedCities": []
+      },
+      {
+        "code": "WA",
+        "name": "Washington",
+        "excludedCities": []
+      }
     ],
     "coverageScope": {
       "level": "ADDITIONAL",
       "coverages": [],
       "additions": [
-        { "classOfBusiness": "Trucker", "coverage": "Auto Liability", "addition": "Uninsured Motorist" }
+        {
+          "classOfBusiness": "Trucker",
+          "coverage": "Auto Liability",
+          "addition": "Uninsured Motorist"
+        }
       ]
     },
     "authority": "Binding",
     "bindingLimit": 1000000,
-    "commission": { "percent": 12, "basis": "Earned Premium" },
+    "commission": {
+      "percent": 12,
+      "basis": "Earned Premium"
+    },
     "createdAt": "2026-09-28T11:04:00.000Z",
     "updatedAt": "2026-09-29T08:41:12.000Z"
+  },
+  {
+    "status": "active",
+    "organizationType": "Risk Carrier",
+    "organizationId": "ORG-001",
+    "organizationName": "Falcon Risk Insurance Company",
+    "productId": "8a0ce9fc-0d65-4b28-8261-fd5d2c5f8546",
+    "productCode": "PRD-028",
+    "productName": "Commercial Trucking Auto",
+    "productVersion": "2026.01",
+    "arrangement": "Non-Fronting",
+    "licensedStates": [
+      {
+        "code": "CA",
+        "name": "California",
+        "excludedCities": [
+          "Los Angeles"
+        ]
+      }
+    ],
+    "coverageScope": {
+      "level": "ALL",
+      "coverages": [],
+      "additions": []
+    },
+    "authority": "Binding",
+    "bindingLimit": 1111,
+    "commission": {
+      "percent": 11,
+      "basis": "Earned Premium"
+    },
+    "createdAt": "2026-10-01T12:48:10.525Z",
+    "updatedAt": "2026-10-01T12:48:10.525Z",
+    "id": "ac91ba59-a9a9-4208-9722-164b3dfa5f2b"
   }
 ]

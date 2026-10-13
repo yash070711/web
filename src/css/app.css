@@ -57,6 +57,41 @@ a.btn{display:inline-block}
 @media(max-width:767px){.filter{max-width:none;flex:1 1 100%}.pager{justify-content:center}}
 
 /* --- Distribution configuration --- */
+.distribution-form{display:flex;flex-direction:column;gap:14px}
+.distribution-form .form-card{width:100%;max-width:980px;margin:0}
+.distribution-summary{max-width:980px;margin-bottom:14px;border-color:#d8e1ea;background:linear-gradient(105deg,#fff 0%,#fbfcfe 100%)}
+.distribution-form .card{padding:20px}
+.distribution-form .card-header{margin-bottom:18px}
+.distribution-form .card-title{font-size:14px;letter-spacing:-.1px}
+.distribution-form .card-subtitle{max-width:650px;font-size:10px;line-height:1.55}
+.distribution-form .field{margin-bottom:0}
+.distribution-form .form-grid{gap:16px 18px}
+.distribution-form .guidance{margin-top:16px}
+.distribution-form .split{gap:22px}
+.distribution-form .section-label{margin:0 0 8px}
+.distribution-form .scope-summary{background:#fbfcfd;border:1px solid #e7ecf2;border-radius:6px;padding:9px 11px}
+.distribution-form .form-actions{margin-top:0;padding:14px 0 0;background:transparent;border:0}
+.distribution-form .form-actions .tools{margin-left:auto}
+.input:disabled{background:#f4f7fa;color:#7a8798;cursor:not-allowed}
+.state-list:empty,.footprint:empty{min-height:100px}
+.referral-rules{margin-top:18px;padding-top:15px;border-top:1px solid #eef1f5}
+.referral-builder{display:grid;grid-template-columns:1.1fr 1.1fr minmax(150px,.7fr);gap:10px 12px;align-items:end}
+.referral-builder .field{min-width:0}
+.refer-toggle{grid-column:1/-1;display:flex;align-items:flex-start;gap:7px;font-size:10px;color:#3d4f66;line-height:1.5;cursor:pointer}
+.refer-toggle input{margin:1px 0 0;width:14px;height:14px;accent-color:#b84804}
+.referral-builder .btn{justify-self:start}
+.referral-summary{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.referral-rule{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e2e8f0;border-radius:6px;background:#fbfcfd;padding:9px 10px;font-size:10px}
+.referral-rule>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.referral-rule strong{color:#26364b}
+@media(max-width:700px){.referral-builder{grid-template-columns:1fr}.referral-rule{align-items:flex-start}.referral-rule>div{flex-direction:column;align-items:flex-start;gap:4px}}
+.distribution-list{max-width:calc(100% - 0px);margin-top:26px}
+.distribution-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+.distribution-filters .search{flex:1 1 280px}.distribution-filters .filter{min-width:140px;flex:0 1 auto}
+.distribution-table th[data-sort]{cursor:pointer}.distribution-table th[data-sort]:hover{color:#b84804}.distribution-table td{white-space:nowrap}.distribution-table td:nth-child(6){white-space:normal;min-width:130px}
+.distribution-table td:nth-child(7){white-space:normal;min-width:130px}
+.distribution-table{font-size:11px}
+.distribution-table th, .distribution-table td{padding:8px 10px}.location-detail{margin:6px 0 0;padding-left:18px}.location-detail li{margin:4px 0}
 .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;max-width:900px;margin:0 0 16px;padding:12px 15px}
 .summary-item{min-width:0;padding:0 16px;border-left:1px solid #eaeef3}
 .summary-item:first-child{padding-left:0;border-left:0}
@@ -97,34 +132,7 @@ a.btn{display:inline-block}
 .city-chip{border:1px solid #dde4ec;background:#fff;border-radius:20px;padding:4px 10px;font-size:9px;color:#4b6079}
 .city-chip:hover{border-color:#f0cbb1;color:#b84804}
 .city-chip.excluded{background:#fdf1f0;border-color:#f0cdca;color:#a3261f;text-decoration:line-through}
-.scope-levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
-.scope-level{display:flex;flex-direction:column;gap:4px;border:1px solid #d4dde7;background:#f7f9fb;border-radius:6px;padding:10px 11px;text-align:left}
-.scope-level strong{font-size:10px;font-weight:700;color:#3d4f66}
-.scope-level span{font-size:9px;color:#7a8798;line-height:1.55}
-.scope-level:hover{border-color:#f0cbb1}
-.scope-level.active{background:#1b2635;border-color:#1b2635}
-.scope-level.active strong{color:#fff}
-.scope-level.active span{color:#a1b0c2}
-.coverage-tree{display:flex;flex-direction:column;gap:12px}
-.coverage-group{border:1px solid #e7ecf2;border-radius:6px;background:#fbfcfd;padding:11px}
-.coverage-row{display:flex;align-items:flex-start;gap:9px;margin-bottom:6px;border:1px solid #e7ecf2;border-radius:5px;background:#fff;padding:8px 9px;font-size:10px;color:#26364b;cursor:pointer}
-.coverage-row:last-child{margin-bottom:0}
-.coverage-row.checked{border-color:#f0cbb1;background:#fff7f3}
-.coverage-row input{margin-top:1px}
-.coverage-row .state-meta{flex-shrink:0;margin-top:1px}
-.coverage-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-.coverage-main strong{font-weight:700}
-.coverage-card{margin-bottom:8px;border:1px solid #e7ecf2;border-radius:6px;background:#fff;padding:9px}
-.coverage-card:last-child{margin-bottom:0}
-.coverage-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:10px}
-.coverage-head .btn{margin-left:auto}
-.addition-list{display:flex;flex-direction:column;gap:5px}
-.addition-row{display:flex;align-items:center;gap:8px;border-radius:5px;background:#f7f9fb;padding:6px 8px;font-size:10px;color:#3d4f66;cursor:pointer}
-.addition-row.checked{background:#fff7f3;color:#26364b}
-.scope-summary{margin-top:12px;padding-top:11px;border-top:1px solid #eef1f5;font-size:10px;color:#66788d;line-height:1.6}
-.scope-summary[hidden]{display:none}
-@media(max-width:900px){.summary{grid-template-columns:1fr;gap:11px}.summary-item{padding:0;border-left:0}.summary-item+.summary-item{border-top:1px solid #eaeef3;padding-top:11px}.form-grid{grid-template-columns:1fr}.split{grid-template-columns:1fr}.scope-levels{grid-template-columns:1fr}}
-@media(max-width:767px){.form-actions{flex-direction:column;align-items:stretch}.form-actions .tools{justify-content:flex-end}.state-row,.coverage-row{padding:9px 10px}}
+
 /* --- Class of business form preview (coverage dialog) --- */
 .select-row{display:flex;gap:8px;align-items:center}
 .select-row .input{flex:1}

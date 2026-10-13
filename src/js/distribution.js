@@ -9,6 +9,7 @@ const distributionApi = api('distribution');
 const ORGANIZATION_TYPES = ['Risk Carrier', 'MGU', 'MGA', 'Broker'];
 const ARRANGEMENTS = ['Fronting', 'Non-Fronting'];
 const AUTHORITIES = ['Binding', 'Binding + Rating'];
+const BUSINESS_TYPES = ['New', 'Renew'];
 const COMMISSION_BASES = ['Earned Premium', 'Written Premium'];
 const SCOPE_LEVELS = [
   { value: 'ALL', label: 'All coverages', hint: 'Every coverage and additional coverage on the product.' },
@@ -23,33 +24,46 @@ const dom = {
   form: el('distributionForm'),
   organizationType: el('organizationType'),
   organizationId: el('organizationId'),
-  orgHint: el('orgHint'),
   productId: el('productId'),
   productHint: el('productHint'),
   arrangement: el('arrangement'),
-  arrangementHint: el('arrangementHint'),
   stateSearch: el('stateSearch'),
   stateList: el('stateList'),
   footprint: el('footprint'),
-  scopeLevels: el('scopeLevels'),
+  scopeLevel: el('coverageScope'),
+  scopeLevelHint: el('scopeLevelHint'),
   coverageTree: el('coverageTree'),
   scopeSummary: el('scopeSummary'),
   authority: el('authority'),
+  businessType: el('businessType'),
   bindingLimitField: el('bindingLimitField'),
   bindingLimit: el('bindingLimit'),
   commissionPercent: el('commissionPercent'),
   commissionBasis: el('commissionBasis'),
-  authorityHint: el('authorityHint'),
+  ruleCoverage: el('ruleCoverage'),
+  ruleLocation: el('ruleLocation'),
+  writtenCoverageLimit: el('writtenCoverageLimit'),
+  referToUnderwriter: el('referToUnderwriter'),
+  addReferralRule: el('addReferralRule'),
+  referralSummary: el('referralSummary'),
+  listSearch: el('distributionSearch'),
+  listRows: el('distributionRows'),
+  listCount: el('distributionListCount'),
+  listPager: el('distributionPager'),
+  listTable: el('distributionTable'),
+  clearFilters: el('clearDistributionFilters'),
+  detailDialog: el('distributionDetailDialog'),
+  detailBody: el('distributionDetailBody'),
+  closeDetail: el('closeDistributionDetail'),
   status: el('formStatus'),
   save: el('saveBtn'),
   reset: el('resetBtn'),
+  configureBtn: el('configureBtn'),
+  backToListBtn: el('backToListBtn'),
+  listView: el('listView'),
+  configView: el('configView'),
+  pageTitle: el('pageTitle'),
   toast: el('toast'),
-  sumOrg: el('sumOrg'),
-  sumOrgHint: el('sumOrgHint'),
-  sumProduct: el('sumProduct'),
-  sumProductHint: el('sumProductHint'),
-  sumScope: el('sumScope'),
-  sumScopeHint: el('sumScopeHint'),
 };
 
 const blankDraft = () => ({
@@ -60,6 +74,8 @@ const blankDraft = () => ({
   scopeLevel: '',
   coverages: [],
   additions: [],
+  businessType: '',
+  referralRules: [],
   authority: '',
   bindingLimit: '',
   commissionPercent: '',
@@ -73,6 +89,8 @@ const state = {
   stateByCode: new Map(),
   records: [],
   search: '',
+  list: { page: 1, size: 8, sort: 'updatedAt', direction: 'desc' },
+  editingId: '',
   draft: blankDraft(),
 };
 
@@ -146,7 +164,29 @@ const alreadyDistributed = (productId) =>
     (row) => row.organizationId === state.draft.organizationId && row.productId === productId,
   ).length;
 
-const isApproved = (row) => ['active', 'approved'].includes(normalise(row.status));
+const requiresBindingLimit = () => state.draft.authority === 'Binding';
+
+const coverageRuleOptions = () =>
+  coverageGroups().flatMap((group) =>
+    group.coverages.map((row) => ({ value: covKey(group.classOfBusiness, row.coverage), label: `${group.classOfBusiness} · ${row.coverage}` })),
+  );
+
+const locationRuleOptions = () =>
+  Object.values(state.draft.licensedStates).flatMap((row) => {
+    const cities = state.stateByCode.get(row.code)?.cities ?? [];
+    return [
+      { value: `${row.code}|`, label: `${row.code} · Entire state` },
+      ...cities.map((city) => ({ value: `${row.code}|${city}`, label: `${row.code} · ${city}` })),
+    ];
+  });
+
+const enforceReferralThresholds = () => {
+  const requestedLimit = Number(state.draft.bindingLimit);
+  if (!requiresBindingLimit() || !(requestedLimit > 0)) return;
+  state.draft.referralRules.forEach((rule) => {
+    if (requestedLimit > Number(rule.writtenLimit)) rule.referToUnderwriter = true;
+  });
+};
 
 /* ---------- feedback ---------- */
 let toastTimer;
@@ -206,37 +246,22 @@ const renderOrganizations = () => {
   setSelectValue(dom.organizationId, state.draft.organizationId);
 };
 
-const renderOrgHint = () => {
-  const org = currentOrganization();
-  if (!org) {
-    dom.orgHint.textContent = 'Licensed states available for selection come from the selected organization.';
-    return;
-  }
-  const count = asList(org.licensedStates).length;
-  const parts = [
-    `Licensed in <strong>${count}</strong> state${count === 1 ? '' : 's'}.`,
-    org.rating ? `Financial strength ${esc(org.rating)}.` : '',
-    isApproved(org) ? '' : 'Approval pending — confirm before granting binding authority.',
-  ];
-  dom.orgHint.innerHTML = parts.filter(Boolean).join(' ');
-};
-
 /* ---------- render: product + arrangement ---------- */
 const renderProducts = () => {
   const rows = activeProducts();
-  dom.productId.innerHTML = rows.length
+  const organizationSelected = Boolean(state.draft.organizationId);
+  dom.productId.innerHTML = !organizationSelected
+    ? '<option value="">Select an organization first</option>'
+    : rows.length
     ? optionHtml(rows.map((row) => ({ value: row.id, label: productLabel(row) })), 'Select product')
     : '<option value="">No products available</option>';
-  dom.productId.disabled = !rows.length;
+  dom.productId.disabled = !organizationSelected || !rows.length;
   setSelectValue(dom.productId, state.draft.productId);
 };
 
 const renderArrangement = () => {
   const arrangement = arrangementOf(currentProduct());
   dom.arrangement.textContent = arrangement || '—';
-  dom.arrangementHint.textContent = arrangement
-    ? 'Read-only · configured in Product Studio'
-    : 'Fronting or Non-Fronting · not set on this product';
 };
 
 const renderProductHint = () => {
@@ -315,14 +340,19 @@ const renderFootprint = () => {
 };
 
 /* ---------- render: coverage scope ---------- */
-const renderScopeLevels = () => {
-  dom.scopeLevels.innerHTML = SCOPE_LEVELS.map((level) => {
-    const on = state.draft.scopeLevel === level.value;
-    return `<button type="button" role="radio" aria-checked="${on}" class="scope-level${on ? ' active' : ''}" data-level="${level.value}">
-      <strong>${esc(level.label)}</strong>
-      <span>${esc(level.hint)}</span>
-    </button>`;
-  }).join('');
+// One dropdown carries all three distribution levels; the hint spells out what the choice means.
+const renderScopeLevel = () => {
+  const level = SCOPE_LEVELS.find((row) => row.value === state.draft.scopeLevel);
+  dom.scopeLevel.innerHTML = optionHtml(
+    SCOPE_LEVELS.map((row) => ({ value: row.value, label: row.label })),
+    'Select distribution level',
+  );
+  // Nothing to scope until a product supplies the coverage tree.
+  dom.scopeLevel.disabled = !state.draft.productId;
+  setSelectValue(dom.scopeLevel, state.draft.scopeLevel);
+  dom.scopeLevelHint.textContent = level
+    ? level.hint
+    : 'All coverages, entire individual coverage, or additional coverage under a particular coverage.';
 };
 
 const coverageRow = (group, row, level) => {
@@ -432,53 +462,144 @@ const renderScopeSummary = () => {
 
 /* ---------- render: authority ---------- */
 const renderAuthority = () => {
-  // Both authority values grant binding, so the binding limit is always required once one is chosen.
-  const granted = Boolean(dom.authority.value);
-  dom.bindingLimitField.hidden = !granted;
-  dom.bindingLimit.required = granted;
-  dom.authorityHint.textContent = granted
-    ? `${dom.authority.value} authority — enter the permitted binding limit.`
-    : 'Binding Limit is required whenever the organization holds binding authority.';
+  const required = requiresBindingLimit();
+  dom.bindingLimitField.hidden = !required;
+  dom.bindingLimit.required = required;
 };
 
-/* ---------- render: summary strip ---------- */
-const renderSummary = () => {
-  const draft = state.draft;
-  const org = currentOrganization();
-  const product = currentProduct();
-
-  dom.sumOrg.textContent = org ? org.name : '—';
-  dom.sumOrgHint.textContent = org
-    ? [org.type, org.rating].filter(Boolean).join(' · ') || '—'
-    : 'Select an organization';
-
-  dom.sumProduct.textContent = product ? product.name : '—';
-  dom.sumProductHint.textContent = product
-    ? [product.productId, product.version, arrangementOf(product)].filter(Boolean).join(' · ')
-    : 'Select a product';
-
-  const level = SCOPE_LEVELS.find((row) => row.value === draft.scopeLevel);
-  dom.sumScope.textContent = level ? level.label : '—';
-  dom.sumScopeHint.textContent = level ? scopeSummaryText() : 'Select a distribution level';
+const renderReferralRules = () => {
+  const coverages = coverageRuleOptions();
+  const locations = locationRuleOptions();
+  dom.ruleCoverage.innerHTML = optionHtml(coverages, coverages.length ? 'Select coverage' : 'Select a product first');
+  dom.ruleLocation.innerHTML = optionHtml(locations, locations.length ? 'Select licensed location' : 'Select a licensed state first');
+  dom.addReferralRule.disabled = !coverages.length || !locations.length;
+  dom.referralSummary.innerHTML = state.draft.referralRules.length
+    ? state.draft.referralRules
+        .map((rule, index) => `<div class="referral-rule"><div><strong>${esc(rule.coverageLabel)}</strong><span>${esc(rule.locationLabel)}</span><span>Written limit: ${usd(rule.writtenLimit)}</span><span class="tag${rule.referToUnderwriter ? ' warn' : ''}">${rule.referToUnderwriter ? 'Refer to Underwriter' : 'No referral'}</span></div><button class="btn sm danger" type="button" data-remove-referral="${index}">Remove</button></div>`)
+        .join('')
+    : '<div class="hint">No location-specific coverage rules configured.</div>';
 };
+
+const listFilters = () => ({
+  organizationType: el('filterOrganizationType').value,
+  organizationName: el('filterOrganization').value,
+  productName: el('filterProduct').value,
+  arrangement: el('filterArrangement').value,
+  coverage: el('filterCoverage').value,
+  state: el('filterState').value,
+  authority: el('filterAuthority').value,
+  commissionBasis: el('filterCommissionBasis').value,
+  status: el('filterStatus').value,
+
+  search: dom.listSearch.value.trim().toLowerCase(),
+});
+
+const scopeLabel = (row) => ({ ALL: 'All Coverages', COVERAGE: 'Specific Coverage', ADDITIONAL: 'Additional Coverage/Sub-Coverage' }[row.coverageScope?.level] ?? '—');
+const effectiveDate = (row) => String(row.effectiveDate || row.createdAt || '').slice(0, 10);
+const formatDate = (value) => {
+  if (!value) return '—';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(date);
+};
+const locationSummary = (row) => {
+  const states = row.licensedStates ?? [];
+  const cities = states.reduce((sum, item) => sum + (item.excludedCities?.length ?? 0), 0);
+  return `${states.length} state${states.length === 1 ? '' : 's'}${cities ? `, ${cities} ${cities === 1 ? 'city' : 'cities'} excluded` : ''}`;
+};
+const excludedCitiesSummary = (row) => {
+  const cities = (row.licensedStates ?? []).flatMap((item) => (item.excludedCities ?? []).map((city) => `${item.code}: ${city}`));
+  return cities.length ? `${cities.slice(0, 2).join(', ')}${cities.length > 2 ? ` +${cities.length - 2}` : ''}` : '—';
+};
+
+const fillListFilter = (id, values, placeholder) => {
+  const node = el(id); const selected = node.value;
+  node.innerHTML = optionHtml([...new Set(values.filter(Boolean))].sort(), placeholder);
+  node.value = selected;
+};
+
+const renderListFilters = () => {
+  fillListFilter('filterOrganizationType', state.records.map((row) => row.organizationType), 'All organization types');
+  fillListFilter('filterOrganization', state.records.map((row) => row.organizationName), 'All organizations');
+  fillListFilter('filterProduct', state.records.map((row) => row.productName), 'All products');
+  fillListFilter('filterArrangement', state.records.map((row) => row.arrangement), 'All arrangements');
+  fillListFilter('filterCoverage', state.records.map(scopeLabel), 'All coverage scopes');
+  fillListFilter('filterState', state.records.flatMap((row) => (row.licensedStates ?? []).map((item) => item.code)), 'All states');
+  fillListFilter('filterAuthority', state.records.map((row) => row.authority), 'All authorities');
+  fillListFilter('filterCommissionBasis', state.records.map((row) => row.commission?.basis), 'All commission bases');
+  fillListFilter('filterStatus', state.records.map((row) => row.status), 'All statuses');
+};
+
+const filteredDistributions = () => {
+  const f = listFilters();
+  return state.records.filter((row) => {
+    const matches = (value, filter) => !filter || value === filter;
+    const search = !f.search || `${row.organizationName} ${row.productName}`.toLowerCase().includes(f.search);
+    return search && matches(row.organizationType, f.organizationType) && matches(row.organizationName, f.organizationName) && matches(row.productName, f.productName) && matches(row.arrangement, f.arrangement) && matches(scopeLabel(row), f.coverage) && matches(row.authority, f.authority) && matches(row.commission?.basis, f.commissionBasis) && matches(row.status, f.status) && (!f.state || (row.licensedStates ?? []).some((item) => item.code === f.state));
+  });
+};
+
+const renderDistributionList = () => {
+  const rows = filteredDistributions(); const { sort, direction, size } = state.list;
+  const sortValue = (row) => sort === 'coverage' ? scopeLabel(row) : sort === 'commission' ? row.commission?.percent : sort === 'effectiveDate' ? effectiveDate(row) : row[sort] ?? '';
+  rows.sort((a, b) => String(sortValue(a)).localeCompare(String(sortValue(b)), undefined, { numeric: true }) * (direction === 'asc' ? 1 : -1));
+  const pages = Math.max(1, Math.ceil(rows.length / size)); state.list.page = Math.min(state.list.page, pages);
+  const visible = rows.slice((state.list.page - 1) * size, state.list.page * size);
+  dom.listCount.textContent = `${rows.length} saved configuration${rows.length === 1 ? '' : 's'}`;
+  dom.listRows.innerHTML = visible.length ? visible.map((row) => `<tr><td>${esc(row.organizationType)}</td><td>${esc(row.organizationName)}</td><td>${esc(row.productName)}</td><td>${esc(row.arrangement || '—')}</td><td>${esc(scopeLabel(row))}</td><td><button class="btn sm" data-action="view" data-id="${esc(row.id)}">${esc(locationSummary(row))}</button></td><td>${esc(excludedCitiesSummary(row))}</td><td>${esc(row.authority || '—')}</td><td class="right">${row.bindingLimit ? usd(row.bindingLimit) : '—'}</td><td>${row.commission?.percent ?? '—'}%<div class="sub">${esc(row.commission?.basis || '')}</div></td><td><span class="badge ${row.status === 'active' ? 'live' : 'draft'}">${esc(row.status || 'draft')}</span></td><td>${formatDate(effectiveDate(row))}</td><td>${formatDate(row.updatedAt)}</td><td><div class="tools"><button class="btn sm" data-action="view" data-id="${esc(row.id)}">View</button><button class="btn sm" data-action="edit" data-id="${esc(row.id)}">Edit</button><button class="btn sm" data-action="duplicate" data-id="${esc(row.id)}">Duplicate</button><button class="btn sm danger" data-action="${row.status === 'disabled' ? 'delete' : 'disable'}" data-id="${esc(row.id)}">${row.status === 'disabled' ? 'Delete' : 'Disable'}</button></div></td></tr>`).join('') : '<tr><td colspan="14"><div class="empty">No distributions match the selected filters.</div></td></tr>';
+  dom.listPager.innerHTML = `<span class="pager-info">Page ${state.list.page} of ${pages}</span><div class="pager-controls"><button class="pg" data-page="prev" ${state.list.page === 1 ? 'disabled' : ''}>Previous</button><button class="pg" data-page="next" ${state.list.page === pages ? 'disabled' : ''}>Next</button></div>`;
+};
+
+const showDistributionDetail = (row) => {
+  const locations = (row.licensedStates ?? []).map((item) => `<li><strong>${esc(item.name || item.code)}</strong>${item.excludedCities?.length ? ` — excluded: ${esc(item.excludedCities.join(', '))}` : ''}</li>`).join('') || '<li>No states selected</li>';
+  dom.detailBody.innerHTML = `<dl class="detail-list"><div><dt>Organization</dt><dd>${esc(row.organizationType)} · ${esc(row.organizationName)}</dd></div><div><dt>Product</dt><dd>${esc(row.productName)} · ${esc(row.arrangement || '—')}</dd></div><div><dt>Coverage Scope</dt><dd>${esc(scopeLabel(row))}</dd></div><div><dt>Authority</dt><dd>${esc(row.authority || '—')}${row.bindingLimit ? ` · ${usd(row.bindingLimit)}` : ''}</dd></div><div><dt>Commission</dt><dd>${row.commission?.percent ?? '—'}% · ${esc(row.commission?.basis || '—')}</dd></div><div><dt>Status</dt><dd>${esc(row.status || 'draft')}</dd></div><div class="full"><dt>Licensed States / Excluded Cities</dt><dd><ul class="location-detail">${locations}</ul></dd></div></dl>`;
+  dom.detailDialog.showModal();
+};
+
+const editDistribution = (row) => {
+  const scope = row.coverageScope ?? {};
+  state.editingId = row.id;
+  state.draft = {
+    ...blankDraft(),
+    organizationType: row.organizationType || '', organizationId: row.organizationId || '', productId: row.productId || '', authority: row.authority || '', bindingLimit: row.bindingLimit ?? '', businessType: row.businessType || '', commissionPercent: row.commission?.percent ?? '', commissionBasis: row.commission?.basis || '', scopeLevel: scope.level || '',
+    coverages: [...(scope.coverages ?? [])],
+    additions: (scope.additions ?? []).map((item) => addKey(item.classOfBusiness, item.coverage, item.addition)),
+    referralRules: [...(row.coverageReferralRules ?? [])],
+    licensedStates: Object.fromEntries((row.licensedStates ?? []).map((item) => [
+      item.code,
+      { code: item.code, name: item.name || item.code, excludedCities: [...(item.excludedCities ?? [])] },
+    ])),
+  };
+  dom.bindingLimit.value = state.draft.bindingLimit;
+  dom.commissionPercent.value = state.draft.commissionPercent;
+  if (dom.listView) dom.listView.style.display = 'none';
+  if (dom.configView) dom.configView.style.display = 'block';
+  if (dom.configureBtn) dom.configureBtn.style.display = 'none';
+  if (dom.backToListBtn) dom.backToListBtn.style.display = 'inline-block';
+  if (dom.pageTitle) dom.pageTitle.textContent = 'Distribution Configuration';
+  render();
+  document.querySelector('.page-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setStatus(`Editing ${row.productName} for ${row.organizationName}.`, 'ok');
+};
+
+const refreshDistributionList = () => { renderListFilters(); renderDistributionList(); };
 
 /* ---------- master render ---------- */
 const render = () => {
   clearErrors();
   // Own all three selects from the draft so a Reset never depends on form.reset() alone.
   setSelectValue(dom.organizationType, state.draft.organizationType);
+  setSelectValue(dom.businessType, state.draft.businessType);
   renderOrganizations();
   renderProducts();
-  renderOrgHint();
   renderProductHint();
   renderArrangement();
   renderStateList();
   renderFootprint();
-  renderScopeLevels();
+  renderScopeLevel();
   renderCoverageTree();
   renderScopeSummary();
   renderAuthority();
-  renderSummary();
+  renderReferralRules();
   updateStatus();
 };
 
@@ -488,6 +609,8 @@ const syncInputs = () => {
   draft.organizationType = dom.organizationType.value;
   draft.organizationId = dom.organizationId.value;
   draft.productId = dom.productId.value;
+  draft.scopeLevel = dom.scopeLevel.value;
+  draft.businessType = dom.businessType.value;
   draft.authority = dom.authority.value;
   draft.bindingLimit = dom.bindingLimit.value;
   draft.commissionPercent = dom.commissionPercent.value;
@@ -517,7 +640,8 @@ const collectErrors = () => {
   }
 
   if (!draft.authority) errors.authority = 'Select an authority.';
-  if (draft.authority && !(Number(draft.bindingLimit) > 0)) {
+  if (!draft.businessType) errors.businessType = 'Select a business type.';
+  if (requiresBindingLimit() && !(Number(draft.bindingLimit) > 0)) {
     errors.bindingLimit = 'Enter the permitted binding limit.';
   }
 
@@ -551,9 +675,8 @@ const updateStatus = () => {
   );
 };
 
-// Every edit to the draft refreshes the summary strip and the live validation count.
+// Every edit refreshes the live validation count.
 const refresh = () => {
-  renderSummary();
   updateStatus();
 };
 
@@ -567,6 +690,7 @@ const focusFirstError = (errors) => {
 
 /* ---------- save ---------- */
 const buildRecord = (existing) => {
+  enforceReferralThresholds();
   const draft = state.draft;
   const product = currentProduct();
   const org = currentOrganization();
@@ -603,7 +727,9 @@ const buildRecord = (existing) => {
           : [],
     },
     authority: draft.authority,
-    bindingLimit: draft.authority ? Number(draft.bindingLimit) : null,
+    businessType: draft.businessType,
+    bindingLimit: requiresBindingLimit() ? Number(draft.bindingLimit) : null,
+    coverageReferralRules: draft.referralRules.map((rule) => ({ ...rule })),
     commission: {
       percent: round(draft.commissionPercent),
       basis: draft.commissionBasis,
@@ -627,9 +753,9 @@ const save = async (event) => {
 
   const org = currentOrganization();
   const product = currentProduct();
-  const existing = state.records.find(
-    (row) => row.organizationId === org.id && row.productId === product.id,
-  );
+  const existing = state.editingId
+    ? state.records.find((row) => row.id === state.editingId)
+    : state.records.find((row) => row.organizationId === org.id && row.productId === product.id);
   dom.save.disabled = true;
   try {
     const record = await (existing
@@ -638,9 +764,12 @@ const save = async (event) => {
     const index = state.records.findIndex((row) => row.id === record.id);
     if (index < 0) state.records.push(record);
     else state.records[index] = record;
+    state.editingId = record.id;
+    refreshDistributionList();
     const states = Object.keys(state.draft.licensedStates).length;
+    const binding = record.bindingLimit ? ` · ${usd(record.bindingLimit)} binding` : '';
     setStatus(
-      `Saved ${record.productCode ?? record.productName} to ${record.organizationName} · ${states} state${states === 1 ? '' : 's'} · ${usd(record.bindingLimit)} binding · ${record.commission.percent}% ${record.commission.basis}.`,
+      `Saved ${record.productCode ?? record.productName} to ${record.organizationName} · ${states} state${states === 1 ? '' : 's'}${binding} · ${record.commission.percent}% ${record.commission.basis}.`,
       'ok',
     );
     toast('Distribution saved.');
@@ -658,21 +787,24 @@ const resetScope = () => {
   state.draft.scopeLevel = '';
   state.draft.coverages = [];
   state.draft.additions = [];
+  state.draft.referralRules = [];
 };
 
 const resetFootprint = () => {
   state.draft.licensedStates = {};
+  state.draft.referralRules = [];
 };
 
 const resetAll = () => {
+  state.editingId = '';
   state.draft = blankDraft();
   state.search = '';
   dom.stateSearch.value = '';
-  dom.form.reset();
+  if (dom.form) dom.form.reset();
   dom.bindingLimit.value = '';
   dom.commissionPercent.value = '';
   render();
-  setStatus('Cleared. Select an organization type to begin.');
+  setStatus('');
 };
 
 /* ---------- events ---------- */
@@ -713,10 +845,14 @@ dom.stateList.addEventListener('change', (event) => {
   if (!code) return;
   const row = state.stateByCode.get(code);
   if (event.target.checked) state.draft.licensedStates[code] = { code, name: row?.name ?? code, excludedCities: [] };
-  else delete state.draft.licensedStates[code];
+  else {
+    delete state.draft.licensedStates[code];
+    state.draft.referralRules = state.draft.referralRules.filter((rule) => rule.state !== code);
+  }
   event.target.closest('.state-row')?.classList.toggle('checked', event.target.checked);
   setError('licensedStates', '');
   renderFootprint();
+  renderReferralRules();
   refresh();
 });
 
@@ -736,10 +872,9 @@ dom.footprint.addEventListener('click', (event) => {
   refresh();
 });
 
-dom.scopeLevels.addEventListener('click', (event) => {
-  const button = event.target.closest('button[data-level]');
-  if (!button) return;
-  state.draft.scopeLevel = state.draft.scopeLevel === button.dataset.level ? '' : button.dataset.level;
+// Changing the level invalidates anything that no longer applies, but keeps the user's pick.
+dom.scopeLevel.addEventListener('change', () => {
+  state.draft.scopeLevel = dom.scopeLevel.value;
   if (state.draft.scopeLevel !== 'COVERAGE') state.draft.coverages = [];
   if (state.draft.scopeLevel !== 'ADDITIONAL') state.draft.additions = [];
   setError('coverageScope', '');
@@ -785,16 +920,99 @@ dom.coverageTree.addEventListener('click', (event) => {
 
 dom.authority.addEventListener('change', () => {
   syncInputs();
+  if (!requiresBindingLimit()) {
+    state.draft.bindingLimit = '';
+    dom.bindingLimit.value = '';
+  }
   setError('authority', '');
   setError('bindingLimit', '');
   renderAuthority();
   refresh();
 });
 
+dom.businessType.addEventListener('change', () => {
+  syncInputs();
+  setError('businessType', '');
+  refresh();
+});
+
+dom.addReferralRule.addEventListener('click', () => {
+  const coverage = coverageRuleOptions().find((row) => row.value === dom.ruleCoverage.value);
+  const location = locationRuleOptions().find((row) => row.value === dom.ruleLocation.value);
+  const writtenLimit = Number(dom.writtenCoverageLimit.value);
+  if (!coverage || !location || !(writtenLimit > 0)) {
+    setError('referralRules', 'Select a coverage and location, then enter a written coverage limit.');
+    return;
+  }
+  const [stateCode, city] = location.value.split('|');
+  const referToUnderwriter = dom.referToUnderwriter.checked || Number(state.draft.bindingLimit) > writtenLimit;
+  state.draft.referralRules.push({
+    coverage: coverage.value,
+    coverageLabel: coverage.label,
+    state: stateCode,
+    city: city || null,
+    locationLabel: location.label,
+    writtenLimit,
+    referToUnderwriter,
+  });
+  dom.writtenCoverageLimit.value = '';
+  dom.referToUnderwriter.checked = true;
+  setError('referralRules', '');
+  renderReferralRules();
+  refresh();
+});
+
+dom.referralSummary.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-remove-referral]');
+  if (!button) return;
+  state.draft.referralRules.splice(Number(button.dataset.removeReferral), 1);
+  renderReferralRules();
+  refresh();
+});
+
+['filterOrganizationType', 'filterOrganization', 'filterProduct', 'filterArrangement', 'filterCoverage', 'filterState', 'filterAuthority', 'filterCommissionBasis', 'filterStatus'].forEach((id) => el(id).addEventListener('change', () => { state.list.page = 1; renderDistributionList(); }));
+dom.listSearch.addEventListener('input', () => { state.list.page = 1; renderDistributionList(); });
+dom.clearFilters.addEventListener('click', () => {
+  dom.listSearch.value = '';
+  ['filterOrganizationType', 'filterOrganization', 'filterProduct', 'filterArrangement', 'filterCoverage', 'filterState', 'filterAuthority', 'filterCommissionBasis', 'filterStatus'].forEach((id) => { el(id).value = ''; });
+  state.list.page = 1; renderDistributionList();
+});
+dom.listTable.querySelector('thead').addEventListener('click', (event) => {
+  const head = event.target.closest('th[data-sort]'); if (!head) return;
+  const key = head.dataset.sort;
+  state.list.direction = state.list.sort === key && state.list.direction === 'asc' ? 'desc' : 'asc'; state.list.sort = key; renderDistributionList();
+});
+dom.listPager.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-page]'); if (!button) return;
+  state.list.page += button.dataset.page === 'next' ? 1 : -1; renderDistributionList();
+});
+dom.listRows.addEventListener('click', async (event) => {
+  const button = event.target.closest('button[data-action]'); if (!button) return;
+  const row = state.records.find((item) => item.id === button.dataset.id); if (!row) return;
+  if (button.dataset.action === 'view') return showDistributionDetail(row);
+  if (button.dataset.action === 'edit') return editDistribution(row);
+  if (button.dataset.action === 'duplicate') {
+    const copy = await distributionApi.create({ ...row, status: 'draft', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    state.records.push(copy); refreshDistributionList(); toast('Distribution duplicated.'); return;
+  }
+  if (button.dataset.action === 'disable') {
+    const updated = await distributionApi.update(row.id, { ...row, status: 'disabled', updatedAt: new Date().toISOString() });
+    state.records[state.records.findIndex((item) => item.id === row.id)] = updated; refreshDistributionList(); toast('Distribution disabled.'); return;
+  }
+  if (button.dataset.action === 'delete') {
+    await distributionApi.remove(row.id); state.records = state.records.filter((item) => item.id !== row.id); refreshDistributionList(); toast('Distribution deleted.');
+  }
+});
+dom.closeDetail.addEventListener('click', () => dom.detailDialog.close());
+
 // Group-level errors have no input to mark, so they are cleared as soon as the group becomes valid.
 [dom.bindingLimit, dom.commissionPercent].forEach((input) =>
   input.addEventListener('input', () => {
     syncInputs();
+    if (input === dom.bindingLimit) {
+      enforceReferralThresholds();
+      renderReferralRules();
+    }
     setError(input.name, '');
     refresh();
   }),
@@ -805,8 +1023,37 @@ dom.commissionBasis.addEventListener('change', () => {
   refresh();
 });
 
-dom.form.addEventListener('submit', save);
-dom.reset.addEventListener('click', resetAll);
+if (dom.form) dom.form.addEventListener('submit', save);
+if (dom.reset) dom.reset.addEventListener('click', resetAll);
+if (dom.configureBtn) {
+  dom.configureBtn.addEventListener('click', () => {
+    state.editingId = '';
+    state.draft = blankDraft();
+    state.search = '';
+    if (dom.stateSearch) dom.stateSearch.value = '';
+    if (dom.form) dom.form.reset();
+    dom.bindingLimit.value = '';
+    dom.commissionPercent.value = '';
+    if (dom.listView) dom.listView.style.display = 'none';
+    if (dom.configView) dom.configView.style.display = 'block';
+    if (dom.configureBtn) dom.configureBtn.style.display = 'none';
+    if (dom.backToListBtn) dom.backToListBtn.style.display = 'inline-block';
+    if (dom.pageTitle) dom.pageTitle.textContent = 'Distribution Configuration';
+    render();
+    setStatus('');
+    document.querySelector('.page-header')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+if (dom.backToListBtn) {
+  dom.backToListBtn.addEventListener('click', () => {
+    if (dom.configView) dom.configView.style.display = 'none';
+    if (dom.listView) dom.listView.style.display = 'block';
+    if (dom.configureBtn) dom.configureBtn.style.display = 'inline-block';
+    if (dom.backToListBtn) dom.backToListBtn.style.display = 'none';
+    if (dom.pageTitle) dom.pageTitle.textContent = 'My Distributions';
+    refreshDistributionList();
+  });
+}
 
 /* ---------- boot ---------- */
 const load = async () => {
@@ -829,11 +1076,17 @@ const load = async () => {
   }
 
   dom.organizationType.innerHTML = optionHtml(ORGANIZATION_TYPES, 'Select organization type');
+  dom.businessType.innerHTML = optionHtml(BUSINESS_TYPES, 'Select business type');
   dom.authority.innerHTML = optionHtml(AUTHORITIES, 'Select authority');
   dom.commissionBasis.innerHTML = optionHtml(COMMISSION_BASES, 'Select commission basis');
 
   render();
-  setStatus('Select an organization type to begin configuring distribution.');
+  refreshDistributionList();
+  if (dom.listView) dom.listView.style.display = 'block';
+  if (dom.configView) dom.configView.style.display = 'none';
+  if (dom.configureBtn) dom.configureBtn.style.display = 'inline-block';
+  if (dom.backToListBtn) dom.backToListBtn.style.display = 'none';
+  if (dom.pageTitle) dom.pageTitle.textContent = 'My Distributions';
 };
 
 load();

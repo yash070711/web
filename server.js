@@ -24,6 +24,8 @@ const HTML_PAGES = {
   '/class-of-business': 'index.html',
   '/distribution': 'distribution.html',
   '/distribution.html': 'distribution.html',
+  '/geographic-availability': 'geographic-availability.html',
+  '/geographic-availability.html': 'geographic-availability.html',
   '/acord': 'index.html',
 };
 
@@ -58,9 +60,19 @@ function nextProductId(rows) {
   return `PRD-${String(max + 1).padStart(3, '0')}`;
 }
 
+// Reference/master data. Served to the UI but never written, so configuration
+// screens cannot mutate the geographic master file.
+const READ_ONLY = new Set(['geo_master']);
+
 async function handleApi(req, res, parts) {
   const [collection, id] = parts;
   if (!/^[a-z0-9_-]+$/i.test(collection || '')) return send(res, 400, { error: 'Invalid collection' });
+  if (READ_ONLY.has(collection)) {
+    if (req.method !== 'GET') return send(res, 405, { error: 'Reference data is read-only' });
+    // Large and immutable, so let the browser reuse it instead of refetching ~1MB per page load.
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return send(res, 200, await load(collection));
+  }
   let rows;
   try {
     rows = await load(collection);
