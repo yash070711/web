@@ -1,0 +1,9 @@
+[
+  { "id": "ORG-001", "name": "FUT", "legalName": "FUT Underwriting Group", "type": "MGU", "lineOfBusiness": "Commercial Auto", "states": "TX, CA", "status": "Active" },
+  { "id": "ORG-002", "name": "Northstar Underwriting", "legalName": "Northstar Underwriting LLC", "type": "MGU", "lineOfBusiness": "Commercial Auto", "states": "TX, NY", "status": "Active" },
+  { "id": "ORG-003", "name": "NTA", "legalName": "NTA Managing Agency", "type": "MGA", "lineOfBusiness": "Commercial Auto", "states": "CA, NY", "status": "Active" },
+  { "id": "ORG-004", "name": "HTL", "legalName": "HTL Managing General Agency", "type": "MGA", "lineOfBusiness": "Commercial Auto", "states": "TX, FL", "status": "Review" },
+  { "id": "ORG-005", "name": "Rupesh", "legalName": "Rupesh Brokerage", "type": "Broker", "lineOfBusiness": "Commercial Auto", "states": "NY", "status": "Active" },
+  { "id": "ORG-006", "name": "HTL Brokerage", "legalName": "HTL Brokerage LLC", "type": "Broker", "lineOfBusiness": "Commercial Auto", "states": "TX, CA", "status": "Active" },
+  { "id": "ORG-007", "name": "Pioneer Risk Partners", "legalName": "Pioneer Risk Partners LLC", "type": "MGA", "lineOfBusiness": "Commercial Trucking", "states": "TX, OH", "status": "Active" }
+]

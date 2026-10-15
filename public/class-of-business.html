@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class of Business · VeriDex Product Studio</title>
+  <link rel="stylesheet" href="/theme/theme.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="top-left">
+      <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Toggle navigation">☰</button>
+      <div class="brand">Veri<em>Dex</em></div>
+      <div class="portal">PRODUCT STUDIO</div>
+    </div>
+    <div class="top-right">
+      <span class="notif">?</span>
+      <div class="avatar">YS</div>
+      <span class="account">Yash Gaur · Admin</span>
+    </div>
+  </header>
+
+  <div class="app">
+    <nav class="sidebar" id="sidebar" aria-label="Product Studio">
+      <div class="nav-heading">Product Studio</div>
+      <a class="nav-item" href="/"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
+      <a class="nav-item" href="/coverage.html"><span class="nav-icon">◇</span><span class="nav-label">Coverage</span></a>
+      <a class="nav-item selected" href="/class-of-business.html" aria-current="page"><span class="nav-icon">≋</span><span class="nav-label">Class of Business</span></a>
+      <a class="nav-item" href="/distribution.html"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
+      <a class="nav-item" href="/acord.html"><span class="nav-icon">▤</span><span class="nav-label">Acord</span></a>
+    </nav>
+
+    <main id="main">
+      <div class="breadcrumb">Product Studio / Class of Business</div>
+
+      <div class="page-header">
+        <div>
+          <div class="section-meta">Product Studio</div>
+          <h1>Class of Business</h1>
+          <p class="muted">Classes of business that products are built from. Coverages are attached to a class of business when you build a product.</p>
+        </div>
+        <div class="actions">
+          <button class="action primary" id="addBtn" type="button">+ New Class of Business</button>
+        </div>
+      </div>
+
+      <div class="notice-bar" id="notice" hidden>
+        <div class="notice-content"><strong id="noticeText"></strong></div>
+      </div>
+
+      <section class="metrics">
+        <div class="card"><div class="rep-label">Total Classes</div><div class="metric-num" id="mTotal">—</div></div>
+        <div class="card"><div class="rep-label">Used in Products</div><div class="metric-num" id="mProd">—</div></div>
+        <div class="card"><div class="rep-label">Not in Use</div><div class="metric-num" id="mUnused">—</div></div>
+      </section>
+
+      <section class="card">
+        <div class="section-meta">Product Studio</div>
+        <h2>All Classes of Business</h2>
+
+        <div class="toolbar field-group">
+          <input class="search-box" id="q" type="search" placeholder="Search by name or description…" autocomplete="off" aria-label="Search classes of business">
+          <select class="search-box" id="fUse" aria-label="Filter by usage">
+            <option value="">All classes of business</option>
+            <option value="used">In use</option>
+            <option value="unused">Not in use</option>
+          </select>
+        </div>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>Class of Business</th><th>Description</th><th>Products</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span id="pagerInfo">—</span>
+          <span class="actions" id="pagerControls"></span>
+        </div>
+      </section>
+
+      <div class="footer"><span>VeriDex Product Studio · Class of Business</span><span>Configuration workspace</span></div>
+    </main>
+  </div>
+
+  <dialog id="formModal" aria-labelledby="formTitle">
+    <form class="card" id="cobForm" novalidate>
+      <div class="section-meta">Class of Business</div>
+      <h2 id="formTitle">New Class of Business</h2>
+      <div class="val-summary" id="formErrors" hidden></div>
+      <div class="fields">
+        <div class="field full">
+          <label for="fName">Name *</label>
+          <input class="search-box" id="fName" name="name" maxlength="80" autocomplete="off" placeholder="e.g. Light Trucks">
+        </div>
+        <div class="field full">
+          <label for="fDesc">Description</label>
+          <textarea class="search-box" id="fDesc" name="description" rows="3" maxlength="300" placeholder="What this class of business covers"></textarea>
+        </div>
+      </div>
+      <p class="muted" id="renameNote" hidden>This class of business is already used in product versions. Existing versions keep the name they were built with; new work uses the updated name.</p>
+      <div class="actions field-group">
+        <button type="submit" class="action primary" id="formSubmit">Add</button>
+        <button type="button" class="action" id="formCancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmModal" aria-labelledby="confirmTitle">
+    <div class="card">
+      <div class="section-meta">Delete Class of Business</div>
+      <h2 id="confirmTitle">Confirm removal</h2>
+      <p class="muted" id="confirmText"></p>
+      <div class="actions field-group">
+        <button type="button" class="action primary" id="confirmOk">Delete</button>
+        <button type="button" class="action" id="confirmCancel">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="/js/class-of-business.js"></script>
+</body>
+</html>

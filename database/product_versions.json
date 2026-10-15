@@ -1,0 +1,69 @@
+[
+  {
+    "productRef": "35c71f98-46ea-4dbc-aaad-fd299d2efd54",
+    "label": "2026.01",
+    "status": "Draft",
+    "components": [
+      {
+        "id": "ad8f4cf0-4849-4b59-a4c3-cc56a5ecdaee",
+        "name": "Auto Liability",
+        "lob": "Commercial Auto",
+        "classes": [
+          {
+            "id": "f29e77cf-2665-4546-87c3-8d7b3b4fa70d",
+            "classId": "78c4ffb9-1669-4269-88a7-ac611d35dbfc",
+            "name": "Trucker",
+            "coverages": [
+              {
+                "id": "4723a77b-818b-4823-a4a0-7f525d7422bf",
+                "coverageId": "338a1469-b2dc-4da3-8f67-42b9d257dbdd",
+                "name": "Liability",
+                "mandatory": false,
+                "requires": [
+                  "770c74c7-5c18-4678-a618-704d503f1561"
+                ]
+              },
+              {
+                "id": "c3830bba-e915-40e8-a534-ba5f45e7badb",
+                "coverageId": "770c74c7-5c18-4678-a618-704d503f1561",
+                "name": "PIP",
+                "mandatory": false
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "025a33d3-932e-4cd7-b6d4-bb19eac74cbb",
+        "name": "Physical Damage Component",
+        "lob": "Commercial Property",
+        "classes": [
+          {
+            "id": "0843c678-16d0-4dda-8a56-4d4c0df617c1",
+            "classId": "570c035d-5ac8-423c-a684-64a90a7dbfb4",
+            "name": "Cars",
+            "coverages": [
+              {
+                "id": "91b3c4e0-c172-48a1-bd1d-60c790292564",
+                "coverageId": "770c74c7-5c18-4678-a618-704d503f1561",
+                "name": "PIP",
+                "mandatory": false
+              },
+              {
+                "id": "178aa9f4-cfb9-49bd-8d4d-72612abac160",
+                "coverageId": "338a1469-b2dc-4da3-8f67-42b9d257dbdd",
+                "name": "Liability",
+                "mandatory": false
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "createdAt": "2026-10-14T12:42:59.919Z",
+    "updatedAt": "2026-10-15T04:55:11.483Z",
+    "publishedAt": null,
+    "releaseId": null,
+    "id": "777cd5fa-b8c7-49fb-b05a-4148301c4ece"
+  }
+]

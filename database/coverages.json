@@ -1,38 +1,114 @@
 [
   {
-    "name": "Auto lia",
-    "description": "",
-    "coverageType": "Main",
+    "name": "Liability",
+    "description": "NA",
     "status": "active",
-    "classOfBusiness": [
-      "3df3dd03-4789-4f4d-bc61-d3b20bb799ba"
-    ],
     "forms": [
       {
         "formId": "acord-99",
         "excluded": []
       }
     ],
-    "createdAt": "2026-09-30T12:37:32.434Z",
-    "updatedAt": "2026-09-30T12:47:20.939Z",
-    "id": "9e7ba083-7569-4bd3-a020-8a5b71c8bf6a"
+    "configOptions": [
+      {
+        "key": "jurisdiction",
+        "required": true
+      },
+      {
+        "key": "limit",
+        "required": true
+      },
+      {
+        "key": "deductible",
+        "required": true
+      },
+      {
+        "key": "taxable",
+        "required": true
+      },
+      {
+        "key": "premiumEarn",
+        "required": true
+      },
+      {
+        "key": "riskObjects",
+        "required": true
+      },
+      {
+        "key": "claimBehaviour",
+        "required": true
+      },
+      {
+        "key": "questions",
+        "required": true
+      },
+      {
+        "key": "forms",
+        "required": true
+      },
+      {
+        "key": "terms",
+        "required": true
+      }
+    ],
+    "createdAt": "2026-10-14T12:40:30.281Z",
+    "updatedAt": "2026-10-14T12:40:30.281Z",
+    "id": "338a1469-b2dc-4da3-8f67-42b9d257dbdd"
   },
   {
-    "name": "body",
-    "description": "",
-    "coverageType": "Addition",
+    "name": "PIP",
+    "description": "NA",
     "status": "active",
-    "classOfBusiness": [
-      "3df3dd03-4789-4f4d-bc61-d3b20bb799ba"
-    ],
     "forms": [
       {
         "formId": "acord-99",
         "excluded": []
       }
     ],
-    "createdAt": "2026-09-30T12:47:39.773Z",
-    "updatedAt": "2026-09-30T12:47:39.773Z",
-    "id": "1c850581-bf8a-4287-a0f0-d81abbd5ab39"
+    "configOptions": [
+      {
+        "key": "jurisdiction",
+        "required": true
+      },
+      {
+        "key": "limit",
+        "required": true
+      },
+      {
+        "key": "deductible",
+        "required": false
+      },
+      {
+        "key": "taxable",
+        "required": true
+      },
+      {
+        "key": "premiumEarn",
+        "required": true
+      },
+      {
+        "key": "riskObjects",
+        "required": true
+      },
+      {
+        "key": "claimBehaviour",
+        "required": true
+      },
+      {
+        "key": "questions",
+        "required": true
+      },
+      {
+        "key": "forms",
+        "required": false
+      },
+      {
+        "key": "terms",
+        "required": true
+      }
+    ],
+    "createdAt": "2026-10-14T12:41:40.514Z",
+    "updatedAt": "2026-10-14T12:41:40.514Z",
+    "id": "770c74c7-5c18-4678-a618-704d503f1561"
   }
 ]

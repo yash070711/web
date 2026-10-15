@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distribution · VeriDex Product Studio</title>
+  <link rel="stylesheet" href="/theme/theme.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="top-left">
+      <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Toggle navigation">☰</button>
+      <div class="brand">Veri<em>Dex</em></div>
+      <div class="portal">PRODUCT STUDIO</div>
+    </div>
+    <div class="top-right">
+      <span class="notif">?</span>
+      <div class="avatar">YS</div>
+      <span class="account">Yash Gaur · Admin</span>
+    </div>
+  </header>
+
+  <div class="app">
+    <nav class="sidebar" id="sidebar" aria-label="Product Studio">
+      <div class="nav-heading">Product Studio</div>
+      <a class="nav-item" href="/"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
+      <a class="nav-item" href="/coverage.html"><span class="nav-icon">◇</span><span class="nav-label">Coverage</span></a>
+      <a class="nav-item" href="/class-of-business.html"><span class="nav-icon">≋</span><span class="nav-label">Class of Business</span></a>
+      <a class="nav-item selected" href="/distribution.html" aria-current="page"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
+      <a class="nav-item" href="/acord.html"><span class="nav-icon">▤</span><span class="nav-label">Acord</span></a>
+    </nav>
+
+    <main id="main">
+      <div class="breadcrumb">Product Studio / Distribution</div>
+
+      <div class="page-header">
+        <div>
+          <div class="section-meta">Product Studio</div>
+          <h1>Distribution</h1>
+          <p class="muted">Assign a product to distribution partners, then configure their authority and terms.</p>
+        </div>
+        <div class="actions">
+          <button class="action" id="startOver" type="button">Start over</button>
+        </div>
+      </div>
+
+      <div class="notice-bar" id="notice" hidden>
+        <div class="notice-content"><strong id="noticeText"></strong></div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="steps-row" id="steps"></div>
+      </div>
+
+      <div class="val-summary" id="errors" hidden></div>
+
+      <section class="card" id="stage"></section>
+
+      <section class="card">
+        <div class="section-meta">Product Studio</div>
+        <h2>Saved distributions</h2>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>Product</th><th>Organisation</th><th>Product version</th><th>Effective from</th><th>Effective to</th><th>Policy limit</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="saved"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="footer"><span>VeriDex Product Studio · Distribution</span><span>Configuration workspace</span></div>
+    </main>
+  </div>
+
+  <script type="module" src="/js/distribution.js"></script>
+</body>
+</html>

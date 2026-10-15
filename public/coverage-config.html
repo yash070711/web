@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coverage Configuration · VeriDex Product Studio</title>
+  <link rel="stylesheet" href="/theme/theme.css">
+  <link rel="stylesheet" href="/theme/acord.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="top-left">
+      <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Toggle navigation">☰</button>
+      <div class="brand">Veri<em>Dex</em></div>
+      <div class="portal">PRODUCT STUDIO</div>
+    </div>
+    <div class="top-right">
+      <span class="notif">?</span>
+      <div class="avatar">YS</div>
+      <span class="account">Yash Gaur · Admin</span>
+    </div>
+  </header>
+
+  <div class="app">
+    <nav class="sidebar" id="sidebar" aria-label="Product Studio">
+      <div class="nav-heading">Product Studio</div>
+      <a class="nav-item selected" href="/"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
+      <a class="nav-item" href="/coverage.html"><span class="nav-icon">◇</span><span class="nav-label">Coverage</span></a>
+      <a class="nav-item" href="/class-of-business.html"><span class="nav-icon">≋</span><span class="nav-label">Class of Business</span></a>
+      <a class="nav-item" href="/distribution.html"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
+      <a class="nav-item" href="/acord.html"><span class="nav-icon">▤</span><span class="nav-label">Acord</span></a>
+    </nav>
+
+    <main id="main">
+      <div class="breadcrumb"><a href="/">Product Catalogue</a> / <span id="crumbProduct">Product</span> / <a id="crumbVersionLink" href="#"><span id="crumbVersion">Version</span></a> / Coverage configuration</div>
+
+      <div class="page-header">
+        <div>
+          <div class="section-meta">Coverage configuration</div>
+          <h1 id="title">Loading…</h1>
+          <p class="muted" id="subtitle"></p>
+        </div>
+        <div class="actions">
+          <span class="badge" id="status"></span>
+          <button class="action primary" type="button" id="newVersion" hidden>Create new version</button>
+        </div>
+      </div>
+
+      <div class="steps-bar">
+        <div class="steps-row">
+          <div class="step"><i>1</i><span><a id="backStep" href="#"><strong>Components</strong></a> · Components, classes of business and coverages</span></div>
+          <span class="step-divider">›</span>
+          <div class="step active"><i>2</i><span><strong>Coverage configuration</strong> · Limits, questions and forms</span></div>
+        </div>
+      </div>
+
+      <div class="notice-bar" id="notice" hidden>
+        <div class="notice-content"><strong id="noticeText"></strong></div>
+      </div>
+      <div class="val-summary" id="errors" hidden></div>
+
+      <div class="actions" id="bulkBar" style="margin-bottom:12px">
+        <button class="action" type="button" id="expandAll">Expand all</button>
+        <button class="action" type="button" id="collapseAll">Collapse all</button>
+        <span class="muted" id="progress" style="margin:0 0 0 8px"></span>
+      </div>
+
+      <div id="components"></div>
+
+      <div class="taskbar">
+        <div class="taskbar-row">
+          <span class="actions">
+            <a class="action" id="backBtn" href="#">← Components</a>
+            <span class="muted" id="saveState" style="margin:0"></span>
+          </span>
+          <span class="actions">
+            <button class="action" type="button" id="saveDraft" hidden>Save draft</button>
+            <button class="action primary" type="button" id="publish" hidden>Validate &amp; publish</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="footer"><span>VeriDex Product Studio · Product version</span><span>Configuration workspace</span></div>
+    </main>
+    <main id="view-builder" hidden></main>
+  </div>
+
+  <script type="module" src="/js/coverage-config.js"></script>
+</body>
+</html>

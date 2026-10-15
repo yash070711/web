@@ -1,3 +1,4 @@
 # database
 
-JSON file storage for prototyping. Each `<collection>.json` file holds an array of records.
+Each `<name>.json` file is a collection (an array of objects) exposed at `/api/<name>`.
+Add a new collection by creating a new file containing `[]`.

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Catalogue · VeriDex Product Studio</title>
+  <link rel="stylesheet" href="/theme/theme.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="top-left">
+      <button class="hamburger" id="menu-btn" aria-label="Toggle navigation">☰</button>
+      <div class="brand">Veri<em>Dex</em></div>
+      <div class="portal">PRODUCT STUDIO</div>
+    </div>
+    <div class="top-right">
+      <span class="notif">?</span>
+      <div class="avatar">YS</div>
+      <span class="account">Yash Gaur · Admin</span>
+    </div>
+  </header>
+
+  <div class="app">
+    <nav class="sidebar" id="sidebar" aria-label="Product Studio">
+      <div class="nav-heading">Product Studio</div>
+      <a class="nav-item selected" href="/"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
+      <a class="nav-item" href="/coverage.html"><span class="nav-icon">◇</span><span class="nav-label">Coverage</span></a>
+      <a class="nav-item" href="/class-of-business.html"><span class="nav-icon">≋</span><span class="nav-label">Class of Business</span></a>
+      <a class="nav-item" href="/distribution.html"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
+      <a class="nav-item" href="/acord.html"><span class="nav-icon">▤</span><span class="nav-label">Acord</span></a>
+    </nav>
+
+    <main id="main">
+      <div class="breadcrumb">Product Studio / Product Catalogue</div>
+
+      <div class="page-header">
+        <div>
+          <div class="section-meta">Product Studio</div>
+          <h1>Product Catalogue</h1>
+          <p class="muted">Manage commercial insurance products and their configuration versions.</p>
+        </div>
+        <div class="actions">
+          <button class="action primary" id="add-btn">+ Create Product</button>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="card"><div class="rep-label">Total Products</div><div class="metric-num" id="m-total">0</div></div>
+        <div class="card"><div class="rep-label">Published</div><div class="metric-num" id="m-published">0</div></div>
+        <div class="card"><div class="rep-label">Draft</div><div class="metric-num" id="m-draft">0</div></div>
+        <div class="card"><div class="rep-label">Needs Review</div><div class="metric-num" id="m-review">0</div></div>
+      </div>
+
+            <section class="card">
+        <div class="section-meta">Product Studio</div>
+        <h2>Products</h2>
+        <div class="toolbar field-group">
+          <input class="search-box" id="search" type="search" placeholder="Search Products..." aria-label="Search products">
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th></th><th>Product</th><th>Product ID</th><th>Line of Business</th><th>Version</th><th>Distributed</th><th>Status</th><th>Effective Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="pagination"><span id="count"></span></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="editModal" aria-labelledby="editTitle">
+    <form class="card" id="editForm" novalidate>
+      <div class="section-meta">Product</div>
+      <h2 id="editTitle">Edit product</h2>
+      <div class="val-summary" id="editErrors" hidden></div>
+      <div class="fields">
+        <div class="field">
+          <label for="eName">Product name *</label>
+          <input class="search-box" id="eName" name="name" maxlength="80" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="eCarrier">Carrier *</label>
+          <select class="search-box" id="eCarrier" name="carrier"></select>
+        </div>
+        <div class="field full">
+          <label for="eDesc">Description</label>
+          <textarea class="search-box" id="eDesc" name="description" rows="3" maxlength="300"></textarea>
+        </div>
+        <div class="field full">
+          <label for="eArr">Arrangement *</label>
+          <select class="search-box" id="eArr" name="arrangement">
+            <option value="Non-fronting">Non-fronting</option>
+            <option value="Fronting">Fronting</option>
+          </select>
+        </div>
+      </div>
+      <p class="muted" id="editNote">Changes apply to the product record. Versions already distributed keep the details they were created with.</p>
+      <div class="actions field-group">
+        <button type="submit" class="action primary" id="editSave">Save changes</button>
+        <button type="button" class="action" id="editConfig">Edit components &amp; coverages →</button>
+        <button type="button" class="action" id="editCancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

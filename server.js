@@ -1,5 +1,3 @@
-import { readProducts, saveProducts, withProductLock } from './src/lib/product-store.js';
-import next from 'next';
 import http from 'node:http';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
@@ -7,138 +5,123 @@ import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const PORT = process.env.PORT || 3000;
-const dev = !process.argv.includes('--production') && process.env.NODE_ENV !== 'production';
-const app = next({ dev, dir: ROOT });
-await app.prepare();
-const handleNext = app.getRequestHandler();
-const STATIC = { '/theme/': path.join(ROOT, 'theme'), '/': path.join(ROOT, 'src') };
+const PUBLIC_DIR = path.join(ROOT, 'public');
 const DB_DIR = path.join(ROOT, 'database');
+const PORT = process.env.PORT || 3000;
 
-// Clean URLs for the plain-HTML pages served from src/. Everything else falls through to Next.js.
-const HTML_PAGES = {
-  '/coverage': 'coverage.html',
-  '/coverage.html': 'coverage.html',
-  '/coverage-form': 'coverage-form.html',
-  '/coverage-form.html': 'coverage-form.html',
-  '/class-of-business': 'index.html',
-  '/acord': 'index.html',
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.ico': 'image/x-icon',
 };
 
-const TYPES = {
-  '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
-  '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.woff2': 'font/woff2',
+// ---- JSON "database" ----
+const dbFile = (name) => {
+  if (!/^[a-z0-9_-]+$/i.test(name)) return null;
+  return path.join(DB_DIR, `${name}.json`);
 };
 
-const send = (res, status, body, type = 'application/json') => {
-  res.writeHead(status, { 'Content-Type': type });
-  res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
-};
-
-const readBody = async (req) => {
-  let data = '';
-  for await (const chunk of req) data += chunk;
-  return data ? JSON.parse(data) : {};
-};
-
-const dbFile = (name) => path.join(DB_DIR, `${name}.json`);
-const load = async (name) => name === 'products' ? readProducts() : JSON.parse(await fs.readFile(dbFile(name), 'utf8'));
-const save = (name, rows) => name === 'products' ? saveProducts(rows) : fs.writeFile(dbFile(name), JSON.stringify(rows, null, 2) + '\n');
-
-function nextProductId(rows) {
-  const BASE = 27;
-  const nums = rows
-    .map(r => r.productId || r.id)
-    .filter(Boolean)
-    .map(v => { const m = /^PRD-(\d+)$/.exec(String(v)); return m ? parseInt(m[1], 10) : 0; });
-  const max = Math.max(BASE, ...nums);
-  return `PRD-${String(max + 1).padStart(3, '0')}`;
+async function readCollection(file) {
+  try {
+    return JSON.parse(await fs.readFile(file, 'utf8'));
+  } catch (e) {
+    if (e.code === 'ENOENT') return null;
+    throw e;
+  }
 }
 
-async function handleApi(req, res, parts) {
-  const [collection, id] = parts;
-  if (!/^[a-z0-9_-]+$/i.test(collection || '')) return send(res, 400, { error: 'Invalid collection' });
-  let rows;
-  try {
-    rows = await load(collection);
-  } catch {
-    return send(res, 404, { error: 'Unknown collection' });
-  }
-  const idx = id ? rows.findIndex((r) => r.id === id) : -1;
+const writeCollection = (file, data) =>
+  fs.writeFile(file, JSON.stringify(data, null, 2) + '\n');
 
-  if (req.method === 'GET') {
-    if (!id) return send(res, 200, rows);
-    return idx < 0 ? send(res, 404, { error: 'Not found' }) : send(res, 200, rows[idx]);
-  }
-  if (req.method === 'POST' && !id) {
-    const body = await readBody(req);
-    const newId = randomUUID();
-    let row = { ...body, id: newId };
-    if (collection === 'products') {
-      row = {
-        ...row,
-        productId: nextProductId(rows),
-        version: body.version || '2026.01',
-        effectiveDate: body.effectiveDate || '2026 configuration',
-        href: `/products/${newId}`,
-      };
+async function readBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const raw = Buffer.concat(chunks).toString('utf8'); // decode once so multi-byte characters can't be split across chunks
+  return raw ? JSON.parse(raw) : {};
+}
+
+const send = (res, status, body) => {
+  res.writeHead(status, { 'Content-Type': MIME['.json'] });
+  res.end(body === undefined ? '' : JSON.stringify(body));
+};
+
+// ---- API: /api/:collection[/:id] ----
+async function handleApi(req, res, segments) {
+  const [name, id] = segments;
+  const file = name && dbFile(name);
+  if (!file) return send(res, 404, { error: 'Unknown collection' });
+
+  const items = await readCollection(file);
+  if (!items) return send(res, 404, { error: 'Unknown collection' });
+
+  const index = id ? items.findIndex((i) => String(i.id) === id) : -1;
+
+  switch (req.method) {
+    case 'GET':
+      if (!id) return send(res, 200, items);
+      return index < 0 ? send(res, 404, { error: 'Not found' }) : send(res, 200, items[index]);
+
+    case 'POST': {
+      const item = { ...(await readBody(req)), id: randomUUID() };
+      items.push(item);
+      await writeCollection(file, items);
+      return send(res, 201, item);
     }
-    rows.push(row);
-    await save(collection, rows);
-    return send(res, 201, row);
+
+    case 'PUT':
+    case 'PATCH': {
+      if (index < 0) return send(res, 404, { error: 'Not found' });
+      const body = await readBody(req);
+      items[index] = req.method === 'PUT' ? { ...body, id: items[index].id } : { ...items[index], ...body, id: items[index].id };
+      await writeCollection(file, items);
+      return send(res, 200, items[index]);
+    }
+
+    case 'DELETE':
+      if (index < 0) return send(res, 404, { error: 'Not found' });
+      items.splice(index, 1);
+      await writeCollection(file, items);
+      return send(res, 204);
+
+    default:
+      return send(res, 405, { error: 'Method not allowed' });
   }
-  if ((req.method === 'PUT' || req.method === 'PATCH') && id) {
-    if (idx < 0) return send(res, 404, { error: 'Not found' });
-    rows[idx] = { ...rows[idx], ...(await readBody(req)), id };
-    await save(collection, rows);
-    return send(res, 200, rows[idx]);
-  }
-  if (req.method === 'DELETE' && id) {
-    if (idx < 0) return send(res, 404, { error: 'Not found' });
-    const [removed] = rows.splice(idx, 1);
-    await save(collection, rows);
-    return send(res, 200, removed);
-  }
-  send(res, 405, { error: 'Method not allowed' });
 }
 
-async function handleStatic(res, pathname) {
-  const [prefix, dir] = Object.entries(STATIC).find(([p]) => pathname.startsWith(p));
-  let file = path.join(dir, pathname.slice(prefix.length));
-  if (!file.startsWith(dir)) return send(res, 403, 'Forbidden', 'text/plain');
+// ---- Static files ----
+async function handleStatic(req, res, pathname) {
+  const rel = pathname === '/' ? '/index.html' : pathname;
+  const filePath = path.join(PUBLIC_DIR, path.normalize(rel));
+  if (!filePath.startsWith(PUBLIC_DIR)) {
+    res.writeHead(403);
+    return res.end('Forbidden');
+  }
   try {
-    if ((await fs.stat(file)).isDirectory()) file = path.join(file, 'index.html');
-    const body = await fs.readFile(file);
-    send(res, 200, body, TYPES[path.extname(file)] || 'application/octet-stream');
+    const data = await fs.readFile(filePath);
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(filePath)] || 'application/octet-stream' });
+    res.end(data);
   } catch {
-    send(res, 404, 'Not found', 'text/plain');
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
   }
 }
 
-http.createServer(async (req, res) => {
-  try {
-    const { pathname } = new URL(req.url, 'http://localhost');
-    if (pathname.startsWith('/api/')) {
-      const parts = pathname.slice(5).split('/').filter(Boolean).map(decodeURIComponent);
-      if (parts[0] === 'products') {
-        res.setHeader('Cache-Control', 'no-store');
-        return await withProductLock(() => handleApi(req, res, parts));
+http
+  .createServer(async (req, res) => {
+    try {
+      const { pathname } = new URL(req.url, 'http://localhost');
+      if (pathname.startsWith('/api/')) {
+        return await handleApi(req, res, pathname.slice(5).split('/').filter(Boolean));
       }
-      return await handleApi(req, res, parts);
+      await handleStatic(req, res, decodeURIComponent(pathname));
+    } catch (e) {
+      console.error(e);
+      send(res, e instanceof SyntaxError ? 400 : 500, { error: e instanceof SyntaxError ? 'Invalid JSON' : 'Server error' });
     }
-    if (['/theme/', '/css/', '/js/'].some(prefix => pathname.startsWith(prefix))) {
-      return await handleStatic(res, decodeURIComponent(pathname));
-    }
-    // Plain-HTML pages (Coverage, Class of Business, Acord) live in src/ and sit beside the Next.js app.
-    const page = HTML_PAGES[pathname.replace(/\/$/, '') || '/'];
-    if (page) return await handleStatic(res, `/${page}`);
-    if (pathname === '/index.html') {
-      res.writeHead(308, { Location: '/products' });
-      return res.end();
-    }
-    await handleNext(req, res);
-  } catch (err) {
-    send(res, 500, { error: err.message });
-  }
-}).listen(PORT, () => console.log(`http://localhost:${PORT}`));
+  })
+  .listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));

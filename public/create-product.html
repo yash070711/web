@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Product · VeriDex Product Studio</title>
+  <link rel="stylesheet" href="/theme/theme.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="top-left">
+      <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Toggle navigation">☰</button>
+      <div class="brand">Veri<em>Dex</em></div>
+      <div class="portal">PRODUCT STUDIO</div>
+    </div>
+    <div class="top-right">
+      <span class="notif">?</span>
+      <div class="avatar">YS</div>
+      <span class="account">Yash Gaur · Admin</span>
+    </div>
+  </header>
+
+  <div class="app">
+    <nav class="sidebar" id="sidebar" aria-label="Product Studio">
+      <div class="nav-heading">Product Studio</div>
+      <a class="nav-item selected" href="/"><span class="nav-icon">▦</span><span class="nav-label">Product Catalogue</span></a>
+      <a class="nav-item" href="/coverage.html"><span class="nav-icon">◇</span><span class="nav-label">Coverage</span></a>
+      <a class="nav-item" href="/class-of-business.html"><span class="nav-icon">≋</span><span class="nav-label">Class of Business</span></a>
+      <a class="nav-item" href="/distribution.html"><span class="nav-icon">⇄</span><span class="nav-label">Distribution</span></a>
+      <a class="nav-item" href="/acord.html"><span class="nav-icon">▤</span><span class="nav-label">Acord</span></a>
+    </nav>
+
+    <main id="main">
+      <div class="breadcrumb"><a href="/">Product Catalogue</a> / Create Product</div>
+
+      <div class="page-header">
+        <div>
+          <div class="section-meta">Product Studio</div>
+          <h1>Create insurance product</h1>
+          <p class="muted">Define the product, its carrier and arrangement. You will configure components and coverages in the first version next.</p>
+        </div>
+        <span class="badge">Draft</span>
+      </div>
+
+      <form id="productForm" novalidate>
+        <div class="val-summary" id="errors" hidden></div>
+
+        <section class="card">
+          <div class="step active"><i>1</i><strong>Product details</strong></div>
+          <p class="muted">Identify the product. Components, coverages and configuration are added in the version editor next.</p>
+          <div class="fields">
+            <div class="field">
+              <label for="carrier">Carrier *</label>
+              <select class="search-box" id="carrier" name="carrier"></select>
+            </div>
+            <div class="field">
+              <label for="name">Product name *</label>
+              <input class="search-box" id="name" name="name" maxlength="80" placeholder="Example: Commercial Package" autocomplete="off">
+            </div>
+            <div class="field full">
+              <label for="description">Description</label>
+              <textarea class="search-box" id="description" name="description" rows="3" maxlength="300" placeholder="What this product offers"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="step active"><i>2</i><strong>Arrangement</strong></div>
+          <p class="muted">Define carrier participation structure.</p>
+          <div class="wiz-options" id="arrangement">
+            <label class="wiz-option">
+              <input type="radio" name="arrangement" value="Non-fronting">
+              <span><strong>Non-fronting</strong><br>Carrier retains insurance risk directly.</span>
+            </label>
+            <label class="wiz-option">
+              <input type="radio" name="arrangement" value="Fronting">
+              <span><strong>Fronting</strong><br>Carrier issues policy; risk moves through reinsurance.</span>
+            </label>
+          </div>
+        </section>
+
+        <div class="actions">
+          <a class="action" href="/">Back</a>
+          <button class="action primary" type="submit" id="create">Create product and open version</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script type="module" src="/js/create-product.js"></script>
+</body>
+</html>
