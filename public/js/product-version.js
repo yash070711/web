@@ -1,9 +1,6 @@
 import { api } from './api.js';
 import {
   LOBS,
-  US_STATES,
-  productStates,
-  pruneCoverageStates,
   esc,
   emptyComponent,
   emptyClass,
@@ -154,44 +151,8 @@ const componentCard = (comp, ci) => {
   </details>`;
 };
 
-// ---- jurisdiction (state level, per version) ----
-const renderJurisdiction = () => {
-  const excluded = state.version.jurisdiction.excludedStates;
-  const on = productStates(state.version).length;
-  const total = US_STATES.length;
-  const locked = readOnly();
-  el('jurisdiction').innerHTML = `<div class="section-meta">Jurisdiction</div>
-    <h2>States this version is available in</h2>
-    <p class="muted">All states are included by default. Untick a state to remove it. Coverages can only be configured for the states ticked here; zip codes are excluded per coverage.</p>
-    <p class="juris-sum" style="margin:0 0 6px">${on === total ? `All ${total} states included` : `${on} of ${total} states included`}${on === 0 ? ' · ⚠ at least one state must be included' : ''}</p>
-    ${locked ? '' : '<p class="muted" style="margin:0 0 6px"><button type="button" class="mini" data-juris="all">Include all</button> <button type="button" class="mini" data-juris="none">Exclude all</button></p>'}
-    <div class="check-cols states">${US_STATES.map((st) => `<label><input type="checkbox" data-state value="${st}"${excluded.includes(st) ? '' : ' checked'}${locked ? ' disabled' : ''}> ${st}</label>`).join('')}</div>`;
-};
-
-const setExcluded = (list) => {
-  state.version.jurisdiction.excludedStates = US_STATES.filter((st) => list.includes(st));
-  const changed = pruneCoverageStates(components(), productStates(state.version));
-  if (changed) toast(`${changed} ${changed === 1 ? 'coverage' : 'coverages'} had states outside this version removed from their jurisdiction.`);
-  markDirty();
-  renderJurisdiction();
-};
-
-el('jurisdiction').addEventListener('change', (event) => {
-  const t = event.target;
-  if (!('state' in t.dataset)) return;
-  const excluded = new Set(state.version.jurisdiction.excludedStates);
-  t.checked ? excluded.delete(t.value) : excluded.add(t.value);
-  setExcluded([...excluded]);
-});
-
-el('jurisdiction').addEventListener('click', (event) => {
-  const btn = event.target.closest('[data-juris]');
-  if (btn) setExcluded(btn.dataset.juris === 'all' ? [] : [...US_STATES]);
-});
-
 const render = () => {
   const { product, version } = state;
-  renderJurisdiction();
   document.title = `${product.name} ${version.label} · VeriDex Product Studio`;
   el('crumbProduct').textContent = product.name;
   el('crumbVersion').textContent = version.label;
@@ -222,7 +183,6 @@ const save = async () => {
 
 const validate = () => {
   const errors = [];
-  if (!productStates(state.version).length) errors.push('Select at least one state for the product.');
   if (!components().length) errors.push('Add at least one component.');
   components().forEach((c, i) => {
     const issues = componentIssues(c);

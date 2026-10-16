@@ -11,5 +11,18 @@
     "createdOn": "Oct 15, 2026",
     "effectiveDate": "2026-10-15",
     "id": "c791569e-bf07-42fa-b046-c1711176259d"
+  },
+  {
+    "productId": "PRD-002",
+    "name": "FSDAF",
+    "description": "AFD",
+    "carrier": "Futuristic Risk Carrier",
+    "arrangement": "Non-fronting",
+    "lineOfBusiness": "",
+    "version": "2026.01",
+    "status": "Draft",
+    "createdOn": "Oct 16, 2026",
+    "effectiveDate": "",
+    "id": "8eb0659a-1370-437e-9a57-77c7a4ae94cc"
   }
 ]
