@@ -24,5 +24,18 @@
     "createdOn": "Oct 16, 2026",
     "effectiveDate": "",
     "id": "8eb0659a-1370-437e-9a57-77c7a4ae94cc"
+  },
+  {
+    "productId": "PRD-003",
+    "name": "dfsf",
+    "description": "sfs",
+    "carrier": "Futuristic Risk Carrier",
+    "arrangement": "Non-fronting",
+    "lineOfBusiness": "Commercial Auto",
+    "version": "2026.01",
+    "status": "Draft",
+    "createdOn": "Oct 16, 2026",
+    "effectiveDate": "",
+    "id": "c3c45b4e-b73e-43c9-856a-25e56c1e017a"
   }
 ]

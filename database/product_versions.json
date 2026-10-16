@@ -1386,7 +1386,7 @@
       "excludedStates": []
     },
     "createdAt": "2026-10-15T12:48:49.336Z",
-    "updatedAt": "2026-10-15T12:48:51.344Z",
+    "updatedAt": "2026-10-16T06:48:23.839Z",
     "publishedAt": null,
     "releaseId": null,
     "id": "aab65b06-b96b-4fe9-9ff8-3094f4e8feeb"
@@ -1404,5 +1404,40 @@
     "publishedAt": null,
     "releaseId": null,
     "id": "7237c06a-862e-49e2-acf9-c4371b0ae473"
+  },
+  {
+    "productRef": "c3c45b4e-b73e-43c9-856a-25e56c1e017a",
+    "label": "2026.01",
+    "status": "Draft",
+    "components": [
+      {
+        "id": "89d52a2f-09b6-4395-a19a-c0484ced61b0",
+        "name": "sdfd",
+        "lob": "Commercial Auto",
+        "classes": [
+          {
+            "id": "8d024ac2-9727-4069-bb1f-187461c32b84",
+            "classId": "ae5f1abe-d19c-45ff-bccf-fe4ea00534db",
+            "name": "small trucker",
+            "coverages": [
+              {
+                "id": "42ae7f02-9f0f-4f04-be1f-c446be21c75d",
+                "coverageId": "2b9a8e62-ce18-4a87-956a-5d3dadb91344",
+                "name": "Bodily Injury Trucker",
+                "mandatory": false
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "jurisdiction": {
+      "excludedStates": []
+    },
+    "createdAt": "2026-10-16T06:49:33.357Z",
+    "updatedAt": "2026-10-16T06:49:50.264Z",
+    "publishedAt": null,
+    "releaseId": null,
+    "id": "cd7a61a5-3b82-45b7-84e2-2370a9f950ff"
   }
 ]
