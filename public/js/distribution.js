@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { cloneComponents, lobsOf } from './product-model.js';
+import { cloneComponents, cloneQuestions, lobsOf } from './product-model.js';
 
 const productsApi = api('products');
 const orgsApi = api('organisations');
@@ -467,6 +467,8 @@ const buildVersion = (p, o) => ({
   lineOfBusiness: p.lineOfBusiness,
   arrangement: p.arrangement,
   components: cloneComponents(p.release.snapshot.components),
+  questions: cloneQuestions(p.release.snapshot.questions),
+  jurisdiction: structuredClone(p.release.snapshot.jurisdiction ?? { excludedStates: [] }),
   sourceReleaseId: p.release.id,
   sourceVersionId: p.release.versionId,
   baseVersion: p.release.label,

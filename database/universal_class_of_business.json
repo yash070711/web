@@ -1,0 +1,32 @@
+[
+  {
+    "id": "trucking",
+    "name": "Trucking",
+    "description": "Commercial trucking operations hauling freight for hire or for the insured's own goods."
+  },
+  {
+    "id": "commercial-fleet",
+    "name": "Commercial Fleet",
+    "description": "Fleets of commercial vehicles owned or leased and operated for business purposes."
+  },
+  {
+    "id": "commercial-passenger-vehicle",
+    "name": "Commercial Passenger Vehicle",
+    "description": "Vehicles used to carry passengers for business, such as shuttles, limousines and taxis."
+  },
+  {
+    "id": "motor-carrier",
+    "name": "Motor Carrier",
+    "description": "Operations licensed as motor carriers transporting property or passengers across state lines or within a state."
+  },
+  {
+    "id": "vehicle-delivery",
+    "name": "Vehicle Delivery",
+    "description": "Operations delivering vehicles or goods to customers, including driveaway and courier delivery."
+  },
+  {
+    "id": "auto-transport",
+    "name": "Auto Transport",
+    "description": "Car-hauler operations transporting automobiles on trailers or carriers."
+  }
+]

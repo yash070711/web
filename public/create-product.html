@@ -39,7 +39,7 @@
         <div>
           <div class="section-meta">Product Studio</div>
           <h1>Create insurance product</h1>
-          <p class="muted">Define the product, its carrier and arrangement. You will configure components and coverages in the first version next.</p>
+          <p class="muted">Define the product, its carrier, arrangement and states. You will configure components and coverages in the first version next.</p>
         </div>
         <span class="badge">Draft</span>
       </div>
@@ -79,6 +79,15 @@
               <span><strong>Fronting</strong><br>Carrier issues policy; risk moves through reinsurance.</span>
             </label>
           </div>
+        </section>
+
+        <section class="card" id="jurisdiction">
+          <div class="step active"><i>3</i><strong>Jurisdiction</strong></div>
+          <h2>States this version is available in</h2>
+          <p class="muted">All states are included by default. Untick a state to remove it. Coverages can only be configured for the states ticked here; zip codes are excluded per coverage.</p>
+          <p class="juris-sum" id="jurisSummary" style="margin:0 0 6px"></p>
+          <p class="muted" style="margin:0 0 6px"><button type="button" class="mini" data-juris="all">Include all</button> <button type="button" class="mini" data-juris="none">Exclude all</button></p>
+          <div class="check-cols states" id="jurisStates"></div>
         </section>
 
         <div class="actions">

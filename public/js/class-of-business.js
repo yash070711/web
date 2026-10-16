@@ -2,11 +2,12 @@ import { api } from './api.js';
 import { esc } from './product-model.js';
 
 const classesApi = api('class_of_business');
+const universalApi = api('universal_class_of_business');
 
 const el = (id) => document.getElementById(id);
 const form = el('cobForm');
 
-const state = { rows: [], versions: [], q: '', use: '', page: 1, size: 10, editingId: null, deletingId: null };
+const state = { rows: [], versions: [], universal: [], universalName: '', q: '', use: '', page: 1, size: 10, editingId: null, deletingId: null };
 
 const asList = (value) => (Array.isArray(value) ? value : value ? [value] : []);
 
@@ -110,6 +111,31 @@ const render = () => {
       : '';
 };
 
+// ---- universal classes of business ----
+const UNIVERSAL_HINT = 'Pick a standard class of business to fill in its name and description. You can still edit them.';
+const universalOf = (name) => state.universal.find((u) => u.name === name);
+
+const renderUniversal = () => {
+  const taken = new Set(state.rows.filter((c) => c.id !== state.editingId).map((c) => c.name.toLowerCase()));
+  el('fUniversal').innerHTML =
+    '<option value="">Custom class of business (not from the universal list)</option>' +
+    state.universal
+      .map((u) => `<option value="${esc(u.name)}"${u.name === state.universalName ? ' selected' : ''}${taken.has(u.name.toLowerCase()) ? ' disabled' : ''}>${esc(u.name)}${taken.has(u.name.toLowerCase()) ? ' — already added' : ''}</option>`)
+      .join('');
+};
+
+el('fUniversal').addEventListener('change', (event) => {
+  state.universalName = event.target.value;
+  const u = universalOf(state.universalName);
+  if (!u) {
+    el('universalHint').textContent = UNIVERSAL_HINT;
+    return;
+  }
+  form.elements.name.value = u.name;
+  form.elements.description.value = u.description;
+  el('universalHint').textContent = UNIVERSAL_HINT;
+});
+
 // ---- add / edit ----
 const openForm = (cls) => {
   state.editingId = cls?.id ?? null;
@@ -119,6 +145,9 @@ const openForm = (cls) => {
   el('formSubmit').textContent = cls ? 'Save changes' : 'Add';
   form.elements.name.value = cls?.name ?? '';
   form.elements.description.value = cls?.description ?? '';
+  state.universalName = cls?.universalClass?.name ?? '';
+  el('universalHint').textContent = UNIVERSAL_HINT;
+  renderUniversal();
   el('renameNote').hidden = !(cls && inUse(cls));
   el('formModal').showModal();
   form.elements.name.focus();
@@ -135,14 +164,15 @@ form.addEventListener('submit', async (event) => {
   showFormErrors(errors);
   if (errors.length) return;
 
+  const universalClass = () => (state.universalName ? { name: state.universalName } : null);
   el('formSubmit').disabled = true;
   try {
     if (state.editingId) {
-      const updated = await classesApi.update(state.editingId, { name, description });
+      const updated = await classesApi.update(state.editingId, { name, description, universalClass: universalClass() });
       state.rows = state.rows.map((c) => (c.id === updated.id ? updated : c));
       toast(`“${name}” updated.`);
     } else {
-      state.rows.push(await classesApi.create({ name, description, forms: [] }));
+      state.rows.push(await classesApi.create({ name, description, forms: [], universalClass: universalClass() }));
       toast(`“${name}” added.`);
     }
     el('formModal').close();
@@ -229,7 +259,7 @@ el('pagerControls').addEventListener('click', (event) => {
 // ---- init ----
 (async () => {
   try {
-    [state.rows, state.versions] = await Promise.all([classesApi.list(), api('product_versions').list()]);
+    [state.rows, state.versions, state.universal] = await Promise.all([classesApi.list(), api('product_versions').list(), universalApi.list()]);
   } catch (err) {
     toast(`Unable to load classes of business: ${err.message}`, 'err');
   }

@@ -1,14 +1,11 @@
 [
   {
-    "name": "Trucker",
-    "description": "",
+    "name": "small trucker",
+    "description": "Commercial trucking operations hauling freight for hire or for the insured's own goods.",
     "forms": [],
-    "id": "78c4ffb9-1669-4269-88a7-ac611d35dbfc"
-  },
-  {
-    "name": "Cars",
-    "description": "",
-    "forms": [],
-    "id": "570c035d-5ac8-423c-a684-64a90a7dbfb4"
+    "universalClass": {
+      "name": "Trucking"
+    },
+    "id": "ae5f1abe-d19c-45ff-bccf-fe4ea00534db"
   }
 ]

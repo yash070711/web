@@ -6,6 +6,7 @@
   <title>Coverage Configuration · VeriDex Product Studio</title>
   <link rel="stylesheet" href="/theme/theme.css">
   <link rel="stylesheet" href="/theme/acord.css">
+  <link rel="stylesheet" href="/theme/eligibility.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -38,7 +39,7 @@
 
       <div class="page-header">
         <div>
-          <div class="section-meta">Coverage configuration</div>
+          <div class="section-meta" id="stepMeta">Coverage configuration</div>
           <h1 id="title">Loading…</h1>
           <p class="muted" id="subtitle"></p>
         </div>
@@ -52,7 +53,11 @@
         <div class="steps-row">
           <div class="step"><i>1</i><span><a id="backStep" href="#"><strong>Components</strong></a> · Components, classes of business and coverages</span></div>
           <span class="step-divider">›</span>
-          <div class="step active"><i>2</i><span><strong>Coverage configuration</strong> · Limits, questions and forms</span></div>
+          <div class="step active" id="stepCfg"><i>2</i><span><a href="#" data-step="2"><strong>Coverage configuration</strong></a> · Limits, claims, forms and more</span></div>
+          <span class="step-divider">›</span>
+          <div class="step" id="stepQ"><i>3</i><span><a href="#" data-step="3"><strong>Questions</strong></a> · Product-level and coverage-specific</span></div>
+          <span class="step-divider">›</span>
+          <div class="step" id="stepE"><i>4</i><span><a href="#" data-step="4"><strong>Eligibility rules</strong></a> · Refer, warn or decline on answers</span></div>
         </div>
       </div>
 
@@ -68,15 +73,20 @@
       </div>
 
       <div id="components"></div>
+      <div id="eligibilityHost"></div>
 
       <div class="taskbar">
         <div class="taskbar-row">
           <span class="actions">
             <a class="action" id="backBtn" href="#">← Components</a>
+            <button class="action" type="button" id="backToConfig" data-step="2" hidden>← Coverage configuration</button>
+            <button class="action" type="button" id="backToQuestions" data-step="3" hidden>← Questions</button>
             <span class="muted" id="saveState" style="margin:0"></span>
           </span>
           <span class="actions">
             <button class="action" type="button" id="saveDraft" hidden>Save draft</button>
+            <button class="action primary" type="button" id="toQuestions" data-step="3">Continue to questions →</button>
+            <button class="action primary" type="button" id="toEligibility" data-step="4" hidden>Continue to eligibility rules →</button>
             <button class="action primary" type="button" id="publish" hidden>Validate &amp; publish</button>
           </span>
         </div>

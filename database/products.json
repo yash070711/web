@@ -1,15 +1,15 @@
 [
   {
     "productId": "PRD-001",
-    "name": "Rupesh Product",
+    "name": "Rupesh Ins",
     "description": "NA",
-    "carrier": "Futuristic Risk Carrier",
+    "carrier": "Southlake Specialty Insurance Company",
     "arrangement": "Non-fronting",
-    "lineOfBusiness": "Commercial Auto, Commercial Property",
-    "version": "2026.01",
-    "status": "Draft",
-    "createdOn": "Oct 14, 2026",
-    "effectiveDate": "",
-    "id": "35c71f98-46ea-4dbc-aaad-fd299d2efd54"
+    "lineOfBusiness": "Commercial Auto",
+    "version": "2026.02",
+    "status": "Published",
+    "createdOn": "Oct 15, 2026",
+    "effectiveDate": "2026-10-15",
+    "id": "c791569e-bf07-42fa-b046-c1711176259d"
   }
 ]

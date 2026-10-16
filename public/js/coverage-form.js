@@ -6,12 +6,13 @@ import { CONFIG_OPTIONS, DEFAULT_OPTIONS, normalizeOptions, clone } from './prod
 
 const coverages = api('coverages');
 const formsApi = api('acord_forms');
+const universalApi = api('universal_coverages');
 
 const el = (id) => document.getElementById(id);
 const form = el('coverageForm');
 
 const editingId = new URLSearchParams(location.search).get('id');
-const state = { rows: [], forms: [], existing: null, selectedForms: [], options: clone(DEFAULT_OPTIONS) };
+const state = { rows: [], forms: [], universal: [], universalCode: '', existing: null, selectedForms: [], options: clone(DEFAULT_OPTIONS) };
 
 const normalise = (value) => String(value ?? '').toLowerCase();
 
@@ -39,6 +40,7 @@ const readForm = () => ({
   description: form.elements.description.value.trim(),
   status: form.elements.status.value,
   forms: state.selectedForms,
+  universalCoverage: state.universalCode ? { code: state.universalCode } : null,
   configOptions: normalizeOptions(state.options),
 });
 
@@ -107,6 +109,51 @@ function mountPicker() {
   picker.render();
 }
 
+/* ---------- universal coverages ---------- */
+// A universal coverage is a pre-defined standard coverage that already knows which Acord fields belong to it.
+const universalOf = (code) => state.universal.find((u) => u.code === code);
+
+const renderUniversal = () => {
+  const taken = new Set(state.rows.filter((r) => r.id !== editingId).map((r) => r.universalCoverage?.code).filter(Boolean));
+  const groups = [...new Set(state.universal.map((u) => u.group))];
+  el('fUniversal').innerHTML =
+    '<option value="">Custom coverage (not from the universal list)</option>' +
+    groups
+      .map(
+        (g) => `<optgroup label="${esc(g)}">${state.universal
+          .filter((u) => u.group === g)
+          .map((u) => `<option value="${esc(u.code)}"${u.code === state.universalCode ? ' selected' : ''}${taken.has(u.code) ? ' disabled' : ''}>${esc(u.name)} (${esc(u.code)})${taken.has(u.code) ? ' — already added' : ''}</option>`)
+          .join('')}</optgroup>`,
+      )
+      .join('');
+};
+
+// Attach the universal coverage's forms, keeping only its fields: everything else on the form is excluded.
+const attachUniversal = (u) => {
+  const attachments = u.forms.flatMap((m) => {
+    const f = state.forms.find((x) => x.id === m.formId);
+    if (!f) return [];
+    const keep = new Set(m.included);
+    return [{ formId: f.id, excluded: f.sections.flatMap((s) => s.questions).map((q) => q.id).filter((id) => !keep.has(id)) }];
+  });
+  state.selectedForms.splice(0, state.selectedForms.length, ...attachments);
+};
+
+el('fUniversal').addEventListener('change', (event) => {
+  state.universalCode = event.target.value;
+  const u = universalOf(state.universalCode);
+  if (!u) {
+    el('universalHint').textContent = 'Custom coverage: choose its Acord forms below.';
+    return;
+  }
+  form.elements.name.value = u.name;
+  attachUniversal(u);
+  mountPicker();
+  el('universalHint').textContent = u.forms.length
+    ? `Attached ${u.forms.length === 1 ? '1 Acord form' : `${u.forms.length} Acord forms`} for ${u.code}. Use “Customize fields” or “Edit form” below to change them for this coverage.`
+    : `${u.code} has no Acord fields yet. Attach forms below if needed.`;
+});
+
 /* ---------- configuration options ---------- */
 const optionOn = (key) => state.options.find((o) => o.key === key);
 
@@ -154,7 +201,7 @@ form.addEventListener('keydown', (event) => {
 
 const init = async () => {
   try {
-    [state.rows, state.forms] = await Promise.all([coverages.list(), formsApi.list()]);
+    [state.rows, state.forms, state.universal] = await Promise.all([coverages.list(), formsApi.list(), universalApi.list()]);
   } catch (err) {
     showErrors([`Unable to load data: ${err.message}`]);
   }
@@ -177,7 +224,9 @@ const init = async () => {
     form.elements.status.value = normalise(row.status) || 'active';
     state.selectedForms = structuredClone(row.forms ?? []);
     state.options = normalizeOptions(row.configOptions);
+    state.universalCode = row.universalCoverage?.code ?? '';
   }
+  renderUniversal();
   renderOptions();
   mountPicker();
   form.elements.name.focus();

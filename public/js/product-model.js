@@ -19,9 +19,38 @@ export const QUESTION_TYPES = [
   { value: 'checkbox', label: 'Single checkbox' },
 ];
 export const QUESTION_HAS_OPTIONS = ['radio', 'checkboxes', 'dropdown'];
+// A question is attached either to the whole product (version.questions) or to one coverage (coverage.questions).
+export const questionBad = (q) => !String(q.label ?? '').trim() || (QUESTION_HAS_OPTIONS.includes(q.type) && !(q.options ?? []).length);
+export const cloneQuestions = (questions) => structuredClone(questions ?? []).map((q) => ({ ...q, id: crypto.randomUUID() }));
 export const blankQuestion = () => ({ id: crypto.randomUUID(), type: 'text', label: '', help: '', required: false, options: [] });
 
 export const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'];
+
+// States a product version is available in. Stored as exclusions, so a new version starts with every state.
+export const productStates = (version) => {
+  const excluded = version?.jurisdiction?.excludedStates ?? [];
+  return US_STATES.filter((st) => !excluded.includes(st));
+};
+
+// Coverages can only narrow the product's states: drop exclusions for states the product no longer has.
+// Returns how many coverages changed.
+export const pruneCoverageStates = (components, allowed) => {
+  let changed = 0;
+  components.forEach((c) =>
+    c.classes.forEach((k) =>
+      k.coverages.forEach((cov) => {
+        const list = cov.jurisdiction?.excludedStates;
+        if (!Array.isArray(list)) return;
+        const kept = list.filter((st) => allowed.includes(st));
+        if (kept.length !== list.length) {
+          cov.jurisdiction.excludedStates = kept;
+          changed += 1;
+        }
+      }),
+    ),
+  );
+  return changed;
+};
 
 // Everything that can be configured on a coverage when it is added to a product version.
 // A global coverage picks which of these apply (and which are required); the product's
@@ -46,7 +75,6 @@ export const CONFIG_OPTIONS = [
   { key: 'premiumEarn', label: 'Premium earn behaviour', kind: 'select', field: 'premiumEarnBehaviour', choices: [['pro_rata', 'Pro rata'], ['short_rate', 'Short rate'], ['minimum_earned', 'Minimum earned'], ['fully_earned', 'Fully earned']], hint: 'How premium is earned on cancellation or change.', required: true },
   { key: 'riskObjects', label: 'Covered risk-object types', kind: 'multi', field: 'riskObjectTypes', choices: RISK_OBJECT_TYPES, hint: 'What the coverage can be applied to.', required: true },
   { key: 'claimBehaviour', label: 'Claim behaviour', kind: 'claims', field: 'claimBehaviour', hint: 'Loss basis, benefit basis and how soon a claim must be notified.', required: true },
-  { key: 'questions', label: 'Questions', kind: 'questions', field: 'questions', hint: 'Asked when the coverage is quoted.', required: false },
   { key: 'forms', label: 'Forms', kind: 'forms', field: 'forms', hint: 'Starts from the forms attached to the global coverage — adjust them for this product.', required: false },
   { key: 'terms', label: 'Terms', kind: 'text', field: 'terms', hint: 'Conditions, exclusions, waiting periods.', required: false },
 ];
@@ -62,7 +90,6 @@ export const DEFAULT_OPTIONS = [
   { key: 'deductible', required: false },
   { key: 'riskObjects', required: true },
   { key: 'terms', required: false },
-  { key: 'questions', required: false },
   { key: 'forms', required: false },
 ];
 
@@ -150,7 +177,7 @@ const badNumber = (v) => blank(v) || Number.isNaN(+v) || +v < 0;
 
 // What a coverage still needs before it can be published, as short labels. Only the options
 // the global coverage enabled are checked.
-export const coverageIssues = (cov) => {
+export const coverageIssues = (cov, allowedStates = US_STATES) => {
   const issues = [];
   // First or third party is asked before anything else; nothing else is checked until it's answered.
   if (!cov.party) return ['party type'];
@@ -202,7 +229,7 @@ export const coverageIssues = (cov) => {
         break;
       }
       case 'jurisdiction':
-        bad = (value?.excludedStates?.length ?? 0) >= US_STATES.length || parseZips(value?.excludedZips).invalid.length > 0;
+        bad = allowedStates.every((st) => (value?.excludedStates ?? []).includes(st)) || parseZips(value?.excludedZips).invalid.length > 0;
         break;
       case 'questions':
         bad = (required && !value?.length) || (value ?? []).some((q) => !q.label.trim() || (QUESTION_HAS_OPTIONS.includes(q.type) && !q.options.length));
@@ -228,8 +255,12 @@ export const componentIssues = (c) => {
 };
 
 // Everything a version needs before it can be published as a release.
-export const validateVersion = (components) => {
+export const validateVersion = (components, productQuestions = [], states = US_STATES) => {
   const errors = [];
+  if (!states.length) errors.push('Select at least one state for the product.');
+  productQuestions.forEach((q, i) => {
+    if (questionBad(q)) errors.push(`Product-level question ${i + 1}: ${String(q.label ?? '').trim() ? 'add at least one option' : 'enter the question text'}.`);
+  });
   if (!components.length) errors.push('Add at least one component.');
   components.forEach((c, ci) => {
     const where = c.name?.trim() || `Component ${ci + 1}`;
@@ -246,8 +277,11 @@ export const validateVersion = (components) => {
           if (id === cov.coverageId) errors.push(`${inClass} › ${cov.name}: cannot require itself.`);
           else if (!inClassIds.has(id)) errors.push(`${inClass} › ${cov.name}: requires a coverage that is no longer in this class of business.`);
         });
-        const issues = coverageIssues(cov);
+        const issues = coverageIssues(cov, states);
         if (issues.length) errors.push(`${inClass} › ${cov.name}: complete ${issues.join(', ')}.`);
+        (cov.questions ?? []).forEach((q, i) => {
+          if (questionBad(q)) errors.push(`${inClass} › ${cov.name} › question ${i + 1}: ${String(q.label ?? '').trim() ? 'add at least one option' : 'enter the question text'}.`);
+        });
       });
     });
   });
@@ -266,6 +300,8 @@ export const startNextVersion = async (api, productId, versions, from) => {
     label: nextLabel(latest.label),
     status: 'Draft',
     components: cloneComponents(from.components),
+    questions: cloneQuestions(from.questions),
+    jurisdiction: clone(from.jurisdiction ?? { excludedStates: [] }),
     createdAt: now,
     updatedAt: now,
     publishedAt: null,

@@ -2,11 +2,13 @@ import { api } from './api.js';
 import { createFormPicker } from './form-picker.js';
 import { renderControl } from './form-render.js';
 import { openBuilder } from './form-builder.js';
+import { mountEligibility, eligibilityIssues } from './eligibility.js';
 import {
   QUESTION_TYPES,
   QUESTION_HAS_OPTIONS,
   blankQuestion,
   US_STATES,
+  productStates,
   DEDUCTIBLE_TYPES,
   DEDUCTIBLE_BASES,
   LOSS_BASES,
@@ -33,6 +35,8 @@ const versionId = new URLSearchParams(location.search).get('id');
 
 const state = { product: null, version: null, library: [], acordForms: [], release: null, open: new Set(), dirty: false };
 const readOnly = () => state.version?.status === 'Published';
+// Step 2 = coverage configuration, step 3 = questions, step 4 = eligibility rules.
+const stepNow = () => state.step ?? 2;
 const components = () => state.version.components;
 
 // ---- feedback ----
@@ -76,7 +80,7 @@ const refreshStatus = () => {
   const all = allCoverages(components());
   let done = 0;
   all.forEach((cov) => {
-    const issues = coverageIssues(cov);
+    const issues = coverageIssues(cov, allowedStates());
     if (!issues.length) done += 1;
     const badge = host.querySelector(`[data-status="${CSS.escape(cov.id)}"]`);
     if (!badge) return;
@@ -133,11 +137,15 @@ const amountChips = (path, amounts) =>
     .map(([label, amount]) => `<button type="button" class="chip" data-act="set-amount" data-path="${path}" data-amount="${amount}">${label}</button>`)
     .join('')}</div>`;
 
+// A coverage can only use the states its product version is available in.
+const allowedStates = () => productStates(state.version);
+
 const jurisdictionSummary = (j) => {
-  const included = US_STATES.length - j.excludedStates.length;
+  const allowed = allowedStates();
+  const included = allowed.filter((st) => !j.excludedStates.includes(st)).length;
   const { valid, invalid } = parseZips(j.excludedZips);
   const parts = [
-    included === US_STATES.length ? `All ${US_STATES.length} states included` : `${included} of ${US_STATES.length} states included`,
+    included === allowed.length ? `All ${allowed.length} product ${allowed.length === 1 ? 'state' : 'states'} included` : `${included} of ${allowed.length} product states included`,
     valid.length ? `${valid.length} zip ${valid.length === 1 ? 'exclusion' : 'exclusions'}` : 'all zip codes included',
   ];
   if (invalid.length) parts.push(`⚠ not valid: ${invalid.join(', ')}`);
@@ -146,7 +154,7 @@ const jurisdictionSummary = (j) => {
 };
 
 // A question card, configured the same way as in the Acord form builder.
-const questionCard = (q, i, path, count) => {
+const questionCard = (q, i, path, count, scope = '') => {
   const p = `${path}.${i}`;
   return `<div class="ac-q q-card" data-qi="${i}">
     <div class="ac-q-row">
@@ -154,6 +162,7 @@ const questionCard = (q, i, path, count) => {
       <select class="ac-select" data-path="${p}.type" aria-label="Answer type">${QUESTION_TYPES.map((t) => `<option value="${t.value}"${t.value === q.type ? ' selected' : ''}>${t.label}</option>`).join('')}</select>
     </div>
     <input class="ac-input" data-path="${p}.help" style="margin-top:8px" placeholder="Help text (optional)" aria-label="Help text" value="${esc(q.help)}">
+    ${scope}
     ${
       QUESTION_HAS_OPTIONS.includes(q.type)
         ? `<div class="ac-q-options"><div class="ac-hint">Options — one per line</div>
@@ -189,10 +198,10 @@ const optionBody = (cov, def, base) => {
     case 'jurisdiction':
       return `<div class="juris" data-jpath="${path}">
         <p class="juris-sum" data-jsum>${esc(jurisdictionSummary(value))}</p>
-        <p class="muted" style="margin:0 0 6px">Untick a state to exclude it.
+        <p class="muted" style="margin:0 0 6px">Only the ${allowedStates().length} ${allowedStates().length === 1 ? 'state' : 'states'} this product version is available in ${allowedStates().length === 1 ? 'is' : 'are'} listed. Untick a state to exclude it.
           <button type="button" class="mini" data-act="states-all" data-path="${path}.excludedStates">Include all</button>
           <button type="button" class="mini" data-act="states-none" data-path="${path}.excludedStates">Exclude all</button></p>
-        <div class="check-cols states">${US_STATES.map((st) => `<label><input type="checkbox" data-incl="${path}.excludedStates" value="${st}"${value.excludedStates.includes(st) ? '' : ' checked'}> ${st}</label>`).join('')}</div>
+        <div class="check-cols states">${allowedStates().map((st) => `<label><input type="checkbox" data-incl="${path}.excludedStates" value="${st}"${value.excludedStates.includes(st) ? '' : ' checked'}> ${st}</label>`).join('')}</div>
         <label class="mini-label" for="zip-${esc(cov.id)}">Exclude zip codes <span class="muted" style="margin:0">(optional)</span></label>
         <textarea class="search-box" id="zip-${esc(cov.id)}" data-path="${path}.excludedZips" rows="2" placeholder="e.g. 90210, 10001, 33101-33199" aria-label="Excluded zip codes">${esc(value.excludedZips)}</textarea>
         <p class="hint-line">Separate with commas, spaces or new lines. Use a range like 33101-33199 for a block of codes.</p>
@@ -255,12 +264,6 @@ const optionBody = (cov, def, base) => {
         ${checkList(path, def.choices.map((c) => [c, c]), value)}`;
     case 'text':
       return `<textarea class="search-box" data-path="${path}" rows="3" maxlength="500" placeholder="Conditions, exclusions or waiting periods" aria-label="Terms">${esc(value)}</textarea>`;
-    case 'questions':
-      return `<div data-qroot data-qpath="${path}">
-        ${value.map((q, i) => questionCard(q, i, path, value.length)).join('')}
-        <button class="action" type="button" data-act="q-add" data-path="${path}">+ Add question</button>
-        ${value.length ? `<details class="q-preview"><summary>Preview how these questions look</summary><div data-qpreview>${questionPreview(value)}</div></details>` : ''}
-      </div>`;
     case 'forms':
       if (readOnly()) {
         // Controls inside the read-only fieldset are disabled, so use links for Preview.
@@ -397,6 +400,61 @@ const componentCard = (comp, ci) => `<section class="card comp-card">
   }
 </section>`;
 
+// ---- Questions: product-level and coverage-specific ----
+const coverageScopes = () =>
+  components().flatMap((c, ci) =>
+    c.classes.flatMap((k, ki) =>
+      k.coverages.map((cov, vi) => ({ cov, label: `${c.name} › ${k.name} › ${cov.name}`, path: `components.${ci}.classes.${ki}.coverages.${vi}.questions` })),
+    ),
+  );
+
+// "Applies to" moves a question between the whole product and a single coverage.
+const scopeSelect = (current, srcPath, i) =>
+  `<label class="q-scope"><span>Applies to</span><select data-qsrc="${srcPath}" data-i="${i}" aria-label="Question applies to">
+    <option value="product"${current === 'product' ? ' selected' : ''}>Whole product</option>
+    ${coverageScopes().map((s) => `<option value="${esc(s.cov.id)}"${current === s.cov.id ? ' selected' : ''}>${esc(s.label)}</option>`).join('')}
+  </select></label>`;
+
+const questionList = (path, list, current) => `<div data-qroot data-qpath="${path}">
+  ${list.map((q, i) => questionCard(q, i, path, list.length, scopeSelect(current, path, i))).join('') || '<div class="wiz-note">No questions yet.</div>'}
+  <button class="action" type="button" data-act="q-add" data-path="${path}">+ Add question</button>
+  ${list.length ? `<details class="q-preview"><summary>Preview how these questions look</summary><div data-qpreview>${questionPreview(list)}</div></details>` : ''}
+</div>`;
+
+const questionsSection = () => {
+  const product = state.version.questions;
+  const groups = coverageScopes();
+  const total = product.length + groups.reduce((n, g) => n + g.cov.questions.length, 0);
+  return `<section class="card" id="questionsSection">
+    <div class="section-meta">Step 3</div>
+    <h2>Questions <span class="badge">${total}</span></h2>
+    <p class="muted">Questions asked when this product is quoted. Attach a question to the <strong>whole product</strong>, or to <strong>one coverage</strong> so it is only asked when that coverage is selected. Use “Applies to” on a question to move it.</p>
+    <fieldset class="plain"${readOnly() ? ' disabled' : ''}>
+      <div class="cfg-stack">
+        <section class="cfg-panel start"><div class="cfg-head">
+          <span class="cfg-num">★</span>
+          <span class="cfg-title"><strong>Product-level questions</strong><span class="muted">Asked for every quote on this product, whichever coverages are chosen.</span></span>
+          <span class="badge ${product.length ? 'ok' : ''}">${product.length}</span></div>
+          <div class="cfg-body">${questionList('questions', product, 'product')}</div></section>
+        <h3 style="margin:14px 0 0">Coverage-specific questions</h3>
+        ${
+          groups.length
+            ? groups
+                .map(({ cov, label, path }) => {
+                  const key = `q-${cov.id}`;
+                  return `<details class="cfg-panel" data-key="${key}"${state.open.has(key) || cov.questions.length ? ' open' : ''}>
+                    <summary class="cfg-head"><span class="cfg-num">${cov.questions.length}</span>
+                      <span class="cfg-title"><strong>${esc(cov.name)}</strong><span class="muted">${esc(label)}</span></span></summary>
+                    <div class="cfg-body">${questionList(path, cov.questions, cov.id)}</div></details>`;
+                })
+                .join('')
+            : '<div class="wiz-note">Attach coverages on the Components page to add coverage-specific questions.</div>'
+        }
+      </div>
+    </fieldset>
+  </section>`;
+};
+
 // ---- Acord forms: preview and edit ----
 const mainEl = el('main');
 
@@ -449,14 +507,37 @@ const render = () => {
   el('title').textContent = `${product.name} · ${version.label}`;
   el('subtitle').textContent = `${product.productId} · ${product.carrier} · ${product.arrangement}`;
   el('status').textContent = version.status;
-  el('saveDraft').hidden = el('publish').hidden = readOnly();
-  el('bulkBar').hidden = !components().length;
+  const step = stepNow();
+  el('saveDraft').hidden = readOnly();
+  el('publish').hidden = readOnly() || step !== 4;
+  el('toQuestions').hidden = step !== 2;
+  el('toEligibility').hidden = step !== 3;
+  el('backToConfig').hidden = step !== 3;
+  el('backToQuestions').hidden = step !== 4;
+  el('backBtn').hidden = step !== 2;
+  el('stepCfg').classList.toggle('active', step === 2);
+  el('stepQ').classList.toggle('active', step === 3);
+  el('stepE').classList.toggle('active', step === 4);
+  const stepName = { 2: 'Coverage configuration', 3: 'Questions', 4: 'Eligibility rules' }[step];
+  el('stepMeta').textContent = stepName;
+  document.title = `${stepName} · ${product.name} ${version.label}`;
+  el('bulkBar').hidden = !components().length || step !== 2;
   el('newVersion').hidden = !readOnly();
   el('components').innerHTML =
     (readOnly()
       ? `<div class="notice-bar"><div class="notice-content"><strong>This version is published and read-only.</strong><p>Published as release ${esc(state.release?.releaseNumber ?? '')}. Create a new version to make changes.</p></div></div>`
       : '') +
-    `<fieldset class="plain"${readOnly() ? ' disabled' : ''}>${components().map(componentCard).join('') || '<div class="card"><div class="wiz-note">No components yet.</div></div>'}</fieldset>`;
+    (step === 4
+      ? ''
+      : step === 3
+      ? questionsSection()
+      : `<fieldset class="plain"${readOnly() ? ' disabled' : ''}>${components().map(componentCard).join('') || '<div class="card"><div class="wiz-note">No components yet.</div></div>'}</fieldset>`);
+  el('eligibilityHost').hidden = step !== 4;
+  if (step === 4) {
+    mountEligibility(el('eligibilityHost'), { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty });
+  } else {
+    el('eligibilityHost').innerHTML = '';
+  }
   mountPickers();
   showSaveState();
   refreshStatus();
@@ -464,7 +545,9 @@ const render = () => {
 
 // ---- persistence ----
 const saveDraft = async () => {
-  state.version = await api('product_versions').update(state.version.id, { components: components(), updatedAt: new Date().toISOString() });
+  state.version = await api('product_versions').update(state.version.id, { components: components(), questions: state.version.questions, updatedAt: new Date().toISOString() });
+  normalizeComponents(components());
+  state.version.questions ??= [];
   if (state.product.status === 'Draft') {
     state.product = await api('products').update(state.product.id, { lineOfBusiness: lobsOf(components()).join(', '), version: state.version.label });
   }
@@ -472,11 +555,13 @@ const saveDraft = async () => {
 };
 
 const publish = async () => {
-  const errors = validateVersion(components());
+  const errors = [...validateVersion(components(), state.version.questions, allowedStates()), ...eligibilityIssues(state.version, state.acordForms)];
   showErrors(errors);
   if (errors.length) {
     // Open every coverage that still needs work so the gaps are visible.
-    components().forEach((c) => c.classes.forEach((k) => k.coverages.forEach((cov) => coverageIssues(cov).length && state.open.add(cov.id))));
+    components().forEach((c) => c.classes.forEach((k) => k.coverages.forEach((cov) => coverageIssues(cov, allowedStates()).length && state.open.add(cov.id))));
+    // Coverage problems are fixed on step 2; question problems on step 3.
+    if (allCoverages(components()).some((cov) => coverageIssues(cov, allowedStates()).length)) state.step = 2;
     render();
     return;
   }
@@ -488,11 +573,12 @@ const publish = async () => {
     versionId: version.id,
     label: version.label,
     releaseNumber: `${product.productId}-${version.label}`,
-    snapshot: { components: clone(components()) },
+    snapshot: { components: clone(components()), questions: clone(state.version.questions ?? []), jurisdiction: clone(state.version.jurisdiction ?? { excludedStates: [] }) },
     publishedAt: now,
   });
   state.version = await api('product_versions').update(version.id, {
     components: components(),
+    questions: state.version.questions,
     status: 'Published',
     publishedAt: now,
     updatedAt: now,
@@ -569,6 +655,14 @@ host.addEventListener('change', (event) => {
     setPath(t.dataset.incl, US_STATES.filter((st) => excluded.has(st)));
     refreshJurisdiction(t);
     markDirty();
+  } else if (t.dataset.qsrc !== undefined) {
+    const list = walk(t.dataset.qsrc);
+    const [q] = list.splice(Number(t.dataset.i), 1);
+    const target = t.value === 'product' ? state.version.questions : allCoverages(components()).find((c) => c.id === t.value)?.questions;
+    (target ?? list).push(q);
+    if (t.value !== 'product') state.open.add(`q-${t.value}`);
+    markDirty();
+    render();
   } else if (t.dataset.flag) {
     setPath(t.dataset.flag, t.checked);
     markDirty();
@@ -625,7 +719,7 @@ host.addEventListener('click', (event) => {
     [list[i], list[j]] = [list[j], list[i]];
   } else if (act === 'set-amount') setPath(path, btn.dataset.amount);
   else if (act === 'states-all') setPath(path, []);
-  else if (act === 'states-none') setPath(path, [...US_STATES]);
+  else if (act === 'states-none') setPath(path, [...allowedStates()]);
   else if (act === 'multi-all') setPath(path, [...optionDef(btn.dataset.key).choices]);
   else if (act === 'multi-none') setPath(path, []);
   else if (act === 'copy') {
@@ -646,6 +740,22 @@ const setAllOpen = (open) => {
 };
 el('expandAll').addEventListener('click', () => setAllOpen(true));
 el('collapseAll').addEventListener('click', () => setAllOpen(false));
+
+// Move between the coverage configuration step and the questions step.
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('[data-step]');
+  if (!link) return;
+  event.preventDefault();
+  guarded(async () => {
+    const step = Number(link.dataset.step);
+    if (step === stepNow()) return;
+    if (!readOnly() && state.dirty) await saveDraft();
+    showErrors([]);
+    state.step = step;
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  })();
+});
 
 el('saveDraft').addEventListener(
   'click',
@@ -692,6 +802,7 @@ window.addEventListener('beforeunload', (event) => {
     state.library = coverages;
     state.acordForms = acordForms;
     normalizeComponents(components());
+    state.version.questions ??= [];
     Object.assign(state, { product, release });
     components().forEach((c) =>
       c.classes.forEach((k) => k.coverages.forEach((cov) => hydrateCoverage(cov, state.library.find((l) => l.id === cov.coverageId), !readOnly()))),

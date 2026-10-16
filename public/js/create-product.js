@@ -1,9 +1,9 @@
 import { api } from './api.js';
-import { CARRIERS, esc } from './product-model.js';
+import { CARRIERS, US_STATES, esc } from './product-model.js';
 
 const el = (id) => document.getElementById(id);
 const form = el('productForm');
-const state = { products: [] };
+const state = { products: [], excluded: [] }; // excluded = states this version is NOT available in
 
 const showErrors = (messages) => {
   el('errors').hidden = !messages.length;
@@ -12,6 +12,28 @@ const showErrors = (messages) => {
     : '';
   if (messages.length) window.scrollTo({ top: 0, behavior: 'smooth' });
 };
+
+const renderStates = () => {
+  const on = US_STATES.length - state.excluded.length;
+  el('jurisSummary').textContent = `${on === US_STATES.length ? `All ${on} states included` : `${on} of ${US_STATES.length} states included`}${on === 0 ? ' · ⚠ at least one state must be included' : ''}`;
+  el('jurisStates').innerHTML = US_STATES.map((st) => `<label><input type="checkbox" data-state value="${st}"${state.excluded.includes(st) ? '' : ' checked'}> ${st}</label>`).join('');
+};
+
+el('jurisdiction').addEventListener('change', (event) => {
+  const t = event.target;
+  if (!('state' in t.dataset)) return;
+  const excluded = new Set(state.excluded);
+  t.checked ? excluded.delete(t.value) : excluded.add(t.value);
+  state.excluded = US_STATES.filter((st) => excluded.has(st));
+  renderStates();
+});
+
+el('jurisdiction').addEventListener('click', (event) => {
+  const btn = event.target.closest('[data-juris]');
+  if (!btn) return;
+  state.excluded = btn.dataset.juris === 'all' ? [] : [...US_STATES];
+  renderStates();
+});
 
 const nextProductId = () => {
   const max = state.products.reduce((m, p) => Math.max(m, parseInt(String(p.productId).replace(/\D/g, ''), 10) || 0), 0);
@@ -31,6 +53,7 @@ const validate = (v) => {
   if (!v.name) errors.push('Product name is required.');
   else if (state.products.some((p) => p.name.toLowerCase() === v.name.toLowerCase())) errors.push(`A product named “${v.name}” already exists.`);
   if (!v.arrangement) errors.push('Select an arrangement.');
+  if (state.excluded.length >= US_STATES.length) errors.push('Select at least one state.');
   showErrors(errors);
   return !errors.length;
 };
@@ -65,6 +88,7 @@ form.addEventListener('submit', async (event) => {
       label: firstVersion,
       status: 'Draft',
       components: [],
+      jurisdiction: { excludedStates: [...state.excluded] },
       createdAt: now,
       updatedAt: now,
       publishedAt: null,
@@ -77,6 +101,7 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+renderStates();
 el('carrier').innerHTML = ['<option value="">Select carrier</option>', ...CARRIERS.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`)].join('');
 
 api('products')

@@ -1,0 +1,480 @@
+[
+  {
+    "id": "AL-BI",
+    "name": "Bodily Injury",
+    "code": "AL-BI",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-liability-covered-auto-symbols",
+          "a137-ba-liability-limit-type",
+          "a137-ba-liability-csl",
+          "a137-ba-liability-bi-each-person",
+          "a137-ba-liability-bi-each-accident",
+          "a137-tr-liability-covered-auto-symbols",
+          "a137-tr-liability-limit-type",
+          "a137-tr-liability-csl",
+          "a137-tr-liability-bi-each-person",
+          "a137-tr-liability-bi-each-accident",
+          "a137-mc-liability-covered-auto-symbols",
+          "a137-mc-liability-limit-type",
+          "a137-mc-liability-csl",
+          "a137-mc-liability-bi-each-person",
+          "a137-mc-liability-bi-each-accident"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AL-PD",
+    "name": "Property Damage",
+    "code": "AL-PD",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-liability-covered-auto-symbols",
+          "a137-ba-liability-limit-type",
+          "a137-ba-liability-csl",
+          "a137-ba-liability-property-damage",
+          "a137-tr-liability-covered-auto-symbols",
+          "a137-tr-liability-limit-type",
+          "a137-tr-liability-csl",
+          "a137-tr-liability-property-damage",
+          "a137-mc-liability-covered-auto-symbols",
+          "a137-mc-liability-limit-type",
+          "a137-mc-liability-csl",
+          "a137-mc-liability-property-damage"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AL-UM",
+    "name": "Uninsured Motorist",
+    "code": "AL-UM",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-uninsured-motorist-covered-auto-symbols",
+          "a137-ba-uninsured-motorist-limit-type",
+          "a137-ba-uninsured-motorist-csl",
+          "a137-ba-uninsured-motorist-bi-each-person",
+          "a137-ba-uninsured-motorist-bi-each-accident",
+          "a137-tr-uninsured-motorist-covered-auto-symbols",
+          "a137-tr-uninsured-motorist-limit-type",
+          "a137-tr-uninsured-motorist-csl",
+          "a137-tr-uninsured-motorist-bi-each-person",
+          "a137-tr-uninsured-motorist-bi-each-accident",
+          "a137-mc-uninsured-motorist-covered-auto-symbols",
+          "a137-mc-uninsured-motorist-limit-type",
+          "a137-mc-uninsured-motorist-csl",
+          "a137-mc-uninsured-motorist-bi-each-person",
+          "a137-mc-uninsured-motorist-bi-each-accident"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AL-UIM",
+    "name": "Underinsured Motorist",
+    "code": "AL-UIM",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AL-MED",
+    "name": "Medical Payments",
+    "code": "AL-MED",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-medical-payments-covered-auto-symbols",
+          "a137-ba-medical-payments-each-person",
+          "a137-tr-medical-payments-covered-auto-symbols",
+          "a137-tr-medical-payments-each-person",
+          "a137-mc-medical-payments-covered-auto-symbols",
+          "a137-mc-medical-payments-each-person"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AL-PIP",
+    "name": "Personal Injury Protection",
+    "code": "AL-PIP",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-personal-injury-protection-covered-auto-symbols",
+          "a137-ba-pip-basic-10-000-deductible-applies-to",
+          "a137-ba-pip-deductible",
+          "a137-ba-pip-work-loss-excluded",
+          "a137-ba-extended-p-i-p-covered-auto-symbols",
+          "a137-ba-extended-p-i-p-work-loss",
+          "a137-ba-additional-p-i-p-covered-auto-symbols",
+          "a137-ba-additional-p-i-p-option",
+          "a137-ba-additional-p-i-p-amount",
+          "a137-ba-additional-p-i-p-work-loss",
+          "a137-tr-personal-injury-protection-covered-auto-symbols",
+          "a137-tr-pip-basic-10-000-deductible-applies-to",
+          "a137-tr-pip-deductible",
+          "a137-tr-pip-work-loss-excluded",
+          "a137-tr-extended-p-i-p-covered-auto-symbols",
+          "a137-tr-extended-p-i-p-work-loss",
+          "a137-tr-additional-p-i-p-covered-auto-symbols",
+          "a137-tr-additional-p-i-p-option",
+          "a137-tr-additional-p-i-p-amount",
+          "a137-tr-additional-p-i-p-work-loss",
+          "a137-mc-personal-injury-protection-covered-auto-symbols",
+          "a137-mc-pip-basic-10-000-deductible-applies-to",
+          "a137-mc-pip-deductible",
+          "a137-mc-pip-work-loss-excluded",
+          "a137-mc-extended-p-i-p-covered-auto-symbols",
+          "a137-mc-extended-p-i-p-work-loss",
+          "a137-mc-additional-p-i-p-covered-auto-symbols",
+          "a137-mc-additional-p-i-p-option",
+          "a137-mc-additional-p-i-p-amount",
+          "a137-mc-additional-p-i-p-work-loss"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AL-HAL",
+    "name": "Hired Auto Liability",
+    "code": "AL-HAL",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-hired-borrowed-liability",
+          "a137-ba-hired-borrowed-liability-states",
+          "a137-ba-hired-borrowed-liability-cost-of-hire",
+          "a137-ba-hired-borrowed-liability-cost-of-hire-if-any-basis",
+          "a137-tr-non-truckers-hired-borrowed-liability",
+          "a137-tr-non-truckers-hired-borrowed-liability-states",
+          "a137-tr-non-truckers-hired-borrowed-liability-cost-of-hire",
+          "a137-tr-non-truckers-hired-borrowed-liability-cost-of-hire-if-any-basis",
+          "a137-tr-truckers-hired-borrowed-liability",
+          "a137-tr-truckers-hired-borrowed-liability-states",
+          "a137-tr-truckers-hired-borrowed-liability-cost-of-hire",
+          "a137-tr-truckers-hired-borrowed-liability-cost-of-hire-if-any-basis",
+          "a137-mc-non-truckers-hired-borrowed-liability",
+          "a137-mc-non-truckers-hired-borrowed-liability-states",
+          "a137-mc-non-truckers-hired-borrowed-liability-cost-of-hire",
+          "a137-mc-non-truckers-hired-borrowed-liability-cost-of-hire-if-any-basis",
+          "a137-mc-truckers-hired-borrowed-liability",
+          "a137-mc-truckers-hired-borrowed-liability-states",
+          "a137-mc-truckers-hired-borrowed-liability-cost-of-hire",
+          "a137-mc-truckers-hired-borrowed-liability-cost-of-hire-if-any-basis"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "AL-NOAL",
+    "name": "Non-Owned Auto Liability",
+    "code": "AL-NOAL",
+    "group": "Auto Liability",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-non-owned-liability",
+          "a137-ba-non-owned-liability-states",
+          "a137-ba-non-owned-liability-group-type",
+          "a137-ba-non-owned-liability-number-of-employees",
+          "a137-ba-non-owned-liability-number-of-volunteers",
+          "a137-ba-non-owned-liability-number-of-partners",
+          "a137-tr-non-owned-auto-liability",
+          "a137-tr-non-owned-auto-liability-states",
+          "a137-tr-non-owned-auto-liability-group-type",
+          "a137-tr-non-owned-auto-liability-number-of-employees",
+          "a137-tr-non-owned-auto-liability-number-of-volunteers",
+          "a137-tr-non-owned-auto-liability-number-of-partners",
+          "a137-mc-non-owned-auto-liability",
+          "a137-mc-non-owned-auto-liability-states",
+          "a137-mc-non-owned-auto-liability-group-type",
+          "a137-mc-non-owned-auto-liability-number-of-employees",
+          "a137-mc-non-owned-auto-liability-number-of-volunteers",
+          "a137-mc-non-owned-auto-liability-number-of-partners"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PD-COMP",
+    "name": "Comprehensive",
+    "code": "PD-COMP",
+    "group": "Physical Damage",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-comp-otc-covered-auto-symbols",
+          "a137-ba-comp-otc-limit-deductible",
+          "a137-tr-comp-otc-covered-auto-symbols",
+          "a137-tr-comp-otc-deductible",
+          "a137-mc-comp-otc-covered-auto-symbols",
+          "a137-mc-comp-otc-deductible"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-comp-otc-sym",
+          "a127-veh-cost-new",
+          "a127-veh-deductibles-valuation",
+          "a127-veh-deductibles-stated-amount-st-amt",
+          "a127-veh-deductible-comp-otc",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PD-COLL",
+    "name": "Collision",
+    "code": "PD-COLL",
+    "group": "Physical Damage",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-collision-covered-auto-symbols",
+          "a137-ba-collision-limit-deductible",
+          "a137-tr-collision-covered-auto-symbols",
+          "a137-tr-collision-deductible",
+          "a137-mc-collision-covered-auto-symbols",
+          "a137-mc-collision-deductible"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-coll-sym",
+          "a127-veh-cost-new",
+          "a127-veh-deductibles-valuation",
+          "a127-veh-deductibles-stated-amount-st-amt",
+          "a127-veh-deductible-coll",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PD-SP",
+    "name": "Specified Perils",
+    "code": "PD-SP",
+    "group": "Physical Damage",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-ba-specified-causes-of-loss-covered-auto-symbols",
+          "a137-ba-specified-causes-of-loss-type",
+          "a137-ba-specified-causes-of-loss-limit-deductible",
+          "a137-tr-specified-causes-of-loss-covered-auto-symbols",
+          "a137-tr-specified-causes-of-loss-type",
+          "a137-tr-specified-causes-of-loss-deductible",
+          "a137-mc-specified-causes-of-loss-covered-auto-symbols",
+          "a137-mc-specified-causes-of-loss-type",
+          "a137-mc-specified-causes-of-loss-deductible"
+        ]
+      },
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-veh-vehicle",
+          "a127-veh-year",
+          "a127-veh-make",
+          "a127-veh-model",
+          "a127-veh-v-i-n",
+          "a127-veh-cost-new",
+          "a127-veh-deductible-spec-c-of-l",
+          "a127-veh-check-coverages"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PD-TI",
+    "name": "Trailer Interchange",
+    "code": "PD-TI",
+    "group": "Physical Damage",
+    "forms": [
+      {
+        "formId": "acord-137-fl",
+        "included": [
+          "a137-tr-trailer-interchange-comp-otc-symbol",
+          "a137-tr-trailer-interchange-comp-otc-trailers",
+          "a137-tr-trailer-interchange-comp-otc-farthest-zone",
+          "a137-tr-trailer-interchange-comp-otc-days",
+          "a137-tr-trailer-interchange-comp-otc-radius",
+          "a137-tr-trailer-interchange-comp-otc-deductible",
+          "a137-tr-trailer-interchange-specified-causes-of-loss-symbol",
+          "a137-tr-trailer-interchange-specified-causes-of-loss-trailers",
+          "a137-tr-trailer-interchange-specified-causes-of-loss-farthest-zone",
+          "a137-tr-trailer-interchange-specified-causes-of-loss-days",
+          "a137-tr-trailer-interchange-specified-causes-of-loss-radius",
+          "a137-tr-trailer-interchange-specified-causes-of-loss-deductible",
+          "a137-tr-trailer-interchange-collision-symbol",
+          "a137-tr-trailer-interchange-collision-trailers",
+          "a137-tr-trailer-interchange-collision-farthest-zone",
+          "a137-tr-trailer-interchange-collision-days",
+          "a137-tr-trailer-interchange-collision-radius",
+          "a137-tr-trailer-interchange-collision-deductible",
+          "a137-mc-trailer-interchange-comp-otc-symbol",
+          "a137-mc-trailer-interchange-comp-otc-trailers",
+          "a137-mc-trailer-interchange-comp-otc-farthest-zone",
+          "a137-mc-trailer-interchange-comp-otc-days",
+          "a137-mc-trailer-interchange-comp-otc-radius",
+          "a137-mc-trailer-interchange-comp-otc-deductible",
+          "a137-mc-trailer-interchange-specified-causes-of-loss-symbol",
+          "a137-mc-trailer-interchange-specified-causes-of-loss-trailers",
+          "a137-mc-trailer-interchange-specified-causes-of-loss-farthest-zone",
+          "a137-mc-trailer-interchange-specified-causes-of-loss-days",
+          "a137-mc-trailer-interchange-specified-causes-of-loss-radius",
+          "a137-mc-trailer-interchange-specified-causes-of-loss-deductible",
+          "a137-mc-trailer-interchange-collision-symbol",
+          "a137-mc-trailer-interchange-collision-trailers",
+          "a137-mc-trailer-interchange-collision-farthest-zone",
+          "a137-mc-trailer-interchange-collision-days",
+          "a137-mc-trailer-interchange-collision-radius",
+          "a137-mc-trailer-interchange-collision-deductible"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PD-GKL",
+    "name": "Garagekeepers Legal Liability",
+    "code": "PD-GKL",
+    "group": "Physical Damage",
+    "forms": [
+      {
+        "formId": "acord-127",
+        "included": [
+          "a127-gen-description-of-garage-storage-locations",
+          "a127-gen-maximum-dollar-value-subject-to-loss"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CG-OWN",
+    "name": "Owned Cargo",
+    "code": "CG-OWN",
+    "group": "Motor Truck Cargo",
+    "forms": []
+  },
+  {
+    "id": "CG-REF",
+    "name": "Refrigeration Breakdown",
+    "code": "CG-REF",
+    "group": "Motor Truck Cargo",
+    "forms": []
+  },
+  {
+    "id": "CG-DEB",
+    "name": "Debris Removal",
+    "code": "CG-DEB",
+    "group": "Motor Truck Cargo",
+    "forms": []
+  },
+  {
+    "id": "CG-EF",
+    "name": "Earned Freight",
+    "code": "CG-EF",
+    "group": "Motor Truck Cargo",
+    "forms": []
+  }
+]
