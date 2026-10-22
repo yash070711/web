@@ -1,0 +1,8 @@
+/* Premium formula step. Reuses the panel, list and field styles from eligibility.css, rater.css and factors.css. */
+.fm-expr{width:100%;font-family:var(--mono,monospace);font-size:13px;resize:vertical}
+.fm-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.fm-chips .el-chip{font-family:var(--mono,monospace)}
+.fm-testgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:8px 0}
+.fm-t{display:flex;flex-direction:column;gap:4px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#66788d;font-weight:600}
+.fm-t small{text-transform:none;letter-spacing:0;font-family:var(--mono,monospace);font-weight:400}
+.fm-t .el-f{width:100%}

@@ -113,6 +113,21 @@ export const parseZips = (text) => {
 };
 
 export const newId = () => crypto.randomUUID();
+
+// Rater setup. `method` picks which block of the rating is used, so adding a method means adding a block
+// here and an entry to RATING_METHODS in rater.js. `valueSource` points at the quote question that holds the
+// value being rated: "product:<questionId>", "coverage:<questionId>" or "form:<formId>:<questionId>".
+// Territory rating is a flat-rate table over the fields the owner picks. `dimensions` are those fields, in column
+// order: { id, type: 'state' | 'zip' | 'territory' | 'question', source } where `source` is a question key like
+// valueSource. Each row is { id, keys: { [dimension id]: value }, rate }. Territory codes are defined once per
+// version in version.territories. `defaultRate` covers every combination that is not listed.
+export const blankRating = () => ({
+  method: '',
+  valueSource: '',
+  value: { bands: [] },
+  territory: { dimensions: [], defaultRate: '', rows: [] },
+  flat: { amount: '' }, // single base price; rating factors adjust it later
+});
 export const clone = (value) => structuredClone(value);
 
 export const esc = (value) =>
@@ -139,6 +154,8 @@ export const emptyCoverage = (lib) => ({
   claimBehaviour: blankClaimBehaviour(),
   taxable: '',
   ratingPlan: null, // attached in the rating phase
+  rating: blankRating(),
+  formula: { expression: '' }, // premium formula, e.g. BaseRate * RADIUS
 });
 
 export const emptyComponent = (name, lob) => ({ id: newId(), name, lob, classes: [] });
@@ -295,12 +312,23 @@ export const startNextVersion = async (api, productId, versions, from) => {
   if (draft) return { version: draft, existing: true };
   const latest = [...own].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))[0] ?? from;
   const now = new Date().toISOString();
+  const questions = cloneQuestions(from.questions);
+  const components = cloneComponents(from.components);
+  // Product questions get new ids in the copy, so ratings that point at one must follow.
+  const idMap = new Map((from.questions ?? []).map((q, i) => [q.id, questions[i].id]));
+  const remap = (source) => (source?.startsWith('product:') ? `product:${idMap.get(source.slice(8)) ?? ''}` : source);
+  allCoverages(components).forEach((cov) => {
+    if (!cov.rating) return;
+    cov.rating.valueSource = remap(cov.rating.valueSource);
+    (cov.rating.territory?.dimensions ?? []).forEach((d) => d.source && (d.source = remap(d.source)));
+  });
   const version = await api('product_versions').create({
     productRef: productId,
     label: nextLabel(latest.label),
     status: 'Draft',
-    components: cloneComponents(from.components),
-    questions: cloneQuestions(from.questions),
+    components,
+    questions,
+    territories: clone(from.territories ?? []),
     jurisdiction: clone(from.jurisdiction ?? { excludedStates: [] }),
     createdAt: now,
     updatedAt: now,
@@ -349,6 +377,18 @@ export const hydrateCoverage = (cov, lib, sync = false) => {
       required: Boolean(q.required),
       options: q.options ?? [],
     }));
+  }
+
+  if (cov.rating) {
+    const base = blankRating();
+    let t = cov.rating.territory;
+    // Earlier shape: one geography (state, ZIP or territory code) with its own rows.
+    if (t && !Array.isArray(t.rows)) {
+      const old = t.rows?.[t.geo] ?? [];
+      const dim = t.geo && (cov.rating.method === 'territory' || old.length) ? { id: newId(), type: t.geo } : null;
+      t = { dimensions: dim ? [dim] : [], defaultRate: t.defaultRate ?? '', rows: dim ? old.map((r) => ({ id: r.id, keys: { [dim.id]: r.key }, rate: r.rate })) : [] };
+    }
+    cov.rating = { ...base, ...cov.rating, value: { ...base.value, ...cov.rating.value }, territory: { ...base.territory, ...t }, flat: { ...base.flat, ...cov.rating.flat } };
   }
 
   const fresh = emptyCoverage(lib ?? { id: cov.coverageId, name: cov.name, configOptions: cov.configOptions });

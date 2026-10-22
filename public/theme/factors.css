@@ -1,0 +1,15 @@
+/* Rating factors step. Reuses the panel, list and table styles from eligibility.css and rater.css. */
+.fc-off{opacity:.55;cursor:default}
+.fc-off:hover{background:transparent}
+.fc-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:560px){.fc-fields{grid-template-columns:minmax(0,1fr)}}
+.fc-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fc-field label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#66788d;font-weight:600}
+.fc-field .el-f{width:100%}
+.fc-table th small{display:block;font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:#8a98aa}
+.fc-table td{vertical-align:middle}
+.fc-table td.num,.fc-table th.num{text-align:right}
+.fc-table .rt-act .el-del{border:1px solid #ccd6e2;background:#fff;margin-left:4px}
+.fc-pill{display:inline-block;font-size:10px;font-weight:600;padding:1px 8px;border-radius:999px;background:#f0f4f8;color:#66788d;white-space:nowrap}
+.fc-pill.up{background:#fff3dc;color:#9a5b00}
+.fc-pill.down{background:#e6f4ec;color:#2e7d52}

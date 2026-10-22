@@ -3,6 +3,9 @@ import { createFormPicker } from './form-picker.js';
 import { renderControl } from './form-render.js';
 import { openBuilder } from './form-builder.js';
 import { mountEligibility, eligibilityIssues } from './eligibility.js';
+import { mountRater, raterIssues } from './rater.js';
+import { mountFactors, factorIssues } from './factors.js';
+import { mountFormula, formulaIssues } from './formula.js';
 import {
   QUESTION_TYPES,
   QUESTION_HAS_OPTIONS,
@@ -35,7 +38,7 @@ const versionId = new URLSearchParams(location.search).get('id');
 
 const state = { product: null, version: null, library: [], acordForms: [], release: null, open: new Set(), dirty: false };
 const readOnly = () => state.version?.status === 'Published';
-// Step 2 = coverage configuration, step 3 = questions, step 4 = eligibility rules.
+// Step 2 = coverage configuration, step 3 = questions, step 4 = eligibility rules, step 5 = rater setup, step 6 = rating factors, step 7 = premium formula.
 const stepNow = () => state.step ?? 2;
 const components = () => state.version.components;
 
@@ -76,18 +79,37 @@ const markClean = () => {
 };
 
 // Update the per-coverage badges and the overall progress without re-rendering (keeps input focus).
+const paintStrip = () => {
+  const all = allCoverages(components());
+  const done = all.filter((cov) => !coverageIssues(cov, allowedStates()).length).length;
+  el('bulkBar').innerHTML = `<div class="grow"><div class="line"><strong>${done} of ${all.length} coverages complete</strong><span class="muted" style="margin:0">${all.length - done} to go</span></div>
+      <div class="ws-bar" style="height:8px;margin:0"><div id="progressBar" style="width:${all.length ? Math.round((done / all.length) * 100) : 0}%"></div></div></div>
+    <label><input type="checkbox" id="attOnly"${state.attention ? ' checked' : ''}> Show only coverages that need attention</label>`;
+};
 const refreshStatus = () => {
   const all = allCoverages(components());
-  let done = 0;
   all.forEach((cov) => {
-    const issues = coverageIssues(cov, allowedStates());
-    if (!issues.length) done += 1;
-    const badge = host.querySelector(`[data-status="${CSS.escape(cov.id)}"]`);
-    if (!badge) return;
-    badge.className = `badge sum-status ${issues.length ? 'warn' : 'ok'}`;
-    badge.textContent = issues.length ? `Needs ${issues[0]}${issues.length > 1 ? ` +${issues.length - 1}` : ''}` : 'Complete';
+    const { ok, tag } = nodeInfo(cov);
+    const node = host.querySelector(`[data-node="${CSS.escape(cov.id)}"]`);
+    if (node) {
+      node.querySelector('.dot').className = `dot${ok ? ' ok' : ''}`;
+      const t = node.querySelector('.tag');
+      t.className = `tag${ok ? ' ok' : ''}`;
+      t.textContent = tag;
+    }
+    const pill = host.querySelector(`[data-status="${CSS.escape(cov.id)}"]`);
+    if (pill) {
+      pill.className = `pill ${ok ? 'ok' : 'warn'}`;
+      pill.textContent = ok ? 'Complete' : tag;
+    }
+    if (cov.id === state.selCov) {
+      tabsFor(cov).forEach((t) => {
+        const dot = host.querySelector(`[data-tabkey="${t.key}"] .dot`);
+        if (dot) dot.className = `dot ${tabTone(cov, t)}`;
+      });
+    }
   });
-  el('progress').textContent = all.length ? `${done} of ${all.length} coverages complete` : '';
+  if (stepNow() === 2 && el('bulkBar').querySelector('#progressBar')) paintStrip();
 };
 
 // ---- path helpers: "components.0.classes.1.coverages.2.limit" ----
@@ -282,26 +304,6 @@ const optionBody = (cov, def, base) => {
   }
 };
 
-const hasValue = (cov, def) => {
-  const v = cov[def.field];
-  switch (def.kind) {
-    case 'amount':
-      return v !== '';
-    case 'deductible':
-      return Boolean(v?.type);
-    case 'jurisdiction':
-      return false;
-    case 'claims':
-      return Boolean(v?.lossBasis || v?.benefitBasis || v?.notice?.value !== '');
-    case 'yesno':
-    case 'select':
-    case 'text':
-      return Boolean(v);
-    default:
-      return Array.isArray(v) && v.length > 0;
-  }
-};
-
 // Other coverages that have been started, offered as a copy source.
 const copySources = (cov) =>
   state.version.components.flatMap((c) =>
@@ -313,92 +315,114 @@ const copySources = (cov) =>
 // Fields that "Copy settings" carries over.
 const COPY_FIELDS = ['party', 'limitOverride', ...CONFIG_OPTIONS.map((o) => o.field)];
 
-// One separate, numbered section per configuration option, in catalogue order.
-const panel = (cov, def, required, n, base) => {
-  const head = `<span class="cfg-num">${n}</span>
-    <span class="cfg-title"><strong>${esc(def.label)}</strong><span class="muted">${esc(def.hint)}</span></span>
-    <span class="cfg-tag ${required ? 'req-tag' : 'opt-tag'}">${required ? 'Required' : 'Optional'}</span>`;
-  if (required) return `<section class="cfg-panel"><div class="cfg-head">${head}</div><div class="cfg-body">${optionBody(cov, def, base)}</div></section>`;
-  const k = `opt-${cov.id}-${def.key}`;
-  return `<details class="cfg-panel" data-key="${k}"${state.open.has(k) || hasValue(cov, def) ? ' open' : ''}>
-    <summary class="cfg-head">${head}</summary><div class="cfg-body">${optionBody(cov, def, base)}</div></details>`;
-};
+// ---- Step 2: coverage tree on the left, the selected coverage's settings in tabs on the right ----
+state.selCov = null;
+state.cfgTab = 'party';
+state.attention = false;
+state.covFilter = '';
 
-// "Requires A, B" badge from the same-class relationships set on the Components page.
-const requiresBadge = (cov, ci, ki) => {
-  const siblings = components()[ci].classes[ki].coverages;
-  const names = (cov.requires ?? []).map((id) => siblings.find((c) => c.coverageId === id)?.name).filter(Boolean);
-  return names.length ? `<span class="badge" title="If this coverage is bought, these must be bought too">Requires ${esc(names.join(', '))}</span>` : '';
-};
+const covRefs = () =>
+  components().flatMap((comp, ci) => comp.classes.flatMap((klass, ki) => klass.coverages.map((cov, vi) => ({ cov, comp, klass, ci, ki, vi }))));
 
-const coverageBox = (cov, ci, ki, vi) => {
-  const base = `components.${ci}.classes.${ki}.coverages.${vi}`;
-  const sources = readOnly() ? [] : copySources(cov);
-  // Third-party coverages don't attach to a risk object, so that section is left out.
+// The tabs of one coverage: who it protects first, then each configuration section it uses.
+const tabsFor = (cov) => {
   const options = (cov.configOptions ?? DEFAULT_OPTIONS).filter((o) => !(o.key === 'riskObjects' && cov.party === 'Third party'));
+  return [{ key: 'party', label: 'Who is protected?' }, ...options.map((o) => ({ key: o.key, label: optionDef(o.key)?.label ?? o.key, required: o.required })).filter((t) => optionDef(t.key))];
+};
 
-  const partyPanel = `<section class="cfg-panel start"><div class="cfg-head">
-      <span class="cfg-num">★</span>
-      <span class="cfg-title"><strong>Who does this coverage protect?</strong><span class="muted">${cov.party ? 'You can change this at any time.' : 'Answer this first — the rest of the configuration depends on it.'}</span></span>
-      <span class="cfg-tag req-tag">Required</span></div>
-    <div class="cfg-body"><div class="wiz-options">${PARTIES.map(
-      (p) => `<label class="wiz-option${cov.party === p.value ? ' selected' : ''}"><input type="radio" name="${base}.party" data-path="${base}.party" value="${p.value}"${cov.party === p.value ? ' checked' : ''}>
-        <span><strong>${p.value}</strong><br>${esc(p.hint)}</span></label>`,
-    ).join('')}</div></div></section>`;
+// A tab shows a warning dot while the coverage still needs something in that section.
+const tabTone = (cov, tab) => {
+  const issues = coverageIssues(cov, allowedStates());
+  if (tab.key === 'party') return cov.party ? 'ok' : 'warn';
+  if (!cov.party) return 'off';
+  const label = tab.label.toLowerCase();
+  return issues.some((i) => i === label || i === `${label} override`) ? 'warn' : 'ok';
+};
 
-  const panels = options
-    .map((o, i) => {
-      const def = optionDef(o.key);
-      return def ? panel(cov, def, o.required, i + 1, base) : '';
+const nodeInfo = (cov) => {
+  const issues = coverageIssues(cov, allowedStates());
+  return { ok: !issues.length, tag: issues.length ? `Needs ${issues[0]}` : 'Done' };
+};
+
+const treeNode = (r) => {
+  const { ok, tag } = nodeInfo(r.cov);
+  return `<button type="button" class="cc-node" data-act="sel-cov" data-id="${esc(r.cov.id)}" data-node="${esc(r.cov.id)}" data-name="${esc(r.cov.name.toLowerCase())}" aria-current="${r.cov.id === state.selCov}">
+    <span class="dot${ok ? ' ok' : ''}"></span><span class="nm">${esc(r.cov.name)}</span><span class="tag${ok ? ' ok' : ''}">${esc(tag)}</span></button>`;
+};
+
+const coverageTree = () => {
+  const term = state.covFilter.trim().toLowerCase();
+  const html = components()
+    .map((comp, ci) => {
+      const classes = comp.classes
+        .map((klass, ki) => {
+          const nodes = klass.coverages
+            .map((cov, vi) => ({ cov, comp, klass, ci, ki, vi }))
+            .filter((r) => (!state.attention || !nodeInfo(r.cov).ok) && (!term || r.cov.name.toLowerCase().includes(term)));
+          return nodes.length ? `<div class="cc-cls"><div class="ws-sub">${esc(klass.name)}</div>${nodes.map(treeNode).join('')}</div>` : '';
+        })
+        .join('');
+      return classes ? `<div><div class="cc-comp">${esc(comp.name)} <span>· ${esc(comp.lob)}</span></div>${classes}</div>` : '';
     })
     .join('');
-
-  const bits = [];
-  if (cov.limit !== '' && cov.limit != null) bits.push(`${money(cov.limit)} limit`);
-  bits.push(`${options.length} ${options.length === 1 ? 'section' : 'sections'}`);
-
-  return `<details class="cov-box" data-key="${esc(cov.id)}"${state.open.has(cov.id) ? ' open' : ''}>
-    <summary>
-      <strong>${esc(cov.name)}</strong>
-      ${cov.party ? `<span class="badge">${esc(cov.party)}</span>` : ''}
-      ${cov.mandatory ? '<span class="badge warn" title="Mandatory to sell">Required to sell</span>' : ''}
-      ${requiresBadge(cov, ci, ki)}
-      <span class="sum-meta">${bits.join(' · ')}</span>
-      <span class="badge sum-status" data-status="${esc(cov.id)}"></span>
-    </summary>
-    <div class="cov-body">
-      ${
-        sources.length
-          ? `<div class="copy-bar"><span class="muted" style="margin:0">Save time: start from another coverage's settings.</span>
-              <select class="search-box" id="copy-${esc(cov.id)}" aria-label="Copy settings from"><option value="">Choose a coverage…</option>${sources.map((x) => `<option value="${esc(x.id)}">${esc(x.label)}</option>`).join('')}</select>
-              <button class="action" type="button" data-act="copy" data-id="${esc(cov.id)}">Copy settings</button></div>`
-          : ''
-      }
-      <div class="cfg-stack">
-        ${partyPanel}
-        ${cov.party ? panels : ''}
-        ${cov.party && !options.length ? '<div class="wiz-note">This coverage has no configuration sections. Choose some on the Coverage page if it needs any.</div>' : ''}
-        ${cov.party ? '<div class="plan-note">Rating plan: attached in the next phase.</div>' : ''}
-      </div>
-    </div>
-  </details>`;
+  return `<nav class="cc-tree" aria-label="Coverages"><input class="search-box" type="search" data-ccsearch placeholder="Find a coverage…" aria-label="Find a coverage" value="${esc(state.covFilter)}">
+    <div data-cctree>${html || '<div class="cc-empty" style="padding:12px">No coverages match.</div>'}</div></nav>`;
 };
 
-const componentCard = (comp, ci) => `<section class="card comp-card">
-  <div class="page-header" style="margin-bottom:6px">
-    <div><h2 style="margin:0">${esc(comp.name)}</h2><span class="badge">${esc(comp.lob)}</span></div>
-  </div>
-  ${
-    comp.classes
-      .map(
-        (k, ki) => `<div class="card section-card">
-          <div class="section-head"><h3>Class of business: ${esc(k.name)}</h3><span class="badge">${k.coverages.length} ${k.coverages.length === 1 ? 'coverage' : 'coverages'}</span></div>
-          ${k.coverages.map((cov, vi) => coverageBox(cov, ci, ki, vi)).join('') || '<div class="wiz-note">No coverages attached to this class of business.</div>'}
-        </div>`,
-      )
-      .join('') || '<div class="wiz-note">No classes of business yet. Go back to Components to add some.</div>'
-  }
-</section>`;
+const partyBody = (cov, base) => `<div class="cc-intro"><strong>Who is protected?</strong><span>${cov.party ? 'You can change this at any time.' : 'Asked first. The rest of the configuration depends on it.'}</span></div>
+  <div class="wiz-options">${PARTIES.map(
+    (p) => `<label class="wiz-option${cov.party === p.value ? ' selected' : ''}"><input type="radio" name="${base}.party" data-path="${base}.party" value="${p.value}"${cov.party === p.value ? ' checked' : ''}>
+      <span><strong>${p.value}</strong><br>${esc(p.hint)}</span></label>`,
+  ).join('')}</div>`;
+
+const coverageDetail = (r) => {
+  const { cov, comp, klass, ci, ki, vi } = r;
+  const base = `components.${ci}.classes.${ki}.coverages.${vi}`;
+  const tabs = tabsFor(cov);
+  if (!tabs.some((t) => t.key === state.cfgTab) || !cov.party) state.cfgTab = 'party';
+  const idx = tabs.findIndex((t) => t.key === state.cfgTab);
+  const tab = tabs[idx];
+  const next = tabs[idx + 1];
+  const def = optionDef(tab.key);
+  const sources = readOnly() ? [] : copySources(cov);
+  const { ok, tag } = nodeInfo(cov);
+  const body = tab.key === 'party'
+    ? partyBody(cov, base)
+    : `<div class="cc-intro"><strong>${esc(def.label)} <span class="cfg-tag ${tab.required ? 'req-tag' : 'opt-tag'}" style="margin-left:6px">${tab.required ? 'Required' : 'Optional'}</span></strong><span>${esc(def.hint)}</span></div>${optionBody(cov, def, base)}`;
+  return `<section class="cc-detail" aria-label="Coverage settings">
+    <div class="cc-head">
+      <div><h2>${esc(cov.name)}</h2><div class="sub">${esc(comp.name)} › ${esc(klass.name)}${cov.mandatory ? ' · Required to sell' : ''}${(cov.requires ?? []).length ? ' · ' + requiresText(cov, ci, ki) : ''}</div></div>
+      <div class="actions"><span class="pill ${ok ? 'ok' : 'warn'}" data-status="${esc(cov.id)}">${esc(ok ? 'Complete' : tag)}</span></div>
+    </div>
+    <div class="cc-tabs" role="tablist" aria-label="Settings">${tabs
+      .map((t) => `<button type="button" role="tab" class="cc-tab" data-act="cfg-tab" data-tab="${t.key}" data-tabkey="${t.key}" aria-selected="${t.key === state.cfgTab}"${!cov.party && t.key !== 'party' ? ' disabled' : ''}><span class="dot ${tabTone(cov, t)}"></span>${esc(t.label)}</button>`)
+      .join('')}</div>
+    <div class="cc-body"><fieldset class="plain" style="margin:0;padding:0;border:0;min-width:0"${readOnly() ? ' disabled' : ''}>
+      ${sources.length && tab.key === 'party'
+        ? `<div class="copy-bar" style="margin-bottom:16px"><span class="muted" style="margin:0">Save time: start from another coverage's settings.</span>
+            <select class="search-box" id="copy-${esc(cov.id)}" aria-label="Copy settings from"><option value="">Choose a coverage…</option>${sources.map((x) => `<option value="${esc(x.id)}">${esc(x.label)}</option>`).join('')}</select>
+            <button class="action" type="button" data-act="copy" data-id="${esc(cov.id)}">Copy settings</button></div>`
+        : ''}
+      ${body}
+    </fieldset></div>
+    <div class="cc-foot"><span class="muted">Changes in this panel save with the draft</span>
+      ${next && cov.party ? `<button type="button" class="action" style="border-color:#b84804;color:#b84804;font-weight:600" data-act="next-tab" data-tab="${next.key}">Next: ${esc(next.label)} →</button>` : ''}</div>
+  </section>`;
+};
+
+const requiresText = (cov, ci, ki) => {
+  const siblings = components()[ci].classes[ki].coverages;
+  const names = (cov.requires ?? []).map((id) => siblings.find((c) => c.coverageId === id)?.name).filter(Boolean);
+  return names.length ? `Requires ${esc(names.join(', '))}` : '';
+};
+
+const coverageWorkspace = () => {
+  const refs = covRefs();
+  if (!refs.length) return '<div class="card"><div class="wiz-note">No coverages attached. Go back to Components to add some.</div></div>';
+  if (!refs.some((r) => r.cov.id === state.selCov)) state.selCov = (refs.find((r) => !nodeInfo(r.cov).ok) ?? refs[0]).cov.id;
+  const cur = refs.find((r) => r.cov.id === state.selCov);
+  return `<div class="ws-cols">${coverageTree()}${coverageDetail(cur)}</div>`;
+};
 
 // ---- Questions: product-level and coverage-specific ----
 const coverageScopes = () =>
@@ -509,34 +533,63 @@ const render = () => {
   el('status').textContent = version.status;
   const step = stepNow();
   el('saveDraft').hidden = readOnly();
-  el('publish').hidden = readOnly() || step !== 4;
+  el('publish').hidden = readOnly() || step !== 7;
   el('toQuestions').hidden = step !== 2;
   el('toEligibility').hidden = step !== 3;
   el('backToConfig').hidden = step !== 3;
   el('backToQuestions').hidden = step !== 4;
+  el('toRater').hidden = step !== 4;
+  el('backToEligibility').hidden = step !== 5;
+  el('toFactors').hidden = step !== 5;
+  el('toFormula').hidden = step !== 6;
+  el('backToFactors').hidden = step !== 7;
+  el('backToRater').hidden = step !== 6;
   el('backBtn').hidden = step !== 2;
   el('stepCfg').classList.toggle('active', step === 2);
   el('stepQ').classList.toggle('active', step === 3);
   el('stepE').classList.toggle('active', step === 4);
-  const stepName = { 2: 'Coverage configuration', 3: 'Questions', 4: 'Eligibility rules' }[step];
+  el('stepR').classList.toggle('active', step === 5);
+  el('stepF').classList.toggle('active', step === 6);
+  el('stepX').classList.toggle('active', step === 7);
+  const stepName = { 2: 'Coverage configuration', 3: 'Questions', 4: 'Eligibility rules', 5: 'Rater setup', 6: 'Rating factors', 7: 'Premium formula' }[step];
   el('stepMeta').textContent = stepName;
   document.title = `${stepName} · ${product.name} ${version.label}`;
   el('bulkBar').hidden = !components().length || step !== 2;
+  if (step === 2) paintStrip();
+  [...document.querySelectorAll('.steps-row .step')].forEach((node, i) => node.classList.toggle('done', i + 1 < step));
   el('newVersion').hidden = !readOnly();
   el('components').innerHTML =
     (readOnly()
       ? `<div class="notice-bar"><div class="notice-content"><strong>This version is published and read-only.</strong><p>Published as release ${esc(state.release?.releaseNumber ?? '')}. Create a new version to make changes.</p></div></div>`
       : '') +
-    (step === 4
+    (step >= 4
       ? ''
       : step === 3
       ? questionsSection()
-      : `<fieldset class="plain"${readOnly() ? ' disabled' : ''}>${components().map(componentCard).join('') || '<div class="card"><div class="wiz-note">No components yet.</div></div>'}</fieldset>`);
+      : coverageWorkspace());
   el('eligibilityHost').hidden = step !== 4;
   if (step === 4) {
     mountEligibility(el('eligibilityHost'), { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty });
   } else {
     el('eligibilityHost').innerHTML = '';
+  }
+  el('raterHost').hidden = step !== 5;
+  if (step === 5) {
+    mountRater(el('raterHost'), { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty });
+  } else {
+    el('raterHost').innerHTML = '';
+  }
+  el('factorsHost').hidden = step !== 6;
+  if (step === 6) {
+    mountFactors(el('factorsHost'), { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty });
+  } else {
+    el('factorsHost').innerHTML = '';
+  }
+  el('formulaHost').hidden = step !== 7;
+  if (step === 7) {
+    mountFormula(el('formulaHost'), { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty });
+  } else {
+    el('formulaHost').innerHTML = '';
   }
   mountPickers();
   showSaveState();
@@ -545,9 +598,10 @@ const render = () => {
 
 // ---- persistence ----
 const saveDraft = async () => {
-  state.version = await api('product_versions').update(state.version.id, { components: components(), questions: state.version.questions, updatedAt: new Date().toISOString() });
+  state.version = await api('product_versions').update(state.version.id, { components: components(), questions: state.version.questions, territories: state.version.territories, updatedAt: new Date().toISOString() });
   normalizeComponents(components());
   state.version.questions ??= [];
+  state.version.territories ??= [];
   if (state.product.status === 'Draft') {
     state.product = await api('products').update(state.product.id, { lineOfBusiness: lobsOf(components()).join(', '), version: state.version.label });
   }
@@ -555,13 +609,21 @@ const saveDraft = async () => {
 };
 
 const publish = async () => {
-  const errors = [...validateVersion(components(), state.version.questions, allowedStates()), ...eligibilityIssues(state.version, state.acordForms)];
+  const eligibility = eligibilityIssues(state.version, state.acordForms);
+  const rater = raterIssues(state.version, state.acordForms);
+  const factors = factorIssues(state.version, state.acordForms);
+  const formulas = formulaIssues(state.version, state.acordForms);
+  const errors = [...validateVersion(components(), state.version.questions, allowedStates()), ...eligibility, ...rater, ...factors, ...formulas];
   showErrors(errors);
   if (errors.length) {
     // Open every coverage that still needs work so the gaps are visible.
     components().forEach((c) => c.classes.forEach((k) => k.coverages.forEach((cov) => coverageIssues(cov, allowedStates()).length && state.open.add(cov.id))));
     // Coverage problems are fixed on step 2; question problems on step 3.
     if (allCoverages(components()).some((cov) => coverageIssues(cov, allowedStates()).length)) state.step = 2;
+    else if (eligibility.length) state.step = 4;
+    else if (rater.length) state.step = 5;
+    else if (factors.length) state.step = 6;
+    else if (formulas.length) state.step = 7;
     render();
     return;
   }
@@ -573,12 +635,13 @@ const publish = async () => {
     versionId: version.id,
     label: version.label,
     releaseNumber: `${product.productId}-${version.label}`,
-    snapshot: { components: clone(components()), questions: clone(state.version.questions ?? []), jurisdiction: clone(state.version.jurisdiction ?? { excludedStates: [] }) },
+    snapshot: { components: clone(components()), questions: clone(state.version.questions ?? []), territories: clone(state.version.territories ?? []), jurisdiction: clone(state.version.jurisdiction ?? { excludedStates: [] }) },
     publishedAt: now,
   });
   state.version = await api('product_versions').update(version.id, {
     components: components(),
     questions: state.version.questions,
+    territories: state.version.territories,
     status: 'Published',
     publishedAt: now,
     updatedAt: now,
@@ -626,6 +689,12 @@ const refreshQuestionPreview = (t) => {
 host.addEventListener('input', (event) => {
   const t = event.target;
   if (inPicker(t)) return;
+  if (t.dataset.ccsearch !== undefined) {
+    state.covFilter = t.value;
+    const term = t.value.trim().toLowerCase();
+    host.querySelectorAll('.cc-node').forEach((n) => (n.hidden = Boolean(term) && !n.dataset.name.includes(term)));
+    return;
+  }
   if (t.dataset.qopts) {
     setPath(t.dataset.qopts, t.value.split('\n').map((o) => o.trim()).filter(Boolean));
     refreshQuestionPreview(t);
@@ -708,6 +777,16 @@ host.addEventListener('click', (event) => {
   const btn = event.target.closest('[data-act]');
   if (!btn || inPicker(btn)) return;
   const { act, path } = btn.dataset;
+  if (act === 'sel-cov') {
+    state.selCov = btn.dataset.id;
+    state.cfgTab = 'party';
+    return render();
+  }
+  if (act === 'cfg-tab' || act === 'next-tab') {
+    state.cfgTab = btn.dataset.tab;
+    render();
+    return window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   if (act === 'add-row') walk(path).push(JSON.parse(btn.dataset.row));
   else if (act === 'del-row') walk(path).splice(Number(btn.dataset.i), 1);
   else if (act === 'q-add') walk(path).push(blankQuestion());
@@ -734,12 +813,11 @@ host.addEventListener('click', (event) => {
   render();
 });
 
-const setAllOpen = (open) => {
-  components().forEach((c) => c.classes.forEach((k) => k.coverages.forEach((cov) => (open ? state.open.add(cov.id) : state.open.delete(cov.id)))));
+el('bulkBar').addEventListener('change', (event) => {
+  if (event.target.id !== 'attOnly') return;
+  state.attention = event.target.checked;
   render();
-};
-el('expandAll').addEventListener('click', () => setAllOpen(true));
-el('collapseAll').addEventListener('click', () => setAllOpen(false));
+});
 
 // Move between the coverage configuration step and the questions step.
 document.addEventListener('click', (event) => {
@@ -803,13 +881,13 @@ window.addEventListener('beforeunload', (event) => {
     state.acordForms = acordForms;
     normalizeComponents(components());
     state.version.questions ??= [];
+    state.version.territories ??= [];
     Object.assign(state, { product, release });
     components().forEach((c) =>
       c.classes.forEach((k) => k.coverages.forEach((cov) => hydrateCoverage(cov, state.library.find((l) => l.id === cov.coverageId), !readOnly()))),
     );
-    // Open the first coverage so the page isn't a wall of collapsed rows.
-    const first = components().flatMap((c) => c.classes.flatMap((k) => k.coverages))[0];
-    if (first) state.open.add(first.id);
+    const wanted = Number(new URLSearchParams(location.search).get('step'));
+    if (wanted >= 2 && wanted <= 7) state.step = wanted;
     render();
   } catch (err) {
     el('title').textContent = 'Product version not found';

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Version · VeriDex Product Studio</title>
   <link rel="stylesheet" href="/theme/theme.css">
+  <link rel="stylesheet" href="/theme/workspace.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -49,9 +50,19 @@
 
       <div class="steps-bar">
         <div class="steps-row">
-          <div class="step active"><i>1</i><span><strong>Components</strong> · Classes of business and coverages</span></div>
+          <div class="step active"><i>1</i><span><strong>Components</strong><small> · Classes of business and coverages</small></span></div>
           <span class="step-divider">›</span>
-          <div class="step"><i>2</i><span><strong>Coverage configuration</strong> · Limits, questions and forms</span></div>
+          <div class="step"><i>2</i><span><a href="#" data-goto="2"><strong>Coverage configuration</strong></a><small> · Limits, claims, forms and more</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step"><i>3</i><span><a href="#" data-goto="3"><strong>Questions</strong></a><small> · Product-level and coverage-specific</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step"><i>4</i><span><a href="#" data-goto="4"><strong>Eligibility rules</strong></a><small> · Refer, warn or decline on answers</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step"><i>5</i><span><a href="#" data-goto="5"><strong>Rater setup</strong></a><small> · Base rate for each coverage</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step"><i>6</i><span><a href="#" data-goto="6"><strong>Rating factors</strong></a><small> · Values that depend on answers</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step"><i>7</i><span><a href="#" data-goto="7"><strong>Premium formula</strong></a><small> · Combine base rate and factors</small></span></div>
         </div>
       </div>
 
@@ -59,17 +70,6 @@
         <div class="notice-content"><strong id="noticeText"></strong></div>
       </div>
       <div class="val-summary" id="errors" hidden></div>
-
-      <section class="card" id="addComponent">
-        <div class="section-meta">Components</div>
-        <h2>Add a component</h2>
-        <p class="muted">A component is a part of the product, such as Auto Liability, Property or Cyber. Give it a name and one line of business, then add the classes of business it covers and attach coverages to each one. Coverage details are configured on the next page.</p>
-        <div class="toolbar">
-          <input class="search-box" id="compName" placeholder="Component name, e.g. Auto Liability" maxlength="60" aria-label="Component name">
-          <select class="search-box" id="compLob" aria-label="Line of business"></select>
-          <button class="action primary" type="button" id="addComp">+ Add component</button>
-        </div>
-      </section>
 
       <div id="components"></div>
 

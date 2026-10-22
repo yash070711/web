@@ -6,7 +6,11 @@
   <title>Coverage Configuration · VeriDex Product Studio</title>
   <link rel="stylesheet" href="/theme/theme.css">
   <link rel="stylesheet" href="/theme/acord.css">
+  <link rel="stylesheet" href="/theme/workspace.css">
   <link rel="stylesheet" href="/theme/eligibility.css">
+  <link rel="stylesheet" href="/theme/rater.css">
+  <link rel="stylesheet" href="/theme/factors.css">
+  <link rel="stylesheet" href="/theme/formula.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -51,13 +55,19 @@
 
       <div class="steps-bar">
         <div class="steps-row">
-          <div class="step"><i>1</i><span><a id="backStep" href="#"><strong>Components</strong></a> · Components, classes of business and coverages</span></div>
+          <div class="step"><i>1</i><span><a id="backStep" href="#"><strong>Components</strong></a><small> · Components, classes of business and coverages</small></span></div>
           <span class="step-divider">›</span>
-          <div class="step active" id="stepCfg"><i>2</i><span><a href="#" data-step="2"><strong>Coverage configuration</strong></a> · Limits, claims, forms and more</span></div>
+          <div class="step active" id="stepCfg"><i>2</i><span><a href="#" data-step="2"><strong>Coverage configuration</strong></a><small> · Limits, claims, forms and more</small></span></div>
           <span class="step-divider">›</span>
-          <div class="step" id="stepQ"><i>3</i><span><a href="#" data-step="3"><strong>Questions</strong></a> · Product-level and coverage-specific</span></div>
+          <div class="step" id="stepQ"><i>3</i><span><a href="#" data-step="3"><strong>Questions</strong></a><small> · Product-level and coverage-specific</small></span></div>
           <span class="step-divider">›</span>
-          <div class="step" id="stepE"><i>4</i><span><a href="#" data-step="4"><strong>Eligibility rules</strong></a> · Refer, warn or decline on answers</span></div>
+          <div class="step" id="stepE"><i>4</i><span><a href="#" data-step="4"><strong>Eligibility rules</strong></a><small> · Refer, warn or decline on answers</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step" id="stepR"><i>5</i><span><a href="#" data-step="5"><strong>Rater setup</strong></a><small> · Base rate for each coverage</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step" id="stepF"><i>6</i><span><a href="#" data-step="6"><strong>Rating factors</strong></a><small> · Values that depend on answers</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step" id="stepX"><i>7</i><span><a href="#" data-step="7"><strong>Premium formula</strong></a><small> · Combine base rate and factors</small></span></div>
         </div>
       </div>
 
@@ -66,14 +76,13 @@
       </div>
       <div class="val-summary" id="errors" hidden></div>
 
-      <div class="actions" id="bulkBar" style="margin-bottom:12px">
-        <button class="action" type="button" id="expandAll">Expand all</button>
-        <button class="action" type="button" id="collapseAll">Collapse all</button>
-        <span class="muted" id="progress" style="margin:0 0 0 8px"></span>
-      </div>
+      <section class="cc-strip" id="bulkBar" aria-label="Progress"></section>
 
       <div id="components"></div>
       <div id="eligibilityHost"></div>
+      <div id="raterHost"></div>
+      <div id="factorsHost"></div>
+      <div id="formulaHost"></div>
 
       <div class="taskbar">
         <div class="taskbar-row">
@@ -81,12 +90,18 @@
             <a class="action" id="backBtn" href="#">← Components</a>
             <button class="action" type="button" id="backToConfig" data-step="2" hidden>← Coverage configuration</button>
             <button class="action" type="button" id="backToQuestions" data-step="3" hidden>← Questions</button>
+            <button class="action" type="button" id="backToEligibility" data-step="4" hidden>← Eligibility rules</button>
+            <button class="action" type="button" id="backToRater" data-step="5" hidden>← Rater setup</button>
+            <button class="action" type="button" id="backToFactors" data-step="6" hidden>← Rating factors</button>
             <span class="muted" id="saveState" style="margin:0"></span>
           </span>
           <span class="actions">
             <button class="action" type="button" id="saveDraft" hidden>Save draft</button>
             <button class="action primary" type="button" id="toQuestions" data-step="3">Continue to questions →</button>
             <button class="action primary" type="button" id="toEligibility" data-step="4" hidden>Continue to eligibility rules →</button>
+            <button class="action primary" type="button" id="toRater" data-step="5" hidden>Continue to rater setup →</button>
+            <button class="action primary" type="button" id="toFactors" data-step="6" hidden>Continue to rating factors →</button>
+            <button class="action primary" type="button" id="toFormula" data-step="7" hidden>Continue to premium formula →</button>
             <button class="action primary" type="button" id="publish" hidden>Validate &amp; publish</button>
           </span>
         </div>
