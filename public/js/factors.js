@@ -11,6 +11,8 @@
 // A factor is { id, name, code, mode: 'choice' | 'range', byAnswer: [ { id, answer, value, note } ],
 //               bands: [ { id, min, max, value } ], fallback }. A question holds a list; the screen edits the first.
 import { esc, newId } from './product-model.js';
+import { questionHandle, formHandle } from './question-uses.js';
+import { openAddQuestion } from './question-add.js';
 
 const TYPE_LABEL = { text: 'Short text', textarea: 'Long text', number: 'Number', currency: 'Currency', date: 'Date', yesno: 'Yes / No', radio: 'Multiple choice', checkboxes: 'Checkboxes', dropdown: 'Dropdown', checkbox: 'Single checkbox' };
 const YESNO = ['yesno', 'checkbox'];
@@ -19,7 +21,7 @@ const RANGE = ['number', 'currency'];
 export const factorKind = (type) => (CHOICE.includes(type) ? 'choice' : RANGE.includes(type) ? 'range' : null);
 const answersOf = (q) => (YESNO.includes(q.type) ? ['Yes', 'No'] : (q.options ?? []).filter(Boolean));
 const CODE = /^[A-Za-z][A-Za-z0-9_]*$/;
-const RESERVED = ['baserate'];
+const RESERVED = ['baserate', 'accountfactor']; // names the premium formula already uses
 
 const blank = (v) => v === '' || v == null;
 const num = (v) => (blank(v) ? NaN : Number(v));
@@ -36,6 +38,7 @@ export const collectFactorGroups = (version, acordForms) => {
     key, group, label: q.label?.trim() || 'Untitled question', type: q.type, kind: factorKind(q.type), answers: answersOf(q),
     factors: () => q.factors ?? [],
     setFactors: (list) => (q.factors = list),
+    ...questionHandle(q),
   });
   const product = version.questions ?? [];
   if (product.length) groups.push({ id: 'product', title: 'Product questions', sub: 'Asked for the whole product', qs: product.map((q) => ({ ...own(q, `p:${q.id}`), group: 'Product questions' })) });
@@ -57,7 +60,7 @@ export const collectFactorGroups = (version, acordForms) => {
             sub: `Attached to ${cov.name}`,
             qs: qs.map((q) => {
               const rk = `${form.id}:${q.id}`;
-              return { ...own(q, `f:${cov.id}:${rk}`), group: `Form › ${form.name}`, factors: () => cov.formFactors?.[rk] ?? [], setFactors: (list) => ((cov.formFactors ??= {})[rk] = list) };
+              return { ...own(q, `f:${cov.id}:${rk}`), group: `Form › ${form.name}`, factors: () => cov.formFactors?.[rk] ?? [], setFactors: (list) => ((cov.formFactors ??= {})[rk] = list), ...formHandle(cov, rk, q) };
             }),
           });
         });
@@ -97,7 +100,7 @@ export const factorProblems = (entry, f, counts) => {
   const code = String(f.code ?? '').trim();
   if (!code) add('code', 'code', 'error', 'Enter a code.');
   else if (!CODE.test(code)) add('code', 'code', 'error', 'Use letters, digits and underscore, starting with a letter.');
-  else if (RESERVED.includes(code.toLowerCase())) add('code', 'code', 'error', 'BaseRate is reserved for the base rate. Choose another code.');
+  else if (RESERVED.includes(code.toLowerCase())) add('code', 'code', 'error', 'This code is reserved by the premium formula (BaseRate, AccountFactor). Choose another code.');
   else if ((counts.get(code.toLowerCase()) ?? 0) > 1) add('code', 'code', 'error', `The code ${code} is already used by another factor.`);
   checkValue(add, 'fallback', f.fallback, 'fallback');
   if (f.mode !== entry.kind) add('general', 'general', 'error', 'This factor no longer fits the question type. Remove it and define it again.');
@@ -185,7 +188,9 @@ export const mountFactors = (host, { getVersion, getForms, readOnly, onChange })
   const $ = (sel) => root.querySelector(sel);
   const changed = () => onChange?.();
   const groups = () => collectFactorGroups(getVersion(), getForms());
-  const entries = () => groups().flatMap((g) => g.qs.map((q) => ({ ...q, g })));
+  // Only the questions marked as rating factors are part of this stage.
+  const inStage = (q) => q.uses().rating;
+  const entries = () => groups().flatMap((g) => g.qs.filter(inStage).map((q) => ({ ...q, g })));
   const current = () => entries().find((q) => q.key === ui.selected);
   const first = (e) => e.factors()[0];
   const problemsFor = (e, f) => factorProblems(e, f, codeCounts(groups()));
@@ -220,6 +225,7 @@ export const mountFactors = (host, { getVersion, getForms, readOnly, onChange })
     let shown = 0;
     groups().forEach((g) => {
       const items = g.qs.filter((q) => {
+        if (!inStage(q)) return false;
         if (term && !q.label.toLowerCase().includes(term)) return false;
         if (ui.filter === 'all') return true;
         if (!q.kind) return false;
@@ -235,7 +241,7 @@ export const mountFactors = (host, { getVersion, getForms, readOnly, onChange })
           : `<div class="el-q fc-off">${label}</div>`;
       }).join('');
     });
-    $('#fc-list').innerHTML = shown ? html : '<div class="el-empty">No questions match.</div>';
+    $('#fc-list').innerHTML = shown ? html : `<div class="el-empty">${entries().length ? 'No questions match.' : 'No questions in this stage yet.<br>Use “Add question” to bring one in.'}</div>`;
   };
 
   // ---- editor ----
@@ -306,7 +312,7 @@ export const mountFactors = (host, { getVersion, getForms, readOnly, onChange })
   const renderEditor = () => {
     const e = current();
     if (!e) {
-      $('#fc-editor').innerHTML = '<div class="el-none" style="margin:16px">There are no questions to put a factor on yet. Add questions on the Questions step, or attach forms to a coverage.</div>';
+      $('#fc-editor').innerHTML = '<div class="el-none" style="margin:16px">There are no rating-factor questions yet. Use “Add question” to bring one in from the form or the product, or create a new one.</div>';
       return;
     }
     const f = first(e);
@@ -372,7 +378,7 @@ export const mountFactors = (host, { getVersion, getForms, readOnly, onChange })
     <div class="el-grid">
       <section class="el-panel" aria-label="Questions">
         <div class="el-panelh">
-          <h3 class="el-title">Questions</h3>
+          <h3 class="el-title">Questions <button type="button" class="action" id="fc-addq" style="float:right"${readOnly() ? ' disabled' : ''}>+ Add question</button></h3>
           <input class="el-search" id="fc-search" type="search" placeholder="Search questions" aria-label="Search questions">
           <div class="el-seg" id="fc-filter">
             <button type="button" data-f-f="all" aria-pressed="true">All</button>
@@ -387,6 +393,21 @@ export const mountFactors = (host, { getVersion, getForms, readOnly, onChange })
   refreshAll();
 
   root.addEventListener('click', (ev) => {
+    if (ev.target.closest('#fc-addq')) {
+      return openAddQuestion({
+        use: 'rating',
+        groups: groups(),
+        getVersion,
+        onAdded: (keys) => {
+          ui.selected = keys[0];
+          ui.test = '';
+          ui.filter = 'all';
+          root.querySelectorAll('#fc-filter button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fF === 'all')));
+          changed();
+          refreshAll();
+        },
+      });
+    }
     const el = ev.target.closest('[data-f-q],[data-f-act],[data-f-f]');
     if (!el) return;
     const d = el.dataset;

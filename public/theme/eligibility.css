@@ -67,3 +67,4 @@
 .el-result[class*="t-"]{background:var(--tint);color:var(--tone);border-color:transparent}
 .el-result small{display:block;font-weight:400;margin-top:1px}
 :focus-visible.el-q,.el-chip:focus-visible,.el-oc:focus-visible{outline:3px solid #b84804;outline-offset:2px}
+.el-uses{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;padding-bottom:12px;border-bottom:1px solid #eef1f5}.el-uses .el-h3{margin-right:4px}

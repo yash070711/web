@@ -305,6 +305,19 @@ export const validateVersion = (components, productQuestions = [], states = US_S
   return errors;
 };
 
+// Product questions get new ids when a version is copied, so everything that points at one has to follow:
+// the questions a rating reads, and the questions the account-level factor conditions test.
+// `idMap`: old product question id -> new id. Changes `components` and `accountFactor` in place.
+export const remapQuestionRefs = (components, accountFactor, idMap) => {
+  const remap = (source) => (source?.startsWith('product:') ? `product:${idMap.get(source.slice(8)) ?? ''}` : source);
+  allCoverages(components).forEach((cov) => {
+    if (!cov.rating) return;
+    cov.rating.valueSource = remap(cov.rating.valueSource);
+    (cov.rating.territory?.dimensions ?? []).forEach((d) => d.source && (d.source = remap(d.source)));
+  });
+  (accountFactor?.factors ?? []).forEach((f) => (f.conditions ?? []).forEach((c) => (c.ref = remap(c.ref))));
+};
+
 // Start a new draft from a version's content. Returns the existing draft instead if one is already open.
 export const startNextVersion = async (api, productId, versions, from) => {
   const own = versions.filter((v) => v.productRef === productId);
@@ -314,14 +327,8 @@ export const startNextVersion = async (api, productId, versions, from) => {
   const now = new Date().toISOString();
   const questions = cloneQuestions(from.questions);
   const components = cloneComponents(from.components);
-  // Product questions get new ids in the copy, so ratings that point at one must follow.
-  const idMap = new Map((from.questions ?? []).map((q, i) => [q.id, questions[i].id]));
-  const remap = (source) => (source?.startsWith('product:') ? `product:${idMap.get(source.slice(8)) ?? ''}` : source);
-  allCoverages(components).forEach((cov) => {
-    if (!cov.rating) return;
-    cov.rating.valueSource = remap(cov.rating.valueSource);
-    (cov.rating.territory?.dimensions ?? []).forEach((d) => d.source && (d.source = remap(d.source)));
-  });
+  const accountFactor = clone(from.accountFactor ?? null);
+  remapQuestionRefs(components, accountFactor, new Map((from.questions ?? []).map((q, i) => [q.id, questions[i].id])));
   const version = await api('product_versions').create({
     productRef: productId,
     label: nextLabel(latest.label),
@@ -329,6 +336,7 @@ export const startNextVersion = async (api, productId, versions, from) => {
     components,
     questions,
     territories: clone(from.territories ?? []),
+    accountFactor,
     jurisdiction: clone(from.jurisdiction ?? { excludedStates: [] }),
     createdAt: now,
     updatedAt: now,

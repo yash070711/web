@@ -1,5 +1,6 @@
 import { api } from './api.js';
 import { esc, renderPreviewSection, renderInstance, numberInstances } from './form-render.js';
+import { USES } from './question-uses.js';
 
 // Shared Acord form builder. Any page can open it with openBuilder(); it takes over
 // the #view-builder container and hands control back to `returnTo` when finished.
@@ -54,6 +55,7 @@ function renderQuestion(q, qi, count) {
         <textarea class="ac-textarea" data-f="options" placeholder="Option 1&#10;Option 2">${esc(q.options.join('\n'))}</textarea></div>` : ''}
       <div class="ac-q-meta">
         <label class="ac-choice"><input type="checkbox" data-f="required"${q.required ? ' checked' : ''}> Required</label>
+        ${USES.map((u) => `<label class="ac-choice" title="${esc(u.hint)}"><input type="checkbox" data-f="use-${u.key}"${q.uses?.[u.key] ? ' checked' : ''}> ${u.label}</label>`).join('')}
         <span class="spacer"></span>
         <button class="ac-icon" data-act="q-up"${qi === 0 ? ' disabled' : ''}>↑</button>
         <button class="ac-icon" data-act="q-down"${qi === count - 1 ? ' disabled' : ''}>↓</button>
@@ -181,7 +183,8 @@ root.addEventListener('input', (e) => {
   if (!qEl || !t.dataset.f) return;
   const q = s.questions[qEl.dataset.q];
   const f = t.dataset.f;
-  if (f === 'required') q.required = t.checked;
+  if (f.startsWith('use-')) (q.uses ??= { eligibility: false, rating: false, account: false })[f.slice(4)] = t.checked;
+  else if (f === 'required') q.required = t.checked;
   else if (f === 'options') q.options = t.value.split('\n').map((o) => o.trim()).filter(Boolean);
   else q[f] = t.value;
   if (f === 'type') render();

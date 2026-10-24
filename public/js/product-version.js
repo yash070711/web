@@ -198,6 +198,13 @@ const render = () => {
   el('status').textContent = version.status;
   el('saveDraft').hidden = readOnly();
   el('newVersion').hidden = !readOnly();
+  // Fronting products are rated by the MGU: no rater, factors or formula steps for the carrier.
+  document.querySelectorAll('[data-goto]').forEach((link) => {
+    if (Number(link.dataset.goto) < 5 || product.arrangement !== 'Fronting') return;
+    const step = link.closest('.step');
+    step.hidden = true;
+    step.previousElementSibling.hidden = true;
+  });
   el('toConfig').textContent = readOnly() ? 'View coverage configuration →' : 'Continue to coverage configuration →';
   if (!components().some((c) => c.id === state.selComp)) state.selComp = components()[0]?.id ?? null;
   const ci = components().findIndex((c) => c.id === state.selComp);

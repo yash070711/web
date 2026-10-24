@@ -1,12 +1,15 @@
 // Eligibility rules (step 4 of the product version workspace).
-// Lists every question in the version (product, coverage and attached-form questions) and lets the
-// product owner attach rules to them: "when the answer is ..., refer / decline / warn".
+// Lists the questions marked as eligibility questions (product, coverage and attached-form questions; see
+// question-uses.js) and lets the product owner attach rules to them: "when the answer is ..., refer / decline / warn".
+// Questions can be added to this stage from the stage itself.
 //
 // Storage (so rules survive copying a version):
 //   product + coverage questions -> question.rules
 //   form questions               -> coverage.formRules["<formId>:<questionId>"]
 // A rule is { id, op, value, value2, outcome, message }.
 import { esc, newId } from './product-model.js';
+import { USES, questionHandle, formHandle, toggleUse, confirmUntick } from './question-uses.js';
+import { openAddQuestion } from './question-add.js';
 
 export const OUTCOMES = {
   senior: { label: 'Refer to Senior Underwriter', short: 'Senior UW', hint: 'Cannot bind until approved', rank: 3 },
@@ -17,8 +20,8 @@ export const OUTCOMES = {
 // Only referral is offered for now; the other outcomes stay defined so they can be switched on later by adding them here.
 const OUT_ORDER = ['uw'];
 
-const TYPE_LABEL = { text: 'Short text', textarea: 'Long text', number: 'Number', currency: 'Currency', date: 'Date', yesno: 'Yes / No', radio: 'Multiple choice', checkboxes: 'Checkboxes', dropdown: 'Dropdown', checkbox: 'Single checkbox' };
-const OPS = {
+export const TYPE_LABEL = { text: 'Short text', textarea: 'Long text', number: 'Number', currency: 'Currency', date: 'Date', yesno: 'Yes / No', radio: 'Multiple choice', checkboxes: 'Checkboxes', dropdown: 'Dropdown', checkbox: 'Single checkbox' };
+export const OPS = {
   number: [['lt', 'is less than'], ['lte', 'is at most'], ['gt', 'is greater than'], ['gte', 'is at least'], ['eq', 'is exactly'], ['neq', 'is not'], ['between', 'is between']],
   date: [['before', 'is before'], ['after', 'is after'], ['olderYears', 'is more than … years ago'], ['withinYears', 'is within the last … years']],
   yesno: [['is', 'is']],
@@ -26,7 +29,7 @@ const OPS = {
   multi: [['any', 'includes any of'], ['all', 'includes all of'], ['none', 'includes none of']],
   text: [['eq', 'is exactly'], ['contains', 'contains'], ['blank', 'is left blank']],
 };
-const family = (t) => ({ number: 'number', currency: 'number', date: 'date', yesno: 'yesno', checkbox: 'yesno', radio: 'choice', dropdown: 'choice', checkboxes: 'multi' })[t] ?? 'text';
+export const family = (t) => ({ number: 'number', currency: 'number', date: 'date', yesno: 'yesno', checkbox: 'yesno', radio: 'choice', dropdown: 'choice', checkboxes: 'multi' })[t] ?? 'text';
 
 // ---- Collecting the questions of a version ----
 // Each entry: { key, label, type, options, rules() -> array, setRules(array) }
@@ -38,6 +41,7 @@ export const collectGroups = (version, acordForms) => {
     options: q.options ?? [],
     rules: () => q.rules ?? [],
     setRules: (list) => (q.rules = list),
+    ...questionHandle(q),
   });
   const product = version.questions ?? [];
   if (product.length) {
@@ -69,6 +73,7 @@ export const collectGroups = (version, acordForms) => {
                 options: q.options ?? [],
                 rules: () => cov.formRules?.[rk] ?? [],
                 setRules: (list) => ((cov.formRules ??= {})[rk] = list),
+                ...formHandle(cov, rk, q),
               };
             }),
           });
@@ -79,7 +84,7 @@ export const collectGroups = (version, acordForms) => {
   return groups;
 };
 
-const ruleDone = (r, q) => {
+export const ruleDone = (r, q) => {
   const f = family(q.type);
   if (f === 'text' && r.op === 'blank') return true;
   if (f === 'choice' || f === 'multi') return Array.isArray(r.value) && r.value.length > 0;
@@ -106,7 +111,7 @@ const sentence = (q, r) => {
   else cond = `${opLabel(q, r)} <b>${esc(fmtVal(q, r.value))}</b>`;
   return `If the answer to “${esc(q.label)}” ${cond}, then <b>${OUTCOMES[r.outcome].label.toLowerCase()}</b>.`;
 };
-const matches = (q, r, a) => {
+export const matches = (q, r, a) => {
   const f = family(q.type);
   if (f === 'text') {
     const s = String(a ?? '').trim().toLowerCase();
@@ -134,19 +139,46 @@ const matches = (q, r, a) => {
   if (r.op === 'all') return r.value.every((v) => have.includes(v));
   return !r.value.some((v) => have.includes(v));
 };
-const defaultRule = (q) => {
+export const defaultRule = (q) => {
   const f = family(q.type);
   return { id: newId(), op: OPS[f][0][0], value: f === 'yesno' ? 'Yes' : f === 'choice' || f === 'multi' ? [] : '', value2: '', outcome: 'uw', message: '' };
 };
 
 // ---- The page ----
+// The value controls of a condition. `at` says how the controls announce themselves, because eligibility rules and
+// account-level factor conditions listen for different data attributes.
+const ELIGIBILITY_ATTRS = {
+  chip: (act, r, v) => `data-e-act="${act}" data-e-rule="${r.id}" data-e-v="${v}"`,
+  input: (field, r) => `data-e-in="${field}" data-e-rule="${r.id}"`,
+};
+export const valueInputs = (q, r, at = ELIGIBILITY_ATTRS) => {
+  const f = family(q.type);
+  if (f === 'text' && r.op === 'blank') return '';
+  if (f === 'yesno') return `<div class="el-chips">${['Yes', 'No'].map((v) => `<button type="button" class="el-chip" ${at.chip('val', r, v)} aria-pressed="${r.value === v}">${v}</button>`).join('')}</div>`;
+  if (f === 'choice' || f === 'multi') {
+    return q.options.length
+      ? `<div class="el-chips">${q.options.map((v) => `<button type="button" class="el-chip" ${at.chip('toggle', r, esc(v))} aria-pressed="${r.value.includes(v)}">${esc(v)}</button>`).join('')}</div>`
+      : '<span class="muted">This question has no options yet. Add some on the Questions step.</span>';
+  }
+  if (f === 'date' && (r.op === 'before' || r.op === 'after')) return `<input class="el-f" type="date" ${at.input('value', r)} value="${esc(r.value)}" aria-label="Date">`;
+  if (f === 'number') {
+    const pre = q.type === 'currency' ? '$ ' : '';
+    return `${pre}<input class="el-f num" type="number" step="any" ${at.input('value', r)} value="${esc(r.value)}" aria-label="Value">` +
+      (r.op === 'between' ? ` and ${pre}<input class="el-f num" type="number" step="any" ${at.input('value2', r)} value="${esc(r.value2)}" aria-label="Upper value">` : '');
+  }
+  if (f === 'date') return `<input class="el-f num" type="number" min="0" ${at.input('value', r)} value="${esc(r.value)}" aria-label="Years"> years`;
+  return `<input class="el-f wide" type="text" ${at.input('value', r)} value="${esc(r.value)}" aria-label="Value">`;
+};
+
 export const mountEligibility = (host, { getVersion, getForms, readOnly, onChange }) => {
   host.innerHTML = '';
   const root = document.createElement('div');
   host.append(root);
 
   const ui = { selected: null, filter: 'all', query: '', answers: {}, groups: [] };
-  const entries = () => ui.groups.flatMap((g) => g.qs.map((q) => ({ ...q, group: g })));
+  // Only the questions marked as eligibility questions are part of this stage.
+  const inStage = (q) => q.uses().eligibility;
+  const entries = () => ui.groups.flatMap((g) => g.qs.filter(inStage).map((q) => ({ ...q, group: g })));
   const current = () => entries().find((q) => q.key === ui.selected);
   const $ = (sel) => root.querySelector(sel);
   const findRule = (id) => current()?.rules().find((r) => r.id === id);
@@ -163,7 +195,7 @@ export const mountEligibility = (host, { getVersion, getForms, readOnly, onChang
     const flat = qs.flatMap((q) => q.rules());
     const stat = (v, l, cls = '') => `<div class="el-stat ${cls}"><b>${v}</b><span>${l}</span></div>`;
     $('#el-strip').innerHTML =
-      stat(qs.length, 'questions in this product') + stat(qs.filter((q) => q.rules().length).length, 'questions with rules') +
+      stat(qs.length, 'questions in this stage') + stat(qs.filter((q) => q.rules().length).length, 'questions with rules') +
       stat(flat.length, 'refer to underwriter rules', 'warn');
   };
 
@@ -172,33 +204,13 @@ export const mountEligibility = (host, { getVersion, getForms, readOnly, onChang
     let html = '';
     let shown = 0;
     ui.groups.forEach((g) => {
-      const items = g.qs.filter((q) => (!term || q.label.toLowerCase().includes(term)) && (ui.filter === 'all' || (ui.filter === 'with') === q.rules().length > 0));
+      const items = g.qs.filter((q) => inStage(q) && (!term || q.label.toLowerCase().includes(term)) && (ui.filter === 'all' || (ui.filter === 'with') === q.rules().length > 0));
       if (!items.length) return;
       shown += items.length;
       html += `<div class="el-grp"><strong>${esc(g.title)}</strong><small>${esc(g.sub)}</small></div>` +
         items.map((q) => `<button type="button" class="el-q" data-e-q="${esc(q.key)}" aria-current="${q.key === ui.selected}"><span class="el-qmain"><span class="el-qlabel">${esc(q.label)}</span><span class="el-qtype">${TYPE_LABEL[q.type] ?? 'Text'}</span></span><span class="el-pills">${pills(q)}</span></button>`).join('');
     });
-    $('#el-list').innerHTML = shown ? html : '<div class="el-empty">No questions match.</div>';
-  };
-
-  const valueInputs = (q, r) => {
-    const f = family(q.type);
-    const id = r.id;
-    if (f === 'text' && r.op === 'blank') return '';
-    if (f === 'yesno') return `<div class="el-chips">${['Yes', 'No'].map((v) => `<button type="button" class="el-chip" data-e-act="val" data-e-rule="${id}" data-e-v="${v}" aria-pressed="${r.value === v}">${v}</button>`).join('')}</div>`;
-    if (f === 'choice' || f === 'multi') {
-      return q.options.length
-        ? `<div class="el-chips">${q.options.map((v) => `<button type="button" class="el-chip" data-e-act="toggle" data-e-rule="${id}" data-e-v="${esc(v)}" aria-pressed="${r.value.includes(v)}">${esc(v)}</button>`).join('')}</div>`
-        : '<span class="muted">This question has no options yet. Add some on the Questions step.</span>';
-    }
-    if (f === 'date' && (r.op === 'before' || r.op === 'after')) return `<input class="el-f" type="date" data-e-in="value" data-e-rule="${id}" value="${esc(r.value)}" aria-label="Date">`;
-    if (f === 'number') {
-      const pre = q.type === 'currency' ? '$ ' : '';
-      return `${pre}<input class="el-f num" type="number" step="any" data-e-in="value" data-e-rule="${id}" value="${esc(r.value)}" aria-label="Value">` +
-        (r.op === 'between' ? ` and ${pre}<input class="el-f num" type="number" step="any" data-e-in="value2" data-e-rule="${id}" value="${esc(r.value2)}" aria-label="Upper value">` : '');
-    }
-    if (f === 'date') return `<input class="el-f num" type="number" min="0" data-e-in="value" data-e-rule="${id}" value="${esc(r.value)}" aria-label="Years"> years`;
-    return `<input class="el-f wide" type="text" data-e-in="value" data-e-rule="${id}" value="${esc(r.value)}" aria-label="Value">`;
+    $('#el-list').innerHTML = shown ? html : `<div class="el-empty">${entries().length ? 'No questions match.' : 'No questions in this stage yet.<br>Use “Add question” to bring one in.'}</div>`;
   };
 
   const sentenceText = (q, r) => (ruleDone(r, q) ? sentence(q, r) : 'Fill in the condition to see this rule as a sentence.');
@@ -231,7 +243,7 @@ export const mountEligibility = (host, { getVersion, getForms, readOnly, onChang
   const renderEditor = () => {
     const q = current();
     if (!q) {
-      $('#el-editor').innerHTML = '<div class="el-none" style="margin:16px">There are no questions to set rules on yet. Add questions on the Questions step, or attach forms to a coverage.</div>';
+      $('#el-editor').innerHTML = '<div class="el-none" style="margin:16px">There are no eligibility questions yet. Use “Add question” to bring one in from the form or the product, or create a new one.</div>';
       return;
     }
     const f = family(q.type);
@@ -241,6 +253,7 @@ export const mountEligibility = (host, { getVersion, getForms, readOnly, onChang
       <div class="el-edh"><h2>${esc(q.label)}</h2>
         <div class="el-meta"><span class="el-tag">${TYPE_LABEL[q.type] ?? 'Text'}</span><span>${esc(q.group.title)} · ${esc(q.group.sub)}</span></div></div>
       <fieldset class="plain el-edb"${dis}>
+        <div class="el-uses"><span class="el-h3">Use this question for</span>${USES.map((u) => `<label class="ac-choice" title="${esc(u.hint)}"><input type="checkbox" data-e-use="${u.key}"${q.uses()[u.key] ? ' checked' : ''}> ${u.label}</label>`).join('')}</div>
         ${rs.length ? rs.map((r, i) => `
           <div class="el-rule">
             <div class="el-ruletop"><span class="el-h3">Rule ${i + 1}</span><button type="button" class="el-del" data-e-act="del" data-e-rule="${r.id}">Remove</button></div>
@@ -285,7 +298,7 @@ export const mountEligibility = (host, { getVersion, getForms, readOnly, onChang
     <div class="el-grid">
       <section class="el-panel" aria-label="Questions">
         <div class="el-panelh">
-          <h3 class="el-title">Questions</h3>
+          <h3 class="el-title">Questions <button type="button" class="action" id="el-addq" style="float:right"${readOnly() ? ' disabled' : ''}>+ Add question</button></h3>
           <input class="el-search" id="el-search" type="search" placeholder="Search questions" aria-label="Search questions">
           <div class="el-seg" id="el-filter">
             <button type="button" data-e-f="all" aria-pressed="true">All</button>
@@ -300,6 +313,21 @@ export const mountEligibility = (host, { getVersion, getForms, readOnly, onChang
   refreshAll();
 
   root.addEventListener('click', (e) => {
+    if (e.target.closest('#el-addq')) {
+      return openAddQuestion({
+        use: 'eligibility',
+        groups: ui.groups,
+        getVersion,
+        onAdded: (keys) => {
+          ui.groups = collectGroups(getVersion(), getForms());
+          ui.selected = keys[0];
+          ui.filter = 'all';
+          root.querySelectorAll('#el-filter button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.eF === 'all')));
+          changed();
+          refreshAll();
+        },
+      });
+    }
     const el = e.target.closest('[data-e-q],[data-e-act],[data-e-f]');
     if (!el) return;
     const d = el.dataset;
@@ -338,6 +366,18 @@ export const mountEligibility = (host, { getVersion, getForms, readOnly, onChang
 
   root.addEventListener('change', (e) => {
     const t = e.target;
+    if (t.dataset.eUse && !readOnly()) {
+      const q = current();
+      const use = t.dataset.eUse;
+      if (!t.checked && !confirmUntick(q, use)) {
+        t.checked = true;
+        return;
+      }
+      toggleUse(q, use, t.checked);
+      changed();
+      if (!inStage(q)) ui.selected = entries()[0]?.key ?? null;
+      return refreshAll();
+    }
     if (t.dataset.eOp === undefined || readOnly()) return;
     const q = current();
     const r = findRule(t.dataset.eRule);

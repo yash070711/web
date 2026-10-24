@@ -1,4 +1,5 @@
 import { esc } from './form-render.js';
+import { USES, toggleUse, confirmUntick } from './question-uses.js';
 
 // Reusable "pick Acord forms" panel: search, filter, pagination, multi-select,
 // per-form field customisation, plus optional create / edit-form hooks.
@@ -9,6 +10,7 @@ import { esc } from './form-render.js';
 //     onChange,              // called after any selection / field change
 //     onCreateForm,          // optional: show "+ Create new form"
 //     onEditForm(form),      // optional: show "Edit form" on each row
+//     useHandle(formId, questionId), // optional: shows the Eligibility / Rating factor / Account-level checks on each field
 //   });
 //   picker.setForms(newForms);  picker.render();
 
@@ -34,6 +36,15 @@ export function createFormPicker(host, opts) {
     });
   };
 
+  // One field of a form: include it, and (when the host supports it) say what it is used for.
+  const fieldHtml = (f, a, q) => {
+    const on = !a.excluded.includes(q.id);
+    const box = `<label class="ac-choice"><input type="checkbox" data-field="${esc(q.id)}"${on ? ' checked' : ''}> ${esc(q.label)}</label>`;
+    if (!opts.useHandle) return box;
+    const uses = on ? opts.useHandle(f.id, q.id).uses() : {};
+    return `<div class="cob-q">${box}<span class="cob-uses">${USES.map((u) => `<label class="ac-choice" title="${esc(u.hint)}"><input type="checkbox" data-fuse="${esc(q.id)}" data-use="${u.key}"${uses[u.key] ? ' checked' : ''}${on ? '' : ' disabled'}> ${u.short}</label>`).join('')}</span></div>`;
+  };
+
   const rowHtml = (f) => {
     const a = attachment(f.id);
     const total = questions(f).length;
@@ -53,7 +64,7 @@ export function createFormPicker(host, opts) {
         ${open ? `<div class="cob-fields">
           <div class="cob-fields-tools"><button type="button" class="ac-icon" data-act="fields-all" data-id="${esc(f.id)}">Select all</button><button type="button" class="ac-icon" data-act="fields-none" data-id="${esc(f.id)}">Clear all</button></div>
           ${f.sections.map((s) => `<div class="cob-sec"><div class="cob-sec-title">${esc(s.title)}</div>
-            <div class="cob-sec-fields">${s.questions.map((q) => `<label class="ac-choice"><input type="checkbox" data-field="${esc(q.id)}"${a.excluded.includes(q.id) ? '' : ' checked'}> ${esc(q.label)}</label>`).join('')}</div></div>`).join('')}
+            <div class="cob-sec-fields${opts.useHandle ? ' with-uses' : ''}">${s.questions.map((q) => fieldHtml(f, a, q)).join('')}</div></div>`).join('')}
         </div>` : ''}
       </div>`;
   };
@@ -116,11 +127,21 @@ export function createFormPicker(host, opts) {
       }
       changed();
       renderList();
+    } else if (t.dataset.fuse) {
+      const handle = opts.useHandle(f.id, t.dataset.fuse);
+      if (!t.checked && !confirmUntick(handle, t.dataset.use)) {
+        t.checked = true;
+        return;
+      }
+      toggleUse(handle, t.dataset.use, t.checked);
+      changed();
     } else if (t.dataset.field) {
       const a = attachment(f.id);
       a.excluded = t.checked ? a.excluded.filter((id) => id !== t.dataset.field) : [...a.excluded, t.dataset.field];
       card.querySelector('[data-count]').textContent = `${included(f)} of ${questions(f).length} fields included`;
       changed();
+      // The checks only apply to fields that are included.
+      if (opts.useHandle) card.querySelectorAll(`[data-fuse="${CSS.escape(t.dataset.field)}"]`).forEach((c) => (c.disabled = !t.checked));
     }
   });
 

@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { cloneComponents, cloneQuestions, lobsOf } from './product-model.js';
+import { cloneComponents, cloneQuestions, lobsOf, remapQuestionRefs } from './product-model.js';
 
 const productsApi = api('products');
 const orgsApi = api('organisations');
@@ -76,6 +76,9 @@ const product = () => state.products.find((p) => p.id === d().product);
 // Only a published release can be distributed; the newest one is used.
 const releaseOf = (p) =>
   state.releases.filter((r) => r.productRef === p?.id).sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)))[0];
+// A fronting product is rated by the MGU, so it can only be distributed to MGUs.
+const orgTypesFor = (p) => (p?.arrangement === 'Fronting' ? ['MGU'] : null);
+const orgAllowed = (o, p = product()) => !orgTypesFor(p) || orgTypesFor(p).includes(o.type);
 const selectedOrgs = () => state.orgs.filter((o) => d().orgs.includes(o.id));
 const currencyOptions = (current) => CURRENCIES.map((c) => `<option${c === current ? ' selected' : ''}>${c}</option>`).join('');
 const money = (value, currency) => `${currency} ${Number(value).toLocaleString()}`;
@@ -176,6 +179,7 @@ const filteredOrgs = () => {
   const q = d().search.trim().toLowerCase();
   return state.orgs.filter(
     (o) =>
+      orgAllowed(o) &&
       (d().type === 'All' || o.type === d().type) &&
       (d().status === 'All' || o.status === d().status) &&
       [o.name, o.legalName, o.type, o.lineOfBusiness, o.states].join(' ').toLowerCase().includes(q),
@@ -215,12 +219,12 @@ const refreshOrgs = () => {
 
 const renderOrgStep = () => `<div class="section-meta">Step 2 of 3</div>
   <h2>Select organisations</h2>
-  <p class="muted">Select one or more MGUs, MGAs and Brokers to distribute the product to.</p>
+  <p class="muted">${orgTypesFor(product()) ? 'This is a fronting product: the MGU sets up the rater, so it can only be distributed to MGUs.' : 'Select one or more MGUs, MGAs and Brokers to distribute the product to.'}</p>
   <div class="summary-strip">
     <div>Selected product<strong>${esc(product()?.name)}</strong></div>
     <div>Base version<strong>${esc(product()?.version)}</strong></div>
   </div>
-  <div class="chips">${ORG_TYPES.map(
+  <div class="chips">${ORG_TYPES.filter((t) => t === 'All' || !orgTypesFor(product()) || orgTypesFor(product()).includes(t)).map(
     (t) => `<button type="button" class="chip${d().type === t ? ' active' : ''}" data-type="${t}">${t === 'All' ? 'All organisations' : t}</button>`,
   ).join('')}</div>
   <div class="toolbar field-group">
@@ -417,6 +421,7 @@ const validate = () => {
   const errors = [];
   if (!d().product) errors.push('Select a product.');
   if (!d().orgs.length) errors.push('Select at least one organisation.');
+  if (selectedOrgs().some((o) => !orgAllowed(o))) errors.push('A fronting product can only be distributed to MGUs.');
   if (isDifferent()) termsPerOrg().forEach(([o, t]) => errors.push(...validateTerms(t, `${o.name}: `)));
   else errors.push(...validateTerms(terms('shared')));
   showErrors(errors);
@@ -459,24 +464,36 @@ const versionLabel = (p, o) => {
 };
 
 // A distributed version is a deep copy of the product's published release (components, coverages, rating).
-const buildVersion = (p, o) => ({
-  productRef: p.id,
-  productId: p.productId,
-  name: p.name,
-  carrier: p.carrier,
-  lineOfBusiness: p.lineOfBusiness,
-  arrangement: p.arrangement,
-  components: cloneComponents(p.release.snapshot.components),
-  questions: cloneQuestions(p.release.snapshot.questions),
-  jurisdiction: structuredClone(p.release.snapshot.jurisdiction ?? { excludedStates: [] }),
-  sourceReleaseId: p.release.id,
-  sourceVersionId: p.release.versionId,
-  baseVersion: p.release.label,
-  version: versionLabel(p, o),
-  organisationId: o.id,
-  status: 'Active',
-  createdAt: new Date().toISOString(),
-});
+const buildVersion = (p, o) => {
+  const snap = p.release.snapshot;
+  const components = cloneComponents(snap.components);
+  const questions = cloneQuestions(snap.questions);
+  const accountFactor = structuredClone(snap.accountFactor ?? null);
+  // The copy's product questions have new ids; ratings and account-level conditions must follow them.
+  remapQuestionRefs(components, accountFactor, new Map((snap.questions ?? []).map((q, i) => [q.id, questions[i].id])));
+  return {
+    productRef: p.id,
+    productId: p.productId,
+    name: p.name,
+    carrier: p.carrier,
+    lineOfBusiness: p.lineOfBusiness,
+    arrangement: p.arrangement,
+    components,
+    accountFactor,
+    territories: structuredClone(p.release.snapshot.territories ?? []),
+    // A fronting product arrives unrated: the MGU sets up the rater, factors and formula.
+    ratingStatus: p.arrangement === 'Fronting' ? 'Pending' : null,
+    questions,
+    jurisdiction: structuredClone(p.release.snapshot.jurisdiction ?? { excludedStates: [] }),
+    sourceReleaseId: p.release.id,
+    sourceVersionId: p.release.versionId,
+    baseVersion: p.release.label,
+    version: versionLabel(p, o),
+    organisationId: o.id,
+    status: 'Active',
+    createdAt: new Date().toISOString(),
+  };
+};
 
 const supersede = async (p, o, newVersion) => {
   const prior = state.versions.find((v) => v.productRef === p.id && v.organisationId === o.id && v.status === 'Active' && v.id !== newVersion.id);
@@ -542,6 +559,9 @@ el('stage').addEventListener('click', (event) => {
   const row = event.target.closest('[data-product]');
   if (row) {
     d().product = row.dataset.product;
+    // Organisations picked for a previous product may not be allowed for this one.
+    d().orgs = d().orgs.filter((id) => orgAllowed(state.orgs.find((o) => o.id === id)));
+    if (d().type !== 'All' && !orgAllowed({ type: d().type })) d().type = 'All';
     return refreshProducts();
   }
   const tab = event.target.closest('[data-tab]');

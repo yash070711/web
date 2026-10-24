@@ -75,3 +75,7 @@
 .toast.show{opacity:1;transform:translate(-50%,0)}.toast.err{background:#a3261f}
 .form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;padding-top:16px;border-top:1px solid #eef1f5}
 .cob-row .badge{font-size:9px}
+.cob-sec-fields.with-uses{grid-template-columns:1fr;gap:0}
+.cob-q{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;padding:6px 0;border-bottom:1px solid #f0f3f7}
+.cob-q:last-child{border-bottom:0}
+.cob-uses{display:flex;flex-wrap:wrap;gap:4px 14px;color:#415870}

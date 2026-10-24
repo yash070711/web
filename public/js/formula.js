@@ -3,11 +3,13 @@
 // for example: BaseRate * RADIUS * VEHICLE_AGE. A formula may use numbers, + - * / ( ), the names of the factors
 // the coverage can see, and the functions min, max and round.
 //
-// Factors a coverage can use: those on product questions, on its own questions and on its attached forms.
+// Factors a coverage can use: those on product questions, on its own questions and on its attached forms, plus the version's
+// single Account-Level Factor (AccountFactor) when one is set up. That one arrives already limited to its minimum and maximum.
 //
 // Storage: coverage.formula = { expression }.
 import { esc } from './product-model.js';
 import { collectFactorGroups, factorValue } from './factors.js';
+import { ACCOUNT_CODE, ACCOUNT_LABEL, BASE_FACTOR, isConfigured, clampFactor } from './account-factor-calc.js';
 
 const FUNCTIONS = { min: [1, Infinity, Math.min], max: [1, Infinity, Math.max], round: [1, 2, (x, d = 0) => Math.round(x * 10 ** d) / 10 ** d] };
 const BASE = 'BaseRate';
@@ -109,6 +111,8 @@ export const factorsFor = (version, cov, acordForms) => {
       const code = String(f.code ?? '').trim();
       if (code && !out.has(code.toLowerCase())) out.set(code.toLowerCase(), { code, name: f.name || code, label: q.label, entry: q, factor: f });
     })));
+  const account = version.accountFactor;
+  if (isConfigured(account)) out.set(ACCOUNT_CODE.toLowerCase(), { code: ACCOUNT_CODE, name: ACCOUNT_LABEL, label: ACCOUNT_LABEL, account: true, config: account });
   return out;
 };
 
@@ -120,7 +124,9 @@ export const formulaProblems = (cov, available) => {
   const errors = [], warns = [];
   if (parsed.error) return { errors: [parsed.error], warns, empty: false, parsed };
   const unknown = [...new Set(parsed.names.filter((n) => n.toLowerCase() !== BASE.toLowerCase() && !available.has(n.toLowerCase())))];
-  unknown.forEach((n) => errors.push(`${n} is not a factor this coverage can use. Define it on the Rating factors step, or check the spelling.`));
+  unknown.forEach((n) => errors.push(n.toLowerCase() === ACCOUNT_CODE.toLowerCase()
+    ? `${ACCOUNT_CODE} is the Account-Level Factor, which has no factors set up yet. Add them on the Rating factors step, in the Account-Level Factors tab.`
+    : `${n} is not a factor this coverage can use. Define it on the Rating factors step, or check the spelling.`));
   if (!parsed.names.some((n) => n.toLowerCase() === BASE.toLowerCase())) warns.push(`The formula does not use ${BASE}, so the base rate has no effect.`);
   if (!errors.length) {
     const env = { [BASE.toLowerCase()]: 1000, ...Object.fromEntries([...available].map(([k]) => [k, 1])) };
@@ -202,6 +208,10 @@ export const mountFormula = (host, { getVersion, getForms, readOnly, onChange })
     const base = `<label class="fm-t"><span>${BASE}</span><div class="rt-cell">$<input class="el-f num" type="number" min="0" step="any" data-x-base value="${esc(ui.base)}" placeholder="e.g. 1200" aria-label="Base rate"></div></label>`;
     return base + used.map((u) => {
       const v = ui.ans[u.code] ?? '';
+      if (u.account) {
+        const { min, max } = u.config;
+        return `<label class="fm-t"><span>${ACCOUNT_LABEL} <small>${ACCOUNT_CODE}</small></span><input class="el-f num" type="number" min="0" step="0.01" data-x-ans="${ACCOUNT_CODE}" value="${esc(v)}" placeholder="Final value, e.g. 1.30" aria-label="${ACCOUNT_LABEL}"><small class="muted" style="margin:0">Limited to ${esc(min)} – ${esc(max)}</small></label>`;
+      }
       const control = u.factor.mode === 'choice'
         ? `<select class="el-f" data-x-ans="${esc(u.code)}" aria-label="${esc(u.label)}"><option value="">Unanswered</option>${u.entry.answers.map((a) => `<option${a === v ? ' selected' : ''}>${esc(a)}</option>`).join('')}</select>`
         : `<input class="el-f num" type="number" min="0" step="any" data-x-ans="${esc(u.code)}" value="${esc(v)}" placeholder="Unanswered" aria-label="${esc(u.label)}">`;
@@ -213,6 +223,13 @@ export const mountFormula = (host, { getVersion, getForms, readOnly, onChange })
     if (blank(ui.base) || Number.isNaN(Number(ui.base))) return `<div class="el-result">Enter a base rate to see the premium.</div>`;
     const env = { [BASE.toLowerCase()]: Number(ui.base) };
     const lines = usedFactors(cov, p).map((u) => {
+      if (u.account) {
+        // The formula receives the consolidated factor, already kept between the limits.
+        const entered = blank(ui.ans[u.code]) || Number.isNaN(Number(ui.ans[u.code])) ? BASE_FACTOR : Number(ui.ans[u.code]);
+        const value = clampFactor(entered, u.config.min, u.config.max);
+        env[u.code.toLowerCase()] = value;
+        return `${esc(u.code)} = ${value.toFixed(2)} (${value === entered ? 'within the limits' : 'limited to the limits'})`;
+      }
       const hit = factorValue(u.factor, ui.ans[u.code] ?? '');
       env[u.code.toLowerCase()] = hit.value;
       return `${esc(u.code)} = ${Number.isNaN(hit.value) ? '?' : hit.value.toFixed(2)} (${esc(hit.how)})`;

@@ -1,5 +1,6 @@
 import { api } from './api.js';
 import { esc, coverageCount, startNextVersion, CARRIERS } from './product-model.js';
+import { getRole } from './role.js';
 
 const $ = (id) => document.getElementById(id);
 const state = { products: [], versions: [], distributed: [], orgs: [], dists: [] };
@@ -10,6 +11,9 @@ const versionsOf = (p) =>
 const distributedOf = (p) =>
   state.distributed.filter((v) => v.productRef === p.id).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
 const date = (value) => (value ? new Date(value).toLocaleDateString() : '—');
+
+// A fronting product is rated by the MGU it was distributed to.
+const ratingText = (v) => (v.arrangement === 'Fronting' ? (v.ratingStatus === 'Complete' ? 'Rating complete' : v.ratingStatus === 'In progress' ? 'MGU rating in progress' : 'Awaiting MGU rating') : '—');
 
 function authoredPanel(p) {
   const rows = versionsOf(p)
@@ -46,12 +50,14 @@ function distributedPanel(p) {
         <td>${esc(dist?.effectiveFrom ?? '—')}</td>
         <td>${esc(dist ? dist.effectiveTo || 'Open-ended' : '—')}</td>
         <td>${esc(date(v.createdAt))}</td>
+        <td>${esc(ratingText(v))}</td>
+        <td><a class="action" href="/coverage-config.html?dv=${encodeURIComponent(v.id)}&step=${v.arrangement === 'Fronting' ? 5 : 2}">View</a></td>
       </tr>`;
     })
     .join('');
   return `<div class="section-meta">Distributed versions</div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Version</th><th>Organisation</th><th>Status</th><th>Effective from</th><th>Effective to</th><th>Created</th></tr></thead>
+      <thead><tr><th>Version</th><th>Organisation</th><th>Status</th><th>Effective from</th><th>Effective to</th><th>Created</th><th>Rating</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>`;
 }
@@ -205,6 +211,35 @@ $('rows').addEventListener('click', async (e) => {
   }
 });
 
+// An MGU sees only what was distributed to its own organisation, and opens it to set up the rating.
+function renderMguHome(role) {
+  document.querySelector('.page-header h1').textContent = 'My products';
+  document.querySelector('.page-header .muted').textContent = `Products distributed to ${role.orgName}. For a fronting product you set up the rater, rating factors and premium formula.`;
+  $('add-btn').hidden = true;
+  document.querySelector('.metrics').hidden = true;
+  const mine = state.distributed
+    .filter((v) => v.organisationId === role.orgId && v.status === 'Active')
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const row = (v) => {
+    const fronting = v.arrangement === 'Fronting';
+    return `<tr>
+      <td><strong>${esc(v.name)}</strong></td>
+      <td>${esc(v.productId)}</td>
+      <td>${esc(v.lineOfBusiness) || '—'}</td>
+      <td>${esc(v.version)}</td>
+      <td><span class="badge">${esc(v.arrangement ?? '—')}</span></td>
+      <td>${fronting ? `<span class="badge">${esc(v.ratingStatus === 'Complete' ? 'Rating complete' : v.ratingStatus === 'In progress' ? 'Rating in progress' : 'Needs rating')}</span>` : 'Rated by the carrier'}</td>
+      <td><a class="action${fronting && v.ratingStatus !== 'Complete' ? ' primary' : ''}" href="/coverage-config.html?dv=${encodeURIComponent(v.id)}&step=${fronting ? 5 : 2}">${fronting ? 'Set up rating' : 'View'}</a></td>
+    </tr>`;
+  };
+  document.querySelector('main section.card').innerHTML = `<div class="section-meta">${esc(role.orgName)}</div>
+    <h2>Distributed to you</h2>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Product</th><th>Product ID</th><th>Line of Business</th><th>Version</th><th>Arrangement</th><th>Rating</th><th></th></tr></thead>
+      <tbody>${mine.map(row).join('') || '<tr><td colspan="7">Nothing has been distributed to your organisation yet.</td></tr>'}</tbody>
+    </table></div>`;
+}
+
 Promise.all([
   api('products').list(),
   api('product_versions').list(),
@@ -214,6 +249,7 @@ Promise.all([
 ])
   .then(([products, versions, distributed, orgs, dists]) => {
     Object.assign(state, { products, versions, distributed, orgs, dists });
-    render();
+    const role = getRole();
+    return role.role === 'MGU' ? renderMguHome(role) : render();
   })
   .catch(console.error);

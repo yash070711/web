@@ -5,7 +5,11 @@ import { openBuilder } from './form-builder.js';
 import { mountEligibility, eligibilityIssues } from './eligibility.js';
 import { mountRater, raterIssues } from './rater.js';
 import { mountFactors, factorIssues } from './factors.js';
+import { mountAccountFactors } from './account-factors.js';
+import { accountFactorIssues } from './account-factor-calc.js';
 import { mountFormula, formulaIssues } from './formula.js';
+import { getRole } from './role.js';
+import { USES, questionHandle, formHandle, toggleUse, confirmUntick } from './question-uses.js';
 import {
   QUESTION_TYPES,
   QUESTION_HAS_OPTIONS,
@@ -34,12 +38,27 @@ import {
 } from './product-model.js';
 
 const el = (id) => document.getElementById(id);
-const versionId = new URLSearchParams(location.search).get('id');
+const params = new URLSearchParams(location.search);
+// ?id= opens a product version (the carrier's draft); ?dv= opens a version distributed to an organisation.
+const versionId = params.get('id');
+const distId = params.get('dv');
+const isDist = Boolean(distId);
+const versionApi = () => api(isDist ? 'distributed_versions' : 'product_versions');
 
 const state = { product: null, version: null, library: [], acordForms: [], release: null, open: new Set(), dirty: false };
-const readOnly = () => state.version?.status === 'Published';
+// A distributed version is read-only, except that the MGU it was distributed to sets up the rating (steps 5-7) of a fronting product.
+const canRate = () => {
+  const role = getRole();
+  return isDist && fronting() && role.role === 'MGU' && role.orgId === state.version?.organisationId && state.version?.status === 'Active';
+};
+const readOnly = () => (isDist ? !(canRate() && stepNow() >= 5) : state.version?.status === 'Published');
 // Step 2 = coverage configuration, step 3 = questions, step 4 = eligibility rules, step 5 = rater setup, step 6 = rating factors, step 7 = premium formula.
 const stepNow = () => state.step ?? 2;
+// A fronting product is rated by the MGU, so the carrier never sets up the rater, factors or formula.
+const fronting = () => state.product?.arrangement === 'Fronting';
+// The carrier's own version of a fronting product stops before the rater; the MGU's distributed copy has it.
+const skipRating = () => fronting() && !isDist;
+const lastStep = () => (skipRating() ? 4 : 7);
 const components = () => state.version.components;
 
 // ---- feedback ----
@@ -64,7 +83,7 @@ const showErrors = (messages) => {
 
 const showSaveState = () => {
   const node = el('saveState');
-  if (readOnly()) node.textContent = 'Published · read-only';
+  if (readOnly()) node.textContent = isDist ? 'Read-only' : 'Published · read-only';
   else if (state.dirty) node.innerHTML = '<span class="dirty">● Unsaved changes</span>';
   else node.textContent = 'All changes saved';
 };
@@ -193,6 +212,7 @@ const questionCard = (q, i, path, count, scope = '') => {
     }
     <div class="ac-q-meta">
       <label class="ac-choice"><input type="checkbox" data-flag="${p}.required"${q.required ? ' checked' : ''}> Required</label>
+      ${USES.map((u) => `<label class="ac-choice" title="${esc(u.hint)}"><input type="checkbox" data-quse="${p}" data-use="${u.key}"${questionHandle(q).uses()[u.key] ? ' checked' : ''}> ${u.short}</label>`).join('')}
       <span class="spacer"></span>
       <button type="button" class="ac-icon" data-act="q-move" data-path="${path}" data-i="${i}" data-d="-1"${i === 0 ? ' disabled' : ''} aria-label="Move up">↑</button>
       <button type="button" class="ac-icon" data-act="q-move" data-path="${path}" data-i="${i}" data-d="1"${i === count - 1 ? ' disabled' : ''} aria-label="Move down">↓</button>
@@ -452,7 +472,7 @@ const questionsSection = () => {
   return `<section class="card" id="questionsSection">
     <div class="section-meta">Step 3</div>
     <h2>Questions <span class="badge">${total}</span></h2>
-    <p class="muted">Questions asked when this product is quoted. Attach a question to the <strong>whole product</strong>, or to <strong>one coverage</strong> so it is only asked when that coverage is selected. Use “Applies to” on a question to move it.</p>
+    <p class="muted">Questions asked when this product is quoted. Attach a question to the <strong>whole product</strong>, or to <strong>one coverage</strong> so it is only asked when that coverage is selected. Use “Applies to” on a question to move it. Tick what each question is used for: <strong>Eligibility</strong> questions appear in Eligibility rules, <strong>Rating factor</strong> questions in Rating factors. Stages can also add questions themselves.</p>
     <fieldset class="plain"${readOnly() ? ' disabled' : ''}>
       <div class="cfg-stack">
         <section class="cfg-panel start"><div class="cfg-head">
@@ -513,32 +533,70 @@ const mountPickers = () => {
       forms: state.acordForms,
       selected: cov.forms,
       onChange: markDirty,
+      useHandle: (formId, questionId) => formHandle(cov, `${formId}:${questionId}`, state.acordForms.find((f) => f.id === formId)?.sections.flatMap((s) => s.questions).find((q) => q.id === questionId)),
       onPreviewForm: (f) => previewForm(f.id, cov),
       onEditForm: (f) => editForm(f),
     }).render();
   });
 };
 
+// The banner above a read-only view.
+const lockNotice = (step) => {
+  const bar = (title, text) => `<div class="notice-bar"><div class="notice-content"><strong>${title}</strong><p>${text}</p></div></div>`;
+  if (isDist) {
+    if (!canRate()) return bar('This distributed version is read-only.', 'Only the MGU it was distributed to can set up its rating.');
+    return step < 5 ? bar('Set by the carrier.', 'You can view this part. Set up the rater, rating factors and premium formula in steps 5 to 7.') : '';
+  }
+  return readOnly()
+    ? bar('This version is published and read-only.', `Published as release ${esc(state.release?.releaseNumber ?? '')}. Create a new version to make changes.`)
+    : '';
+};
+
+// Step 6 has two tabs: the question-by-question rating factors, and the single account-level factor.
+state.ratingTab = 'rating';
+const mountFactorStep = () => {
+  const host = el('factorsHost');
+  const account = state.version.accountFactor?.factors?.length ?? 0;
+  host.innerHTML = `<div class="class-tabs" role="tablist" aria-label="Rating configuration" style="margin-bottom:14px">
+      <button type="button" role="tab" class="class-tab" data-rtab="rating" aria-selected="${state.ratingTab === 'rating'}">Rating Factors</button>
+      <button type="button" role="tab" class="class-tab" data-rtab="account" aria-selected="${state.ratingTab === 'account'}">Account-Level Factors${account ? `<span class="count">${account}</span>` : ''}</button>
+    </div><div id="factorsPane"></div>`;
+  const opts = { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty };
+  (state.ratingTab === 'account' ? mountAccountFactors : mountFactors)(el('factorsPane'), opts);
+};
+el('factorsHost').addEventListener('click', (event) => {
+  const tab = event.target.closest('[data-rtab]');
+  if (!tab || tab.dataset.rtab === state.ratingTab) return;
+  state.ratingTab = tab.dataset.rtab;
+  mountFactorStep();
+});
+
 const render = () => {
   const { product, version } = state;
-  const back = `/product-version.html?id=${encodeURIComponent(version.id)}`;
+  const back = isDist ? '/' : `/product-version.html?id=${encodeURIComponent(version.id)}`;
   document.title = `Coverage configuration · ${product.name} ${version.label}`;
   el('crumbProduct').textContent = product.name;
   el('crumbVersion').textContent = version.label;
   el('crumbVersionLink').href = back;
   el('backStep').href = back;
   el('backBtn').href = back;
+  if (isDist) el('backBtn').textContent = '← Catalogue';
   el('title').textContent = `${product.name} · ${version.label}`;
   el('subtitle').textContent = `${product.productId} · ${product.carrier} · ${product.arrangement}`;
   el('status').textContent = version.status;
   const step = stepNow();
   el('saveDraft').hidden = readOnly();
-  el('publish').hidden = readOnly() || step !== 7;
+  el('publish').hidden = (isDist ? !canRate() : readOnly()) || step !== lastStep();
+  el('publish').textContent = isDist ? 'Validate & complete rating' : 'Validate & publish';
   el('toQuestions').hidden = step !== 2;
   el('toEligibility').hidden = step !== 3;
   el('backToConfig').hidden = step !== 3;
   el('backToQuestions').hidden = step !== 4;
-  el('toRater').hidden = step !== 4;
+  el('toRater').hidden = step !== 4 || skipRating();
+  ['stepR', 'stepF', 'stepX'].forEach((id) => {
+    el(id).hidden = skipRating();
+    el(id).previousElementSibling.hidden = skipRating();
+  });
   el('backToEligibility').hidden = step !== 5;
   el('toFactors').hidden = step !== 5;
   el('toFormula').hidden = step !== 6;
@@ -557,11 +615,9 @@ const render = () => {
   el('bulkBar').hidden = !components().length || step !== 2;
   if (step === 2) paintStrip();
   [...document.querySelectorAll('.steps-row .step')].forEach((node, i) => node.classList.toggle('done', i + 1 < step));
-  el('newVersion').hidden = !readOnly();
+  el('newVersion').hidden = isDist || !readOnly();
   el('components').innerHTML =
-    (readOnly()
-      ? `<div class="notice-bar"><div class="notice-content"><strong>This version is published and read-only.</strong><p>Published as release ${esc(state.release?.releaseNumber ?? '')}. Create a new version to make changes.</p></div></div>`
-      : '') +
+    lockNotice(step) +
     (step >= 4
       ? ''
       : step === 3
@@ -581,7 +637,7 @@ const render = () => {
   }
   el('factorsHost').hidden = step !== 6;
   if (step === 6) {
-    mountFactors(el('factorsHost'), { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty });
+    mountFactorStep();
   } else {
     el('factorsHost').innerHTML = '';
   }
@@ -597,12 +653,20 @@ const render = () => {
 };
 
 // ---- persistence ----
+// Distributed versions carry their name in `version`; the page shows it where a product version shows its label.
+const withLabel = (v) => ((v.label ??= v.version), v);
+
 const saveDraft = async () => {
-  state.version = await api('product_versions').update(state.version.id, { components: components(), questions: state.version.questions, territories: state.version.territories, updatedAt: new Date().toISOString() });
+  const updatedAt = new Date().toISOString();
+  // The MGU only changes the rating; the carrier's questions stay as distributed. Editing again reopens a completed rating.
+  const changes = isDist
+    ? { components: components(), territories: state.version.territories, accountFactor: state.version.accountFactor, ratingStatus: 'In progress', updatedAt }
+    : { components: components(), questions: state.version.questions, territories: state.version.territories, accountFactor: state.version.accountFactor, updatedAt };
+  state.version = withLabel(await versionApi().update(state.version.id, changes));
   normalizeComponents(components());
   state.version.questions ??= [];
   state.version.territories ??= [];
-  if (state.product.status === 'Draft') {
+  if (!isDist && state.product.status === 'Draft') {
     state.product = await api('products').update(state.product.id, { lineOfBusiness: lobsOf(components()).join(', '), version: state.version.label });
   }
   markClean();
@@ -610,10 +674,11 @@ const saveDraft = async () => {
 
 const publish = async () => {
   const eligibility = eligibilityIssues(state.version, state.acordForms);
-  const rater = raterIssues(state.version, state.acordForms);
-  const factors = factorIssues(state.version, state.acordForms);
-  const formulas = formulaIssues(state.version, state.acordForms);
-  const errors = [...validateVersion(components(), state.version.questions, allowedStates()), ...eligibility, ...rater, ...factors, ...formulas];
+  const rater = fronting() ? [] : raterIssues(state.version, state.acordForms);
+  const factors = fronting() ? [] : factorIssues(state.version, state.acordForms);
+  const formulas = fronting() ? [] : formulaIssues(state.version, state.acordForms);
+  const account = fronting() ? [] : accountFactorIssues(state.version, state.acordForms);
+  const errors = [...validateVersion(components(), state.version.questions, allowedStates()), ...eligibility, ...rater, ...factors, ...account, ...formulas];
   showErrors(errors);
   if (errors.length) {
     // Open every coverage that still needs work so the gaps are visible.
@@ -622,7 +687,10 @@ const publish = async () => {
     if (allCoverages(components()).some((cov) => coverageIssues(cov, allowedStates()).length)) state.step = 2;
     else if (eligibility.length) state.step = 4;
     else if (rater.length) state.step = 5;
-    else if (factors.length) state.step = 6;
+    else if (factors.length || account.length) {
+      state.step = 6;
+      state.ratingTab = factors.length ? 'rating' : 'account';
+    }
     else if (formulas.length) state.step = 7;
     render();
     return;
@@ -635,13 +703,14 @@ const publish = async () => {
     versionId: version.id,
     label: version.label,
     releaseNumber: `${product.productId}-${version.label}`,
-    snapshot: { components: clone(components()), questions: clone(state.version.questions ?? []), territories: clone(state.version.territories ?? []), jurisdiction: clone(state.version.jurisdiction ?? { excludedStates: [] }) },
+    snapshot: { components: clone(components()), questions: clone(state.version.questions ?? []), territories: clone(state.version.territories ?? []), accountFactor: clone(state.version.accountFactor ?? null), jurisdiction: clone(state.version.jurisdiction ?? { excludedStates: [] }) },
     publishedAt: now,
   });
   state.version = await api('product_versions').update(version.id, {
     components: components(),
     questions: state.version.questions,
     territories: state.version.territories,
+    accountFactor: state.version.accountFactor,
     status: 'Published',
     publishedAt: now,
     updatedAt: now,
@@ -657,6 +726,26 @@ const publish = async () => {
   markClean();
   render();
   toast(`Published as release ${release.releaseNumber}.`);
+};
+
+// The MGU finishes its rating: only steps 5-7 are checked, the carrier's part was already complete when it was published.
+const completeRating = async () => {
+  const rater = raterIssues(state.version, state.acordForms);
+  const factors = factorIssues(state.version, state.acordForms);
+  const formulas = formulaIssues(state.version, state.acordForms);
+  const account = accountFactorIssues(state.version, state.acordForms);
+  showErrors([...rater, ...factors, ...account, ...formulas]);
+  if (rater.length || factors.length || account.length || formulas.length) {
+    state.step = rater.length ? 5 : factors.length || account.length ? 6 : 7;
+    if (!rater.length && (factors.length || account.length)) state.ratingTab = factors.length ? 'rating' : 'account';
+    return render();
+  }
+  if (!confirm(`Mark the rating of ${state.version.name} ${state.version.label} as complete?`)) return;
+  const now = new Date().toISOString();
+  state.version = withLabel(await versionApi().update(state.version.id, { components: components(), territories: state.version.territories, accountFactor: state.version.accountFactor, ratingStatus: 'Complete', ratedAt: now, updatedAt: now }));
+  markClean();
+  render();
+  toast('Rating complete.');
 };
 
 const guarded = (fn) => async () => {
@@ -712,7 +801,16 @@ host.addEventListener('input', (event) => {
 host.addEventListener('change', (event) => {
   const t = event.target;
   if (inPicker(t)) return;
-  if (t.dataset.check) {
+  if (t.dataset.quse) {
+    // Ticks say which stages list the question; unticking one also removes what was set up there.
+    const handle = questionHandle(walk(t.dataset.quse));
+    if (!t.checked && !confirmUntick(handle, t.dataset.use)) {
+      t.checked = true;
+      return;
+    }
+    toggleUse(handle, t.dataset.use, t.checked);
+    markDirty();
+  } else if (t.dataset.check) {
     const list = new Set(walk(t.dataset.check));
     t.checked ? list.add(t.value) : list.delete(t.value);
     setPath(t.dataset.check, [...list]);
@@ -848,7 +946,7 @@ el('publish').addEventListener(
   'click',
   guarded(async () => {
     if (state.dirty) await saveDraft();
-    await publish();
+    await (isDist ? completeRating() : publish());
   }),
 );
 
@@ -869,8 +967,14 @@ window.addEventListener('beforeunload', (event) => {
 // ---- init ----
 (async () => {
   try {
-    if (!versionId) throw new Error('No product version specified.');
-    state.version = await api('product_versions').get(versionId);
+    if (!versionId && !distId) throw new Error('No product version specified.');
+    const role = getRole();
+    if (role.role === 'MGU' && !isDist) return location.replace('/');
+    state.version = await versionApi().get(distId ?? versionId);
+    if (isDist) {
+      withLabel(state.version);
+      if (role.role === 'MGU' && state.version.organisationId !== role.orgId) throw new Error('This version was not distributed to your organisation.');
+    }
     const [product, coverages, acordForms, release] = await Promise.all([
       api('products').get(state.version.productRef),
       api('coverages').list(),
@@ -884,10 +988,11 @@ window.addEventListener('beforeunload', (event) => {
     state.version.territories ??= [];
     Object.assign(state, { product, release });
     components().forEach((c) =>
-      c.classes.forEach((k) => k.coverages.forEach((cov) => hydrateCoverage(cov, state.library.find((l) => l.id === cov.coverageId), !readOnly()))),
+      c.classes.forEach((k) => k.coverages.forEach((cov) => hydrateCoverage(cov, state.library.find((l) => l.id === cov.coverageId), !isDist && !readOnly()))),
     );
     const wanted = Number(new URLSearchParams(location.search).get('step'));
-    if (wanted >= 2 && wanted <= 7) state.step = wanted;
+    if (wanted >= 2 && wanted <= lastStep()) state.step = wanted;
+    else if (canRate()) state.step = 5;
     render();
   } catch (err) {
     el('title').textContent = 'Product version not found';
