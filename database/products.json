@@ -1,80 +1,54 @@
 [
   {
     "productId": "PRD-001",
-    "name": "Rupesh Ins",
+    "name": "Test",
     "description": "NA",
     "carrier": "Southlake Specialty Insurance Company",
     "arrangement": "Non-fronting",
     "lineOfBusiness": "Commercial Auto",
-    "version": "2026.02",
-    "status": "Published",
-    "createdOn": "Oct 15, 2026",
-    "effectiveDate": "2026-10-15",
-    "id": "c791569e-bf07-42fa-b046-c1711176259d"
+    "version": "2026.01",
+    "status": "Draft",
+    "createdOn": "Oct 27, 2026",
+    "effectiveDate": "",
+    "id": "67466f83-38b5-4e19-a2b8-b2c93d1cce58"
   },
   {
     "productId": "PRD-002",
-    "name": "FSDAF",
-    "description": "AFD",
-    "carrier": "Futuristic Risk Carrier",
+    "name": "ABS",
+    "description": "NA1",
+    "carrier": "Southlake Specialty Insurance Company",
     "arrangement": "Non-fronting",
-    "lineOfBusiness": "",
+    "lineOfBusiness": "Commercial Auto",
     "version": "2026.01",
     "status": "Draft",
-    "createdOn": "Oct 16, 2026",
+    "createdOn": "Oct 27, 2026",
     "effectiveDate": "",
-    "id": "8eb0659a-1370-437e-9a57-77c7a4ae94cc"
+    "id": "c3c78865-21d8-4de2-b6da-d92ed69bdf87"
   },
   {
     "productId": "PRD-003",
-    "name": "dfsf",
-    "description": "sfs",
-    "carrier": "Futuristic Risk Carrier",
+    "name": "Test Product",
+    "description": "NA",
+    "carrier": "Southlake Specialty Insurance Company",
     "arrangement": "Non-fronting",
-    "lineOfBusiness": "Commercial Auto",
-    "version": "2026.01",
-    "status": "Draft",
-    "createdOn": "Oct 16, 2026",
-    "effectiveDate": "",
-    "id": "c3c45b4e-b73e-43c9-856a-25e56c1e017a"
-  },
-  {
-    "productId": "PRD-004",
-    "name": "knzkl",
-    "description": "alkdlas",
-    "carrier": "Futuristic Risk Carrier",
-    "arrangement": "Fronting",
     "lineOfBusiness": "",
     "version": "2026.01",
     "status": "Draft",
-    "createdOn": "Oct 23, 2026",
+    "createdOn": "Oct 28, 2026",
     "effectiveDate": "",
-    "id": "b0cb05ee-36ac-462b-9e8b-2806969281b3"
+    "id": "a5898e28-262d-45b3-b9b7-a1690474ffe0"
   },
   {
-    "productId": "PRD-005",
-    "name": "fsdjfk",
-    "description": "sdkfds",
-    "carrier": "Futuristic Risk Carrier",
-    "arrangement": "Non-fronting",
-    "lineOfBusiness": "Commercial Auto",
-    "version": "2026.01",
-    "status": "Draft",
-    "createdOn": "Oct 23, 2026",
-    "effectiveDate": "",
-    "id": "6046fa68-17b4-4121-979c-3af1d2723f53"
-  },
-  {
-    "productId": "PRD-006",
-    "name": "Product Name",
+    "productId": "PRD-004",
+    "name": "Commercial Trucker Insurance",
     "description": "NA",
     "carrier": "Southlake Specialty Insurance Company",
     "arrangement": "Non-fronting",
     "lineOfBusiness": "Commercial Auto",
     "version": "2026.01",
     "status": "Draft",
-    "createdOn": "Oct 24, 2026",
+    "createdOn": "Oct 28, 2026",
     "effectiveDate": "",
-    "id": "380fe627-ede2-42a7-bc91-29a60e16436d"
+    "id": "06d4fa0d-bb8d-4aae-abd2-0e9e56bfcad4"
   }
 ]

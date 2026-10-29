@@ -469,8 +469,9 @@ const buildVersion = (p, o) => {
   const components = cloneComponents(snap.components);
   const questions = cloneQuestions(snap.questions);
   const accountFactor = structuredClone(snap.accountFactor ?? null);
+  const comboFactors = structuredClone(snap.comboFactors ?? []);
   // The copy's product questions have new ids; ratings and account-level conditions must follow them.
-  remapQuestionRefs(components, accountFactor, new Map((snap.questions ?? []).map((q, i) => [q.id, questions[i].id])));
+  remapQuestionRefs(components, accountFactor, new Map((snap.questions ?? []).map((q, i) => [q.id, questions[i].id])), comboFactors);
   return {
     productRef: p.id,
     productId: p.productId,
@@ -480,6 +481,7 @@ const buildVersion = (p, o) => {
     arrangement: p.arrangement,
     components,
     accountFactor,
+    comboFactors,
     territories: structuredClone(p.release.snapshot.territories ?? []),
     // A fronting product arrives unrated: the MGU sets up the rater, factors and formula.
     ratingStatus: p.arrangement === 'Fronting' ? 'Pending' : null,

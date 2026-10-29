@@ -2,13 +2,14 @@
 // Two ways in: pick questions that already exist in the product (from its forms or its own questions) and are not
 // yet in this stage, or create a new product / coverage question without leaving the stage.
 import { esc, allCoverages, blankQuestion, QUESTION_TYPES, QUESTION_HAS_OPTIONS } from './product-model.js';
-import { USES, RATING_TYPES } from './question-uses.js';
+import { USES, RATING_TYPES, ACCOUNT_TYPES, typesFor } from './question-uses.js';
 
 const TYPE_LABEL = Object.fromEntries(QUESTION_TYPES.map((t) => [t.value, t.label]));
 
 // groups: [{ title, sub, qs: [{ key, label, type, uses(), setUses() }] }], every question of the version.
 // onAdded(keys) runs after the changes are made; the stage then refreshes itself.
-export const openAddQuestion = ({ use, groups, getVersion, onAdded }) => {
+// coverageId (optional, library coverage id): a new question can then be attached to the product or to that coverage only.
+export const openAddQuestion = ({ use, groups, getVersion, onAdded, coverageId = null }) => {
   const stage = USES.find((u) => u.key === use);
   const ui = {
     tab: 'existing',
@@ -16,7 +17,7 @@ export const openAddQuestion = ({ use, groups, getVersion, onAdded }) => {
     picked: new Set(),
     cats: { eligibility: false, rating: false, account: false, [use]: true },
     scope: 'product',
-    draft: blankQuestion(),
+    draft: { ...blankQuestion(), type: typesFor(use)?.[0] ?? 'text' },
     errors: [],
   };
   const dlg = document.createElement('dialog');
@@ -26,10 +27,13 @@ export const openAddQuestion = ({ use, groups, getVersion, onAdded }) => {
   const scopes = () => [
     { value: 'product', label: 'Whole product' },
     ...getVersion().components.flatMap((c) =>
-      c.classes.flatMap((k) => k.coverages.map((cov) => ({ value: cov.id, label: `${c.name} › ${k.name} › ${cov.name}` }))),
+      c.classes.flatMap((k) => k.coverages.filter((cov) => !coverageId || cov.coverageId === coverageId).map((cov) => ({ value: cov.id, label: `${c.name} › ${k.name} › ${cov.name}` }))),
     ),
   ];
-  const fits = (q) => use !== 'rating' || RATING_TYPES.includes(q.type);
+  const allowed = typesFor(use);
+  const fits = (q) => !allowed || allowed.includes(q.type);
+  // Why a question cannot carry the category it is being added for, or ''.
+  const misfit = (q, cats) => (cats.rating && !RATING_TYPES.includes(q.type) ? 'which cannot carry a rating factor' : cats.account && !ACCOUNT_TYPES.includes(q.type) ? 'which cannot be used in an account-level factor (it needs a choice, Yes / No, number or currency answer)' : '');
   // Questions not yet in this stage.
   const available = () => {
     const term = ui.query.trim().toLowerCase();
@@ -50,7 +54,7 @@ export const openAddQuestion = ({ use, groups, getVersion, onAdded }) => {
         ${list.length
           ? list.map((g) => `<div class="ws-sub" style="margin-top:8px">${esc(g.title)} <small>${esc(g.sub)}</small></div>` +
               g.qs.map((q) => `<label class="check-row"><input type="checkbox" data-aq-pick="${esc(q.key)}"${ui.picked.has(q.key) ? ' checked' : ''}><span><strong>${esc(q.label || 'Untitled question')}</strong><small>${esc(TYPE_LABEL[q.type] ?? 'Text')}</small></span></label>`).join('')).join('')
-          : `<div class="wiz-note" style="margin:10px 0">${ui.query ? 'No questions match.' : `Every ${use === 'rating' ? 'suitable ' : ''}question is already in this stage. Create a new one instead.`}</div>`}
+          : `<div class="wiz-note" style="margin:10px 0">${ui.query ? 'No questions match.' : `Every ${allowed ? 'suitable ' : ''}question is already in this stage. Create a new one instead.`}</div>`}
       </div>`;
   };
 
@@ -62,7 +66,7 @@ export const openAddQuestion = ({ use, groups, getVersion, onAdded }) => {
       <div class="field full"><label for="aq-label">Question text *</label>
         <input class="search-box" id="aq-label" data-aq-f="label" maxlength="200" value="${esc(q.label)}" autocomplete="off"></div>
       <div class="field"><label for="aq-type">Answer type</label>
-        <select class="search-box" id="aq-type" data-aq-type>${QUESTION_TYPES.map((t) => `<option value="${t.value}"${t.value === q.type ? ' selected' : ''}>${t.label}</option>`).join('')}</select></div>
+        <select class="search-box" id="aq-type" data-aq-type>${QUESTION_TYPES.filter((t) => !allowed || allowed.includes(t.value)).map((t) => `<option value="${t.value}"${t.value === q.type ? ' selected' : ''}>${t.label}</option>`).join('')}</select></div>
       <div class="field"><label>&nbsp;</label><label class="ac-choice"><input type="checkbox" data-aq-req${q.required ? ' checked' : ''}> Required</label></div>
       ${QUESTION_HAS_OPTIONS.includes(q.type) ? `<div class="field full"><label for="aq-opts">Options — one per line *</label>
         <textarea class="search-box" id="aq-opts" data-aq-opts rows="4" placeholder="Option 1&#10;Option 2">${esc(q.options.join('\n'))}</textarea></div>` : ''}
@@ -99,7 +103,7 @@ export const openAddQuestion = ({ use, groups, getVersion, onAdded }) => {
     const on = Object.entries(ui.cats).filter(([, v]) => v).map(([k]) => k);
     if (ui.tab === 'existing') {
       if (!ui.picked.size) errors.push('Pick at least one question.');
-      if (ui.cats.rating) [...ui.picked].map(find).filter((q) => q && !RATING_TYPES.includes(q.type)).forEach((q) => errors.push(`“${q.label}” has a ${TYPE_LABEL[q.type] ?? 'text'} answer, which cannot carry a rating factor.`));
+      [...ui.picked].map(find).filter(Boolean).forEach((q) => misfit(q, ui.cats) && errors.push(`“${q.label}” has a ${TYPE_LABEL[q.type] ?? 'text'} answer, ${misfit(q, ui.cats)}.`));
       ui.errors = errors;
       if (errors.length) return paint();
       const keys = [...ui.picked];
@@ -118,6 +122,7 @@ export const openAddQuestion = ({ use, groups, getVersion, onAdded }) => {
     else if (list.some((x) => String(x.label).trim().toLowerCase() === q.label.trim().toLowerCase())) errors.push('A question with this text already exists there. Add it from the existing questions instead.');
     if (QUESTION_HAS_OPTIONS.includes(q.type) && !q.options.length) errors.push('Add at least one option.');
     if (ui.cats.rating && !RATING_TYPES.includes(q.type)) errors.push('A rating factor needs a choice, Yes / No, number or currency answer.');
+    if (ui.cats.account && !ACCOUNT_TYPES.includes(q.type)) errors.push('An account-level factor needs a choice, Yes / No, number or currency answer.');
     ui.errors = errors;
     if (errors.length) return paint();
     const made = { ...q, label: q.label.trim(), uses: Object.fromEntries(USES.map((u) => [u.key, ui.cats[u.key]])) };

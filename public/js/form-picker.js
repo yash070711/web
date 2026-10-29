@@ -1,4 +1,5 @@
 import { esc } from './form-render.js';
+import { formFor, attachForm, ensureVersion, hasNewerVersion, versionLabel } from './form-versions.js';
 import { USES, toggleUse, confirmUntick } from './question-uses.js';
 
 // Reusable "pick Acord forms" panel: search, filter, pagination, multi-select,
@@ -22,7 +23,12 @@ export function createFormPicker(host, opts) {
   const state = { q: '', filter: 'all', page: 1, open: new Set() };
 
   const attachment = (id) => selected.find((a) => a.formId === id);
-  const questions = (f) => f.sections.flatMap((s) => s.questions);
+  // An attached form is shown as the version the coverage is pinned to, not as the live form.
+  const view = (f) => {
+    const a = attachment(f.id);
+    return (a && formFor(a, forms)) || f;
+  };
+  const questions = (f) => view(f).sections.flatMap((s) => s.questions);
   const included = (f) => questions(f).filter((q) => !attachment(f.id).excluded.includes(q.id)).length;
   const changed = () => opts.onChange?.();
 
@@ -49,21 +55,24 @@ export function createFormPicker(host, opts) {
     const a = attachment(f.id);
     const total = questions(f).length;
     const open = a && state.open.has(f.id);
+    const shown = view(f);
+    const stale = a && hasNewerVersion(a, f);
     return `
       <div class="cob-row${a ? ' on' : ''}" data-form="${esc(f.id)}">
         <div class="cob-row-main">
           <input type="checkbox" data-attach aria-label="Add ${esc(f.name)}"${a ? ' checked' : ''}>
           <div class="cob-row-info">
-            <div class="cob-row-name">${esc(f.name)} <span class="badge draft">${esc(f.status)}</span></div>
-            <div class="ac-hint">${f.sections.length} section${f.sections.length === 1 ? '' : 's'} · <span data-count>${a ? `${included(f)} of ${total} fields included` : `${total} fields`}</span></div>
+            <div class="cob-row-name">${esc(f.name)} <span class="badge draft">${esc(f.status)}</span>${a ? ` <span class="badge info" title="This coverage uses this saved version of the form">${esc(versionLabel(a))}</span>` : ''}</div>
+            <div class="ac-hint">${shown.sections.length} section${shown.sections.length === 1 ? '' : 's'} · <span data-count>${a ? `${included(f)} of ${total} fields included` : `${total} fields`}</span></div>
           </div>
           ${opts.onPreviewForm ? `<button type="button" class="btn sm" data-act="form-preview" data-id="${esc(f.id)}" title="See how this form looks${a ? ' with the fields chosen here' : ''}">Preview</button>` : ''}
           ${opts.onEditForm ? `<button type="button" class="btn sm" data-act="form-edit" data-id="${esc(f.id)}" title="Add, remove or change this form's fields">Edit form</button>` : ''}
+          ${stale ? `<button type="button" class="btn sm" data-act="form-update" data-id="${esc(f.id)}" title="The form was edited after this version was saved. Move this coverage to the latest edit.">Update to latest</button>` : ''}
           ${a ? `<button type="button" class="btn sm" data-act="toggle-open" data-id="${esc(f.id)}">${open ? 'Hide fields' : 'Customize fields'}</button>` : ''}
         </div>
         ${open ? `<div class="cob-fields">
           <div class="cob-fields-tools"><button type="button" class="ac-icon" data-act="fields-all" data-id="${esc(f.id)}">Select all</button><button type="button" class="ac-icon" data-act="fields-none" data-id="${esc(f.id)}">Clear all</button></div>
-          ${f.sections.map((s) => `<div class="cob-sec"><div class="cob-sec-title">${esc(s.title)}</div>
+          ${shown.sections.map((s) => `<div class="cob-sec"><div class="cob-sec-title">${esc(s.title)}</div>
             <div class="cob-sec-fields${opts.useHandle ? ' with-uses' : ''}">${s.questions.map((q) => fieldHtml(f, a, q)).join('')}</div></div>`).join('')}
         </div>` : ''}
       </div>`;
@@ -109,7 +118,7 @@ export function createFormPicker(host, opts) {
     renderList();
   });
 
-  host.addEventListener('change', (e) => {
+  host.addEventListener('change', async (e) => {
     const t = e.target;
     if (t.matches('[data-filter]')) {
       state.filter = t.value;
@@ -120,8 +129,17 @@ export function createFormPicker(host, opts) {
     if (!card) return;
     const f = forms.find((x) => x.id === card.dataset.form);
     if (t.hasAttribute('data-attach')) {
-      if (t.checked) selected.push({ formId: f.id, excluded: [] });
-      else {
+      if (t.checked) {
+        // Attaching saves a version of the form as it is now; later edits to the form do not change it.
+        t.disabled = true;
+        try {
+          selected.push(await attachForm(f));
+        } catch (err) {
+          t.checked = false;
+          t.disabled = false;
+          return alert(err.message);
+        }
+      } else {
         selected.splice(selected.findIndex((a) => a.formId === f.id), 1);
         state.open.delete(f.id);
       }
@@ -156,6 +174,17 @@ export function createFormPicker(host, opts) {
     }
     const f = forms.find((x) => x.id === btn.dataset.id);
     if (!f) return;
+    if (act === 'form-update') {
+      btn.disabled = true;
+      return ensureVersion(f).then((v) => {
+        attachment(f.id).versionId = v.id;
+        changed();
+        renderList();
+      }, (err) => {
+        btn.disabled = false;
+        alert(err.message);
+      });
+    }
     if (act === 'form-preview') return opts.onPreviewForm(f);
     if (act === 'form-edit') return opts.onEditForm(f);
     if (act === 'toggle-open') state.open.has(f.id) ? state.open.delete(f.id) : state.open.add(f.id);

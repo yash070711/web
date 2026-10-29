@@ -1,6 +1,7 @@
 import { api } from './api.js';
 import { esc } from './form-render.js';
 import { openBuilder } from './form-builder.js';
+import { loadFormVersions, versionsOfForm } from './form-versions.js';
 
 const forms = api('acord_forms');
 const root = document.getElementById('view-acord');
@@ -28,7 +29,7 @@ function render() {
       <div class="tools"><button class="btn primary" data-act="new">+ Create form</button></div>
     </div>
     <section class="card"><div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Form</th><th>Sections</th><th>Questions</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+      <thead><tr><th>Form</th><th>Sections</th><th>Questions</th><th>Status</th><th>Saved versions</th><th>Updated</th><th></th></tr></thead>
       <tbody>${
         list.length
           ? list
@@ -37,17 +38,18 @@ function render() {
         <td>${(f.sections || []).length}</td>
         <td>${questionCount(f)}</td>
         <td><span class="badge draft">${esc(f.status)}</span></td>
+        <td>${versionsOfForm(f.id).length ? `v${versionsOfForm(f.id)[0].number} <span class="ac-hint">(${versionsOfForm(f.id).length} saved)</span>` : '<span class="ac-hint">None yet</span>'}</td>
         <td>${f.updatedAt || f.createdAt ? new Date(f.updatedAt || f.createdAt).toLocaleString() : '—'}</td>
         <td class="ac-list-actions"><button class="btn sm" data-act="view" data-id="${esc(f.id)}">Preview</button><button class="btn sm" data-act="edit" data-id="${esc(f.id)}">Edit</button><button class="btn sm danger" data-act="delete" data-id="${esc(f.id)}">Delete</button></td></tr>`,
               )
               .join('')
-          : '<tr><td colspan="6" class="ac-empty">No Acord forms yet.</td></tr>'
+          : '<tr><td colspan="7" class="ac-empty">No Acord forms yet.</td></tr>'
       }</tbody>
     </table></div></section>`;
 }
 
 async function refresh() {
-  list = await forms.list();
+  [list] = await Promise.all([forms.list(), loadFormVersions()]);
   render();
 }
 
@@ -59,7 +61,7 @@ root.addEventListener('click', async (e) => {
   const f = list.find((x) => x.id === btn.dataset.id);
   if (btn.dataset.act === 'new') open({});
   else if (btn.dataset.act === 'view') open({ form: f, preview: true });
-  else if (btn.dataset.act === 'edit') open({ form: f, notice: 'Changes to this form apply everywhere it is used.' });
+  else if (btn.dataset.act === 'edit') open({ form: f, notice: 'Saving edits the form itself. Coverages already using it keep their saved version until they are updated.' });
   else if (btn.dataset.act === 'delete') {
     if (!f) return;
     // Forms attached to coverages or classes would be left dangling, so block deleting those.

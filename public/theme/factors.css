@@ -13,3 +13,35 @@
 .fc-pill{display:inline-block;font-size:10px;font-weight:600;padding:1px 8px;border-radius:999px;background:#f0f4f8;color:#66788d;white-space:nowrap}
 .fc-pill.up{background:#fff3dc;color:#9a5b00}
 .fc-pill.down{background:#e6f4ec;color:#2e7d52}
+.fc-qrow{display:flex;align-items:center;gap:6px}
+.fc-qrow .el-q{flex:1;min-width:0}
+.fc-qrow input[type=checkbox]{flex:none;margin-left:8px}
+.fc-multibar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;font-size:12px}
+
+/* Focused layout: coverage tabs, Single question / Combinations switch, and the editor's own tabs. */
+.fc-covbar{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid #dce3eb;margin-bottom:8px}
+.fc-covtabs.class-tabs{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;padding:0;background:none;border:0}
+.fc-covtabs .class-tab{flex:none;white-space:nowrap;border:0;border-bottom:3px solid transparent;border-radius:0;padding:10px 16px;font-size:13px;margin-bottom:-1px}
+.fc-covtabs .class-tab[aria-selected="true"]{background:none;border-bottom-color:#b84804;color:#1b2635}
+.fc-bad{background:#fdebd9!important;color:#8c3a0a!important;font-weight:600}
+.fc-mode{flex:none;margin-bottom:8px;flex-wrap:nowrap}
+.fc-covnote{margin:0 0 14px}
+.fc-lh{display:flex;align-items:flex-start;gap:8px}
+.fc-lh>div{flex:1;min-width:0}
+.fc-lh .el-title{margin:0}
+.fc-pick{padding:9px 14px;border-bottom:1px solid #eef2f6;cursor:pointer}
+.fc-pick .el-qmain{flex:1}
+#fc-list .fc-multibar{padding:12px 14px;margin:0;position:sticky;bottom:0;background:#fff;border-top:1px solid #dce3eb}
+.fc-eh{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fc-tabs{display:flex;gap:2px;padding:0 20px;border-bottom:1px solid #dce3eb;overflow-x:auto}
+.fc-tab{flex:none;background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;padding:11px 14px;font-size:12px;color:#5a6c80;white-space:nowrap}
+.fc-tab[aria-selected="true"]{border-bottom-color:#b84804;color:#1b2635;font-weight:600}
+.fc-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c0392b;margin-left:7px;vertical-align:middle}
+.fc-foot{display:flex;align-items:center;gap:10px;padding:12px 20px;border-top:1px solid #eef2f6;background:#f7f9fb;border-radius:0 0 7px 7px;flex-wrap:wrap}
+.fc-nav{margin-left:auto;display:flex;gap:8px}
+
+/* Account-level factors: the sign next to a value, and the table that lists every factor together. */
+.af-sign{display:inline-block;width:14px;text-align:right;margin-right:4px;font-weight:700;color:#4b6079}
+.af-val{width:90px}
+.af-grp td{background:#f0f4f8;border-top:1px solid #dce3eb}
+.af-grp .muted{margin-left:6px}

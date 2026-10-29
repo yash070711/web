@@ -18,6 +18,11 @@ export const USES = [
 
 // Answer types a rating factor can be defined on (the same ones factors.js accepts).
 export const RATING_TYPES = ['dropdown', 'radio', 'yesno', 'checkbox', 'number', 'currency'];
+// Answer types an account-level factor can use: choice answers get an adjustment per answer, number and currency answers
+// an adjustment per range (the same types combination rating factors accept).
+export const ACCOUNT_TYPES = RATING_TYPES;
+// The types a stage can use, or null when the stage takes any.
+export const typesFor = (use) => (use === 'rating' ? RATING_TYPES : use === 'account' ? ACCOUNT_TYPES : null);
 
 const derive = (rules, factors) => ({ eligibility: rules.length > 0, rating: factors.length > 0, account: false });
 const configuredCount = (rules, factors, use) => (use === 'eligibility' ? rules.length : use === 'rating' ? factors.length : 0);

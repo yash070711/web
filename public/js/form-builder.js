@@ -43,6 +43,56 @@ const move = (arr, i, d) => {
 /* ---------- editor ---------- */
 const typeOptions = (sel) => TYPES.map((t) => `<option value="${t.value}"${t.value === sel ? ' selected' : ''}>${t.label}</option>`).join('');
 
+/* ---------- answer dependencies ---------- */
+// A choice question can say which of its answers are valid for each answer of another question of the form
+// (question.dependsOn = { question: <id>, allowed: { "<other answer>": ["<this answer>", ...] } }).
+// Rating factors that combine the two questions use it to filter their dropdowns.
+const allQuestions = () => draft.sections.flatMap((s) => s.questions);
+const optionsOf = (q) => (HAS_OPTIONS.includes(q.type) ? q.options ?? [] : []);
+// Would choosing `candidate` as the parent of `q` make a loop (candidate already depends, directly or not, on q)?
+const loops = (candidate, q) => {
+  const seen = new Set();
+  for (let cur = candidate; cur && !seen.has(cur.id); cur = allQuestions().find((x) => x.id === cur.dependsOn?.question)) {
+    if (cur.id === q.id) return true;
+    seen.add(cur.id);
+  }
+  return false;
+};
+
+function renderDependency(q) {
+  const parents = allQuestions().filter((c) => c.id !== q.id && optionsOf(c).length && !loops(c, q));
+  const parent = q.dependsOn && allQuestions().find((c) => c.id === q.dependsOn.question);
+  const own = optionsOf(q);
+  return `<div class="ac-q-options"><div class="ac-hint">Answers depend on another question <span class="muted">(optional)</span></div>
+    <select class="ac-select" data-f="dep-parent" aria-label="Depends on">
+      <option value="">No — every answer is always valid</option>
+      ${parents.map((c) => `<option value="${esc(c.id)}"${c.id === q.dependsOn?.question ? ' selected' : ''}>${esc(c.label || 'Untitled question')}</option>`).join('')}
+    </select>
+    ${parent ? `<div class="ac-hint" style="margin-top:8px">For each answer to “${esc(parent.label)}”, tick the answers of this question that are valid with it.</div>
+      ${optionsOf(parent).map((po) => `<div class="cob-sec"><div class="cob-sec-title">${esc(po)}</div><div class="cob-sec-fields">${
+        own.length
+          ? own.map((o) => `<label class="ac-choice"><input type="checkbox" data-dep-p="${esc(po)}" data-dep-c="${esc(o)}"${(q.dependsOn.allowed?.[po] ?? []).includes(o) ? ' checked' : ''}> ${esc(o)}</label>`).join('')
+          : '<span class="muted">Add options above first.</span>'
+      }</div></div>`).join('')}` : ''}
+  </div>`;
+}
+
+// Remove dependencies that no longer make sense (parent deleted, options renamed or removed, type changed).
+function cleanDependencies() {
+  const questions = allQuestions();
+  questions.forEach((q) => {
+    if (!q.dependsOn) return;
+    const parent = questions.find((c) => c.id === q.dependsOn.question && c.id !== q.id);
+    if (!parent || !HAS_OPTIONS.includes(q.type) || !optionsOf(parent).length) return void delete q.dependsOn;
+    const allowed = {};
+    optionsOf(parent).forEach((po) => {
+      const kept = (q.dependsOn.allowed?.[po] ?? []).filter((o) => q.options.includes(o));
+      allowed[po] = kept;
+    });
+    q.dependsOn = { question: parent.id, allowed };
+  });
+}
+
 function renderQuestion(q, qi, count) {
   return `
     <div class="ac-q" data-q="${qi}">
@@ -52,7 +102,7 @@ function renderQuestion(q, qi, count) {
       </div>
       <input class="ac-input" data-f="help" style="margin-top:8px" placeholder="Help text (optional)" value="${esc(q.help)}">
       ${HAS_OPTIONS.includes(q.type) ? `<div class="ac-q-options"><div class="ac-hint">Options — one per line</div>
-        <textarea class="ac-textarea" data-f="options" placeholder="Option 1&#10;Option 2">${esc(q.options.join('\n'))}</textarea></div>` : ''}
+        <textarea class="ac-textarea" data-f="options" placeholder="Option 1&#10;Option 2">${esc(q.options.join('\n'))}</textarea></div>${renderDependency(q)}` : ''}
       <div class="ac-q-meta">
         <label class="ac-choice"><input type="checkbox" data-f="required"${q.required ? ' checked' : ''}> Required</label>
         ${USES.map((u) => `<label class="ac-choice" title="${esc(u.hint)}"><input type="checkbox" data-f="use-${u.key}"${q.uses?.[u.key] ? ' checked' : ''}> ${u.label}</label>`).join('')}
@@ -152,6 +202,7 @@ async function save() {
       if (HAS_OPTIONS.includes(q.type) && !q.options.length) { error = `Add options for “${q.label}”.`; render(); return; }
     }
   }
+  cleanDependencies();
   error = '';
   const now = new Date().toISOString();
   const payload = { ...draft, updatedAt: now };
@@ -180,14 +231,34 @@ root.addEventListener('input', (e) => {
     return;
   }
   const qEl = t.closest('.ac-q');
+  if (qEl && t.dataset.depC !== undefined) {
+    const q = s.questions[qEl.dataset.q];
+    const list = new Set(q.dependsOn.allowed[t.dataset.depP] ?? []);
+    t.checked ? list.add(t.dataset.depC) : list.delete(t.dataset.depC);
+    q.dependsOn.allowed[t.dataset.depP] = q.options.filter((o) => list.has(o));
+    return;
+  }
   if (!qEl || !t.dataset.f) return;
   const q = s.questions[qEl.dataset.q];
   const f = t.dataset.f;
+  if (f === 'dep-parent') {
+    if (t.value) q.dependsOn = { question: t.value, allowed: q.dependsOn?.question === t.value ? q.dependsOn.allowed : {} };
+    else delete q.dependsOn;
+    return render();
+  }
   if (f.startsWith('use-')) (q.uses ??= { eligibility: false, rating: false, account: false })[f.slice(4)] = t.checked;
   else if (f === 'required') q.required = t.checked;
   else if (f === 'options') q.options = t.value.split('\n').map((o) => o.trim()).filter(Boolean);
   else q[f] = t.value;
   if (f === 'type') render();
+});
+
+// Leaving the options box refreshes the dependency choices that are listed from them.
+root.addEventListener('change', (e) => {
+  if (mode === 'edit' && e.target.dataset.f === 'options') {
+    cleanDependencies();
+    render();
+  }
 });
 
 root.addEventListener('click', async (e) => {

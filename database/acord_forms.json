@@ -16,16 +16,26 @@
             "type": "text",
             "label": "Insured Name/DBA",
             "help": "",
-            "required": false,
-            "options": []
+            "required": true,
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": false
+            }
           },
           {
             "id": "mailing-address",
             "type": "text",
             "label": "Mailing Address",
             "help": "",
-            "required": false,
-            "options": []
+            "required": true,
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": false
+            }
           },
           {
             "id": "mailing-city",
@@ -33,7 +43,12 @@
             "label": "Mailing City",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": false
+            }
           },
           {
             "id": "mailing-state",
@@ -41,15 +56,25 @@
             "label": "Mailing State",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": false
+            }
           },
           {
             "id": "mailing-zip",
             "type": "text",
             "label": "Mailing Zip Code",
             "help": "",
-            "required": false,
-            "options": []
+            "required": true,
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": true,
+              "account": false
+            }
           },
           {
             "id": "effective-date",
@@ -57,7 +82,12 @@
             "label": "Policy Effective Date",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": false
+            }
           },
           {
             "id": "policy-type",
@@ -68,7 +98,12 @@
             "options": [
               "New Business",
               "Renewal"
-            ]
+            ],
+            "uses": {
+              "eligibility": false,
+              "rating": true,
+              "account": true
+            }
           },
           {
             "id": "prior-carrier",
@@ -76,7 +111,12 @@
             "label": "Prior Carrier",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": false
+            }
           },
           {
             "id": "years-in-business",
@@ -93,7 +133,12 @@
               "5",
               "6",
               "7+"
-            ]
+            ],
+            "uses": {
+              "eligibility": false,
+              "rating": true,
+              "account": true
+            }
           },
           {
             "id": "carrier-safety-rating",
@@ -143,7 +188,12 @@
               "No Dashcams",
               "YES - Non-Preferred Vendors",
               "YES - Preferred Vendors"
-            ]
+            ],
+            "uses": {
+              "eligibility": false,
+              "rating": true,
+              "account": false
+            }
           },
           {
             "id": "oos-vehicles",
@@ -244,7 +294,12 @@
             "label": "Age",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": true,
+              "account": true
+            }
           },
           {
             "id": "driver-license-state",
@@ -317,7 +372,12 @@
               "1",
               "2",
               "3+"
-            ]
+            ],
+            "uses": {
+              "eligibility": true,
+              "rating": true,
+              "account": true
+            }
           },
           {
             "id": "driver-has-violations",
@@ -363,7 +423,12 @@
               "Other Minor Violation",
               "Non-Moving Violation",
               "Vehicular homicide/manslaughter"
-            ]
+            ],
+            "uses": {
+              "eligibility": true,
+              "rating": true,
+              "account": true
+            }
           },
           {
             "id": "driver-violations-12",
@@ -407,7 +472,12 @@
             "options": [
               "Trucks, Tractors And Trailers",
               "Private Passenger Types"
-            ]
+            ],
+            "uses": {
+              "eligibility": false,
+              "rating": true,
+              "account": true
+            }
           },
           {
             "id": "vehicle-description",
@@ -499,7 +569,12 @@
             "label": "Model Year",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": true,
+              "rating": true,
+              "account": true
+            }
           },
           {
             "id": "valuation-basis",
@@ -764,7 +839,7 @@
       }
     ],
     "createdAt": "2026-09-29T00:00:00.000Z",
-    "updatedAt": "2026-09-29T00:00:00.000Z"
+    "updatedAt": "2026-10-28T11:34:07.530Z"
   },
   {
     "id": "acord-163",
@@ -784,7 +859,12 @@
             "label": "Date",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": true
+            }
           },
           {
             "id": "a163-producer",
@@ -792,7 +872,12 @@
             "label": "Producer",
             "help": "",
             "required": false,
-            "options": []
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": true
+            }
           },
           {
             "id": "a163-producer-phone-a-c-no-ext",
@@ -984,7 +1069,7 @@
       }
     ],
     "createdAt": "2026-10-15T06:05:52.525Z",
-    "updatedAt": "2026-10-15T06:05:52.525Z"
+    "updatedAt": "2026-10-27T07:11:23.086Z"
   },
   {
     "id": "acord-127",
@@ -1035,16 +1120,26 @@
             "type": "text",
             "label": "NAIC Code",
             "help": "",
-            "required": false,
-            "options": []
+            "required": true,
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": true
+            }
           },
           {
             "id": "a127-policy-number",
             "type": "text",
             "label": "Policy Number",
             "help": "",
-            "required": false,
-            "options": []
+            "required": true,
+            "options": [],
+            "uses": {
+              "eligibility": false,
+              "rating": false,
+              "account": true
+            }
           },
           {
             "id": "a127-effective-date",
@@ -2111,7 +2206,7 @@
       }
     ],
     "createdAt": "2026-10-15T06:05:52.525Z",
-    "updatedAt": "2026-10-15T06:05:52.525Z"
+    "updatedAt": "2026-10-27T09:20:55.654Z"
   },
   {
     "id": "acord-137-fl",

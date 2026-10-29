@@ -7,6 +7,7 @@
 //   product + coverage questions -> question.rules
 //   form questions               -> coverage.formRules["<formId>:<questionId>"]
 // A rule is { id, op, value, value2, outcome, message }.
+import { formFor } from './form-versions.js';
 import { esc, newId } from './product-model.js';
 import { USES, questionHandle, formHandle, toggleUse, confirmUntick } from './question-uses.js';
 import { openAddQuestion } from './question-add.js';
@@ -55,7 +56,7 @@ export const collectGroups = (version, acordForms) => {
           groups.push({ id: `c:${cov.id}`, title: `Coverage › ${cov.name}`, sub: where, qs: cov.questions.map((q) => ({ key: `c:${cov.id}:${q.id}`, ...own(q) })) });
         }
         (cov.forms ?? []).forEach((att) => {
-          const form = acordForms.find((f) => f.id === att.formId);
+          const form = formFor(att, acordForms);
           if (!form) return;
           const excluded = att.excluded ?? [];
           const qs = form.sections.flatMap((s) => s.questions).filter((q) => !excluded.includes(q.id));

@@ -67,7 +67,9 @@
           <span class="step-divider">›</span>
           <div class="step" id="stepF"><i>6</i><span><a href="#" data-step="6"><strong>Rating factors</strong></a><small> · Values that depend on answers</small></span></div>
           <span class="step-divider">›</span>
-          <div class="step" id="stepX"><i>7</i><span><a href="#" data-step="7"><strong>Premium formula</strong></a><small> · Combine base rate and factors</small></span></div>
+          <div class="step" id="stepA"><i>7</i><span><a href="#" data-step="7"><strong>Account-level factors</strong></a><small> · One factor for the whole account</small></span></div>
+          <span class="step-divider">›</span>
+          <div class="step" id="stepX"><i>8</i><span><a href="#" data-step="8"><strong>Premium formula</strong></a><small> · Combine base rate and factors</small></span></div>
         </div>
       </div>
 
@@ -82,6 +84,7 @@
       <div id="eligibilityHost"></div>
       <div id="raterHost"></div>
       <div id="factorsHost"></div>
+      <div id="accountHost"></div>
       <div id="formulaHost"></div>
 
       <div class="taskbar">
@@ -93,6 +96,7 @@
             <button class="action" type="button" id="backToEligibility" data-step="4" hidden>← Eligibility rules</button>
             <button class="action" type="button" id="backToRater" data-step="5" hidden>← Rater setup</button>
             <button class="action" type="button" id="backToFactors" data-step="6" hidden>← Rating factors</button>
+            <button class="action" type="button" id="backToAccount" data-step="7" hidden>← Account-level factors</button>
             <span class="muted" id="saveState" style="margin:0"></span>
           </span>
           <span class="actions">
@@ -101,7 +105,8 @@
             <button class="action primary" type="button" id="toEligibility" data-step="4" hidden>Continue to eligibility rules →</button>
             <button class="action primary" type="button" id="toRater" data-step="5" hidden>Continue to rater setup →</button>
             <button class="action primary" type="button" id="toFactors" data-step="6" hidden>Continue to rating factors →</button>
-            <button class="action primary" type="button" id="toFormula" data-step="7" hidden>Continue to premium formula →</button>
+            <button class="action primary" type="button" id="toAccount" data-step="7" hidden>Continue to account-level factors →</button>
+            <button class="action primary" type="button" id="toFormula" data-step="8" hidden>Continue to premium formula →</button>
             <button class="action primary" type="button" id="publish" hidden>Validate &amp; publish</button>
           </span>
         </div>

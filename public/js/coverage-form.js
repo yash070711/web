@@ -2,6 +2,7 @@ import { api } from './api.js';
 import { esc } from './form-render.js';
 import { openBuilder } from './form-builder.js';
 import { createFormPicker } from './form-picker.js';
+import { loadFormVersions, attachForm } from './form-versions.js';
 import { CONFIG_OPTIONS, DEFAULT_OPTIONS, normalizeOptions, clone } from './product-model.js';
 
 const coverages = api('coverages');
@@ -83,11 +84,11 @@ const editForm = (existing) => {
   openBuilder({
     form: existing,
     returnTo: el('main'),
-    notice: existing ? 'Changes to this form apply everywhere it is used.' : '',
+    notice: existing ? 'Saving changes the form itself. Coverages already using it keep the version they have until updated.' : '',
     onSaved: async (saved) => {
       state.forms = await formsApi.list();
       if (!existing && !state.selectedForms.some((a) => a.formId === saved.id)) {
-        state.selectedForms.push({ formId: saved.id, excluded: [] });
+        state.selectedForms.push(await attachForm(saved));
       }
     },
     onExit: mountPicker,
@@ -129,17 +130,18 @@ const renderUniversal = () => {
 };
 
 // Attach the universal coverage's forms, keeping only its fields: everything else on the form is excluded.
-const attachUniversal = (u) => {
-  const attachments = u.forms.flatMap((m) => {
+const attachUniversal = async (u) => {
+  const attachments = [];
+  for (const m of u.forms) {
     const f = state.forms.find((x) => x.id === m.formId);
-    if (!f) return [];
+    if (!f) continue;
     const keep = new Set(m.included);
-    return [{ formId: f.id, excluded: f.sections.flatMap((s) => s.questions).map((q) => q.id).filter((id) => !keep.has(id)) }];
-  });
+    attachments.push(await attachForm(f, f.sections.flatMap((s) => s.questions).map((q) => q.id).filter((id) => !keep.has(id))));
+  }
   state.selectedForms.splice(0, state.selectedForms.length, ...attachments);
 };
 
-el('fUniversal').addEventListener('change', (event) => {
+el('fUniversal').addEventListener('change', async (event) => {
   state.universalCode = event.target.value;
   const u = universalOf(state.universalCode);
   if (!u) {
@@ -147,7 +149,7 @@ el('fUniversal').addEventListener('change', (event) => {
     return;
   }
   form.elements.name.value = u.name;
-  attachUniversal(u);
+  await attachUniversal(u);
   mountPicker();
   el('universalHint').textContent = u.forms.length
     ? `Attached ${u.forms.length === 1 ? '1 Acord form' : `${u.forms.length} Acord forms`} for ${u.code}. Use “Customize fields” or “Edit form” below to change them for this coverage.`
@@ -201,7 +203,7 @@ form.addEventListener('keydown', (event) => {
 
 const init = async () => {
   try {
-    [state.rows, state.forms, state.universal] = await Promise.all([coverages.list(), formsApi.list(), universalApi.list()]);
+    [state.rows, state.forms, state.universal] = await Promise.all([coverages.list(), formsApi.list(), universalApi.list(), loadFormVersions()]);
   } catch (err) {
     showErrors([`Unable to load data: ${err.message}`]);
   }

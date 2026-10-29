@@ -1,5 +1,5 @@
-// Premium formulas (step 7 of the product version workspace).
-// Each coverage gets one formula that turns its base rate (step 5) and rating factors (step 6) into a premium,
+// Premium formulas (step 8 of the product version workspace).
+// Each coverage gets one formula that turns its base rate (step 5), rating factors (step 6) and account-level factor (step 7) into a premium,
 // for example: BaseRate * RADIUS * VEHICLE_AGE. A formula may use numbers, + - * / ( ), the names of the factors
 // the coverage can see, and the functions min, max and round.
 //
@@ -8,7 +8,8 @@
 //
 // Storage: coverage.formula = { expression }.
 import { esc } from './product-model.js';
-import { collectFactorGroups, factorValue } from './factors.js';
+import { collectFactorGroups, factorValue, appliesTo } from './factors.js';
+import { comboContext, comboValue, fieldOptions, settleKeys, isRangeDim } from './combo-factor-calc.js';
 import { ACCOUNT_CODE, ACCOUNT_LABEL, BASE_FACTOR, isConfigured, clampFactor } from './account-factor-calc.js';
 
 const FUNCTIONS = { min: [1, Infinity, Math.min], max: [1, Infinity, Math.max], round: [1, 2, (x, d = 0) => Math.round(x * 10 ** d) / 10 ** d] };
@@ -107,10 +108,15 @@ export const factorsFor = (version, cov, acordForms) => {
   const out = new Map();
   collectFactorGroups(version, acordForms)
     .filter((g) => g.id === 'product' || g.id === `c:${cov.id}` || g.id.startsWith(`f:${cov.id}:`))
-    .forEach((g) => g.qs.forEach((q) => q.factors().forEach((f) => {
+    .forEach((g) => g.qs.forEach((q) => q.factors().filter((f) => appliesTo(f, cov)).forEach((f) => {
       const code = String(f.code ?? '').trim();
       if (code && !out.has(code.toLowerCase())) out.set(code.toLowerCase(), { code, name: f.name || code, label: q.label, entry: q, factor: f });
     })));
+  // Factors that depend on a combination of several answers.
+  (version.comboFactors ?? []).filter((f) => appliesTo(f, cov)).forEach((f) => {
+    const code = String(f.code ?? '').trim();
+    if (code && !out.has(code.toLowerCase())) out.set(code.toLowerCase(), { code, name: f.name || code, label: f.name || code, combo: true, factor: f });
+  });
   const account = version.accountFactor;
   if (isConfigured(account)) out.set(ACCOUNT_CODE.toLowerCase(), { code: ACCOUNT_CODE, name: ACCOUNT_LABEL, label: ACCOUNT_LABEL, account: true, config: account });
   return out;
@@ -125,7 +131,7 @@ export const formulaProblems = (cov, available) => {
   if (parsed.error) return { errors: [parsed.error], warns, empty: false, parsed };
   const unknown = [...new Set(parsed.names.filter((n) => n.toLowerCase() !== BASE.toLowerCase() && !available.has(n.toLowerCase())))];
   unknown.forEach((n) => errors.push(n.toLowerCase() === ACCOUNT_CODE.toLowerCase()
-    ? `${ACCOUNT_CODE} is the Account-Level Factor, which has no factors set up yet. Add them on the Rating factors step, in the Account-Level Factors tab.`
+    ? `${ACCOUNT_CODE} is the Account-Level Factor, which has no factors set up yet. Add them on the Account-level factors step.`
     : `${n} is not a factor this coverage can use. Define it on the Rating factors step, or check the spelling.`));
   if (!parsed.names.some((n) => n.toLowerCase() === BASE.toLowerCase())) warns.push(`The formula does not use ${BASE}, so the base rate has no effect.`);
   if (!errors.length) {
@@ -203,6 +209,25 @@ export const mountFormula = (host, { getVersion, getForms, readOnly, onChange })
     const av = availableOf(cov);
     return [...new Set(p.parsed.names.map((n) => n.toLowerCase()))].map((k) => av.get(k)).filter(Boolean);
   };
+  // A combination factor asks one dependent dropdown per question; the coverage is the one being rated.
+  const comboKeys = (cov, u) => {
+    const keys = {};
+    u.factor.dimensions.forEach((d) => (keys[d.id] = d.type === 'coverage' ? cov.coverageId : ui.ans[`${u.code}|${d.id}`] ?? ''));
+    return keys;
+  };
+  const comboTestFields = (cov, u) => {
+    const ctx = comboContext(getVersion(), getForms(), u.factor);
+    const keys = comboKeys(cov, u);
+    const fields = u.factor.dimensions.filter((d) => d.type === 'question').map((d) => {
+      const f = fieldOptions(d, u.factor, keys, ctx);
+      const label = ctx.questions.get(d.source)?.label ?? 'Unavailable question';
+      // A number or currency question takes the value itself; its range is found from that.
+      if (isRangeDim(d)) return `<label class="fm-t"><span>${esc(label)} <small>${esc(u.code)}</small></span><input class="el-f num" type="number" min="0" step="any" data-x-cans="${esc(u.code)}|${esc(d.id)}" value="${esc(keys[d.id])}" placeholder="Unanswered" aria-label="${esc(label)}"></label>`;
+      return `<label class="fm-t"><span>${esc(label)} <small>${esc(u.code)}</small></span><select class="el-f" data-x-cans="${esc(u.code)}|${esc(d.id)}" aria-label="${esc(label)}"${f.options.length ? '' : ' disabled'}>
+        <option value="">${esc(f.waiting || f.empty || 'Unanswered')}</option>${f.options.map((o) => `<option value="${esc(o.value)}"${o.value === keys[d.id] ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}</select></label>`;
+    });
+    return fields.join('');
+  };
   const testFields = (cov, p) => {
     const used = usedFactors(cov, p);
     const base = `<label class="fm-t"><span>${BASE}</span><div class="rt-cell">$<input class="el-f num" type="number" min="0" step="any" data-x-base value="${esc(ui.base)}" placeholder="e.g. 1200" aria-label="Base rate"></div></label>`;
@@ -212,6 +237,7 @@ export const mountFormula = (host, { getVersion, getForms, readOnly, onChange })
         const { min, max } = u.config;
         return `<label class="fm-t"><span>${ACCOUNT_LABEL} <small>${ACCOUNT_CODE}</small></span><input class="el-f num" type="number" min="0" step="0.01" data-x-ans="${ACCOUNT_CODE}" value="${esc(v)}" placeholder="Final value, e.g. 1.30" aria-label="${ACCOUNT_LABEL}"><small class="muted" style="margin:0">Limited to ${esc(min)} – ${esc(max)}</small></label>`;
       }
+      if (u.combo) return comboTestFields(cov, u);
       const control = u.factor.mode === 'choice'
         ? `<select class="el-f" data-x-ans="${esc(u.code)}" aria-label="${esc(u.label)}"><option value="">Unanswered</option>${u.entry.answers.map((a) => `<option${a === v ? ' selected' : ''}>${esc(a)}</option>`).join('')}</select>`
         : `<input class="el-f num" type="number" min="0" step="any" data-x-ans="${esc(u.code)}" value="${esc(v)}" placeholder="Unanswered" aria-label="${esc(u.label)}">`;
@@ -230,7 +256,14 @@ export const mountFormula = (host, { getVersion, getForms, readOnly, onChange })
         env[u.code.toLowerCase()] = value;
         return `${esc(u.code)} = ${value.toFixed(2)} (${value === entered ? 'within the limits' : 'limited to the limits'})`;
       }
-      const hit = factorValue(u.factor, ui.ans[u.code] ?? '');
+      if (u.combo) {
+        const keys = comboKeys(cov, u);
+        const answers = Object.fromEntries(u.factor.dimensions.filter((d) => d.type === 'question').map((d) => [d.source, keys[d.id]]));
+        const hitC = comboValue(u.factor, answers, cov.coverageId);
+        env[u.code.toLowerCase()] = hitC.value;
+        return `${esc(u.code)} = ${Number.isNaN(hitC.value) ? '?' : hitC.value.toFixed(2)} (${esc(hitC.how)})`;
+      }
+      const hit = factorValue(u.factor, ui.ans[u.code] ?? '', cov.coverageId);
       env[u.code.toLowerCase()] = hit.value;
       return `${esc(u.code)} = ${Number.isNaN(hit.value) ? '?' : hit.value.toFixed(2)} (${esc(hit.how)})`;
     });
@@ -383,6 +416,21 @@ export const mountFormula = (host, { getVersion, getForms, readOnly, onChange })
     if (d.xAns !== undefined) {
       ui.ans[d.xAns] = e.target.value;
       $('#fm-testres').innerHTML = testResult(current(), problemsOf(current()));
+    }
+    if (d.xCans !== undefined) {
+      // Changing one answer clears the answers that depended on it.
+      const cov = current();
+      const [code] = d.xCans.split('|');
+      const u = availableOf(cov).get(code.toLowerCase());
+      ui.ans[d.xCans] = e.target.value;
+      if (u?.combo) {
+        // Typed numbers are not dropdown answers, so they stay out of the settling.
+        const keys = comboKeys(cov, u);
+        u.factor.dimensions.filter(isRangeDim).forEach((dim) => delete keys[dim.id]);
+        settleKeys(u.factor, keys, comboContext(getVersion(), getForms(), u.factor));
+        u.factor.dimensions.forEach((dim) => dim.type === 'question' && !isRangeDim(dim) && (ui.ans[`${code}|${dim.id}`] = keys[dim.id]));
+      }
+      refreshLight();
     }
   });
 };

@@ -2,10 +2,13 @@ import { api } from './api.js';
 import { createFormPicker } from './form-picker.js';
 import { renderControl } from './form-render.js';
 import { openBuilder } from './form-builder.js';
+import { loadFormVersions, formFor, versionLabel } from './form-versions.js';
 import { mountEligibility, eligibilityIssues } from './eligibility.js';
 import { mountRater, raterIssues } from './rater.js';
-import { mountFactors, factorIssues } from './factors.js';
+import { mountFactors, factorIssues, codeCounts, collectFactorGroups, scopeFactorsToCoverages } from './factors.js';
 import { mountAccountFactors } from './account-factors.js';
+import { mountComboFactors } from './combo-factors.js';
+import { comboIssues, comboProblems, comboContext } from './combo-factor-calc.js';
 import { accountFactorIssues } from './account-factor-calc.js';
 import { mountFormula, formulaIssues } from './formula.js';
 import { getRole } from './role.js';
@@ -46,19 +49,19 @@ const isDist = Boolean(distId);
 const versionApi = () => api(isDist ? 'distributed_versions' : 'product_versions');
 
 const state = { product: null, version: null, library: [], acordForms: [], release: null, open: new Set(), dirty: false };
-// A distributed version is read-only, except that the MGU it was distributed to sets up the rating (steps 5-7) of a fronting product.
+// A distributed version is read-only, except that the MGU it was distributed to sets up the rating (steps 5-8) of a fronting product.
 const canRate = () => {
   const role = getRole();
   return isDist && fronting() && role.role === 'MGU' && role.orgId === state.version?.organisationId && state.version?.status === 'Active';
 };
 const readOnly = () => (isDist ? !(canRate() && stepNow() >= 5) : state.version?.status === 'Published');
-// Step 2 = coverage configuration, step 3 = questions, step 4 = eligibility rules, step 5 = rater setup, step 6 = rating factors, step 7 = premium formula.
+// Step 2 = coverage configuration, step 3 = questions, step 4 = eligibility rules, step 5 = rater setup, step 6 = rating factors, step 7 = account-level factors, step 8 = premium formula.
 const stepNow = () => state.step ?? 2;
 // A fronting product is rated by the MGU, so the carrier never sets up the rater, factors or formula.
 const fronting = () => state.product?.arrangement === 'Fronting';
 // The carrier's own version of a fronting product stops before the rater; the MGU's distributed copy has it.
 const skipRating = () => fronting() && !isDist;
-const lastStep = () => (skipRating() ? 4 : 7);
+const lastStep = () => (skipRating() ? 4 : 8);
 const components = () => state.version.components;
 
 // ---- feedback ----
@@ -312,8 +315,8 @@ const optionBody = (cov, def, base) => {
         return value.length
           ? `<div class="opt-list">${value
               .map((a) => {
-                const f = state.acordForms.find((x) => x.id === a.formId);
-                return f ? `<div class="opt-row" style="cursor:default"><div class="opt-main"><strong>${esc(f.name)}</strong></div><a class="action" href="#" role="button" data-preview-form="${esc(a.formId)}" data-cov="${esc(cov.id)}">Preview</a></div>` : '';
+                const f = formFor(a, state.acordForms);
+                return f ? `<div class="opt-row" style="cursor:default"><div class="opt-main"><strong>${esc(f.name)}</strong> <span class="badge">${esc(versionLabel(a))}</span></div><a class="action" href="#" role="button" data-preview-form="${esc(a.formId)}" data-cov="${esc(cov.id)}">Preview</a></div>` : '';
               })
               .join('')}</div>`
           : '<p class="muted">No forms attached.</p>';
@@ -504,21 +507,24 @@ const mainEl = el('main');
 
 // Preview shows the form as this coverage will use it (fields left out for this product are hidden).
 const previewForm = (formId, cov) => {
-  const f = state.acordForms.find((x) => x.id === formId);
+  const att = cov?.forms.find((a) => a.formId === formId);
+  const f = att ? formFor(att, state.acordForms) : state.acordForms.find((x) => x.id === formId);
   if (!f) return;
-  const excluded = cov?.forms.find((a) => a.formId === formId)?.excluded ?? [];
+  const excluded = att?.excluded ?? [];
   const shown = { ...f, sections: f.sections.map((s) => ({ ...s, questions: s.questions.filter((q) => !excluded.includes(q.id)) })).filter((s) => s.questions.length) };
   openBuilder({ form: shown, preview: true, returnTo: mainEl, onExit: render });
 };
 
-// Editing changes the form itself, so it applies everywhere the form is used.
+// Editing changes the form itself, not the versions coverages already use. This coverage keeps its version
+// until it is updated from the picker.
 const editForm = (f) =>
   openBuilder({
     form: f,
     returnTo: mainEl,
-    notice: 'Changes to this form apply everywhere it is used, including other coverages and products.',
+    notice: 'Saving changes the form itself. Coverages already using it keep the version they have until updated.',
     onSaved: async () => {
       state.acordForms = await api('acord_forms').list();
+      await loadFormVersions();
     },
     onExit: render,
   });
@@ -533,7 +539,7 @@ const mountPickers = () => {
       forms: state.acordForms,
       selected: cov.forms,
       onChange: markDirty,
-      useHandle: (formId, questionId) => formHandle(cov, `${formId}:${questionId}`, state.acordForms.find((f) => f.id === formId)?.sections.flatMap((s) => s.questions).find((q) => q.id === questionId)),
+      useHandle: (formId, questionId) => formHandle(cov, `${formId}:${questionId}`, formFor(cov.forms.find((a) => a.formId === formId), state.acordForms)?.sections.flatMap((s) => s.questions).find((q) => q.id === questionId)),
       onPreviewForm: (f) => previewForm(f.id, cov),
       onEditForm: (f) => editForm(f),
     }).render();
@@ -545,31 +551,24 @@ const lockNotice = (step) => {
   const bar = (title, text) => `<div class="notice-bar"><div class="notice-content"><strong>${title}</strong><p>${text}</p></div></div>`;
   if (isDist) {
     if (!canRate()) return bar('This distributed version is read-only.', 'Only the MGU it was distributed to can set up its rating.');
-    return step < 5 ? bar('Set by the carrier.', 'You can view this part. Set up the rater, rating factors and premium formula in steps 5 to 7.') : '';
+    return step < 5 ? bar('Set by the carrier.', 'You can view this part. Set up the rater, rating factors, account-level factors and premium formula in steps 5 to 8.') : '';
   }
   return readOnly()
     ? bar('This version is published and read-only.', `Published as release ${esc(state.release?.releaseNumber ?? '')}. Create a new version to make changes.`)
     : '';
 };
 
-// Step 6 has two tabs: the question-by-question rating factors, and the single account-level factor.
-state.ratingTab = 'rating';
+// Step 6 is the rating factors (per question, or per combination of several questions). Step 7 is the single account-level factor.
+const stepOpts = () => ({ getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty, coverage: { get: () => state.factorCov, set: (id) => (state.factorCov = id) } });
 const mountFactorStep = () => {
-  const host = el('factorsHost');
-  const account = state.version.accountFactor?.factors?.length ?? 0;
-  host.innerHTML = `<div class="class-tabs" role="tablist" aria-label="Rating configuration" style="margin-bottom:14px">
-      <button type="button" role="tab" class="class-tab" data-rtab="rating" aria-selected="${state.ratingTab === 'rating'}">Rating Factors</button>
-      <button type="button" role="tab" class="class-tab" data-rtab="account" aria-selected="${state.ratingTab === 'account'}">Account-Level Factors${account ? `<span class="count">${account}</span>` : ''}</button>
-    </div><div id="factorsPane"></div>`;
-  const opts = { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty };
-  (state.ratingTab === 'account' ? mountAccountFactors : mountFactors)(el('factorsPane'), opts);
+  const opts = stepOpts();
+  // Multi-question factors are part of the Rating Factors step: they sit in its Combinations view.
+  opts.combo = {
+    mount: (pane, id, extra) => mountComboFactors(pane, { ...opts, only: id, ...extra }),
+    errors: (c) => comboProblems(c, comboContext(state.version, state.acordForms, c), codeCounts(collectFactorGroups(state.version, state.acordForms), state.version), state.version).errors,
+  };
+  mountFactors(el('factorsHost'), opts);
 };
-el('factorsHost').addEventListener('click', (event) => {
-  const tab = event.target.closest('[data-rtab]');
-  if (!tab || tab.dataset.rtab === state.ratingTab) return;
-  state.ratingTab = tab.dataset.rtab;
-  mountFactorStep();
-});
 
 const render = () => {
   const { product, version } = state;
@@ -593,14 +592,16 @@ const render = () => {
   el('backToConfig').hidden = step !== 3;
   el('backToQuestions').hidden = step !== 4;
   el('toRater').hidden = step !== 4 || skipRating();
-  ['stepR', 'stepF', 'stepX'].forEach((id) => {
+  ['stepR', 'stepF', 'stepA', 'stepX'].forEach((id) => {
     el(id).hidden = skipRating();
     el(id).previousElementSibling.hidden = skipRating();
   });
   el('backToEligibility').hidden = step !== 5;
   el('toFactors').hidden = step !== 5;
-  el('toFormula').hidden = step !== 6;
+  el('toAccount').hidden = step !== 6;
+  el('toFormula').hidden = step !== 7;
   el('backToFactors').hidden = step !== 7;
+  el('backToAccount').hidden = step !== 8;
   el('backToRater').hidden = step !== 6;
   el('backBtn').hidden = step !== 2;
   el('stepCfg').classList.toggle('active', step === 2);
@@ -608,8 +609,9 @@ const render = () => {
   el('stepE').classList.toggle('active', step === 4);
   el('stepR').classList.toggle('active', step === 5);
   el('stepF').classList.toggle('active', step === 6);
-  el('stepX').classList.toggle('active', step === 7);
-  const stepName = { 2: 'Coverage configuration', 3: 'Questions', 4: 'Eligibility rules', 5: 'Rater setup', 6: 'Rating factors', 7: 'Premium formula' }[step];
+  el('stepA').classList.toggle('active', step === 7);
+  el('stepX').classList.toggle('active', step === 8);
+  const stepName = { 2: 'Coverage configuration', 3: 'Questions', 4: 'Eligibility rules', 5: 'Rater setup', 6: 'Rating factors', 7: 'Account-level factors', 8: 'Premium formula' }[step];
   el('stepMeta').textContent = stepName;
   document.title = `${stepName} · ${product.name} ${version.label}`;
   el('bulkBar').hidden = !components().length || step !== 2;
@@ -641,8 +643,14 @@ const render = () => {
   } else {
     el('factorsHost').innerHTML = '';
   }
-  el('formulaHost').hidden = step !== 7;
+  el('accountHost').hidden = step !== 7;
   if (step === 7) {
+    mountAccountFactors(el('accountHost'), stepOpts());
+  } else {
+    el('accountHost').innerHTML = '';
+  }
+  el('formulaHost').hidden = step !== 8;
+  if (step === 8) {
     mountFormula(el('formulaHost'), { getVersion: () => state.version, getForms: () => state.acordForms, readOnly, onChange: markDirty });
   } else {
     el('formulaHost').innerHTML = '';
@@ -660,8 +668,8 @@ const saveDraft = async () => {
   const updatedAt = new Date().toISOString();
   // The MGU only changes the rating; the carrier's questions stay as distributed. Editing again reopens a completed rating.
   const changes = isDist
-    ? { components: components(), territories: state.version.territories, accountFactor: state.version.accountFactor, ratingStatus: 'In progress', updatedAt }
-    : { components: components(), questions: state.version.questions, territories: state.version.territories, accountFactor: state.version.accountFactor, updatedAt };
+    ? { components: components(), territories: state.version.territories, accountFactor: state.version.accountFactor, comboFactors: state.version.comboFactors, ratingStatus: 'In progress', updatedAt }
+    : { components: components(), questions: state.version.questions, territories: state.version.territories, accountFactor: state.version.accountFactor, comboFactors: state.version.comboFactors, updatedAt };
   state.version = withLabel(await versionApi().update(state.version.id, changes));
   normalizeComponents(components());
   state.version.questions ??= [];
@@ -678,7 +686,8 @@ const publish = async () => {
   const factors = fronting() ? [] : factorIssues(state.version, state.acordForms);
   const formulas = fronting() ? [] : formulaIssues(state.version, state.acordForms);
   const account = fronting() ? [] : accountFactorIssues(state.version, state.acordForms);
-  const errors = [...validateVersion(components(), state.version.questions, allowedStates()), ...eligibility, ...rater, ...factors, ...account, ...formulas];
+  const combos = fronting() ? [] : comboIssues(state.version, state.acordForms);
+  const errors = [...validateVersion(components(), state.version.questions, allowedStates()), ...eligibility, ...rater, ...factors, ...combos, ...account, ...formulas];
   showErrors(errors);
   if (errors.length) {
     // Open every coverage that still needs work so the gaps are visible.
@@ -687,11 +696,9 @@ const publish = async () => {
     if (allCoverages(components()).some((cov) => coverageIssues(cov, allowedStates()).length)) state.step = 2;
     else if (eligibility.length) state.step = 4;
     else if (rater.length) state.step = 5;
-    else if (factors.length || account.length) {
-      state.step = 6;
-      state.ratingTab = factors.length ? 'rating' : 'account';
-    }
-    else if (formulas.length) state.step = 7;
+    else if (factors.length || combos.length) state.step = 6;
+    else if (account.length) state.step = 7;
+    else if (formulas.length) state.step = 8;
     render();
     return;
   }
@@ -703,7 +710,7 @@ const publish = async () => {
     versionId: version.id,
     label: version.label,
     releaseNumber: `${product.productId}-${version.label}`,
-    snapshot: { components: clone(components()), questions: clone(state.version.questions ?? []), territories: clone(state.version.territories ?? []), accountFactor: clone(state.version.accountFactor ?? null), jurisdiction: clone(state.version.jurisdiction ?? { excludedStates: [] }) },
+    snapshot: { components: clone(components()), questions: clone(state.version.questions ?? []), territories: clone(state.version.territories ?? []), accountFactor: clone(state.version.accountFactor ?? null), comboFactors: clone(state.version.comboFactors ?? []), jurisdiction: clone(state.version.jurisdiction ?? { excludedStates: [] }) },
     publishedAt: now,
   });
   state.version = await api('product_versions').update(version.id, {
@@ -711,6 +718,7 @@ const publish = async () => {
     questions: state.version.questions,
     territories: state.version.territories,
     accountFactor: state.version.accountFactor,
+    comboFactors: state.version.comboFactors,
     status: 'Published',
     publishedAt: now,
     updatedAt: now,
@@ -734,15 +742,15 @@ const completeRating = async () => {
   const factors = factorIssues(state.version, state.acordForms);
   const formulas = formulaIssues(state.version, state.acordForms);
   const account = accountFactorIssues(state.version, state.acordForms);
-  showErrors([...rater, ...factors, ...account, ...formulas]);
-  if (rater.length || factors.length || account.length || formulas.length) {
-    state.step = rater.length ? 5 : factors.length || account.length ? 6 : 7;
-    if (!rater.length && (factors.length || account.length)) state.ratingTab = factors.length ? 'rating' : 'account';
+  const combos = comboIssues(state.version, state.acordForms);
+  showErrors([...rater, ...factors, ...combos, ...account, ...formulas]);
+  if (rater.length || factors.length || combos.length || account.length || formulas.length) {
+    state.step = rater.length ? 5 : factors.length || combos.length ? 6 : account.length ? 7 : 8;
     return render();
   }
   if (!confirm(`Mark the rating of ${state.version.name} ${state.version.label} as complete?`)) return;
   const now = new Date().toISOString();
-  state.version = withLabel(await versionApi().update(state.version.id, { components: components(), territories: state.version.territories, accountFactor: state.version.accountFactor, ratingStatus: 'Complete', ratedAt: now, updatedAt: now }));
+  state.version = withLabel(await versionApi().update(state.version.id, { components: components(), territories: state.version.territories, accountFactor: state.version.accountFactor, comboFactors: state.version.comboFactors, ratingStatus: 'Complete', ratedAt: now, updatedAt: now }));
   markClean();
   render();
   toast('Rating complete.');
@@ -981,6 +989,7 @@ window.addEventListener('beforeunload', (event) => {
       api('acord_forms').list(),
       state.version.releaseId ? api('product_releases').get(state.version.releaseId) : null,
     ]);
+    await loadFormVersions();
     state.library = coverages;
     state.acordForms = acordForms;
     normalizeComponents(components());
@@ -990,10 +999,18 @@ window.addEventListener('beforeunload', (event) => {
     components().forEach((c) =>
       c.classes.forEach((k) => k.coverages.forEach((cov) => hydrateCoverage(cov, state.library.find((l) => l.id === cov.coverageId), !isDist && !readOnly()))),
     );
+    // Factors are set up per coverage. Older ones that cover several coverages are split, and ones that use another
+    // coverage's questions are dropped; the person is told, and nothing is saved until they save.
+    const fixed = scopeFactorsToCoverages(state.version, state.acordForms);
+    if ((fixed.split || fixed.dropped) && !readOnly()) {
+      state.dirty = true;
+      state.notice = [fixed.split && `${fixed.split} rating factor${fixed.split === 1 ? '' : 's'} covering several coverages ${fixed.split === 1 ? 'was' : 'were'} split into one per coverage.`, fixed.dropped && `${fixed.dropped} factor${fixed.dropped === 1 ? '' : 's'} that used another coverage's questions ${fixed.dropped === 1 ? 'was' : 'were'} removed.`].filter(Boolean).join(' ');
+    }
     const wanted = Number(new URLSearchParams(location.search).get('step'));
     if (wanted >= 2 && wanted <= lastStep()) state.step = wanted;
     else if (canRate()) state.step = 5;
     render();
+    if (state.notice) toast(state.notice, 'warn');
   } catch (err) {
     el('title').textContent = 'Product version not found';
     showErrors([err.message]);

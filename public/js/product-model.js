@@ -21,7 +21,15 @@ export const QUESTION_TYPES = [
 export const QUESTION_HAS_OPTIONS = ['radio', 'checkboxes', 'dropdown'];
 // A question is attached either to the whole product (version.questions) or to one coverage (coverage.questions).
 export const questionBad = (q) => !String(q.label ?? '').trim() || (QUESTION_HAS_OPTIONS.includes(q.type) && !(q.options ?? []).length);
-export const cloneQuestions = (questions) => structuredClone(questions ?? []).map((q) => ({ ...q, id: crypto.randomUUID() }));
+// Copies get new ids, so a question that depends on another one (dependsOn.question) has to follow its new id.
+export const cloneQuestions = (questions) => {
+  const copies = structuredClone(questions ?? []).map((q) => ({ ...q, id: crypto.randomUUID() }));
+  const idMap = new Map((questions ?? []).map((q, i) => [q.id, copies[i].id]));
+  copies.forEach((q) => {
+    if (q.dependsOn) q.dependsOn.question = idMap.get(q.dependsOn.question) ?? '';
+  });
+  return copies;
+};
 export const blankQuestion = () => ({ id: crypto.randomUUID(), type: 'text', label: '', help: '', required: false, options: [] });
 
 export const US_STATES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC'];
@@ -179,6 +187,27 @@ export const cloneComponents = (components) =>
     classes: c.classes.map((k) => ({ ...k, id: newId(), coverages: k.coverages.map((cov) => ({ ...cov, id: newId() })) })),
   }));
 
+// The distinct coverages of a version, for pickers: { id: library coverage id, name, where }. A coverage used in
+// several classes appears once, because a factor applies to the coverage, not to one place it sits in.
+export const coverageChoices = (components) => {
+  const out = new Map();
+  components.forEach((c) =>
+    c.classes.forEach((k) =>
+      k.coverages.forEach((cov) => {
+        const have = out.get(cov.coverageId);
+        if (have) have.where.push(`${c.name} › ${k.name}`);
+        else out.set(cov.coverageId, { id: cov.coverageId, name: cov.name, where: [`${c.name} › ${k.name}`] });
+      }),
+    ),
+  );
+  return [...out.values()];
+};
+
+// The coverages a factor is limited to (library coverage ids); empty means every coverage can use it.
+// Factors saved before several coverages were allowed hold one id in `coverageId`.
+export const scopeIds = (f) => f.coverageIds ?? (f.coverageId ? [f.coverageId] : []);
+export const inScope = (f, coverageId) => !scopeIds(f).length || scopeIds(f).includes(coverageId);
+
 export const coverageCount = (components) => allCoverages(components).length;
 
 export const lobsOf = (components) => [...new Set(components.map((c) => c.lob).filter(Boolean))];
@@ -308,14 +337,16 @@ export const validateVersion = (components, productQuestions = [], states = US_S
 // Product questions get new ids when a version is copied, so everything that points at one has to follow:
 // the questions a rating reads, and the questions the account-level factor conditions test.
 // `idMap`: old product question id -> new id. Changes `components` and `accountFactor` in place.
-export const remapQuestionRefs = (components, accountFactor, idMap) => {
+export const remapQuestionRefs = (components, accountFactor, idMap, comboFactors = []) => {
   const remap = (source) => (source?.startsWith('product:') ? `product:${idMap.get(source.slice(8)) ?? ''}` : source);
   allCoverages(components).forEach((cov) => {
     if (!cov.rating) return;
     cov.rating.valueSource = remap(cov.rating.valueSource);
     (cov.rating.territory?.dimensions ?? []).forEach((d) => d.source && (d.source = remap(d.source)));
   });
-  (accountFactor?.factors ?? []).forEach((f) => (f.conditions ?? []).forEach((c) => (c.ref = remap(c.ref))));
+  (accountFactor?.factors ?? []).forEach((f) => (f.dimensions ?? []).forEach((d) => d.source && (d.source = remap(d.source))));
+  // Combination factors name their questions the same way.
+  (comboFactors ?? []).forEach((f) => (f.dimensions ?? []).forEach((d) => d.source && (d.source = remap(d.source))));
 };
 
 // Start a new draft from a version's content. Returns the existing draft instead if one is already open.
@@ -328,7 +359,8 @@ export const startNextVersion = async (api, productId, versions, from) => {
   const questions = cloneQuestions(from.questions);
   const components = cloneComponents(from.components);
   const accountFactor = clone(from.accountFactor ?? null);
-  remapQuestionRefs(components, accountFactor, new Map((from.questions ?? []).map((q, i) => [q.id, questions[i].id])));
+  const comboFactors = clone(from.comboFactors ?? []);
+  remapQuestionRefs(components, accountFactor, new Map((from.questions ?? []).map((q, i) => [q.id, questions[i].id])), comboFactors);
   const version = await api('product_versions').create({
     productRef: productId,
     label: nextLabel(latest.label),
@@ -337,6 +369,7 @@ export const startNextVersion = async (api, productId, versions, from) => {
     questions,
     territories: clone(from.territories ?? []),
     accountFactor,
+    comboFactors,
     jurisdiction: clone(from.jurisdiction ?? { excludedStates: [] }),
     createdAt: now,
     updatedAt: now,

@@ -11,10 +11,11 @@
 // codes, defined once per version (version.territories) and shared by every coverage.
 //
 // Single base price: one flat amount for the coverage. Differences between risks come later, from rating factors
-// (step 6) combined in the premium formula (step 7).
+// (steps 6 and 7) combined in the premium formula (step 8).
 //
 // Storage: coverage.rating = { method, valueSource, value: { bands }, territory: { dimensions, defaultRate, rows }, flat: { amount } }.
 // A new method gets its own block next to these and an entry in RATING_METHODS.
+import { formFor } from './form-versions.js';
 import { esc, newId, clone, blankRating, allCoverages, productStates, parseZips } from './product-model.js';
 
 export const RATING_METHODS = {
@@ -67,7 +68,7 @@ export const valueSources = (version, cov, acordForms) => {
   (version.questions ?? []).forEach((q) => add(q, `product:${q.id}`, 'Product questions'));
   (cov.questions ?? []).forEach((q) => add(q, `coverage:${q.id}`, 'Questions on this coverage'));
   (cov.forms ?? []).forEach((att) => {
-    const form = acordForms.find((f) => f.id === att.formId);
+    const form = formFor(att, acordForms);
     if (!form) return;
     const excluded = att.excluded ?? [];
     form.sections.flatMap((s) => s.questions).filter((q) => !excluded.includes(q.id)).forEach((q) => add(q, `form:${form.id}:${q.id}`, `Form › ${form.name}`));
@@ -120,7 +121,7 @@ const walkQuestions = (version, cov, acordForms, visit) => {
   (version.questions ?? []).forEach((q) => visit(q, `product:${q.id}`, 'Product questions'));
   (cov.questions ?? []).forEach((q) => visit(q, `coverage:${q.id}`, 'Questions on this coverage'));
   (cov.forms ?? []).forEach((att) => {
-    const form = acordForms.find((f) => f.id === att.formId);
+    const form = formFor(att, acordForms);
     if (!form) return;
     const excluded = att.excluded ?? [];
     form.sections.flatMap((s) => s.questions).filter((q) => !excluded.includes(q.id)).forEach((q) => visit(q, `form:${form.id}:${q.id}`, `Form › ${form.name}`));
