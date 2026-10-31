@@ -1,12 +1,13 @@
 // Who is using the studio. There is no sign-in yet: the role is picked in the top bar and kept in the browser.
 //   Carrier - builds products and distributes them.
-//   MGU     - works only on the versions distributed to its own organisation (rater, factors and formula of a fronting product).
+//   MGU     - works only on the versions distributed to its own organisation (rater, factors and formula of a fronting product),
+//             and passes them on to MGAs, brokers and agents.
 import { api } from './api.js';
 
 const KEY = 'ps.role';
 const CARRIER = { role: 'Carrier', name: 'Yash Gaur', label: 'Carrier · Yash Gaur · Admin' };
 // Pages an MGU may open.
-const MGU_PAGES = ['/', '/index.html', '/coverage-config.html'];
+const MGU_PAGES = ['/', '/index.html', '/coverage-config.html', '/distribution.html'];
 
 export const getRole = () => {
   try {
@@ -55,7 +56,7 @@ const init = () => {
     // Keep an MGU out of the carrier's pages and menus.
     if (!MGU_PAGES.includes(location.pathname)) location.replace('/');
     document.querySelectorAll('.sidebar .nav-item').forEach((a) => {
-      if (a.getAttribute('href') !== '/') a.hidden = true;
+      if (!['/', '/distribution.html'].includes(a.getAttribute('href'))) a.hidden = true;
     });
   }
   return mount(role);

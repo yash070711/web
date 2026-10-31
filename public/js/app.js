@@ -45,7 +45,7 @@ function distributedPanel(p) {
       const dist = state.dists.find((d) => d.version?.id === v.id);
       return `<tr>
         <td><strong>${esc(v.version)}</strong></td>
-        <td>${esc(org?.name ?? v.organisationId)} ${org ? `<span class="badge">${esc(org.type)}</span>` : ''}</td>
+        <td>${esc(org?.name ?? v.organisationId)} ${org ? `<span class="badge">${esc(org.type)}</span>` : ''}${v.distributedBy ? `<br><span class="muted">via ${esc(v.distributedBy.name)}</span>` : ''}</td>
         <td><span class="badge">${esc(v.status)}</span></td>
         <td>${esc(dist?.effectiveFrom ?? '—')}</td>
         <td>${esc(dist ? dist.effectiveTo || 'Open-ended' : '—')}</td>

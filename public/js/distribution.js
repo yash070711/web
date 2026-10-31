@@ -1,5 +1,6 @@
 import { api } from './api.js';
 import { cloneComponents, cloneQuestions, lobsOf, remapQuestionRefs } from './product-model.js';
+import { getRole } from './role.js';
 
 const productsApi = api('products');
 const orgsApi = api('organisations');
@@ -9,7 +10,11 @@ const releasesApi = api('product_releases');
 
 const el = (id) => document.getElementById(id);
 
-const ORG_TYPES = ['All', 'MGU', 'MGA', 'Broker'];
+const ORG_TYPES = ['All', 'MGU', 'MGA', 'Broker', 'Agent'];
+// An MGU passes on the versions the carrier distributed to it, to these partner types only.
+const MGU_TARGETS = ['MGA', 'Broker', 'Agent'];
+const role = getRole();
+const isMgu = role.role === 'MGU';
 const CURRENCIES = ['USD', 'CAD', 'GBP', 'EUR'];
 const AUTHORITIES = [
   ['Binding', 'May bind eligible risks within delegated limits.'],
@@ -27,7 +32,7 @@ const STEPS = [
   ['Configure terms', 'Authority, coverages and rules'],
 ];
 
-const termsDefaults = () => ({
+const baseTerms = () => ({
   from: new Date().toISOString().slice(0, 10),
   to: '',
   policyLimit: '1000000',
@@ -48,6 +53,33 @@ const termsDefaults = () => ({
   renewCommission: '5',
   commissionCurrency: 'USD',
 });
+
+// An MGU can never give a partner more than the carrier gave the MGU: start from the carrier's terms, clamped.
+const termsDefaults = () => {
+  const t = baseTerms();
+  const c = cap();
+  if (!c) return t;
+  const lower = (value, max) => String(Math.min(+value, +max));
+  const da = c.delegatedAuthority ?? {};
+  if (c.effectiveFrom > t.from) t.from = c.effectiveFrom;
+  t.to = c.effectiveTo ?? '';
+  t.policyLimit = lower(t.policyLimit, c.policyAuthority.limit);
+  t.policyCurrency = c.policyAuthority.currency;
+  t.authority = t.authority.filter((a) => da.authorities?.includes(a));
+  PERMISSIONS.forEach(([id]) => {
+    t[id] = t[id] && Boolean(da[id]);
+  });
+  t.claimCurrency = c.claimAuthority?.currency ?? 'USD';
+  t.grossPeriod = c.grossPremiumLimit.period;
+  t.grossLimit = lower(t.grossLimit, c.grossPremiumLimit.amount);
+  t.grossCurrency = c.grossPremiumLimit.currency;
+  t.commissionType = c.commission.type;
+  t.basis = c.commission.basis;
+  t.newCommission = lower(t.newCommission, c.commission.newBusiness);
+  t.renewCommission = lower(t.renewCommission, c.commission.renewal);
+  t.commissionCurrency = c.commission.currency ?? 'USD';
+  return t;
+};
 
 const defaults = () => ({
   product: '',
@@ -73,14 +105,21 @@ const esc = (value) =>
   );
 
 const product = () => state.products.find((p) => p.id === d().product);
+// The terms the carrier gave this MGU for the selected version; they are the ceiling for everything the MGU hands on.
+const cap = () => {
+  const id = isMgu ? product()?.mguVersion?.id : null;
+  return id ? state.saved.find((s) => s.version?.id === id && !s.distributor) : null;
+};
+const refOf = (p) => p.ref ?? p.id;
+const sameDistributor = (v) => (v.distributedBy?.orgId ?? null) === (isMgu ? role.orgId : null);
 // Only a published release can be distributed; the newest one is used.
 const releaseOf = (p) =>
   state.releases.filter((r) => r.productRef === p?.id).sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)))[0];
-// A fronting product is rated by the MGU, so it can only be distributed to MGUs.
-const orgTypesFor = (p) => (p?.arrangement === 'Fronting' ? ['MGU'] : null);
+// A fronting product is rated by the MGU, so the carrier can only distribute it to MGUs. An MGU only hands on to MGAs, brokers and agents.
+const orgTypesFor = (p) => (isMgu ? MGU_TARGETS : p?.arrangement === 'Fronting' ? ['MGU'] : null);
 const orgAllowed = (o, p = product()) => !orgTypesFor(p) || orgTypesFor(p).includes(o.type);
 const selectedOrgs = () => state.orgs.filter((o) => d().orgs.includes(o.id));
-const currencyOptions = (current) => CURRENCIES.map((c) => `<option${c === current ? ' selected' : ''}>${c}</option>`).join('');
+const currencyOptions = (current, only) => (only ? [only] : CURRENCIES).map((c) => `<option${c === current ? ' selected' : ''}>${c}</option>`).join('');
 const money = (value, currency) => `${currency} ${Number(value).toLocaleString()}`;
 
 let noticeTimer;
@@ -125,7 +164,7 @@ const filteredProducts = () => {
 
 const productTable = () => {
   const rows = filteredProducts();
-  if (!state.products.length) return '<div class="wiz-note">No published products yet. Publish a product version in the Product Catalogue first.</div>';
+  if (!state.products.length) return isMgu ? '<div class="wiz-note">Nothing to distribute yet. A product appears here once the carrier has distributed it to you and, for a fronting product, you have completed the rating.</div>' : '<div class="wiz-note">No published products yet. Publish a product version in the Product Catalogue first.</div>';
   if (!rows.length) return '<div class="wiz-note">No products match your search and filters.</div>';
   return `<div class="tbl-wrap"><table>
     <thead><tr><th></th><th>Product</th><th>Product ID</th><th>Carrier</th><th>Line of Business</th><th>Version</th><th>Status</th></tr></thead>
@@ -219,7 +258,7 @@ const refreshOrgs = () => {
 
 const renderOrgStep = () => `<div class="section-meta">Step 2 of 3</div>
   <h2>Select organisations</h2>
-  <p class="muted">${orgTypesFor(product()) ? 'This is a fronting product: the MGU sets up the rater, so it can only be distributed to MGUs.' : 'Select one or more MGUs, MGAs and Brokers to distribute the product to.'}</p>
+  <p class="muted">${isMgu ? 'Select the MGAs, brokers and agents to pass this product on to. Their terms cannot exceed the terms the carrier gave you.' : orgTypesFor(product()) ? 'This is a fronting product: the MGU sets up the rater, so it can only be distributed to MGUs.' : 'Select one or more MGUs, MGAs, Brokers and Agents to distribute the product to.'}</p>
   <div class="summary-strip">
     <div>Selected product<strong>${esc(product()?.name)}</strong></div>
     <div>Base version<strong>${esc(product()?.version)}</strong></div>
@@ -256,25 +295,30 @@ const ensureOrgTerms = () => {
 const termsForm = (t) => {
   const pct = t.commissionType === 'Percentage';
   const claim = t.claimAuth === 'Yes';
-  return `<div class="fields">
-    <div class="field"><label for="from">Effective from *</label><input id="from" type="date" value="${esc(t.from)}"></div>
-    <div class="field"><label for="to">Effective to</label><input id="to" type="date" value="${esc(t.to)}"><span class="hint">Leave blank for an open-ended assignment.</span></div>
+  const c = cap();
+  const da = c?.delegatedAuthority ?? {};
+  // Under an MGU, anything the carrier did not give the MGU is locked, and numbers show their ceiling.
+  const off = (allowed) => (c && !allowed ? ' disabled' : '');
+  const max = (text) => (c ? `<span class="hint">Up to ${esc(text)} (your limit from the carrier)</span>` : '');
+  return `${c ? '<div class="wiz-note">This product was distributed to you by the carrier. Dates, limits and commission below cannot exceed your own terms.</div>' : ''}<div class="fields">
+    <div class="field"><label for="from">Effective from *</label><input id="from" type="date" value="${esc(t.from)}"${c ? ` min="${esc(c.effectiveFrom)}"` : ''}></div>
+    <div class="field"><label for="to">Effective to${c?.effectiveTo ? ' *' : ''}</label><input id="to" type="date" value="${esc(t.to)}"${c?.effectiveTo ? ` max="${esc(c.effectiveTo)}"` : ''}><span class="hint">${c?.effectiveTo ? `Cannot be after ${esc(c.effectiveTo)}.` : 'Leave blank for an open-ended assignment.'}</span></div>
   </div>
   <div class="cfg-grid">
     <div class="cfg-box">
       <h3>Delegated authority</h3>
       <p class="muted">Set the organisation's permitted policy actions.</p>
-      ${AUTHORITIES.map(([v, s]) => `<label class="check-row"><input type="checkbox" data-authority value="${v}"${t.authority.includes(v) ? ' checked' : ''}><span><strong>${v}</strong><small>${s}</small></span></label>`).join('')}
+      ${AUTHORITIES.map(([v, s]) => `<label class="check-row"><input type="checkbox" data-authority value="${v}"${t.authority.includes(v) ? ' checked' : ''}${off(da.authorities?.includes(v))}><span><strong>${v}</strong><small>${s}</small></span></label>`).join('')}
       <div class="field-group"></div>
-      ${PERMISSIONS.map(([id, title, s]) => `<label class="check-row"><input type="checkbox" id="${id}"${t[id] ? ' checked' : ''}><span><strong>${title}</strong><small>${s}</small></span></label>`).join('')}
+      ${PERMISSIONS.map(([id, title, s]) => `<label class="check-row"><input type="checkbox" id="${id}"${t[id] ? ' checked' : ''}${off(da[id])}><span><strong>${title}</strong><small>${s}</small></span></label>`).join('')}
     </div>
 
     <div class="cfg-box">
       <h3>Policy authority</h3>
       <p class="muted">Set the per-policy limit independently.</p>
       <div class="fields">
-        <div class="field"><label for="policyLimit">Per-policy limit *</label><input id="policyLimit" type="number" min="0" value="${esc(t.policyLimit)}"></div>
-        <div class="field"><label for="policyCurrency">Currency</label><select id="policyCurrency">${currencyOptions(t.policyCurrency)}</select></div>
+        <div class="field"><label for="policyLimit">Per-policy limit *</label><input id="policyLimit" type="number" min="0"${c ? ` max="${+c.policyAuthority.limit}"` : ''} value="${esc(t.policyLimit)}">${c ? max(money(c.policyAuthority.limit, c.policyAuthority.currency)) : ''}</div>
+        <div class="field"><label for="policyCurrency">Currency</label><select id="policyCurrency">${currencyOptions(t.policyCurrency, c?.policyAuthority.currency)}</select></div>
       </div>
     </div>
 
@@ -283,13 +327,13 @@ const termsForm = (t) => {
       <p class="muted">Claim authority is separate from policy authority.</p>
       <div class="field"><label>Does this organisation have claim authority?</label>
         <div class="radio-row">
-          <label><input type="radio" name="claimAuth" value="Yes"${claim ? ' checked' : ''}> Yes</label>
+          <label><input type="radio" name="claimAuth" value="Yes"${claim ? ' checked' : ''}${off(c?.claimAuthority?.enabled)}> Yes</label>
           <label><input type="radio" name="claimAuth" value="No"${claim ? '' : ' checked'}> No</label>
         </div>
       </div>
       <div class="fields${claim ? '' : ' hidden'}" id="claimFields" style="margin-top:12px">
-        <div class="field"><label for="claimLimit">Claim authority limit *</label><input id="claimLimit" type="number" min="0" value="${esc(t.claimLimit)}"></div>
-        <div class="field"><label for="claimCurrency">Currency</label><select id="claimCurrency">${currencyOptions(t.claimCurrency)}</select></div>
+        <div class="field"><label for="claimLimit">Claim authority limit *</label><input id="claimLimit" type="number" min="0"${c?.claimAuthority?.enabled ? ` max="${+c.claimAuthority.limit}"` : ''} value="${esc(t.claimLimit)}">${c?.claimAuthority?.enabled ? max(money(c.claimAuthority.limit, c.claimAuthority.currency)) : ''}</div>
+        <div class="field"><label for="claimCurrency">Currency</label><select id="claimCurrency">${currencyOptions(t.claimCurrency, c?.claimAuthority?.currency)}</select></div>
       </div>
     </div>
 
@@ -297,9 +341,9 @@ const termsForm = (t) => {
       <h3>Gross premium limit</h3>
       <p class="muted">Maximum gross premium permitted during the selected period.</p>
       <div class="fields">
-        <div class="field"><label for="grossPeriod">Limit period</label><select id="grossPeriod">${['Month', 'Quarter', 'Year'].map((v) => `<option${t.grossPeriod === v ? ' selected' : ''}>${v}</option>`).join('')}</select></div>
-        <div class="field"><label for="grossLimit">Gross premium limit *</label><input id="grossLimit" type="number" min="0" value="${esc(t.grossLimit)}"></div>
-        <div class="field full"><label for="grossCurrency">Currency</label><select id="grossCurrency">${currencyOptions(t.grossCurrency)}</select></div>
+        <div class="field"><label for="grossPeriod">Limit period</label><select id="grossPeriod">${['Month', 'Quarter', 'Year'].filter((v) => !c || v === c.grossPremiumLimit.period).map((v) => `<option${t.grossPeriod === v ? ' selected' : ''}>${v}</option>`).join('')}</select></div>
+        <div class="field"><label for="grossLimit">Gross premium limit *</label><input id="grossLimit" type="number" min="0"${c ? ` max="${+c.grossPremiumLimit.amount}"` : ''} value="${esc(t.grossLimit)}">${c ? max(money(c.grossPremiumLimit.amount, c.grossPremiumLimit.currency)) : ''}</div>
+        <div class="field full"><label for="grossCurrency">Currency</label><select id="grossCurrency">${currencyOptions(t.grossCurrency, c?.grossPremiumLimit.currency)}</select></div>
       </div>
     </div>
 
@@ -308,18 +352,18 @@ const termsForm = (t) => {
       <p class="muted">Configure new business and renewal commissions.</p>
       <div class="field"><label>Commission type</label>
         <div class="radio-row">
-          <label><input type="radio" name="commissionType" value="Percentage"${pct ? ' checked' : ''}> Percentage</label>
-          <label><input type="radio" name="commissionType" value="Amount"${pct ? '' : ' checked'}> Fixed amount</label>
+          <label><input type="radio" name="commissionType" value="Percentage"${pct ? ' checked' : ''}${off(c?.commission.type === 'Percentage')}> Percentage</label>
+          <label><input type="radio" name="commissionType" value="Amount"${pct ? '' : ' checked'}${off(c?.commission.type === 'Amount')}> Fixed amount</label>
         </div>
       </div>
       <div class="fields" style="margin-top:12px">
-        <div class="field"><label for="newCommission" data-unit>New business (${pct ? '%' : 'amount'})</label><input id="newCommission" type="number" min="0" step=".01" value="${esc(t.newCommission)}"></div>
-        <div class="field"><label for="renewCommission" data-unit>Renewal (${pct ? '%' : 'amount'})</label><input id="renewCommission" type="number" min="0" step=".01" value="${esc(t.renewCommission)}"></div>
-        <div class="field full${pct ? ' hidden' : ''}" id="commissionCurrencyWrap"><label for="commissionCurrency">Amount currency</label><select id="commissionCurrency">${currencyOptions(t.commissionCurrency)}</select></div>
+        <div class="field"><label for="newCommission" data-unit>New business (${pct ? '%' : 'amount'})</label><input id="newCommission" type="number" min="0"${c ? ` max="${+c.commission.newBusiness}"` : ''} step=".01" value="${esc(t.newCommission)}">${c ? max(String(c.commission.newBusiness)) : ''}</div>
+        <div class="field"><label for="renewCommission" data-unit>Renewal (${pct ? '%' : 'amount'})</label><input id="renewCommission" type="number" min="0"${c ? ` max="${+c.commission.renewal}"` : ''} step=".01" value="${esc(t.renewCommission)}">${c ? max(String(c.commission.renewal)) : ''}</div>
+        <div class="field full${pct ? ' hidden' : ''}" id="commissionCurrencyWrap"><label for="commissionCurrency">Amount currency</label><select id="commissionCurrency">${currencyOptions(t.commissionCurrency, c?.commission.currency)}</select></div>
         <div class="field full"><label>Commission basis</label>
           <div class="radio-row">
-            <label><input type="radio" name="basis" value="Written Premium"${t.basis === 'Written Premium' ? ' checked' : ''}> Written premium</label>
-            <label><input type="radio" name="basis" value="Earned Premium"${t.basis === 'Earned Premium' ? ' checked' : ''}> Earned premium</label>
+            <label><input type="radio" name="basis" value="Written Premium"${t.basis === 'Written Premium' ? ' checked' : ''}${off(c?.commission.basis === 'Written Premium')}> Written premium</label>
+            <label><input type="radio" name="basis" value="Earned Premium"${t.basis === 'Earned Premium' ? ' checked' : ''}${off(c?.commission.basis === 'Earned Premium')}> Earned premium</label>
           </div>
         </div>
       </div>
@@ -409,6 +453,19 @@ const validateTerms = (t, prefix = '') => {
   if (bad(t.grossLimit)) add('Enter a valid gross premium limit.');
   if (bad(t.newCommission) || bad(t.renewCommission)) add('Enter valid commission values.');
   else if (t.commissionType === 'Percentage' && (+t.newCommission > 100 || +t.renewCommission > 100)) add('Commission percentages cannot exceed 100.');
+  const c = cap();
+  if (c) {
+    const da = c.delegatedAuthority ?? {};
+    if (t.from < c.effectiveFrom) add(`Effective-from cannot be before ${c.effectiveFrom}, when your own terms start.`);
+    if (c.effectiveTo && (!t.to || t.to > c.effectiveTo)) add(`Effective-to is required and cannot be after ${c.effectiveTo}, when your own terms end.`);
+    if (+t.policyLimit > +c.policyAuthority.limit) add(`Policy limit cannot exceed your own limit of ${money(c.policyAuthority.limit, c.policyAuthority.currency)}.`);
+    if (t.authority.some((a) => !da.authorities?.includes(a))) add('Authority cannot include anything you were not given.');
+    PERMISSIONS.forEach(([id, title]) => t[id] && !da[id] && add(`${title} is not permitted: you do not have it.`));
+    if (t.claimAuth === 'Yes' && !c.claimAuthority?.enabled) add('You do not have claim authority to pass on.');
+    else if (t.claimAuth === 'Yes' && +t.claimLimit > +c.claimAuthority.limit) add(`Claim authority cannot exceed your own limit of ${money(c.claimAuthority.limit, c.claimAuthority.currency)}.`);
+    if (+t.grossLimit > +c.grossPremiumLimit.amount) add(`Gross premium limit cannot exceed your own limit of ${money(c.grossPremiumLimit.amount, c.grossPremiumLimit.currency)}.`);
+    if (+t.newCommission > +c.commission.newBusiness || +t.renewCommission > +c.commission.renewal) add(`Commission cannot exceed your own rates (${c.commission.newBusiness} new, ${c.commission.renewal} renewal).`);
+  }
   return errors;
 };
 
@@ -429,7 +486,10 @@ const validate = () => {
 };
 
 const buildRecord = (p, o, t, batch, mode, version) => ({
-  product: { id: p.id, productId: p.productId, name: p.name, version: p.version },
+  product: { id: refOf(p), productId: p.productId, name: p.name, version: p.version },
+  // Set when an MGU passes a product on; the carrier's own distributions have neither.
+  distributor: isMgu ? { id: role.orgId, name: role.orgName, type: 'MGU' } : null,
+  parentVersionId: p.mguVersion?.id ?? null,
   version: { id: version.id, version: version.version },
   status: 'Active',
   organisation: { id: o.id, name: o.name, type: o.type },
@@ -459,13 +519,14 @@ const buildRecord = (p, o, t, batch, mode, version) => ({
 const orgSlug = (o) => o.name.replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 10);
 
 const versionLabel = (p, o) => {
-  const n = state.versions.filter((v) => v.productRef === p.id && v.organisationId === o.id).length;
+  const n = state.versions.filter((v) => v.productRef === refOf(p) && v.organisationId === o.id && sameDistributor(v)).length;
   return `${p.version}-${orgSlug(o)}${n ? `-R${n + 1}` : ''}`;
 };
 
 // A distributed version is a deep copy of the product's published release (components, coverages, rating).
 const buildVersion = (p, o) => {
-  const snap = p.release.snapshot;
+  // An MGU passes on its own (already rated) version; the carrier distributes the published release.
+  const snap = p.mguVersion ?? p.release.snapshot;
   const components = cloneComponents(snap.components);
   const questions = cloneQuestions(snap.questions);
   const accountFactor = structuredClone(snap.accountFactor ?? null);
@@ -473,7 +534,7 @@ const buildVersion = (p, o) => {
   // The copy's product questions have new ids; ratings and account-level conditions must follow them.
   remapQuestionRefs(components, accountFactor, new Map((snap.questions ?? []).map((q, i) => [q.id, questions[i].id])), comboFactors);
   return {
-    productRef: p.id,
+    productRef: refOf(p),
     productId: p.productId,
     name: p.name,
     carrier: p.carrier,
@@ -482,14 +543,15 @@ const buildVersion = (p, o) => {
     components,
     accountFactor,
     comboFactors,
-    territories: structuredClone(p.release.snapshot.territories ?? []),
-    // A fronting product arrives unrated: the MGU sets up the rater, factors and formula.
-    ratingStatus: p.arrangement === 'Fronting' ? 'Pending' : null,
+    territories: structuredClone(snap.territories ?? []),
+    // A fronting product arrives unrated: the MGU sets up the rater, factors and formula. An MGU's copy is already rated.
+    ratingStatus: p.mguVersion ? p.mguVersion.ratingStatus ?? null : p.arrangement === 'Fronting' ? 'Pending' : null,
     questions,
-    jurisdiction: structuredClone(p.release.snapshot.jurisdiction ?? { excludedStates: [] }),
-    sourceReleaseId: p.release.id,
-    sourceVersionId: p.release.versionId,
-    baseVersion: p.release.label,
+    jurisdiction: structuredClone(snap.jurisdiction ?? { excludedStates: [] }),
+    sourceReleaseId: p.mguVersion ? p.mguVersion.sourceReleaseId : p.release.id,
+    sourceVersionId: p.mguVersion ? p.mguVersion.sourceVersionId : p.release.versionId,
+    baseVersion: p.mguVersion ? p.mguVersion.baseVersion : p.release.label,
+    ...(p.mguVersion ? { parentVersionId: p.mguVersion.id, distributedBy: { orgId: role.orgId, name: role.orgName } } : {}),
     version: versionLabel(p, o),
     organisationId: o.id,
     status: 'Active',
@@ -498,7 +560,7 @@ const buildVersion = (p, o) => {
 };
 
 const supersede = async (p, o, newVersion) => {
-  const prior = state.versions.find((v) => v.productRef === p.id && v.organisationId === o.id && v.status === 'Active' && v.id !== newVersion.id);
+  const prior = state.versions.find((v) => v.productRef === refOf(p) && v.organisationId === o.id && v.status === 'Active' && v.id !== newVersion.id && sameDistributor(v));
   if (!prior) return;
   Object.assign(prior, await versionsApi.update(prior.id, { status: 'Superseded', supersededBy: newVersion.id }));
   const dist = state.saved.find((s) => s.version?.id === prior.id);
@@ -537,14 +599,18 @@ const save = async () => {
 };
 
 // ---- Saved list ----
+// An MGU only sees what it distributed itself; the carrier sees everything.
+const visibleSaved = () => (isMgu ? state.saved.filter((s) => s.distributor?.id === role.orgId) : state.saved);
+
 const renderSaved = () => {
   el('saved').innerHTML =
-    [...state.saved]
+    [...visibleSaved()]
       .reverse()
       .map(
         (s) => `<tr>
           <td><strong>${esc(s.product?.name)}</strong><br><span class="muted">Base ${esc(s.product?.version)}</span></td>
           <td><strong>${esc(s.organisation?.name)}</strong> <span class="badge">${esc(s.organisation?.type)}</span></td>
+          <td>${esc(s.distributor?.name ?? 'Carrier')}</td>
           <td>${esc(s.version?.version ?? s.product?.version)}</td>
           <td>${esc(s.effectiveFrom)}</td>
           <td>${esc(s.effectiveTo || 'Open-ended')}</td>
@@ -553,13 +619,14 @@ const renderSaved = () => {
           <td><button class="mini" type="button" data-delete="${esc(s.id)}" aria-label="Delete distribution">🗑</button></td>
         </tr>`,
       )
-      .join('') || '<tr><td colspan="8">No distributions saved yet</td></tr>';
+      .join('') || '<tr><td colspan="9">No distributions saved yet</td></tr>';
 };
 
 // ---- Events ----
 el('stage').addEventListener('click', (event) => {
   const row = event.target.closest('[data-product]');
   if (row) {
+    if (d().product !== row.dataset.product) d().terms = {};
     d().product = row.dataset.product;
     // Organisations picked for a previous product may not be allowed for this one.
     d().orgs = d().orgs.filter((id) => orgAllowed(state.orgs.find((o) => o.id === id)));
@@ -644,6 +711,10 @@ el('saved').addEventListener('click', async (event) => {
   if (!btn || !confirm('Delete this distribution and the product version created for it?')) return;
   try {
     const dist = state.saved.find((s) => s.id === btn.dataset.delete);
+    if (isMgu && dist?.distributor?.id !== role.orgId) throw new Error('You can only delete distributions you made.');
+    if (state.saved.some((s) => s.parentVersionId && s.parentVersionId === dist?.version?.id)) {
+      throw new Error('This version has been passed on by the MGU. Delete those distributions first.');
+    }
     await distApi.remove(btn.dataset.delete);
     state.saved = state.saved.filter((s) => s.id !== btn.dataset.delete);
     if (dist?.version?.id) {
@@ -665,12 +736,39 @@ el('startOver').addEventListener('click', () => {
 });
 
 // ---- Init ----
+// What an MGU can pass on: versions the carrier distributed to it that are active and, for a fronting product, fully rated.
+const mguProducts = () =>
+  state.versions
+    .filter(
+      (v) =>
+        v.organisationId === role.orgId &&
+        !v.distributedBy &&
+        v.status === 'Active' &&
+        (v.arrangement !== 'Fronting' || v.ratingStatus === 'Complete') &&
+        state.saved.some((s) => s.version?.id === v.id && s.status !== 'Superseded' && !s.distributor),
+    )
+    .map((v) => ({
+      id: v.id,
+      ref: v.productRef,
+      productId: v.productId,
+      name: v.name,
+      carrier: v.carrier,
+      arrangement: v.arrangement,
+      lineOfBusiness: v.lineOfBusiness,
+      version: v.version,
+      status: v.status,
+      mguVersion: v,
+    }));
+
+if (isMgu) {
+  document.querySelector('.page-header .muted').textContent = `Pass the products the carrier distributed to ${role.orgName} on to MGAs, brokers and agents. Fronting products appear once you have completed the rating.`;
+}
 (async () => {
   try {
     const [products, orgs, saved, versions, releases] = await Promise.all([productsApi.list(), orgsApi.list(), distApi.list(), versionsApi.list(), releasesApi.list()]);
     Object.assign(state, { orgs, saved, versions, releases });
-    // Only products with a published release can be distributed.
-    state.products = products.flatMap((p) => {
+    state.products = isMgu ? mguProducts() : products.flatMap((p) => {
+      // Only products with a published release can be distributed.
       const release = releaseOf({ id: p.id });
       return release ? [{ ...p, release, version: release.label, lineOfBusiness: lobsOf(release.snapshot.components).join(', ') }] : [];
     });

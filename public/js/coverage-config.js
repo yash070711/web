@@ -1026,7 +1026,8 @@ window.addEventListener('beforeunload', (event) => {
     state.version = await versionApi().get(distId ?? versionId);
     if (isDist) {
       withLabel(state.version);
-      if (role.role === 'MGU' && state.version.organisationId !== role.orgId) throw new Error('This version was not distributed to your organisation.');
+      // An MGU may open what was distributed to it, and what it passed on itself (read only).
+      if (role.role === 'MGU' && state.version.organisationId !== role.orgId && state.version.distributedBy?.orgId !== role.orgId) throw new Error('This version was not distributed to your organisation.');
     }
     const [product, coverages, acordForms, release] = await Promise.all([
       api('products').get(state.version.productRef),
