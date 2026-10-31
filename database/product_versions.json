@@ -3294,7 +3294,7 @@
                 "taxable": "Yes",
                 "ratingPlan": null,
                 "rating": {
-                  "method": "",
+                  "method": "flat",
                   "valueSource": "",
                   "value": {
                     "bands": []
@@ -3305,7 +3305,7 @@
                     "rows": []
                   },
                   "flat": {
-                    "amount": ""
+                    "amount": "300"
                   }
                 },
                 "formula": {
@@ -3338,6 +3338,32 @@
                       "coverageIds": [
                         "2b9a8e62-ce18-4a87-956a-5d3dadb91344"
                       ]
+                    }
+                  ]
+                },
+                "formRules": {
+                  "acord-99:driver-cdl-experience": [
+                    {
+                      "id": "e49d15fd-fda7-4bbd-9e62-f47911f6ed5f",
+                      "op": "in",
+                      "value": [
+                        "0"
+                      ],
+                      "value2": "",
+                      "outcome": "uw",
+                      "message": ""
+                    }
+                  ],
+                  "acord-99:driver-violation-type": [
+                    {
+                      "id": "d56bc888-9db0-4de4-b676-b7e6ab9b6249",
+                      "op": "in",
+                      "value": [
+                        "Not At Fault Accident"
+                      ],
+                      "value2": "",
+                      "outcome": "uw",
+                      "message": ""
                     }
                   ]
                 }
@@ -4640,7 +4666,7 @@
       "excludedStates": []
     },
     "createdAt": "2026-10-28T11:27:52.410Z",
-    "updatedAt": "2026-10-28T12:07:10.617Z",
+    "updatedAt": "2026-10-29T06:19:11.858Z",
     "publishedAt": null,
     "releaseId": null,
     "id": "81348b54-0904-491d-98e8-edfddec76df5",
@@ -4657,7 +4683,17 @@
           "rating": false,
           "account": false
         },
-        "factors": []
+        "factors": [],
+        "rules": [
+          {
+            "id": "becbf67f-1897-4de7-be43-9338dba35758",
+            "op": "is",
+            "value": "Yes",
+            "value2": "",
+            "outcome": "uw",
+            "message": ""
+          }
+        ]
       }
     ],
     "territories": [],

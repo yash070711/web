@@ -38,6 +38,8 @@ import {
   validateVersion,
   startNextVersion,
   CONFIG_OPTIONS,
+  DOCUMENT_GROUPS,
+  newId,
 } from './product-model.js';
 
 const el = (id) => document.getElementById(id);
@@ -322,9 +324,41 @@ const optionBody = (cov, def, base) => {
           : '<p class="muted">No forms attached.</p>';
       }
       return `<div data-forms-host="${esc(cov.id)}"></div>`;
+    case 'documents':
+      return documentsBody(value, path);
     default:
       return '';
   }
+};
+
+// Documents required: pick the documents this coverage asks for and mark which of them are required.
+const DOC_LEVELS = [['', 'Not needed'], ['optional', 'Optional'], ['required', 'Required']];
+const docSummary = (list) => {
+  const req = list.filter((d) => d.required).length;
+  return list.length ? `${list.length} selected · ${req} required · ${list.length - req} optional` : 'No documents selected yet';
+};
+const docSelect = (path, key, level, custom = false) =>
+  `<select class="search-box doc-level" data-doc="${path}" data-key="${esc(key)}" aria-label="Requirement" style="max-width:130px">${DOC_LEVELS.filter(([v]) => v || !custom)
+    .map(([v, l]) => `<option value="${v}"${level === v ? ' selected' : ''}>${l}</option>`).join('')}</select>`;
+const documentsBody = (list, path) => {
+  const level = (key) => {
+    const d = list.find((x) => x.key === key);
+    return d ? (d.required ? 'required' : 'optional') : '';
+  };
+  const custom = list.map((d, i) => ({ d, i })).filter(({ d }) => d.key.startsWith('custom-'));
+  return `<p class="muted" style="margin:0 0 8px"><span data-doc-sum>${esc(docSummary(list))}</span>
+      <button type="button" class="mini" data-act="doc-clear" data-path="${path}">Clear all</button></p>
+    ${DOCUMENT_GROUPS.map((g) => `<div class="ws-sub" style="margin-top:14px">${esc(g.label)}</div>
+      <div class="opt-list" style="margin-top:6px">${g.docs.map(([key, label]) => {
+        const lv = level(key);
+        return `<div class="opt-row${lv ? ' selected' : ''}" style="cursor:default" data-doc-row><div class="opt-main"><strong>${esc(label)}</strong></div>${docSelect(path, key, lv)}</div>`;
+      }).join('')}</div>`).join('')}
+    <div class="ws-sub" style="margin-top:14px">Other documents</div>
+    <div class="opt-list" style="margin-top:6px">${custom.map(({ d, i }) => `<div class="opt-row selected" style="cursor:default" data-doc-row>
+        <div class="opt-main"><input class="search-box" data-path="${path}.${i}.name" placeholder="Document name" aria-label="Document name" maxlength="120" value="${esc(d.name)}"></div>
+        ${docSelect(path, d.key, d.required ? 'required' : 'optional', true)}
+        <button type="button" class="ac-icon danger" data-act="del-row" data-path="${path}" data-i="${i}">Remove</button></div>`).join('') || '<div class="opt-row" style="cursor:default"><span class="muted" style="margin:0">None added.</span></div>'}</div>
+    <p style="margin-top:8px"><button type="button" class="action" data-act="doc-add" data-path="${path}">+ Add another document</button></p>`;
 };
 
 // Other coverages that have been started, offered as a copy source.
@@ -818,6 +852,15 @@ host.addEventListener('change', (event) => {
     }
     toggleUse(handle, t.dataset.use, t.checked);
     markDirty();
+  } else if (t.dataset.doc) {
+    const list = walk(t.dataset.doc);
+    const i = list.findIndex((d) => d.key === t.dataset.key);
+    if (!t.value) list.splice(i, 1);
+    else if (i >= 0) list[i].required = t.value === 'required';
+    else list.push({ key: t.dataset.key, required: t.value === 'required' });
+    t.closest('[data-doc-row]').classList.toggle('selected', Boolean(t.value) || t.dataset.key.startsWith('custom-'));
+    host.querySelector('[data-doc-sum]').textContent = docSummary(list);
+    markDirty();
   } else if (t.dataset.check) {
     const list = new Set(walk(t.dataset.check));
     t.checked ? list.add(t.value) : list.delete(t.value);
@@ -907,6 +950,8 @@ host.addEventListener('click', (event) => {
   else if (act === 'states-none') setPath(path, [...allowedStates()]);
   else if (act === 'multi-all') setPath(path, [...optionDef(btn.dataset.key).choices]);
   else if (act === 'multi-none') setPath(path, []);
+  else if (act === 'doc-clear') setPath(path, []);
+  else if (act === 'doc-add') walk(path).push({ key: `custom-${newId()}`, name: '', required: true });
   else if (act === 'copy') {
     const target = allCoverages(components()).find((c) => c.id === btn.dataset.id);
     const source = allCoverages(components()).find((c) => c.id === el(`copy-${btn.dataset.id}`).value);

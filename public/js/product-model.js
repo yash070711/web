@@ -84,12 +84,82 @@ export const CONFIG_OPTIONS = [
   { key: 'riskObjects', label: 'Covered risk-object types', kind: 'multi', field: 'riskObjectTypes', choices: RISK_OBJECT_TYPES, hint: 'What the coverage can be applied to.', required: true },
   { key: 'claimBehaviour', label: 'Claim behaviour', kind: 'claims', field: 'claimBehaviour', hint: 'Loss basis, benefit basis and how soon a claim must be notified.', required: true },
   { key: 'forms', label: 'Forms', kind: 'forms', field: 'forms', hint: 'Starts from the forms attached to the global coverage — adjust them for this product.', required: false },
+  { key: 'documents', label: 'Documents required', kind: 'documents', field: 'documents', hint: 'Documents the insured or producer must provide for this coverage. Pick the ones that are required.', required: false },
   { key: 'terms', label: 'Terms', kind: 'text', field: 'terms', hint: 'Conditions, exclusions, waiting periods.', required: false },
 ];
 export const PARTIES = [
   { value: 'First party', hint: "Covers the policyholder's own property or losses." },
   { value: 'Third party', hint: "Covers the policyholder's liability to others. No risk-object types are needed." },
 ];
+// Documents commonly collected to quote, bind or issue coverage in the US market, by group.
+// A coverage stores the ones it asks for: documents = [{ key, required }], plus its own { key: 'custom-...', name, required }.
+export const DOCUMENT_GROUPS = [
+  { key: 'application', label: 'Applications and disclosures', docs: [
+    ['acord-application', 'Signed ACORD application (e.g. ACORD 125 / 126 / 140)'],
+    ['supplemental-application', 'Supplemental application for the class of business'],
+    ['signed-application', 'Signed and dated application / signature page'],
+    ['no-known-loss', 'No known loss letter'],
+    ['fraud-warning', 'State fraud warning acknowledgement'],
+    ['broker-of-record', 'Broker of record letter'],
+  ] },
+  { key: 'history', label: 'Prior coverage and loss history', docs: [
+    ['loss-runs', 'Currently valued loss runs (3-5 years)'],
+    ['prior-dec-page', 'Prior policy declarations page'],
+    ['proof-prior-insurance', 'Proof of prior insurance'],
+    ['clue-report', 'CLUE / loss history report'],
+    ['claims-explanation', 'Explanation of open or large claims'],
+  ] },
+  { key: 'business', label: 'Business and financial', docs: [
+    ['financial-statements', 'Financial statements'],
+    ['tax-returns', 'Business tax returns'],
+    ['business-license', 'Business or contractor license'],
+    ['w9', 'IRS Form W-9'],
+    ['payroll-records', 'Payroll records by class code'],
+    ['subcontractor-agreements', 'Subcontractor agreements'],
+    ['subcontractor-coi', 'Certificates of insurance from subcontractors'],
+    ['safety-program', 'Written safety program'],
+    ['osha-logs', 'OSHA 300 / 300A logs'],
+    ['lease-agreement', 'Lease or rental agreement'],
+    ['contracts', 'Contracts requiring insurance (hold harmless, additional insured)'],
+  ] },
+  { key: 'property', label: 'Property', docs: [
+    ['sov', 'Statement of values (SOV)'],
+    ['schedule-of-locations', 'Schedule of locations'],
+    ['property-appraisal', 'Appraisal or replacement cost estimate'],
+    ['inspection-report', 'Property inspection or loss control report'],
+    ['roof-certification', 'Roof age / condition certification'],
+    ['photos', 'Photos of the property'],
+    ['sprinkler-fire-inspection', 'Sprinkler, alarm and fire inspection reports'],
+    ['flood-elevation', 'Flood zone determination / elevation certificate'],
+    ['mortgagee-info', 'Mortgagee / lienholder information'],
+  ] },
+  { key: 'auto', label: 'Auto and drivers', docs: [
+    ['vehicle-schedule', 'Vehicle schedule with VINs'],
+    ['vehicle-registration', 'Vehicle registration or title'],
+    ['driver-list', 'Driver list with license numbers'],
+    ['drivers-license', "Copy of driver's license"],
+    ['mvr', 'Motor vehicle records (MVR)'],
+    ['driver-qualification', 'Driver qualification and hiring criteria'],
+    ['dot-authority', 'USDOT number / operating authority'],
+  ] },
+  { key: 'state', label: 'State and federal compliance', docs: [
+    ['tria', 'TRIA (terrorism) offer: acceptance or rejection'],
+    ['um-uim', 'UM / UIM selection or rejection form'],
+    ['surplus-lines-disclosure', 'Surplus lines disclosure'],
+    ['diligent-effort', 'Diligent effort / declination affidavit'],
+    ['wc-officer-exclusion', "Workers' comp officer inclusion / exclusion election"],
+    ['hurricane-wind-disclosure', 'Hurricane / named storm deductible disclosure'],
+    ['claims-made-acknowledgement', 'Claims-made and retroactive date acknowledgement'],
+  ] },
+  { key: 'billing', label: 'Billing and binding', docs: [
+    ['payment-authorization', 'ACH / payment authorization'],
+    ['premium-finance', 'Premium finance agreement'],
+    ['down-payment', 'Down payment or deposit premium'],
+    ['signed-binder', 'Signed binder or quote acceptance'],
+  ] },
+];
+export const ALL_DOCUMENTS = DOCUMENT_GROUPS.flatMap((g) => g.docs.map(([key, label]) => ({ key, label, group: g.label })));
+export const documentLabel = (d) => d.name?.trim() || ALL_DOCUMENTS.find((x) => x.key === d.key)?.label || d.key;
 export const optionDef = (key) => CONFIG_OPTIONS.find((o) => o.key === key);
 
 // What older coverages (with no explicit choice) have always shown.
@@ -159,6 +229,7 @@ export const emptyCoverage = (lib) => ({
   riskObjectTypes: [],
   questions: [],
   forms: [],
+  documents: [], // [{ key, required }] from DOCUMENT_GROUPS, or { key: 'custom-...', name, required }
   claimBehaviour: blankClaimBehaviour(),
   taxable: '',
   ratingPlan: null, // attached in the rating phase
@@ -282,6 +353,9 @@ export const coverageIssues = (cov, allowedStates = US_STATES) => {
         break;
       case 'forms':
         bad = required && !value?.length;
+        break;
+      case 'documents':
+        bad = (required && !value?.length) || (value ?? []).some((d) => d.key.startsWith('custom-') && !d.name?.trim());
         break;
       default:
     }
